@@ -15,8 +15,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { 
+  User, 
+  Settings, 
+  HelpCircle, 
+  LogOut, 
+  Activity, 
+  FileText, 
+  Bell,
+  Moon,
+  Sun
+} from "lucide-react"
 
 export function Navigation() {
   const { user, logout } = useAuth()
@@ -26,6 +39,15 @@ export function Navigation() {
   const handleLogout = () => {
     console.log("[v0] Logout initiated")
     logout()
+  }
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case "admin": return "Workspace Admin"
+      case "staff": return "Sales Manager" 
+      case "user": return "Sales Rep"
+      default: return role
+    }
   }
 
   return (
@@ -109,7 +131,7 @@ export function Navigation() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
                       {user.name
                         .split(" ")
                         .map((n) => n[0])
@@ -118,16 +140,64 @@ export function Navigation() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user.name}</p>
-                    <p className="w-[200px] truncate text-sm text-muted-foreground">{user.email}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+              <DropdownMenuContent className="w-64" align="end" forceMount>
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-2 py-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{getRoleDisplayName(user.role)}</p>
+                    </div>
                   </div>
-                </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+                
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Activity className="mr-2 h-4 w-4" />
+                    <span>My Activity</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Bell className="mr-2 h-4 w-4" />
+                    <span>Notifications</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Preferences</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Documentation</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Help & Support</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
