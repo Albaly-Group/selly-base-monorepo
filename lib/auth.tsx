@@ -52,11 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = JSON.parse(storedUser)
         setUser(userData)
-        if (!document.cookie.includes("selly-user=")) {
-          document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
-        }
+        document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
       } catch (error) {
         localStorage.removeItem("selly-user")
+        document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       }
     }
     setIsLoading(false)
@@ -89,7 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     localStorage.removeItem("selly-user")
 
-    document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+    document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+    document.cookie = "selly-user=; path=/; max-age=0; SameSite=Lax"
+
+    setTimeout(() => {
+      window.location.href = "/"
+    }, 100)
   }
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
