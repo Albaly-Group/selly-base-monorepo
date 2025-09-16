@@ -20,6 +20,7 @@ export interface FilterOptions {
   updatedWithin?: number // Days filter per spec
   hasPhone?: boolean // Signal filter per spec
   hasEmail?: boolean // Signal filter per spec
+  hasDecisionMaker?: boolean // Decision maker filter per spec
 }
 
 export interface SearchFilters extends FilterOptions {

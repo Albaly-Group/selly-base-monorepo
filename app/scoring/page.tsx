@@ -121,7 +121,7 @@ function ScoringPage() {
                     <SelectValue placeholder="Choose a preset..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Custom Configuration</SelectItem>
+                    <SelectItem value="none">Custom Configuration</SelectItem>
                     {mockPresets.map((preset) => (
                       <SelectItem key={preset.id} value={preset.id}>
                         {preset.name}

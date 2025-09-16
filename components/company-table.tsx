@@ -9,9 +9,10 @@ interface CompanyTableProps {
   selectedCompanies: string[]
   onSelectCompany: (companyId: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
+  onCompanyClick?: (company: Company) => void // Add company click handler
 }
 
-export function CompanyTable({ companies, selectedCompanies, onSelectCompany, onSelectAll }: CompanyTableProps) {
+export function CompanyTable({ companies, selectedCompanies, onSelectCompany, onSelectAll, onCompanyClick }: CompanyTableProps) {
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
 
@@ -23,6 +24,10 @@ export function CompanyTable({ companies, selectedCompanies, onSelectCompany, on
         return "bg-yellow-100 text-yellow-800"
       case "Invalid":
         return "bg-red-100 text-red-800"
+      case "New":
+        return "bg-blue-100 text-blue-800"
+      case "Archived":
+        return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -59,8 +64,12 @@ export function CompanyTable({ companies, selectedCompanies, onSelectCompany, on
         </TableHeader>
         <TableBody>
           {companies.map((company) => (
-            <TableRow key={company.id}>
-              <TableCell>
+            <TableRow 
+              key={company.id} 
+              className={onCompanyClick ? "cursor-pointer hover:bg-gray-50" : ""}
+              onClick={() => onCompanyClick?.(company)}
+            >
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={selectedCompanies.includes(company.id)}
                   onCheckedChange={(checked) => onSelectCompany(company.id, checked as boolean)}
