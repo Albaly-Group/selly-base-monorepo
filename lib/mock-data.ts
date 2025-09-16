@@ -1,0 +1,210 @@
+export interface Company {
+  id: string
+  companyNameEn: string
+  industrialName: string
+  province: string
+  contactPersons: ContactPerson[]
+  verificationStatus: "Active" | "Needs Verification" | "Invalid"
+  dataCompleteness: number
+  lastUpdated: string
+  createdBy: string
+  registeredNo?: string
+  companySize?: "S" | "M" | "L"
+}
+
+export interface ContactPerson {
+  name: string
+  phone?: string
+  email?: string
+}
+
+export interface UserList {
+  id: string
+  name: string
+  companyIds: string[]
+  createdAt: string
+  status: "Active" | "Inactive"
+  owner: string
+}
+
+export interface LeadScore {
+  companyId: string
+  score: number
+  matchingSummary: {
+    industrial: boolean
+    province: boolean
+    companySize: boolean
+    contactStatus: boolean
+  }
+}
+
+// Mock company data
+export const mockCompanies: Company[] = [
+  {
+    id: "1",
+    companyNameEn: "ABC Manufacturing Co., Ltd.",
+    industrialName: "Manufacturing",
+    province: "Bangkok",
+    contactPersons: [{ name: "John Smith", phone: "+66-2-123-4567", email: "john@abc-mfg.com" }],
+    verificationStatus: "Active",
+    dataCompleteness: 95,
+    lastUpdated: "2024-12-08",
+    createdBy: "System Import",
+    registeredNo: "0105564111698",
+    companySize: "L",
+  },
+  {
+    id: "2",
+    companyNameEn: "Bangkok Logistics Solutions Ltd.",
+    industrialName: "Logistics",
+    province: "Bangkok",
+    contactPersons: [{ name: "Sarah Johnson", phone: "+66-2-987-6543", email: "sarah@bkk-logistics.com" }],
+    verificationStatus: "Active",
+    dataCompleteness: 88,
+    lastUpdated: "2024-12-07",
+    createdBy: "User Import",
+    registeredNo: "0105564222789",
+    companySize: "M",
+  },
+  {
+    id: "3",
+    companyNameEn: "Chiang Mai Automotive Parts Co.",
+    industrialName: "Automotive",
+    province: "Chiang Mai",
+    contactPersons: [{ name: "Michael Chen", phone: "+66-53-456-7890" }],
+    verificationStatus: "Needs Verification",
+    dataCompleteness: 65,
+    lastUpdated: "2024-12-05",
+    createdBy: "Staff Entry",
+    registeredNo: "0105564333890",
+    companySize: "S",
+  },
+  {
+    id: "4",
+    companyNameEn: "Phuket Tourism Services Ltd.",
+    industrialName: "Tourism",
+    province: "Phuket",
+    contactPersons: [{ name: "Lisa Wong", email: "lisa@phuket-tourism.com" }],
+    verificationStatus: "Invalid",
+    dataCompleteness: 45,
+    lastUpdated: "2024-11-28",
+    createdBy: "System Import",
+    registeredNo: "0105564444901",
+    companySize: "M",
+  },
+  {
+    id: "5",
+    companyNameEn: "Northeast Agriculture Co-op",
+    industrialName: "Agriculture",
+    province: "Khon Kaen",
+    contactPersons: [{ name: "Somchai Prasert", phone: "+66-43-123-4567", email: "somchai@ne-agri.com" }],
+    verificationStatus: "Active",
+    dataCompleteness: 92,
+    lastUpdated: "2024-12-06",
+    createdBy: "User Import",
+    registeredNo: "0105564555012",
+    companySize: "L",
+  },
+]
+
+// Mock user lists
+export const mockUserLists: UserList[] = [
+  {
+    id: "1",
+    name: "Bangkok Logistics Leads",
+    companyIds: ["1", "2"],
+    createdAt: "2024-12-01",
+    status: "Active",
+    owner: "user@example.com",
+  },
+  {
+    id: "2",
+    name: "Manufacturing Prospects",
+    companyIds: ["1", "5"],
+    createdAt: "2024-11-28",
+    status: "Active",
+    owner: "user@example.com",
+  },
+]
+
+// Utility functions for data operations
+export const searchCompanies = (companies: Company[], searchTerm: string): Company[] => {
+  if (!searchTerm.trim()) return companies
+
+  const term = searchTerm.toLowerCase()
+  return companies.filter(
+    (company) =>
+      company.companyNameEn.toLowerCase().includes(term) ||
+      company.registeredNo?.includes(term) ||
+      company.industrialName.toLowerCase().includes(term),
+  )
+}
+
+export const filterCompanies = (
+  companies: Company[],
+  filters: {
+    industrial?: string
+    province?: string
+    companySize?: string
+    contactStatus?: string
+  },
+): Company[] => {
+  return companies.filter((company) => {
+    if (filters.industrial && company.industrialName !== filters.industrial) return false
+    if (filters.province && company.province !== filters.province) return false
+    if (filters.companySize && company.companySize !== filters.companySize) return false
+    if (filters.contactStatus && company.verificationStatus !== filters.contactStatus) return false
+    return true
+  })
+}
+
+export const calculateLeadScore = (
+  company: Company,
+  criteria: {
+    industrial?: string
+    province?: string
+    companySize?: string
+    contactStatus?: string
+  },
+): LeadScore => {
+  let score = 0
+  const matchingSummary = {
+    industrial: false,
+    province: false,
+    companySize: false,
+    contactStatus: false,
+  }
+
+  // Industrial match (+20 points)
+  if (criteria.industrial && company.industrialName === criteria.industrial) {
+    score += 20
+    matchingSummary.industrial = true
+  }
+
+  // Province match (+15 points)
+  if (criteria.province && company.province === criteria.province) {
+    score += 15
+    matchingSummary.province = true
+  }
+
+  // Company size match (+10 points)
+  if (criteria.companySize && company.companySize === criteria.companySize) {
+    score += 10
+    matchingSummary.companySize = true
+  }
+
+  // Contact status match (+10 points)
+  if (criteria.contactStatus && company.verificationStatus === criteria.contactStatus) {
+    score += 10
+    matchingSummary.contactStatus = true
+  }
+
+  // Data completeness bonus
+  score += Math.floor(company.dataCompleteness / 10)
+
+  return {
+    companyId: company.id,
+    score,
+    matchingSummary,
+  }
+}
