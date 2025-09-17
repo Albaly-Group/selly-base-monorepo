@@ -23,7 +23,7 @@ export function CompanySearch({ searchTerm, onSearchChange, onClearSearch }: Com
             <Input
               id="search"
               type="text"
-              placeholder="Search by company name, registered number, or keyword..."
+              placeholder="Search by Company name, Registration ID, or keyword…"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10"
@@ -43,11 +43,11 @@ export function CompanySearch({ searchTerm, onSearchChange, onClearSearch }: Com
       </div>
 
       <div className="mt-4 text-sm text-gray-600">
-        <p className="font-medium mb-1">Search supports:</p>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Company Name (EN) - e.g., "ABC Manufacturing Co., Ltd."</li>
-          <li>Registered No. - e.g., "0105564111698"</li>
-          <li>Keywords - e.g., "Shoe", "Logistics"</li>
+        <p className="font-medium mb-1">Search examples:</p>
+        <ul className="list-disc list-inside space-y-1 text-xs">
+          <li><strong>Company Name:</strong> "ABC Manufacturing" or "บริษัท เอบีซี"</li>
+          <li><strong>Registration ID:</strong> "0105564111698" (13 digits)</li>
+          <li><strong>Industry:</strong> "Manufacturing", "Logistics", "Tourism"</li>
         </ul>
       </div>
     </div>

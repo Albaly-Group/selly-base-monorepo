@@ -39,7 +39,18 @@ export function ListSelector({ lists, selectedListId, onSelectList }: ListSelect
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{list.createdAt}</span>
                 <span>•</span>
-                <span className={list.status === "Active" ? "text-green-600" : "text-gray-500"}>{list.status}</span>
+                <Badge 
+                  variant={
+                    list.status === "In Outreach" ? "default" :
+                    list.status === "Draft" ? "secondary" :
+                    list.status === "Completed" ? "outline" :
+                    list.status === "On Hold" ? "destructive" :
+                    "secondary"
+                  }
+                  className="text-xs"
+                >
+                  {list.status}
+                </Badge>
               </div>
             </div>
           </Button>
