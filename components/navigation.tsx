@@ -19,17 +19,7 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { 
-  User, 
-  Settings, 
-  HelpCircle, 
-  LogOut, 
-  Activity, 
-  FileText, 
-  Bell,
-  Moon,
-  Sun
-} from "lucide-react"
+import { User, Settings, HelpCircle, LogOut, Activity, FileText, Bell } from "lucide-react"
 
 export function Navigation() {
   const { user, logout } = useAuth()
@@ -37,16 +27,19 @@ export function Navigation() {
   if (!user) return null
 
   const handleLogout = () => {
-    console.log("[v0] Logout initiated")
     logout()
   }
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case "admin": return "Workspace Admin"
-      case "staff": return "Sales Manager" 
-      case "user": return "Sales Rep"
-      default: return role
+      case "admin":
+        return "Workspace Admin"
+      case "staff":
+        return "Sales Manager"
+      case "user":
+        return "Sales Rep"
+      default:
+        return role
     }
   }
 
@@ -159,7 +152,7 @@ export function Navigation() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuGroup>
                   <DropdownMenuItem className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
@@ -176,7 +169,7 @@ export function Navigation() {
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuGroup>
                   <DropdownMenuItem className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
@@ -193,7 +186,7 @@ export function Navigation() {
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>

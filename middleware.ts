@@ -9,14 +9,21 @@ export function middleware(request: NextRequest) {
   let isAuthenticated = false
   let userRole = null
 
-  if (userCookie) {
+  if (userCookie && userCookie.value) {
     try {
-      const userData = JSON.parse(userCookie.value)
-      isAuthenticated = !!(userData && userData.id && userData.email)
-      userRole = userData.role
+      const cookieValue = userCookie.value.trim()
+      if (cookieValue && cookieValue !== "undefined" && cookieValue !== "null" && cookieValue.startsWith("{")) {
+        const userData = JSON.parse(cookieValue)
+        isAuthenticated = !!(userData && userData.id && userData.email)
+        userRole = userData.role
+      } else {
+        // Clear malformed cookie
+        const response = NextResponse.next()
+        response.cookies.delete("selly-user")
+        return response
+      }
     } catch (error) {
-      console.log("[v0] Cookie parsing error:", error)
-      const response = NextResponse.redirect(new URL("/", request.url))
+      const response = NextResponse.next()
       response.cookies.delete("selly-user")
       return response
     }
@@ -33,13 +40,11 @@ export function middleware(request: NextRequest) {
 
   // If accessing a protected route without authentication, redirect to home
   if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
-    console.log("[v0] Redirecting unauthenticated user from:", pathname)
     return NextResponse.redirect(new URL("/", request.url))
   }
 
   if (staffRoutes.some((route) => pathname.startsWith(route)) && isAuthenticated) {
     if (userRole !== "staff" && userRole !== "admin") {
-      console.log("[v0] Redirecting unauthorized user from:", pathname, "Role:", userRole)
       return NextResponse.redirect(new URL("/", request.url))
     }
   }

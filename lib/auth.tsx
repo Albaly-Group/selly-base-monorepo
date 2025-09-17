@@ -48,11 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("selly-user")
-    if (storedUser) {
+    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
       try {
         const userData = JSON.parse(storedUser)
-        setUser(userData)
-        document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+        if (userData && userData.id && userData.email) {
+          setUser(userData)
+          document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+        } else {
+          localStorage.removeItem("selly-user")
+          document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        }
       } catch (error) {
         localStorage.removeItem("selly-user")
         document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
@@ -90,6 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
     document.cookie = "selly-user=; path=/; max-age=0; SameSite=Lax"
+
+    // Clear any potential variations
+    document.cookie = "selly-user=; path=/"
 
     setTimeout(() => {
       window.location.href = "/"
