@@ -9,21 +9,13 @@ export function middleware(request: NextRequest) {
   let isAuthenticated = false
   let userRole = null
 
-  if (userCookie && userCookie.value) {
+  if (userCookie) {
     try {
-      const cookieValue = userCookie.value.trim()
-      if (cookieValue && cookieValue !== "undefined" && cookieValue !== "null" && cookieValue.startsWith("{")) {
-        const userData = JSON.parse(cookieValue)
-        isAuthenticated = !!(userData && userData.id && userData.email)
-        userRole = userData.role
-      } else {
-        // Clear malformed cookie
-        const response = NextResponse.next()
-        response.cookies.delete("selly-user")
-        return response
-      }
+      const userData = JSON.parse(userCookie.value)
+      isAuthenticated = !!(userData && userData.id && userData.email)
+      userRole = userData.role
     } catch (error) {
-      const response = NextResponse.next()
+      const response = NextResponse.redirect(new URL("/", request.url))
       response.cookies.delete("selly-user")
       return response
     }
@@ -33,10 +25,10 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ["/"]
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/lookup", "/lists", "/staff", "/admin", "/reports", "/imports", "/exports"]
+  const protectedRoutes = ["/lookup", "/lists", "/staff"]
 
   // Staff-only routes
-  const staffRoutes = ["/staff", "/admin", "/reports", "/imports", "/exports"]
+  const staffRoutes = ["/staff"]
 
   // If accessing a protected route without authentication, redirect to home
   if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {

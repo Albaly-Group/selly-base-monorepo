@@ -48,19 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("selly-user")
-    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
+    if (storedUser) {
       try {
         const userData = JSON.parse(storedUser)
-        if (userData && userData.id && userData.email) {
-          setUser(userData)
+        setUser(userData)
+        if (!document.cookie.includes("selly-user=")) {
           document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
-        } else {
-          localStorage.removeItem("selly-user")
-          document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
         }
       } catch (error) {
         localStorage.removeItem("selly-user")
-        document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       }
     }
     setIsLoading(false)
@@ -93,15 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     localStorage.removeItem("selly-user")
 
-    document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
-    document.cookie = "selly-user=; path=/; max-age=0; SameSite=Lax"
-
-    // Clear any potential variations
-    document.cookie = "selly-user=; path=/"
-
-    setTimeout(() => {
-      window.location.href = "/"
-    }, 100)
+    document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
   }
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
