@@ -54,10 +54,48 @@ export function Navigation() {
                 )}
 
                 {(user.role === "staff" || user.role === "admin") && (
+                  <>
+                    <NavigationMenuItem>
+                      <Link href="/staff" legacyBehavior passHref>
+                        <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                          Database Management
+                        </NavigationMenuLink>
+                      </Link>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <Link href="/reports" legacyBehavior passHref>
+                        <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                          Reports
+                        </NavigationMenuLink>
+                      </Link>
+                    </NavigationMenuItem>
+                  </>
+                )}
+
+                {(user.role === "user" || user.role === "staff" || user.role === "admin") && (
+                  <>
+                    <NavigationMenuItem>
+                      <Link href="/imports" legacyBehavior passHref>
+                        <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                          Imports
+                        </NavigationMenuLink>
+                      </Link>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <Link href="/exports" legacyBehavior passHref>
+                        <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                          Exports
+                        </NavigationMenuLink>
+                      </Link>
+                    </NavigationMenuItem>
+                  </>
+                )}
+
+                {user.role === "admin" && (
                   <NavigationMenuItem>
-                    <Link href="/staff" legacyBehavior passHref>
+                    <Link href="/admin" legacyBehavior passHref>
                       <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                        Database Management
+                        Admin
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
