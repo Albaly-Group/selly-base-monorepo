@@ -182,7 +182,7 @@ Admin Account: admin@selly.com / admin123
 - [ ] Mobile app companion
 
 ## Technical Stack
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **State**: React Context + localStorage
