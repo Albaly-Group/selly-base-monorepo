@@ -1,6 +1,7 @@
 "use client"
 
 import type { Company, LeadScore } from "@/lib/types"
+import type { WeightedLeadScore } from "@/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -13,8 +14,9 @@ interface ListTableProps {
   onSelectCompany: (companyId: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
   showLeadScores?: boolean
-  leadScores?: LeadScore[]
+  leadScores?: { [companyId: string]: WeightedLeadScore }
   onViewCompany?: (company: Company) => void
+  sortable?: boolean
 }
 
 export function ListTable({
@@ -23,8 +25,9 @@ export function ListTable({
   onSelectCompany,
   onSelectAll,
   showLeadScores = false,
-  leadScores = [],
+  leadScores = {},
   onViewCompany,
+  sortable = false,
 }: ListTableProps) {
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
@@ -49,29 +52,44 @@ export function ListTable({
   }
 
   const getLeadScore = (companyId: string) => {
-    return leadScores.find((score) => score.companyId === companyId)
+    return leadScores[companyId]
   }
 
   const getMatchingSummary = (companyId: string) => {
     const score = getLeadScore(companyId)
     if (!score) return null
 
+    const { matchingSummary } = score
+    const matches = []
+    
+    if (matchingSummary.keyword) matches.push({ label: "Keyword", score: matchingSummary.keywordScore })
+    if (matchingSummary.industrial) matches.push({ label: "Industry", score: matchingSummary.industrialScore })
+    if (matchingSummary.province) matches.push({ label: "Province", score: matchingSummary.provinceScore })
+    if (matchingSummary.companySize) matches.push({ label: "Size", score: matchingSummary.companySizeScore })
+    if (matchingSummary.contactStatus) matches.push({ label: "Status", score: matchingSummary.contactStatusScore })
+
     return (
-      <div className="flex gap-1 mt-1">
-        {Object.entries(score.matchingSummary).map(([key, matched]) => (
-          <div
-            key={key}
-            className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${
-              matched ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-            }`}
-          >
-            {matched ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-            {key === "industrial" && "Industry"}
-            {key === "province" && "Province"}
-            {key === "companySize" && "Size"}
-            {key === "contactStatus" && "Status"}
+      <div className="flex gap-1 mt-1 flex-wrap">
+        {matches.length > 0 ? (
+          matches.slice(0, 3).map((match, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-green-100 text-green-700"
+            >
+              <Check className="h-3 w-3" />
+              {match.label}: {match.score}%
+            </div>
+          ))
+        ) : (
+          <div className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-500">
+            No matches
           </div>
-        ))}
+        )}
+        {matches.length > 3 && (
+          <div className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+            +{matches.length - 3} more
+          </div>
+        )}
       </div>
     )
   }
@@ -93,8 +111,8 @@ export function ListTable({
             {showLeadScores && (
               <TableHead>
                 <div className="flex items-center gap-1">
-                  Lead Score
-                  <ArrowUpDown className="h-4 w-4" />
+                  Weighted Score
+                  {sortable && <ArrowUpDown className="h-4 w-4" />}
                 </div>
               </TableHead>
             )}
@@ -123,7 +141,12 @@ export function ListTable({
                 {showLeadScores && (
                   <TableCell>
                     <div>
-                      <div className="font-bold text-lg text-primary">{leadScore?.score || 0}</div>
+                      <div className="font-bold text-lg text-primary">
+                        {leadScore?.normalizedScore || 0}%
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {leadScore ? `${leadScore.score}/${leadScore.maxPossibleScore}` : '0/0'}
+                      </div>
                       {getMatchingSummary(company.id)}
                     </div>
                   </TableCell>

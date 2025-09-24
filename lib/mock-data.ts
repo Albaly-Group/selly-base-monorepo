@@ -208,3 +208,152 @@ export const calculateLeadScore = (
     matchingSummary,
   }
 }
+
+export interface WeightedLeadScore {
+  companyId: string
+  score: number
+  maxPossibleScore: number
+  normalizedScore: number // 0-100 percentage
+  matchingSummary: {
+    keyword: boolean
+    keywordScore: number
+    industrial: boolean
+    industrialScore: number
+    province: boolean
+    provinceScore: number
+    companySize: boolean
+    companySizeScore: number
+    contactStatus: boolean
+    contactStatusScore: number
+  }
+}
+
+export const calculateWeightedLeadScore = (
+  company: Company,
+  criteria: {
+    keyword?: string
+    keywordWeight?: number
+    industrial?: string
+    industrialWeight?: number
+    province?: string
+    provinceWeight?: number
+    companySize?: string
+    companySizeWeight?: number
+    contactStatus?: string
+    contactStatusWeight?: number
+    minimumScore?: number
+  },
+): WeightedLeadScore => {
+  let totalScore = 0
+  let maxPossibleScore = 0
+  const matchingSummary = {
+    keyword: false,
+    keywordScore: 0,
+    industrial: false,
+    industrialScore: 0,
+    province: false,
+    provinceScore: 0,
+    companySize: false,
+    companySizeScore: 0,
+    contactStatus: false,
+    contactStatusScore: 0,
+  }
+
+  // Keyword match
+  if (criteria.keyword && criteria.keywordWeight) {
+    const keywordLower = criteria.keyword.toLowerCase()
+    const nameMatch = company.companyNameEn.toLowerCase().includes(keywordLower)
+    const regMatch = company.registeredNo?.toLowerCase().includes(keywordLower) || false
+    const industryMatch = company.industrialName.toLowerCase().includes(keywordLower)
+    
+    if (nameMatch || regMatch || industryMatch) {
+      matchingSummary.keyword = true
+      matchingSummary.keywordScore = criteria.keywordWeight
+      totalScore += criteria.keywordWeight
+    }
+    maxPossibleScore += criteria.keywordWeight
+  }
+
+  // Industrial match
+  if (criteria.industrial && criteria.industrialWeight) {
+    maxPossibleScore += criteria.industrialWeight
+    if (company.industrialName === criteria.industrial) {
+      matchingSummary.industrial = true
+      matchingSummary.industrialScore = criteria.industrialWeight
+      totalScore += criteria.industrialWeight
+    }
+  }
+
+  // Province match
+  if (criteria.province && criteria.provinceWeight) {
+    maxPossibleScore += criteria.provinceWeight
+    if (company.province === criteria.province) {
+      matchingSummary.province = true
+      matchingSummary.provinceScore = criteria.provinceWeight
+      totalScore += criteria.provinceWeight
+    }
+  }
+
+  // Company size match
+  if (criteria.companySize && criteria.companySizeWeight) {
+    maxPossibleScore += criteria.companySizeWeight
+    if (company.companySize === criteria.companySize) {
+      matchingSummary.companySize = true
+      matchingSummary.companySizeScore = criteria.companySizeWeight
+      totalScore += criteria.companySizeWeight
+    }
+  }
+
+  // Contact status match
+  if (criteria.contactStatus && criteria.contactStatusWeight) {
+    maxPossibleScore += criteria.contactStatusWeight
+    if (company.verificationStatus === criteria.contactStatus) {
+      matchingSummary.contactStatus = true
+      matchingSummary.contactStatusScore = criteria.contactStatusWeight
+      totalScore += criteria.contactStatusWeight
+    }
+  }
+
+  // Calculate normalized score (0-100%)
+  const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0
+
+  return {
+    companyId: company.id,
+    score: totalScore,
+    maxPossibleScore,
+    normalizedScore,
+    matchingSummary,
+  }
+}
+
+export const searchAndScoreCompanies = (
+  companies: Company[],
+  criteria: {
+    keyword?: string
+    keywordWeight?: number
+    industrial?: string
+    industrialWeight?: number
+    province?: string
+    provinceWeight?: number
+    companySize?: string
+    companySizeWeight?: number
+    contactStatus?: string
+    contactStatusWeight?: number
+    minimumScore?: number
+  },
+): { company: Company; score: WeightedLeadScore }[] => {
+  const results = companies
+    .map((company) => ({
+      company,
+      score: calculateWeightedLeadScore(company, criteria),
+    }))
+    .filter((result) => {
+      // Apply minimum score filter
+      const minimumScore = criteria.minimumScore || 0
+      return result.score.normalizedScore >= minimumScore
+    })
+    // Sort by normalized score (highest first)
+    .sort((a, b) => b.score.normalizedScore - a.score.normalizedScore)
+
+  return results
+}

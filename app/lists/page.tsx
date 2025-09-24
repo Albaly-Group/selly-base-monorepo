@@ -4,20 +4,21 @@ import { useState, useMemo } from "react"
 import { Navigation } from "@/components/navigation"
 import { ListSelector } from "@/components/list-selector"
 import { ListTable } from "@/components/list-table"
-import { LeadScoringPanel } from "@/components/lead-scoring-panel"
+import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
-import { mockCompanies, mockUserLists, calculateLeadScore } from "@/lib/mock-data"
+import { mockCompanies, mockUserLists, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
-import type { FilterOptions, LeadScore, Company } from "@/lib/types"
+import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Filter, Target } from "lucide-react"
 
 function ListManagementPage() {
   const [selectedListId, setSelectedListId] = useState<string>(mockUserLists[0]?.id || "")
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
-  const [showLeadScoring, setShowLeadScoring] = useState(false)
-  const [scoringCriteria, setScoringCriteria] = useState<FilterOptions>({})
-  const [leadScores, setLeadScores] = useState<LeadScore[]>([])
+  const [showSmartFiltering, setShowSmartFiltering] = useState(false)
+  const [showSmartFilteringDialog, setShowSmartFilteringDialog] = useState(false)
+  const [smartFiltering, setSmartFiltering] = useState<SmartFilteringCriteria>({})
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
 
@@ -28,23 +29,29 @@ function ListManagementPage() {
     return mockCompanies.filter((company) => selectedList.companyIds.includes(company.id))
   }, [selectedList])
 
-  // Apply lead scoring if active
-  const displayCompanies = useMemo(() => {
-    if (!showLeadScoring || Object.keys(scoringCriteria).length === 0) {
-      return listCompanies
+  // Apply smart filtering if active
+  const { displayCompanies, leadScores } = useMemo(() => {
+    if (!showSmartFiltering || Object.keys(smartFiltering).length === 0) {
+      return { 
+        displayCompanies: listCompanies, 
+        leadScores: {} as { [key: string]: WeightedLeadScore }
+      }
     }
 
-    // Calculate scores for all companies
-    const scores = listCompanies.map((company) => calculateLeadScore(company, scoringCriteria))
-    setLeadScores(scores)
-
-    // Sort by score descending
-    return listCompanies.sort((a, b) => {
-      const scoreA = scores.find((s) => s.companyId === a.id)?.score || 0
-      const scoreB = scores.find((s) => s.companyId === b.id)?.score || 0
-      return scoreB - scoreA
+    // Calculate weighted scores for companies in the list
+    const scoredResults = searchAndScoreCompanies(listCompanies, smartFiltering)
+    const companies = scoredResults.map(result => result.company)
+    const scores: { [key: string]: WeightedLeadScore } = {}
+    
+    scoredResults.forEach(result => {
+      scores[result.company.id] = result.score
     })
-  }, [listCompanies, showLeadScoring, scoringCriteria])
+
+    return {
+      displayCompanies: companies,
+      leadScores: scores
+    }
+  }, [listCompanies, showSmartFiltering, smartFiltering])
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -109,15 +116,17 @@ function ListManagementPage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleApplyScoring = (criteria: FilterOptions) => {
-    setScoringCriteria(criteria)
-    setShowLeadScoring(true)
+
+  const handleApplySmartFiltering = (criteria: SmartFilteringCriteria) => {
+    setSmartFiltering(criteria)
+    setShowSmartFiltering(true)
+    setSelectedCompanies([])
   }
 
-  const handleClearScoring = () => {
-    setShowLeadScoring(false)
-    setScoringCriteria({})
-    setLeadScores([])
+  const handleClearSmartFiltering = () => {
+    setSmartFiltering({})
+    setShowSmartFiltering(false)
+    setSelectedCompanies([])
   }
 
   const handleViewCompany = (company: Company) => {
@@ -158,13 +167,45 @@ function ListManagementPage() {
                   </CardHeader>
                 </Card>
 
-                {/* Lead Scoring Panel */}
-                <LeadScoringPanel
-                  isActive={showLeadScoring}
-                  criteria={scoringCriteria}
-                  onApplyScoring={handleApplyScoring}
-                  onClearScoring={handleClearScoring}
-                />
+                {/* Smart Filtering Panel */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-5 w-5" />
+                        Smart Filtering & Lead Scoring
+                        {showSmartFiltering && (
+                          <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={showSmartFiltering ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => setShowSmartFilteringDialog(true)}
+                        >
+                          <Filter className="h-4 w-4 mr-1" />
+                          Configure
+                        </Button>
+                        {showSmartFiltering && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearSmartFiltering}
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                    </CardTitle>
+                    <CardDescription>
+                      Apply intelligent filtering with weighted lead scoring to rank companies in your list.
+                      {showSmartFiltering && ` Showing ${displayCompanies.length} companies sorted by weighted score.`}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
 
                 {/* Actions Bar */}
                 <div className="flex flex-wrap gap-3 items-center justify-between">
@@ -181,7 +222,11 @@ function ListManagementPage() {
                     </Button>
                   </div>
 
-                  {showLeadScoring && <div className="text-sm text-gray-600">Sorted by lead score (highest first)</div>}
+                  {showSmartFiltering && (
+                    <div className="text-sm text-gray-600">
+                      Sorted by weighted score (highest first)
+                    </div>
+                  )}
                 </div>
 
                 {/* Companies Table */}
@@ -190,9 +235,10 @@ function ListManagementPage() {
                   selectedCompanies={selectedCompanies}
                   onSelectCompany={handleSelectCompany}
                   onSelectAll={handleSelectAll}
-                  showLeadScores={showLeadScoring}
+                  showLeadScores={showSmartFiltering}
                   leadScores={leadScores}
                   onViewCompany={handleViewCompany}
+                  sortable={showSmartFiltering}
                 />
               </>
             ) : (
@@ -204,6 +250,15 @@ function ListManagementPage() {
             )}
           </div>
         </div>
+
+        {/* Smart Filtering Dialog */}
+        <SmartFilteringPanel
+          isOpen={showSmartFilteringDialog}
+          onOpenChange={setShowSmartFilteringDialog}
+          criteria={smartFiltering}
+          onApplyFiltering={handleApplySmartFiltering}
+          onClearFiltering={handleClearSmartFiltering}
+        />
 
         {/* Company Detail Drawer */}
         <CompanyDetailDrawer
