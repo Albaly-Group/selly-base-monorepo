@@ -4,7 +4,8 @@ import type { Company, LeadScore } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Check, X, ArrowUpDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Check, X, ArrowUpDown, Eye } from "lucide-react"
 
 interface ListTableProps {
   companies: Company[]
@@ -13,6 +14,7 @@ interface ListTableProps {
   onSelectAll: (selected: boolean) => void
   showLeadScores?: boolean
   leadScores?: LeadScore[]
+  onViewCompany?: (company: Company) => void
 }
 
 export function ListTable({
@@ -22,6 +24,7 @@ export function ListTable({
   onSelectAll,
   showLeadScores = false,
   leadScores = [],
+  onViewCompany,
 }: ListTableProps) {
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
@@ -103,6 +106,7 @@ export function ListTable({
             <TableHead>Data Completeness</TableHead>
             <TableHead>Last Updated</TableHead>
             <TableHead>Owner</TableHead>
+            <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -125,10 +129,13 @@ export function ListTable({
                   </TableCell>
                 )}
                 <TableCell className="font-medium">
-                  <div>
-                    <div className="font-semibold">{company.companyNameEn}</div>
+                  <button 
+                    className="text-left hover:text-blue-600 transition-colors"
+                    onClick={() => onViewCompany?.(company)}
+                  >
+                    <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
                     {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
-                  </div>
+                  </button>
                 </TableCell>
                 <TableCell>{company.industrialName}</TableCell>
                 <TableCell>{company.province}</TableCell>
@@ -157,6 +164,16 @@ export function ListTable({
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">{company.lastUpdated}</TableCell>
                 <TableCell className="text-sm text-gray-500">{company.createdBy}</TableCell>
+                <TableCell>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onViewCompany?.(company)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             )
           })}

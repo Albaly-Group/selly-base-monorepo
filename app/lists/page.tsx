@@ -5,9 +5,10 @@ import { Navigation } from "@/components/navigation"
 import { ListSelector } from "@/components/list-selector"
 import { ListTable } from "@/components/list-table"
 import { LeadScoringPanel } from "@/components/lead-scoring-panel"
+import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
 import { mockCompanies, mockUserLists, calculateLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
-import type { FilterOptions, LeadScore } from "@/lib/types"
+import type { FilterOptions, LeadScore, Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -17,6 +18,8 @@ function ListManagementPage() {
   const [showLeadScoring, setShowLeadScoring] = useState(false)
   const [scoringCriteria, setScoringCriteria] = useState<FilterOptions>({})
   const [leadScores, setLeadScores] = useState<LeadScore[]>([])
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
+  const [showCompanyDetail, setShowCompanyDetail] = useState(false)
 
   // Get companies in the selected list
   const selectedList = mockUserLists.find((list) => list.id === selectedListId)
@@ -117,6 +120,11 @@ function ListManagementPage() {
     setLeadScores([])
   }
 
+  const handleViewCompany = (company: Company) => {
+    setSelectedCompany(company)
+    setShowCompanyDetail(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -184,6 +192,7 @@ function ListManagementPage() {
                   onSelectAll={handleSelectAll}
                   showLeadScores={showLeadScoring}
                   leadScores={leadScores}
+                  onViewCompany={handleViewCompany}
                 />
               </>
             ) : (
@@ -195,6 +204,13 @@ function ListManagementPage() {
             )}
           </div>
         </div>
+
+        {/* Company Detail Drawer */}
+        <CompanyDetailDrawer
+          company={selectedCompany}
+          open={showCompanyDetail}
+          onOpenChange={setShowCompanyDetail}
+        />
       </main>
     </div>
   )

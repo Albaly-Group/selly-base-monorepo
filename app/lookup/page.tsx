@@ -6,9 +6,10 @@ import { CompanySearch } from "@/components/company-search"
 import { CompanyTable } from "@/components/company-table"
 import { CompanyFilters } from "@/components/company-filters"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
+import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
 import { mockCompanies, searchCompanies, filterCompanies } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
-import type { FilterOptions } from "@/lib/types"
+import type { FilterOptions, Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 function CompanyLookupPage() {
@@ -17,6 +18,8 @@ function CompanyLookupPage() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
+  const [showCompanyDetail, setShowCompanyDetail] = useState(false)
 
   // Filter and search companies
   const filteredCompanies = useMemo(() => {
@@ -98,6 +101,11 @@ function CompanyLookupPage() {
     setSearchTerm("")
   }
 
+  const handleViewCompany = (company: Company) => {
+    setSelectedCompany(company)
+    setShowCompanyDetail(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -150,6 +158,7 @@ function CompanyLookupPage() {
               selectedCompanies={selectedCompanies}
               onSelectCompany={handleSelectCompany}
               onSelectAll={handleSelectAll}
+              onViewCompany={handleViewCompany}
             />
 
             {/* Results Summary */}
@@ -174,6 +183,13 @@ function CompanyLookupPage() {
             setSelectedCompanies([])
             setShowAddToListDialog(false)
           }}
+        />
+
+        {/* Company Detail Drawer */}
+        <CompanyDetailDrawer
+          company={selectedCompany}
+          open={showCompanyDetail}
+          onOpenChange={setShowCompanyDetail}
         />
       </main>
     </div>

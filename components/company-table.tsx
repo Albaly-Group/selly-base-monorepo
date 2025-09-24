@@ -3,15 +3,18 @@ import type { Company } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Eye } from "lucide-react"
 
 interface CompanyTableProps {
   companies: Company[]
   selectedCompanies: string[]
   onSelectCompany: (companyId: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
+  onViewCompany?: (company: Company) => void
 }
 
-export function CompanyTable({ companies, selectedCompanies, onSelectCompany, onSelectAll }: CompanyTableProps) {
+export function CompanyTable({ companies, selectedCompanies, onSelectCompany, onSelectAll, onViewCompany }: CompanyTableProps) {
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
 
@@ -55,6 +58,7 @@ export function CompanyTable({ companies, selectedCompanies, onSelectCompany, on
             <TableHead>Status</TableHead>
             <TableHead>Data Completeness</TableHead>
             <TableHead>Last Updated</TableHead>
+            <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,10 +71,13 @@ export function CompanyTable({ companies, selectedCompanies, onSelectCompany, on
                 />
               </TableCell>
               <TableCell className="font-medium">
-                <div>
-                  <div className="font-semibold">{company.companyNameEn}</div>
+                <button 
+                  className="text-left hover:text-blue-600 transition-colors"
+                  onClick={() => onViewCompany?.(company)}
+                >
+                  <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
                   {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
-                </div>
+                </button>
               </TableCell>
               <TableCell>{company.industrialName}</TableCell>
               <TableCell>{company.province}</TableCell>
@@ -98,6 +105,16 @@ export function CompanyTable({ companies, selectedCompanies, onSelectCompany, on
                 </span>
               </TableCell>
               <TableCell className="text-sm text-gray-500">{company.lastUpdated}</TableCell>
+              <TableCell>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onViewCompany?.(company)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
