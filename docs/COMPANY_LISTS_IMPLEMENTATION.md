@@ -48,35 +48,89 @@ Maps to `user_company_list_items` table:
 
 ## 2. Gaps & Proposed Migrations
 
-### Required Tables
-If not exist, create these tables:
+### Database Schema Alignment
+The implementation aligns with the existing RBAC schema structure that includes:
+- `users` table with proper UUID, CITEXT email, and status fields
+- `roles` and `permissions` tables for granular access control
+- `user_roles` and `role_permissions` junction tables
+
+### Required Tables for Company Lists
+Building on the existing schema structure:
 
 ```sql
--- User company lists
-CREATE TABLE user_company_lists (
+-- Company lists table (aligns with existing naming conventions)
+CREATE TABLE IF NOT EXISTS user_company_lists (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
     owner_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     visibility_level VARCHAR(20) DEFAULT 'private' CHECK (visibility_level IN ('private', 'org', 'public')),
     is_shared BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Company list items
-CREATE TABLE user_company_list_items (
+-- Trigger for automatic updated_at
+CREATE TRIGGER user_company_lists_updated_at
+    BEFORE UPDATE ON user_company_lists
+    FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- Company list items with proper FK relationships
+CREATE TABLE IF NOT EXISTS user_company_list_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     list_id UUID NOT NULL REFERENCES user_company_lists(id) ON DELETE CASCADE,
     company_id UUID NOT NULL REFERENCES common_companies(id) ON DELETE CASCADE,
     note TEXT,
     position INTEGER,
     added_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     
     -- Prevent duplicate companies in same list
     UNIQUE(list_id, company_id)
 );
+
+-- Required permissions for company lists feature
+INSERT INTO permissions (key, description) VALUES 
+    ('company-lists:create', 'Create new company lists'),
+    ('company-lists:read-own', 'Read own company lists'),
+    ('company-lists:read-org', 'Read organization company lists'),
+    ('company-lists:read-public', 'Read public company lists'),
+    ('company-lists:update-own', 'Update own company lists'),
+    ('company-lists:update-any', 'Update any company list'),
+    ('company-lists:delete-own', 'Delete own company lists'),
+    ('company-lists:delete-any', 'Delete any company list'),
+    ('company-lists:modify-any', 'Modify any company list (bulk operations)')
+ON CONFLICT (key) DO NOTHING;
+
+-- Default role assignments (assuming standard roles exist)
+-- Users can manage their own lists
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p 
+WHERE r.name = 'user' AND p.key IN (
+    'company-lists:create',
+    'company-lists:read-own',
+    'company-lists:read-public',
+    'company-lists:update-own',
+    'company-lists:delete-own'
+) ON CONFLICT DO NOTHING;
+
+-- Staff can read org lists and manage their own
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p 
+WHERE r.name = 'staff' AND p.key IN (
+    'company-lists:create',
+    'company-lists:read-own',
+    'company-lists:read-org',
+    'company-lists:read-public',
+    'company-lists:update-own',
+    'company-lists:delete-own'
+) ON CONFLICT DO NOTHING;
+
+-- Admins have full access
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p 
+WHERE r.name = 'admin' AND p.key LIKE 'company-lists:%'
+ON CONFLICT DO NOTHING;
 ```
 
 ### Indexes for Performance
@@ -111,10 +165,17 @@ CREATE INDEX idx_companies_province ON common_companies(province_detected);
 
 ### Authentication & Authorization
 - Bearer token authentication required for all endpoints
-- Role-based access control (RBAC):
-  - **Users**: Can manage their own lists
-  - **Staff**: Can read all lists, manage their own
-  - **Admin**: Full access to all lists
+- Proper RBAC integration with existing `users`, `roles`, `permissions` schema:
+  - **Users**: Can create and manage their own lists (`company-lists:create`, `company-lists:read-own`, etc.)
+  - **Staff**: Can read organization lists plus own list management (`company-lists:read-org`)
+  - **Admin**: Full access to all company lists (`company-lists:*` or individual permissions)
+- Permission-based access control using granular permissions:
+  - `company-lists:create` - Create new lists
+  - `company-lists:read-own` - Read own lists
+  - `company-lists:read-org` - Read organization lists  
+  - `company-lists:read-public` - Read public lists
+  - `company-lists:update-any` - Update any list
+  - `company-lists:modify-any` - Bulk operations on any list
 
 ### Error Handling
 Standardized error responses with:
@@ -129,10 +190,11 @@ Standardized error responses with:
 Core business logic implemented in `/lib/services/company-lists-service.ts`:
 
 #### Key Features
-- **RBAC Integration**: Permission checks for all operations
+- **RBAC Integration**: Permission-based access control using the existing roles/permissions schema
 - **Data Validation**: Input validation and sanitization
 - **Error Handling**: Proper exception handling with typed errors
 - **Performance**: Optimized queries to prevent N+1 problems
+- **Granular Permissions**: Uses specific permission keys rather than hardcoded roles
 
 #### Query Optimization
 - Uses indexed fields for filtering and sorting

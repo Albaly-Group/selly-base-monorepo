@@ -15,7 +15,7 @@ import {
   CompanySummary
 } from "@/lib/types/company-lists"
 import { mockCompanies, mockUserLists } from "@/lib/mock-data"
-import { canAccessList } from "@/lib/auth/api-auth"
+import { canAccessList, hasPermission } from "@/lib/auth/api-auth"
 
 /**
  * Service layer for Company Lists operations
@@ -132,8 +132,8 @@ export class CompanyListsService {
       return null
     }
 
-    // Check if user owns the list or is admin
-    if (list.ownerUserId !== this.user.id && this.user.role !== 'admin') {
+    // Check if user owns the list or has update permissions
+    if (list.ownerUserId !== this.user.id && !hasPermission(this.user, 'company-lists:update-any')) {
       throw new Error('FORBIDDEN')
     }
 
@@ -161,8 +161,8 @@ export class CompanyListsService {
       return false
     }
 
-    // Check if user owns the list or is admin
-    if (list.ownerUserId !== this.user.id && this.user.role !== 'admin') {
+    // Check if user owns the list or has delete permissions
+    if (list.ownerUserId !== this.user.id && !hasPermission(this.user, 'company-lists:delete-any')) {
       throw new Error('FORBIDDEN')
     }
 
@@ -257,8 +257,8 @@ export class CompanyListsService {
       throw new Error('LIST_NOT_FOUND')
     }
 
-    // Check permissions
-    if (list.ownerUserId !== this.user.id && this.user.role !== 'admin') {
+    // Check permissions - user owns list or has modify permissions
+    if (list.ownerUserId !== this.user.id && !hasPermission(this.user, 'company-lists:modify-any')) {
       throw new Error('FORBIDDEN')
     }
 
@@ -304,8 +304,8 @@ export class CompanyListsService {
       throw new Error('LIST_NOT_FOUND')
     }
 
-    // Check permissions
-    if (list.ownerUserId !== this.user.id && this.user.role !== 'admin') {
+    // Check permissions - user owns list or has modify permissions
+    if (list.ownerUserId !== this.user.id && !hasPermission(this.user, 'company-lists:modify-any')) {
       throw new Error('FORBIDDEN')
     }
 
