@@ -6,7 +6,7 @@ import { ListSelector } from "@/components/list-selector"
 import { ListTable } from "@/components/list-table"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
-import { mockCompanies, mockUserLists, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
+import { mockCompanies, mockUserLists, searchAndScoreCompanies, removeCompaniesFromList, type WeightedLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
@@ -21,13 +21,14 @@ function ListManagementPage() {
   const [smartFiltering, setSmartFiltering] = useState<SmartFilteringCriteria>({})
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0) // Add refresh key for data updates
 
   // Get companies in the selected list
   const selectedList = mockUserLists.find((list) => list.id === selectedListId)
   const listCompanies = useMemo(() => {
     if (!selectedList) return []
     return mockCompanies.filter((company) => selectedList.companyIds.includes(company.id))
-  }, [selectedList])
+  }, [selectedList, refreshKey]) // Include refreshKey in dependency
 
   // Apply smart filtering if active
   const { displayCompanies, leadScores } = useMemo(() => {
@@ -70,9 +71,23 @@ function ListManagementPage() {
   }
 
   const handleRemoveFromList = () => {
-    // Simulate removing companies from list
-    console.log("Removing companies from list:", selectedCompanies)
-    setSelectedCompanies([])
+    // Use the new removeCompaniesFromList function
+    if (selectedList && selectedCompanies.length > 0) {
+      try {
+        const result = removeCompaniesFromList(selectedList.id, selectedCompanies)
+        console.log("Remove from list result:", result)
+        
+        // Refresh the data
+        setRefreshKey(prev => prev + 1)
+        setSelectedCompanies([])
+        
+        // Show simple alert for now
+        alert(`Removed ${result.removed.length} companies from list.`)
+      } catch (error) {
+        console.error("Error removing companies:", error)
+        alert("Error removing companies from list.")
+      }
+    }
   }
 
   const handleExportList = () => {
@@ -147,7 +162,12 @@ function ListManagementPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* List Selector Sidebar */}
           <div className="lg:col-span-1">
-            <ListSelector lists={mockUserLists} selectedListId={selectedListId} onSelectList={setSelectedListId} />
+            <ListSelector 
+              lists={mockUserLists} 
+              selectedListId={selectedListId} 
+              onSelectList={setSelectedListId}
+              onListsUpdate={() => setRefreshKey(prev => prev + 1)}
+            />
           </div>
 
           {/* Main Content */}

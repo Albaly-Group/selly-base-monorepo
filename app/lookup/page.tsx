@@ -264,7 +264,7 @@ function CompanyLookupPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Add to List Dialog */}
+        {/* Add to List Dialog - Updated to refresh data */}
         <AddToListDialog
           open={showAddToListDialog}
           onOpenChange={setShowAddToListDialog}
@@ -272,6 +272,8 @@ function CompanyLookupPage() {
           onSuccess={() => {
             setSelectedCompanies([])
             setShowAddToListDialog(false)
+            // Trigger refresh of any related data
+            console.log("Companies successfully added to list")
           }}
         />
 

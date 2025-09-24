@@ -357,3 +357,139 @@ export const searchAndScoreCompanies = (
 
   return results
 }
+
+// Data persistence utility functions for consistent data pipeline
+
+/**
+ * Add companies to an existing list
+ */
+export const addCompaniesToList = (
+  listId: string,
+  companyIds: string[],
+  note?: string
+): { added: string[]; skipped: Array<{ companyId: string; reason: 'DUPLICATE' | 'NOT_FOUND' }> } => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    throw new Error('LIST_NOT_FOUND')
+  }
+
+  const added: string[] = []
+  const skipped: Array<{ companyId: string; reason: 'DUPLICATE' | 'NOT_FOUND' }> = []
+
+  companyIds.forEach(companyId => {
+    // Check if company exists
+    const company = mockCompanies.find(c => c.id === companyId)
+    if (!company) {
+      skipped.push({ companyId, reason: 'NOT_FOUND' })
+      return
+    }
+
+    // Check if already in list
+    if (list.companyIds.includes(companyId)) {
+      skipped.push({ companyId, reason: 'DUPLICATE' })
+      return
+    }
+
+    // Add to list
+    list.companyIds.push(companyId)
+    added.push(companyId)
+  })
+
+  return { added, skipped }
+}
+
+/**
+ * Remove companies from a list
+ */
+export const removeCompaniesFromList = (
+  listId: string,
+  companyIds: string[]
+): { removed: string[]; missing: string[] } => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    throw new Error('LIST_NOT_FOUND')
+  }
+
+  const removed: string[] = []
+  const missing: string[] = []
+
+  companyIds.forEach(companyId => {
+    const index = list.companyIds.indexOf(companyId)
+    if (index !== -1) {
+      list.companyIds.splice(index, 1)
+      removed.push(companyId)
+    } else {
+      missing.push(companyId)
+    }
+  })
+
+  return { removed, missing }
+}
+
+/**
+ * Create a new company list
+ */
+export const createCompanyList = (
+  name: string,
+  description?: string,
+  owner: string = 'user@example.com'
+): UserList => {
+  const newList: UserList = {
+    id: `list-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+    name,
+    companyIds: [],
+    createdAt: new Date().toISOString(),
+    status: 'Active',
+    owner
+  }
+
+  mockUserLists.push(newList)
+  return newList
+}
+
+/**
+ * Update an existing company list
+ */
+export const updateCompanyList = (
+  listId: string,
+  updates: Partial<Pick<UserList, 'name' | 'status'>>
+): UserList | null => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    return null
+  }
+
+  if (updates.name !== undefined) {
+    list.name = updates.name
+  }
+  if (updates.status !== undefined) {
+    list.status = updates.status
+  }
+
+  return list
+}
+
+/**
+ * Delete a company list
+ */
+export const deleteCompanyList = (listId: string): boolean => {
+  const index = mockUserLists.findIndex(l => l.id === listId)
+  if (index === -1) {
+    return false
+  }
+
+  mockUserLists.splice(index, 1)
+  return true
+}
+
+/**
+ * Get companies in a list with full details
+ */
+export const getListCompanies = (listId: string): Company[] => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    return []
+  }
+
+  return mockCompanies.filter(company => list.companyIds.includes(company.id))
+}

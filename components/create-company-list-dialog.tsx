@@ -8,20 +8,19 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { CompanyListCreate } from "@/lib/types/company-lists"
+import { createCompanyList } from "@/lib/mock-data"
+import type { UserList } from "@/lib/types"
 
 interface CreateCompanyListDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: (list: any) => void
+  onSuccess: (list?: UserList) => void
 }
 
 export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: CreateCompanyListDialogProps) {
-  const [formData, setFormData] = useState<CompanyListCreate>({
+  const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    visibility: "private",
-    isShared: false
+    description: ""
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,35 +35,29 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
     setError(null)
 
     try {
-      // In production, this would make an API call to create the list
-      // For now, simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Use the actual createCompanyList function
+      const newList = createCompanyList(
+        formData.name.trim(),
+        formData.description?.trim() || undefined
+      )
       
-      const newList = {
-        id: `list-${Date.now()}`,
-        name: formData.name.trim(),
-        description: formData.description?.trim() || null,
-        ownerUserId: 'current-user',
-        visibility: formData.visibility,
-        isShared: formData.isShared,
-        itemCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-
-      onSuccess(newList)
-      onOpenChange(false)
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      console.log('Created new list:', newList)
       
       // Reset form
       setFormData({
         name: "",
-        description: "",
-        visibility: "private",
-        isShared: false
+        description: ""
       })
-    } catch (err) {
-      setError("Failed to create list. Please try again.")
-      console.error("Error creating list:", err)
+      
+      onSuccess(newList)
+      onOpenChange(false)
+
+    } catch (error: any) {
+      console.error("Error creating list:", error)
+      setError(error.message || "Failed to create list. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -95,7 +88,7 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="list-description">Description</Label>
+            <Label htmlFor="list-description">Description (Optional)</Label>
             <Textarea
               id="list-description"
               placeholder="Optional description for this list..."
@@ -104,28 +97,6 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
               disabled={isLoading}
               rows={3}
             />
-          </div>
-
-          <div className="space-y-3">
-            <Label>Visibility</Label>
-            <RadioGroup 
-              value={formData.visibility} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, visibility: value as any }))}
-              disabled={isLoading}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="private" id="private" />
-                <Label htmlFor="private">Private - Only I can access</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="org" id="org" />
-                <Label htmlFor="org">Organization - All team members can view</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="public" id="public" />
-                <Label htmlFor="public">Public - Anyone with access can view</Label>
-              </div>
-            </RadioGroup>
           </div>
 
           {error && (
