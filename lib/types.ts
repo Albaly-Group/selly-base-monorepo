@@ -28,3 +28,6 @@ export interface ExportData {
 // Re-export types from mock-data for convenience
 import type { Company, ContactPerson, UserList, LeadScore } from "./mock-data"
 export type { Company, ContactPerson, UserList, LeadScore }
+
+// Re-export new company lists types
+export * from "./types/company-lists"
