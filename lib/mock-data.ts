@@ -208,3 +208,288 @@ export const calculateLeadScore = (
     matchingSummary,
   }
 }
+
+export interface WeightedLeadScore {
+  companyId: string
+  score: number
+  maxPossibleScore: number
+  normalizedScore: number // 0-100 percentage
+  matchingSummary: {
+    keyword: boolean
+    keywordScore: number
+    industrial: boolean
+    industrialScore: number
+    province: boolean
+    provinceScore: number
+    companySize: boolean
+    companySizeScore: number
+    contactStatus: boolean
+    contactStatusScore: number
+  }
+}
+
+export const calculateWeightedLeadScore = (
+  company: Company,
+  criteria: {
+    keyword?: string
+    keywordWeight?: number
+    industrial?: string
+    industrialWeight?: number
+    province?: string
+    provinceWeight?: number
+    companySize?: string
+    companySizeWeight?: number
+    contactStatus?: string
+    contactStatusWeight?: number
+    minimumScore?: number
+  },
+): WeightedLeadScore => {
+  let totalScore = 0
+  let maxPossibleScore = 0
+  const matchingSummary = {
+    keyword: false,
+    keywordScore: 0,
+    industrial: false,
+    industrialScore: 0,
+    province: false,
+    provinceScore: 0,
+    companySize: false,
+    companySizeScore: 0,
+    contactStatus: false,
+    contactStatusScore: 0,
+  }
+
+  // Keyword match
+  if (criteria.keyword && criteria.keywordWeight) {
+    const keywordLower = criteria.keyword.toLowerCase()
+    const nameMatch = company.companyNameEn.toLowerCase().includes(keywordLower)
+    const regMatch = company.registeredNo?.toLowerCase().includes(keywordLower) || false
+    const industryMatch = company.industrialName.toLowerCase().includes(keywordLower)
+    
+    if (nameMatch || regMatch || industryMatch) {
+      matchingSummary.keyword = true
+      matchingSummary.keywordScore = criteria.keywordWeight
+      totalScore += criteria.keywordWeight
+    }
+    maxPossibleScore += criteria.keywordWeight
+  }
+
+  // Industrial match
+  if (criteria.industrial && criteria.industrialWeight) {
+    maxPossibleScore += criteria.industrialWeight
+    if (company.industrialName === criteria.industrial) {
+      matchingSummary.industrial = true
+      matchingSummary.industrialScore = criteria.industrialWeight
+      totalScore += criteria.industrialWeight
+    }
+  }
+
+  // Province match
+  if (criteria.province && criteria.provinceWeight) {
+    maxPossibleScore += criteria.provinceWeight
+    if (company.province === criteria.province) {
+      matchingSummary.province = true
+      matchingSummary.provinceScore = criteria.provinceWeight
+      totalScore += criteria.provinceWeight
+    }
+  }
+
+  // Company size match
+  if (criteria.companySize && criteria.companySizeWeight) {
+    maxPossibleScore += criteria.companySizeWeight
+    if (company.companySize === criteria.companySize) {
+      matchingSummary.companySize = true
+      matchingSummary.companySizeScore = criteria.companySizeWeight
+      totalScore += criteria.companySizeWeight
+    }
+  }
+
+  // Contact status match
+  if (criteria.contactStatus && criteria.contactStatusWeight) {
+    maxPossibleScore += criteria.contactStatusWeight
+    if (company.verificationStatus === criteria.contactStatus) {
+      matchingSummary.contactStatus = true
+      matchingSummary.contactStatusScore = criteria.contactStatusWeight
+      totalScore += criteria.contactStatusWeight
+    }
+  }
+
+  // Calculate normalized score (0-100%)
+  const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0
+
+  return {
+    companyId: company.id,
+    score: totalScore,
+    maxPossibleScore,
+    normalizedScore,
+    matchingSummary,
+  }
+}
+
+export const searchAndScoreCompanies = (
+  companies: Company[],
+  criteria: {
+    keyword?: string
+    keywordWeight?: number
+    industrial?: string
+    industrialWeight?: number
+    province?: string
+    provinceWeight?: number
+    companySize?: string
+    companySizeWeight?: number
+    contactStatus?: string
+    contactStatusWeight?: number
+    minimumScore?: number
+  },
+): { company: Company; score: WeightedLeadScore }[] => {
+  const results = companies
+    .map((company) => ({
+      company,
+      score: calculateWeightedLeadScore(company, criteria),
+    }))
+    .filter((result) => {
+      // Apply minimum score filter
+      const minimumScore = criteria.minimumScore || 0
+      return result.score.normalizedScore >= minimumScore
+    })
+    // Sort by normalized score (highest first)
+    .sort((a, b) => b.score.normalizedScore - a.score.normalizedScore)
+
+  return results
+}
+
+// Data persistence utility functions for consistent data pipeline
+
+/**
+ * Add companies to an existing list
+ */
+export const addCompaniesToList = (
+  listId: string,
+  companyIds: string[],
+  note?: string
+): { added: string[]; skipped: Array<{ companyId: string; reason: 'DUPLICATE' | 'NOT_FOUND' }> } => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    throw new Error('LIST_NOT_FOUND')
+  }
+
+  const added: string[] = []
+  const skipped: Array<{ companyId: string; reason: 'DUPLICATE' | 'NOT_FOUND' }> = []
+
+  companyIds.forEach(companyId => {
+    // Check if company exists
+    const company = mockCompanies.find(c => c.id === companyId)
+    if (!company) {
+      skipped.push({ companyId, reason: 'NOT_FOUND' })
+      return
+    }
+
+    // Check if already in list
+    if (list.companyIds.includes(companyId)) {
+      skipped.push({ companyId, reason: 'DUPLICATE' })
+      return
+    }
+
+    // Add to list
+    list.companyIds.push(companyId)
+    added.push(companyId)
+  })
+
+  return { added, skipped }
+}
+
+/**
+ * Remove companies from a list
+ */
+export const removeCompaniesFromList = (
+  listId: string,
+  companyIds: string[]
+): { removed: string[]; missing: string[] } => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    throw new Error('LIST_NOT_FOUND')
+  }
+
+  const removed: string[] = []
+  const missing: string[] = []
+
+  companyIds.forEach(companyId => {
+    const index = list.companyIds.indexOf(companyId)
+    if (index !== -1) {
+      list.companyIds.splice(index, 1)
+      removed.push(companyId)
+    } else {
+      missing.push(companyId)
+    }
+  })
+
+  return { removed, missing }
+}
+
+/**
+ * Create a new company list
+ */
+export const createCompanyList = (
+  name: string,
+  description?: string,
+  owner: string = 'user@example.com'
+): UserList => {
+  const newList: UserList = {
+    id: `list-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+    name,
+    companyIds: [],
+    createdAt: new Date().toISOString(),
+    status: 'Active',
+    owner
+  }
+
+  mockUserLists.push(newList)
+  return newList
+}
+
+/**
+ * Update an existing company list
+ */
+export const updateCompanyList = (
+  listId: string,
+  updates: Partial<Pick<UserList, 'name' | 'status'>>
+): UserList | null => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    return null
+  }
+
+  if (updates.name !== undefined) {
+    list.name = updates.name
+  }
+  if (updates.status !== undefined) {
+    list.status = updates.status
+  }
+
+  return list
+}
+
+/**
+ * Delete a company list
+ */
+export const deleteCompanyList = (listId: string): boolean => {
+  const index = mockUserLists.findIndex(l => l.id === listId)
+  if (index === -1) {
+    return false
+  }
+
+  mockUserLists.splice(index, 1)
+  return true
+}
+
+/**
+ * Get companies in a list with full details
+ */
+export const getListCompanies = (listId: string): Company[] => {
+  const list = mockUserLists.find(l => l.id === listId)
+  if (!list) {
+    return []
+  }
+
+  return mockCompanies.filter(company => list.companyIds.includes(company.id))
+}

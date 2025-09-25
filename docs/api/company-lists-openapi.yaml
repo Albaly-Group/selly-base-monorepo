@@ -1,0 +1,494 @@
+openapi: 3.1.0
+info:
+  title: Albaly OS - Company Lists API
+  version: 1.0.0
+  description: >
+    Endpoints for user-defined Company Lists and company browsing.
+    Matches DB: common_company_lists, common_company_registrations, common_company_contacts, ref_tags, common_company_tags.
+servers:
+  - url: https://api.albaly.local/v1
+security:
+  - bearerAuth: []
+paths:
+  /company-lists:
+    get:
+      summary: List accessible company lists
+      operationId: listCompanyLists
+      parameters:
+        - in: query
+          name: scope
+          schema: { type: string, enum: [mine, shared, org] }
+          description: Filter by access scope
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompanyLists'
+    post:
+      summary: Create a company list
+      operationId: createCompanyList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompanyListCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanyList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /company-lists/{listId}:
+    get:
+      summary: Get list metadata
+      operationId: getCompanyList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanyList' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Update list metadata
+      operationId: updateCompanyList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompanyListUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanyList' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      summary: Delete list (cascades items)
+      operationId: deleteCompanyList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      responses:
+        '204':
+          description: No Content
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /company-lists/{listId}/items:
+    get:
+      summary: Get list items (company summaries)
+      operationId: listCompanyListItems
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+        - in: query
+          name: limit
+          schema: { type: integer, default: 25, minimum: 1, maximum: 200 }
+        - in: query
+          name: nextCursor
+          schema: { type: string }
+        - in: query
+          name: sortBy
+          schema: { type: string, enum: [name, createdAt, position], default: name }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: asc }
+        - in: query
+          name: filters[province]
+          schema: { type: string }
+        - in: query
+          name: filters[tagKey]
+          schema: { type: string }
+        - in: query
+          name: filters[tsic]
+          schema: { type: string, pattern: '^[0-9]{5}$' }
+        - in: query
+          name: q
+          schema: { type: string, description: 'Search company_name_en' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedCompanyListItems' }
+    post:
+      summary: Bulk add companies to list (idempotent)
+      operationId: addCompaniesToList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkCompanyIdsWithNote' }
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkAddResult' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      summary: Bulk remove companies from list
+      operationId: removeCompaniesFromList
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkCompanyIds' }
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkRemoveResult' }
+  /company-lists/{listId}/items/reorder:
+    patch:
+      summary: Reorder items (optional)
+      operationId: reorderListItems
+      parameters:
+        - $ref: '#/components/parameters/ListId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [moves]
+              properties:
+                moves:
+                  type: array
+                  items:
+                    type: object
+                    required: [companyId, position]
+                    properties:
+                      companyId: { type: string, format: uuid }
+                      position: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedCompanyListItems' }
+  /companies:
+    get:
+      summary: Browse/search companies (to add into lists)
+      operationId: browseCompanies
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search company_name_en / registration_no
+        - in: query
+          name: province
+          schema: { type: string }
+        - in: query
+          name: tsic
+          schema: { type: string, pattern: '^[0-9]{5}$' }
+        - in: query
+          name: tagKey
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 25, minimum: 1, maximum: 200 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedCompanies' }
+  /companies/{companyId}:
+    get:
+      summary: Company detail (joined view)
+      operationId: getCompanyDetail
+      parameters:
+        - $ref: '#/components/parameters/CompanyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanyDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ListId:
+      name: listId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CompanyId:
+      name: companyId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+        traceId: { type: string }
+    CompanyListCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        visibility: { type: string, enum: [private, org, public], default: private }
+        isShared: { type: boolean, default: false }
+    CompanyListUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        visibility: { type: string, enum: [private, org, public] }
+        isShared: { type: boolean }
+    CompanyList:
+      type: object
+      required: [id, name, ownerUserId, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        ownerUserId: { type: string, format: uuid }
+        visibility: { type: string, enum: [private, org, public] }
+        isShared: { type: boolean }
+        itemCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedCompanyLists:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompanyList' }
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+    CompanySummary:
+      type: object
+      required: [companyId, name]
+      properties:
+        companyId: { type: string, format: uuid }
+        name: { type: string, description: 'common_company_lists.company_name_en' }
+        registrationNo: { type: string, nullable: true, description: 'primary registration_no' }
+        province: { type: string, nullable: true }
+        country: { type: string, nullable: true }
+        website: { type: string, nullable: true }
+        headTags:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              name: { type: string }
+        classifications:
+          type: array
+          items:
+            type: object
+            properties:
+              tsic: { type: string }
+              titleEn: { type: string }
+        contactsCount: { type: integer, minimum: 0 }
+    CompanyListItem:
+      type: object
+      required: [itemId, company]
+      properties:
+        itemId: { type: string, format: uuid }
+        note: { type: string, nullable: true }
+        position: { type: integer, nullable: true }
+        addedAt: { type: string, format: date-time }
+        addedByUserId: { type: string, format: uuid }
+        company: { $ref: '#/components/schemas/CompanySummary' }
+    PaginatedCompanyListItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompanyListItem' }
+        nextCursor: { type: string, nullable: true }
+    BulkCompanyIds:
+      type: object
+      required: [companyIds]
+      properties:
+        companyIds:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
+    BulkCompanyIdsWithNote:
+      allOf:
+        - $ref: '#/components/schemas/BulkCompanyIds'
+        - type: object
+          properties:
+            note: { type: string }
+    BulkAddResult:
+      type: object
+      required: [listId, added, skipped]
+      properties:
+        listId: { type: string, format: uuid }
+        added:
+          type: array
+          items: { type: string, format: uuid }
+        skipped:
+          type: array
+          items:
+            type: object
+            required: [companyId, reason]
+            properties:
+              companyId: { type: string, format: uuid }
+              reason: { type: string, enum: [DUPLICATE, NOT_FOUND] }
+    BulkRemoveResult:
+      type: object
+      required: [listId, removed, missing]
+      properties:
+        listId: { type: string, format: uuid }
+        removed:
+          type: array
+          items: { type: string, format: uuid }
+        missing:
+          type: array
+          items: { type: string, format: uuid }
+    PaginatedCompanies:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompanySummary' }
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+    CompanyDetail:
+      type: object
+      properties:
+        core:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            companyNameEn: { type: string }
+            companyNameTh: { type: string, nullable: true }
+            registrationId: { type: string, nullable: true, description: 'legacy mirror' }
+            dunsNumber: { type: string, nullable: true }
+            addressLine: { type: string, nullable: true }
+            district: { type: string, nullable: true }
+            amphoe: { type: string, nullable: true }
+            provinceDetected: { type: string, nullable: true }
+            countryCode: { type: string, nullable: true }
+            businessTypeText: { type: string, nullable: true }
+            description: { type: string, nullable: true }
+            website: { type: string, nullable: true }
+            linkedinUrl: { type: string, nullable: true }
+            logoUrl: { type: string, nullable: true }
+            tel: { type: string, nullable: true }
+            email: { type: string, nullable: true }
+            mainShareholderNationality: { type: string, nullable: true }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+        primaryRegistration:
+          type: object
+          nullable: true
+          properties:
+            registrationNo: { type: string }
+            registrationStatus: { type: string, nullable: true }
+            registeredDate: { type: string, format: date, nullable: true }
+            deregisteredDate: { type: string, format: date, nullable: true }
+            countryCode: { type: string, nullable: true }
+            authorityId: { type: string, format: uuid, nullable: true }
+            registrationTypeId: { type: string, format: uuid, nullable: true }
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tagId: { type: string, format: uuid }
+              key: { type: string }
+              name: { type: string }
+              category:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  key: { type: string }
+                  name: { type: string }
+              parentId: { type: string, format: uuid, nullable: true }
+              depth: { type: integer }
+        classifications:
+          type: array
+          items:
+            type: object
+            properties:
+              source: { type: string }
+              tsicCode: { type: string, nullable: true }
+              businessTypeText: { type: string, nullable: true }
+              objectiveText: { type: string, nullable: true }
+              effectiveDate: { type: string, format: date, nullable: true }
+              filingYear: { type: integer, nullable: true }
+              isPrimary: { type: boolean }
+        shareholderNationalityLatest:
+          type: object
+          nullable: true
+          properties:
+            year: { type: integer }
+            topNationality: { type: string }
+            totals:
+              type: object
+              properties:
+                totalShares: { type: number }
+                totalInvestmentValueBaht: { type: number }
+                totalInvestmentPercent: { type: number }
+        contacts:
+          type: object
+          properties:
+            total: { type: integer }
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  fullName: { type: string }
+                  title: { type: string, nullable: true }
+                  email: { type: string, nullable: true }
+                  phone: { type: string, nullable: true }
+                  linkedinUrl: { type: string, nullable: true }

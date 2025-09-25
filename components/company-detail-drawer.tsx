@@ -17,13 +17,6 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog"
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle 
-} from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { 
   Building, 
@@ -216,13 +209,13 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[800px] max-w-[90vw] overflow-y-auto">
-        <SheetHeader className="pb-6">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[1000px] w-[95vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <SheetTitle className="text-xl">{company.companyNameEn}</SheetTitle>
-              <div className="flex items-center gap-2">
+              <DialogTitle className="text-xl">{company.companyNameEn}</DialogTitle>
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className={getStatusColor(company.verificationStatus)}>
                   {getStatusIcon(company.verificationStatus)}
                   {company.verificationStatus}
@@ -230,30 +223,34 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
                 <Badge variant="outline">{company.industrialName}</Badge>
                 <Badge variant="outline">{company.province}</Badge>
               </div>
-              <SheetDescription>
+              <DialogDescription>
                 Registration ID: {company.registeredNo} • Data Completeness: {company.dataCompleteness}%
-              </SheetDescription>
+              </DialogDescription>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                 <Edit className="h-4 w-4 mr-1" />
-                Edit
+                <span className="hidden sm:inline">Edit</span>
               </Button>
-              <Button variant="outline" size="sm">
-                Add to List
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                <span className="hidden sm:inline">Add to List</span>
+                <span className="sm:hidden">List</span>
               </Button>
             </div>
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="contacts">Contacts</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="lists">Lists</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
+        <div className="flex-1 overflow-hidden px-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 mb-4 text-xs sm:text-sm">
+              <TabsTrigger value="overview" className="px-2">Overview</TabsTrigger>
+              <TabsTrigger value="contacts" className="px-2">Contacts</TabsTrigger>
+              <TabsTrigger value="activity" className="px-2">Activity</TabsTrigger>
+              <TabsTrigger value="lists" className="px-2">Lists</TabsTrigger>
+              <TabsTrigger value="history" className="px-2">History</TabsTrigger>
+            </TabsList>
+
+            <div className="flex-1 overflow-y-auto pb-6">
 
           <TabsContent value="overview" className="space-y-6">
             {/* Company Information */}
@@ -265,7 +262,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Company Name</Label>
@@ -401,11 +398,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
           </TabsContent>
 
           <TabsContent value="contacts" className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <h3 className="text-lg font-medium">Contact Persons</h3>
-              <Button onClick={() => setShowAddContact(true)} size="sm" className="gap-1">
+              <Button onClick={() => setShowAddContact(true)} size="sm" className="gap-1 self-start sm:self-center">
                 <Plus className="h-4 w-4" />
-                Add Contact
+                <span className="hidden sm:inline">Add Contact</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
 
@@ -413,33 +411,33 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
               {contactPersons.map((contact) => (
                 <Card key={contact.id}>
                   <CardContent className="pt-6">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-medium">{contact.name}</h4>
                           {contact.isDecisionMaker && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
                               Decision Maker
                             </Badge>
                           )}
-                          <Badge variant="secondary" className={getStatusColor(contact.status)}>
+                          <Badge variant="secondary" className={getStatusColor(contact.status) + " text-xs"}>
                             {contact.status}
                           </Badge>
                         </div>
                         <div className="text-sm text-gray-600">
                           {contact.title} • {contact.department}
                         </div>
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
                           {contact.phone && (
                             <div className="flex items-center gap-1">
                               <Phone className="h-3 w-3" />
-                              <span>{contact.phone}</span>
+                              <span className="break-all">{contact.phone}</span>
                             </div>
                           )}
                           {contact.email && (
                             <div className="flex items-center gap-1">
                               <Mail className="h-3 w-3" />
-                              <span>{contact.email}</span>
+                              <span className="break-all">{contact.email}</span>
                             </div>
                           )}
                         </div>
@@ -447,11 +445,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
                           Last verified: {formatDate(contact.lastVerified)}
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="outline" size="sm">
+                      <div className="flex gap-1 shrink-0">
+                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -463,11 +461,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <h3 className="text-lg font-medium">Activity Timeline</h3>
-              <Button onClick={() => setShowAddActivity(true)} size="sm" className="gap-1">
+              <Button onClick={() => setShowAddActivity(true)} size="sm" className="gap-1 self-start sm:self-center">
                 <Plus className="h-4 w-4" />
-                Log Activity
+                <span className="hidden sm:inline">Log Activity</span>
+                <span className="sm:hidden">Log</span>
               </Button>
             </div>
 
@@ -567,11 +566,13 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
               </TableBody>
             </Table>
           </TabsContent>
-        </Tabs>
+            </div>
+          </Tabs>
+        </div>
 
         {/* Add Contact Dialog */}
         <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
-          <DialogContent>
+          <DialogContent className="w-[95vw] max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Add Contact Person</DialogTitle>
               <DialogDescription>
@@ -579,7 +580,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>First Name</Label>
                   <Input placeholder="Enter first name" />
@@ -615,7 +616,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
 
         {/* Add Activity Dialog */}
         <Dialog open={showAddActivity} onOpenChange={setShowAddActivity}>
-          <DialogContent>
+          <DialogContent className="w-[95vw] max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Log Activity</DialogTitle>
               <DialogDescription>
@@ -623,7 +624,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Activity Type</Label>
                   <Select>
@@ -666,7 +667,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
