@@ -18,6 +18,8 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { CompanyEditDialog } from "@/components/company-edit-dialog"
+import { AddToListDialog } from "@/components/add-to-list-dialog"
 import { 
   Building, 
   Users, 
@@ -42,12 +44,15 @@ interface CompanyDetailDrawerProps {
   company: Company | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onCompanyUpdated?: (company: Company) => void
 }
 
-export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDetailDrawerProps) {
+export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpdated }: CompanyDetailDrawerProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [showAddContact, setShowAddContact] = useState(false)
   const [showAddActivity, setShowAddActivity] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showAddToListDialog, setShowAddToListDialog] = useState(false)
 
   if (!company) return null
 
@@ -228,11 +233,21 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
               </DialogDescription>
             </div>
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs sm:text-sm"
+                onClick={() => setShowEditDialog(true)}
+              >
                 <Edit className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Edit</span>
               </Button>
-              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs sm:text-sm"
+                onClick={() => setShowAddToListDialog(true)}
+              >
                 <span className="hidden sm:inline">Add to List</span>
                 <span className="sm:hidden">List</span>
               </Button>
@@ -667,6 +682,31 @@ export function CompanyDetailDrawer({ company, open, onOpenChange }: CompanyDeta
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        {/* Company Edit Dialog */}
+        <CompanyEditDialog
+          company={company}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSave={(updatedCompany) => {
+            console.log('Company updated:', updatedCompany)
+            if (onCompanyUpdated) {
+              onCompanyUpdated(updatedCompany)
+            }
+            setShowEditDialog(false)
+          }}
+        />
+        
+        {/* Add to List Dialog */}
+        <AddToListDialog
+          open={showAddToListDialog}
+          onOpenChange={setShowAddToListDialog}
+          selectedCompanyIds={company ? [company.id] : []}
+          onSuccess={() => {
+            console.log('Company added to list successfully')
+            setShowAddToListDialog(false)
+          }}
+        />
       </DialogContent>
     </Dialog>
   )

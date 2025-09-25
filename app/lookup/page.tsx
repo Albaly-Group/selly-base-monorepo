@@ -7,7 +7,7 @@ import { CompanyTable } from "@/components/company-table"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
-import { mockCompanies, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
+import { mockCompanies, searchCompanies, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -24,27 +24,35 @@ function CompanyLookupPage() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
   const [hasAppliedFiltering, setHasAppliedFiltering] = useState(false)
+  const [isSimpleSearch, setIsSimpleSearch] = useState(false)
 
-  // Process companies with smart filtering and scoring
+  // Process companies with either simple search or smart filtering
   const { filteredCompanies, leadScores } = useMemo(() => {
-    // Only process companies if smart filtering has been applied
-    if (!hasAppliedFiltering) {
-      return { filteredCompanies: [], leadScores: {} }
+    // Simple keyword search
+    if (isSimpleSearch && searchTerm.trim()) {
+      const companies = searchCompanies(mockCompanies, searchTerm)
+      return { filteredCompanies: companies, leadScores: {} }
     }
-
-    const scoredResults = searchAndScoreCompanies(mockCompanies, smartFiltering)
-    const companies = scoredResults.map(result => result.company)
-    const scores: { [key: string]: WeightedLeadScore } = {}
     
-    scoredResults.forEach(result => {
-      scores[result.company.id] = result.score
-    })
+    // Smart filtering with scoring
+    if (hasAppliedFiltering) {
+      const scoredResults = searchAndScoreCompanies(mockCompanies, smartFiltering)
+      const companies = scoredResults.map(result => result.company)
+      const scores: { [key: string]: WeightedLeadScore } = {}
+      
+      scoredResults.forEach(result => {
+        scores[result.company.id] = result.score
+      })
 
-    return { 
-      filteredCompanies: companies,
-      leadScores: scores 
+      return { 
+        filteredCompanies: companies,
+        leadScores: scores 
+      }
     }
-  }, [smartFiltering, hasAppliedFiltering])
+    
+    // No results when nothing is applied
+    return { filteredCompanies: [], leadScores: {} }
+  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch])
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -108,24 +116,32 @@ function CompanyLookupPage() {
 
   const handleSearchSubmit = () => {
     if (searchTerm.trim()) {
-      // Open smart filtering with keyword pre-filled
-      setSmartFiltering(prev => ({
-        ...prev,
-        keyword: searchTerm,
-      }))
-      setShowSmartFilteringDialog(true)
+      // Perform simple search immediately
+      setIsSimpleSearch(true)
+      setHasAppliedFiltering(false)
+      setSelectedCompanies([])
+    }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
+    // Clear simple search when search term is cleared
+    if (!term.trim()) {
+      setIsSimpleSearch(false)
     }
   }
 
   const handleApplySmartFiltering = (criteria: SmartFilteringCriteria) => {
     setSmartFiltering(criteria)
     setHasAppliedFiltering(true)
-    setSelectedCompanies([]) // Clear selections when applying new filters
+    setIsSimpleSearch(false) // Switch to smart filtering mode
+    setSelectedCompanies([])
   }
 
   const handleClearSmartFiltering = () => {
     setSmartFiltering({})
     setHasAppliedFiltering(false)
+    setIsSimpleSearch(false)
     setSearchTerm("")
     setSelectedCompanies([])
   }
@@ -133,6 +149,8 @@ function CompanyLookupPage() {
   const clearFilters = () => {
     handleClearSmartFiltering()
   }
+
+  const hasResults = isSimpleSearch || hasAppliedFiltering
 
   const handleViewCompany = (company: Company) => {
     setSelectedCompany(company)
@@ -159,14 +177,17 @@ function CompanyLookupPage() {
             {/* Search Section */}
             <CompanySearch
               searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onClearSearch={() => setSearchTerm("")}
+              onSearchChange={handleSearchChange}
+              onClearSearch={() => {
+                setSearchTerm("")
+                setIsSimpleSearch(false)
+              }}
               onSearchSubmit={handleSearchSubmit}
               onOpenSmartFiltering={() => setShowSmartFilteringDialog(true)}
             />
 
             {/* Show default message or results */}
-            {!hasAppliedFiltering ? (
+            {!hasResults ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="text-center space-y-4">
@@ -176,18 +197,18 @@ function CompanyLookupPage() {
                         Ready to Find Companies?
                       </h3>
                       <p className="text-gray-500 max-w-md">
-                        Please put the keyword in the search box to filter and show the data.
-                        Use Smart Filtering to apply weighted lead scoring and find the best matches.
+                        Enter keywords in the search box and press Enter for instant results,
+                        or use Smart Filtering for advanced weighted scoring.
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Search className="h-4 w-4" />
-                        <span>Search by keyword then press Enter</span>
+                        <span>Quick search: Enter keywords and press Enter</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Filter className="h-4 w-4" />
-                        <span>Or click Smart Filtering to configure</span>
+                        <span>Advanced: Use Smart Filtering for lead scoring</span>
                       </div>
                     </div>
                   </div>
@@ -198,6 +219,20 @@ function CompanyLookupPage() {
                 {/* Filters and Actions */}
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                   <div className="flex items-center gap-4">
+                    {isSimpleSearch && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
+                        <Search className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-800 font-medium">
+                          Search: "{searchTerm}"
+                        </span>
+                        <button
+                          onClick={clearFilters}
+                          className="text-green-600 hover:text-green-800 text-sm underline ml-2"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
                     {hasAppliedFiltering && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2">
                         <Filter className="h-4 w-4 text-blue-600" />
@@ -239,14 +274,18 @@ function CompanyLookupPage() {
                   onSelectCompany={handleSelectCompany}
                   onSelectAll={handleSelectAll}
                   onViewCompany={handleViewCompany}
-                  showLeadScores={true}
+                  showLeadScores={hasAppliedFiltering}
                   leadScores={leadScores}
                   sortable={true}
                 />
 
                 {/* Results Summary */}
                 <div className="text-sm text-gray-600 flex justify-between">
-                  <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
+                  {isSimpleSearch ? (
+                    <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
+                  ) : (
+                    <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
+                  )}
                   {filteredCompanies.length > 0 && leadScores[filteredCompanies[0]?.id] && (
                     <span className="text-blue-600">
                       Sorted by: Highest weighted score first
