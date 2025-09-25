@@ -20,6 +20,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CompanyEditDialog } from "@/components/company-edit-dialog"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
+import { getCompanyLists } from "@/lib/mock-data"
 import { 
   Building, 
   Users, 
@@ -130,22 +131,14 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   ]
 
-  const companyLists = [
-    {
-      id: "1",
-      name: "Bangkok Tech Prospects",
-      status: "Active",
-      owner: "John Sales Rep",
-      addedDate: "2024-12-01"
-    },
-    {
-      id: "2",
-      name: "Q4 2024 Pipeline", 
-      status: "Active",
-      owner: "Sarah Staff",
-      addedDate: "2024-11-28"
-    }
-  ]
+  // Get actual lists that contain this company
+  const companyLists = getCompanyLists(company.id).map(list => ({
+    id: list.id,
+    name: list.name,
+    status: list.status,
+    owner: list.owner,
+    addedDate: list.createdAt.split('T')[0] // Convert ISO date to YYYY-MM-DD
+  }))
 
   const auditHistory = [
     {

@@ -498,3 +498,10 @@ export const getListCompanies = (listId: string): Company[] => {
 
   return mockCompanies.filter(company => list.companyIds.includes(company.id))
 }
+
+/**
+ * Get all lists that contain a specific company
+ */
+export const getCompanyLists = (companyId: string): UserList[] => {
+  return mockUserLists.filter(list => list.companyIds.includes(companyId))
+}
