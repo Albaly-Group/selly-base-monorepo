@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canViewPlatformAnalytics } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -29,7 +30,22 @@ import {
 } from "@/lib/platform-admin-data"
 
 export function PlatformAnalyticsTab() {
+  const { user } = useAuth()
   const [timeRange, setTimeRange] = useState("30d")
+  
+  // Check permissions
+  if (!user || !canViewPlatformAnalytics(user)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don't have permission to view platform analytics. This feature requires platform admin privileges.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   
   // Generate analytics data using consistent platform data
   const tenantUsageData = mockTenantData.map(tenant => ({

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManageTenants } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -23,15 +24,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
+import { Building2, Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
 import type { Organization } from "@/lib/types"
 import { mockTenantData, type TenantData, validateOrganizationData } from "@/lib/platform-admin-data"
 
 export function TenantManagementTab() {
+  const { user } = useAuth()
   const [tenants, setTenants] = useState<TenantData[]>(mockTenantData.filter(validateOrganizationData))
-
   const [showAddTenant, setShowAddTenant] = useState(false)
   const [editingTenant, setEditingTenant] = useState<TenantData | null>(null)
+
+  // Check permissions
+  if (!user || !canManageTenants(user)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don't have permission to manage tenants. This feature requires platform admin privileges.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -18,8 +18,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const mockUsers: (User & { password: string; role: UserRoleName })[] = [
   {
     id: "1",
-    email: "user@customer1.com",
-    name: "John Customer",
+    email: "user@selly.com",
+    name: "John User",
     role: "user", // Legacy role for backward compatibility 
     organization_id: "org_customer1",
     organization: {
@@ -38,33 +38,13 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
   },
   {
     id: "2",
-    email: "admin@customer1.com", 
-    name: "Jane Customer Admin",
-    role: "customer_admin",
+    email: "staff@selly.com", 
+    name: "Jane Staff",
+    role: "staff",
     organization_id: "org_customer1",
     organization: {
       id: "org_customer1", 
       name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      subscription_tier: "professional",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    password: "admin123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "3",
-    email: "staff@selly.com",
-    name: "Staff User",
-    role: "staff", // Legacy role for backward compatibility
-    organization_id: "org_customer1", 
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1", 
       domain: "customer1.com",
       status: "active",
       subscription_tier: "professional",
@@ -77,17 +57,37 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
     updated_at: "2024-01-01T00:00:00Z",
   },
   {
-    id: "4",
+    id: "3",
     email: "admin@selly.com",
     name: "Legacy Admin",
     role: "admin", // Legacy role for backward compatibility
+    organization_id: "org_customer1", 
+    organization: {
+      id: "org_customer1",
+      name: "Customer Company 1", 
+      domain: "customer1.com",
+      status: "active",
+      subscription_tier: "professional",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z"
+    },
+    password: "admin123",
+    status: "active",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "4",
+    email: "admin@customer1.com",
+    name: "Customer Admin",
+    role: "customer_admin",
     organization_id: "org_customer1",
     organization: {
       id: "org_customer1",
       name: "Customer Company 1",
-      domain: "customer1.com", 
+      domain: "customer1.com",
       status: "active",
-      subscription_tier: "professional",
+      subscription_tier: "professional", 
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z"
     },
@@ -136,11 +136,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
+    console.log("Login attempt:", { email, password })
+    console.log("Available users:", mockUsers.map(u => ({ email: u.email, role: u.role })))
+
     const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
 
     if (foundUser) {
+      console.log("User found:", foundUser)
       const { password: _, role, ...userWithoutPassword } = foundUser
       const userWithRole = { ...userWithoutPassword, role }
+      console.log("Setting user:", userWithRole)
+      
       setUser(userWithRole)
       localStorage.setItem("selly-user", JSON.stringify(userWithRole))
 
@@ -150,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true
     }
 
+    console.log("Login failed: User not found")
     setIsLoading(false)
     return false
   }
@@ -172,28 +179,48 @@ export function useAuth() {
   return context
 }
 
-export function requireAuth(allowedRoles?: (UserRole | UserRoleName)[]) {
+export function requireAuth(allowedRoles?: UserRoleName[]) {
   return (WrappedComponent: React.ComponentType<any>) =>
     function AuthenticatedComponent(props: any) {
       const { user, isLoading } = useAuth()
 
       if (isLoading) {
-        return <div>Loading...</div>
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-lg">Loading...</div>
+          </div>
+        )
       }
 
       if (!user) {
-        return <div>Please log in to access this page.</div>
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold mb-2">Authentication Required</h2>
+              <p>Please log in to access this page.</p>
+            </div>
+          </div>
+        )
       }
 
-      if (allowedRoles && user.role && !allowedRoles.includes(user.role)) {
-        return <div>You don&apos;t have permission to access this page.</div>
+      if (allowedRoles && user.role && !allowedRoles.includes(user.role as UserRoleName)) {
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold mb-2 text-red-600">Access Denied</h2>
+              <p>You don't have permission to access this page.</p>
+              <p className="text-sm text-gray-600 mt-2">Required role: {allowedRoles.join(" or ")}</p>
+              <p className="text-sm text-gray-600">Your role: {user.role}</p>
+            </div>
+          </div>
+        )
       }
 
       return <WrappedComponent {...props} />
     }
 }
 
-// Multi-tenant utility functions
+// Multi-tenant utility functions  
 export function isPlatformAdmin(user: User): boolean {
   return user.role === 'platform_admin'
 }
@@ -210,4 +237,25 @@ export function hasOrganizationAccess(user: User, organizationId?: string): bool
   if (isPlatformAdmin(user)) return true
   if (!organizationId) return false
   return user.organization_id === organizationId
+}
+
+// Platform admin specific permissions
+export function canManageTenants(user: User): boolean {
+  return isPlatformAdmin(user)
+}
+
+export function canManagePlatformUsers(user: User): boolean {
+  return isPlatformAdmin(user)
+}
+
+export function canViewPlatformAnalytics(user: User): boolean {
+  return isPlatformAdmin(user)
+}
+
+export function canManagePlatformSettings(user: User): boolean {
+  return isPlatformAdmin(user)
+}
+
+export function canManageSharedData(user: User): boolean {
+  return isPlatformAdmin(user)
 }

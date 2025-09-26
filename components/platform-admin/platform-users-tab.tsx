@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManagePlatformUsers } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,12 +29,26 @@ import { Users, Plus, MoreHorizontal, Shield, Building, Search, Filter, Eye, Edi
 import { mockPlatformUsers, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
 
 export function PlatformUsersTab() {
+  const { user } = useAuth()
   const [users] = useState<PlatformUser[]>(mockPlatformUsers.filter(validateUserData))
-
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
   const [showAddUser, setShowAddUser] = useState(false)
+
+  // Check permissions
+  if (!user || !canManagePlatformUsers(user)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don't have permission to manage platform users. This feature requires platform admin privileges.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const getRoleColor = (role: string) => {
     switch (role) {
