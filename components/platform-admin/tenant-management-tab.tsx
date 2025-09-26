@@ -23,54 +23,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Building2, Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
+import { Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
 import type { Organization } from "@/lib/types"
-
-interface TenantData extends Organization {
-  user_count: number
-  data_count: number
-  last_activity: string
-}
+import { mockTenantData, type TenantData, validateOrganizationData } from "@/lib/platform-admin-data"
 
 export function TenantManagementTab() {
-  const [tenants, setTenants] = useState<TenantData[]>([
-    {
-      id: "org_customer1",
-      name: "Customer Company 1",
-      domain: "customer1.com", 
-      status: "active",
-      subscription_tier: "professional",
-      user_count: 15,
-      data_count: 2847,
-      last_activity: "2024-12-08T14:30:00Z",
-      created_at: "2024-01-15T10:00:00Z",
-      updated_at: "2024-12-08T14:30:00Z",
-    },
-    {
-      id: "org_customer2", 
-      name: "Global Manufacturing Inc",
-      domain: "globalmanuf.com",
-      status: "active",
-      subscription_tier: "enterprise", 
-      user_count: 45,
-      data_count: 8934,
-      last_activity: "2024-12-08T13:15:00Z",
-      created_at: "2024-02-20T09:30:00Z",
-      updated_at: "2024-12-08T13:15:00Z",
-    },
-    {
-      id: "org_customer3",
-      name: "Tech Solutions Ltd",
-      domain: "techsolutions.co.th",
-      status: "inactive", 
-      subscription_tier: "basic",
-      user_count: 3,
-      data_count: 456,
-      last_activity: "2024-11-20T16:45:00Z",
-      created_at: "2024-05-10T14:20:00Z", 
-      updated_at: "2024-11-20T16:45:00Z",
-    }
-  ])
+  const [tenants, setTenants] = useState<TenantData[]>(mockTenantData.filter(validateOrganizationData))
 
   const [showAddTenant, setShowAddTenant] = useState(false)
   const [editingTenant, setEditingTenant] = useState<TenantData | null>(null)

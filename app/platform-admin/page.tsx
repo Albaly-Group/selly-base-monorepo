@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Users, Database, BarChart3, Settings, Shield } from "lucide-react"
+import { getTotalUsers, getTotalDataRecords, getActiveTenants, mockSharedCompanies } from "@/lib/platform-admin-data"
 
 function PlatformAdminPage() {
   return (
@@ -41,7 +42,7 @@ function PlatformAdminPage() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{getActiveTenants()}</div>
               <p className="text-xs text-muted-foreground">
                 +2 from last month
               </p>
@@ -54,7 +55,7 @@ function PlatformAdminPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,247</div>
+              <div className="text-2xl font-bold">{getTotalUsers().toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
                 Across all tenants
               </p>
@@ -67,7 +68,7 @@ function PlatformAdminPage() {
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">45,231</div>
+              <div className="text-2xl font-bold">{mockSharedCompanies.length.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
                 Available to all tenants
               </p>

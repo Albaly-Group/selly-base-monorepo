@@ -24,63 +24,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Database, Plus, MoreHorizontal, Upload, Download, Eye, Edit, Globe, Building } from "lucide-react"
-
-interface SharedCompany {
-  id: string
-  companyNameEn: string
-  industrialName: string
-  province: string
-  registeredNo?: string
-  verificationStatus: "Active" | "Needs Verification" | "Invalid"
-  dataCompleteness: number
-  lastUpdated: string
-  createdBy: string
-  isShared: boolean
-  tenantCount?: number // How many tenants have access
-}
+import { mockSharedCompanies, type SharedCompany } from "@/lib/platform-admin-data"
 
 export function PlatformDataTab() {
-  const [sharedCompanies] = useState<SharedCompany[]>([
-    {
-      id: "shared_1",
-      companyNameEn: "Thai Airways International PCL",
-      industrialName: "Transportation",
-      province: "Bangkok",
-      registeredNo: "0107537000004",
-      verificationStatus: "Active",
-      dataCompleteness: 98,
-      lastUpdated: "2024-12-08T14:30:00Z",
-      createdBy: "platform_admin",
-      isShared: true,
-      tenantCount: 12
-    },
-    {
-      id: "shared_2", 
-      companyNameEn: "CP Group (Charoen Pokphand)",
-      industrialName: "Agriculture/Food",
-      province: "Bangkok",
-      registeredNo: "0107536000321",
-      verificationStatus: "Active",
-      dataCompleteness: 95,
-      lastUpdated: "2024-12-07T16:20:00Z",
-      createdBy: "platform_admin",
-      isShared: true,
-      tenantCount: 12
-    },
-    {
-      id: "shared_3",
-      companyNameEn: "PTT Public Company Limited",
-      industrialName: "Energy/Oil & Gas", 
-      province: "Bangkok",
-      registeredNo: "0107536000121",
-      verificationStatus: "Active",
-      dataCompleteness: 97,
-      lastUpdated: "2024-12-06T09:15:00Z",
-      createdBy: "platform_admin", 
-      isShared: true,
-      tenantCount: 11
-    }
-  ])
+  const [sharedCompanies] = useState<SharedCompany[]>(mockSharedCompanies)
 
   const [showAddCompany, setShowAddCompany] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
