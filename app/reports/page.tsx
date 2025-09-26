@@ -277,41 +277,41 @@ function ReportsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Additional Features Coming Soon
+              Future Features (Not Yet Available)
             </CardTitle>
-            <CardDescription>The following features will be available with platform admin access</CardDescription>
+            <CardDescription>The following features will be implemented in future releases with platform admin access</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Sales Activity Tracking</div>
-                <div className="text-gray-600 mt-1">Call logs, reach rates, and conversion metrics</div>
+                <div className="text-gray-600 mt-1">Future: Track sales activities and performance</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Sales Rep Performance</div>
-                <div className="text-gray-600 mt-1">Individual sales representative analytics</div>
+                <div className="text-gray-600 mt-1">Future: Individual representative analytics</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Activity Trends</div>
-                <div className="text-gray-600 mt-1">Historical performance and trend analysis</div>
+                <div className="text-gray-600 mt-1">Future: Historical performance trends</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Lead Scoring Analytics</div>
-                <div className="text-gray-600 mt-1">AI-powered lead qualification insights</div>
+                <div className="text-gray-600 mt-1">Future: AI-powered lead insights</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Platform-wide Metrics</div>
-                <div className="text-gray-600 mt-1">Cross-customer aggregated analytics</div>
+                <div className="text-gray-600 mt-1">Future: Cross-customer aggregated data</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="font-medium text-gray-700">Advanced Reporting</div>
-                <div className="text-gray-600 mt-1">Custom reports and data exports</div>
+                <div className="text-gray-600 mt-1">Future: Custom reports and data exports</div>
               </div>
             </div>
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <div className="text-blue-800 text-sm">
-                <strong>Note:</strong> As a customer admin, you currently see reports based on your organization&apos;s data. 
-                Platform admin features will provide system-wide analytics and advanced sales tracking capabilities.
+                <strong>Current Scope:</strong> As a customer admin, you see reports based only on your organization&apos;s company data. 
+                Call tracking, sales metrics, and platform-wide analytics are not yet available but will be added with future platform admin features.
               </div>
             </div>
           </CardContent>
