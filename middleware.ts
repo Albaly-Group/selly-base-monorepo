@@ -25,10 +25,16 @@ export function middleware(request: NextRequest) {
   const publicRoutes = ["/"]
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/lookup", "/lists", "/staff"]
+  const protectedRoutes = ["/lookup", "/lists", "/staff", "/admin", "/platform-admin"]
 
   // Staff-only routes
   const staffRoutes = ["/staff"]
+
+  // Admin routes (customer admin)
+  const adminRoutes = ["/admin"]
+
+  // Platform admin routes
+  const platformAdminRoutes = ["/platform-admin"]
 
   // If accessing a protected route without authentication, redirect to home
   if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
@@ -36,7 +42,19 @@ export function middleware(request: NextRequest) {
   }
 
   if (staffRoutes.some((route) => pathname.startsWith(route)) && isAuthenticated) {
-    if (userRole !== "staff" && userRole !== "admin") {
+    if (userRole !== "staff" && userRole !== "admin" && userRole !== "customer_admin") {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
+  }
+
+  if (adminRoutes.some((route) => pathname.startsWith(route)) && isAuthenticated) {
+    if (userRole !== "admin" && userRole !== "customer_admin") {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
+  }
+
+  if (platformAdminRoutes.some((route) => pathname.startsWith(route)) && isAuthenticated) {
+    if (userRole !== "platform_admin") {
       return NextResponse.redirect(new URL("/", request.url))
     }
   }

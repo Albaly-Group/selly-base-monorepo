@@ -9,7 +9,8 @@ import { IntegrationsTab } from "@/components/admin/integrations-tab"
 import { requireAuth } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Users, Shield, Database, Plug, Settings } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Users, Shield, Database, Plug, Settings, Building } from "lucide-react"
 
 function AdminPage() {
   return (
@@ -18,8 +19,18 @@ function AdminPage() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Administration</h1>
-          <p className="text-gray-600">Manage users, policies, and system settings</p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900">Organization Administration</h1>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Building className="h-3 w-3 mr-1" />
+              Customer Admin
+            </Badge>
+          </div>
+          <p className="text-gray-600">Manage your organization&apos;s users, policies, and tenant-specific settings</p>
+          <p className="text-sm text-orange-600 mt-1">
+            <strong>Note:</strong> This admin panel manages settings for your organization only. 
+            You can see shared Albaly data but can only manage your organization&apos;s users and data.
+          </p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
@@ -85,4 +96,4 @@ function AdminPage() {
   )
 }
 
-export default requireAuth(["admin"])(AdminPage)
+export default requireAuth(["admin", "customer_admin"])(AdminPage)
