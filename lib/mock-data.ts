@@ -129,14 +129,19 @@ export const mockUserLists: UserList[] = [
 
 // Utility functions for data operations
 export const searchCompanies = (companies: Company[], searchTerm: string): Company[] => {
-  if (!searchTerm.trim()) return companies
+  if (!searchTerm.trim()) return []
 
   const term = searchTerm.toLowerCase()
   return companies.filter(
     (company) =>
       company.companyNameEn.toLowerCase().includes(term) ||
-      company.registeredNo?.includes(term) ||
-      company.industrialName.toLowerCase().includes(term),
+      company.registeredNo?.toLowerCase().includes(term) ||
+      company.industrialName.toLowerCase().includes(term) ||
+      company.province?.toLowerCase().includes(term) ||
+      company.contactPersons?.some(contact => 
+        contact.name?.toLowerCase().includes(term) ||
+        contact.email?.toLowerCase().includes(term)
+      )
   )
 }
 
@@ -492,4 +497,11 @@ export const getListCompanies = (listId: string): Company[] => {
   }
 
   return mockCompanies.filter(company => list.companyIds.includes(company.id))
+}
+
+/**
+ * Get all lists that contain a specific company
+ */
+export const getCompanyLists = (companyId: string): UserList[] => {
+  return mockUserLists.filter(list => list.companyIds.includes(companyId))
 }
