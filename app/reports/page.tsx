@@ -2,9 +2,9 @@
 
 import { Navigation } from "@/components/navigation"
 import { requireAuth } from "@/lib/auth"
+import { mockCompanies } from "@/lib/mock-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { 
   BarChart, 
   Bar, 
@@ -15,49 +15,73 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-  LineChart,
-  Line
+  Cell
 } from "recharts"
-import { TrendingUp, Users, Phone, Target, AlertTriangle, CheckCircle } from "lucide-react"
+import { TrendingUp, Users, CheckCircle, AlertTriangle } from "lucide-react"
 
 function ReportsPage() {
-  // Mock data for reports
-  const funnelData = [
-    { stage: "Companies", count: 1250, percentage: 100 },
-    { stage: "Dialed", count: 875, percentage: 70 },
-    { stage: "Reached", count: 520, percentage: 42 },
-    { stage: "Qualified", count: 156, percentage: 12 },
-    { stage: "Opportunities", count: 43, percentage: 3 }
-  ]
+  // Calculate actual data from mock companies for customer admin scope
+  const totalCompanies = mockCompanies.length
+  const activeCompanies = mockCompanies.filter((c) => c.verificationStatus === "Active").length
+  const needsVerificationCompanies = mockCompanies.filter((c) => c.verificationStatus === "Needs Verification").length
+  const invalidCompanies = mockCompanies.filter((c) => c.verificationStatus === "Invalid").length
+  const avgCompleteness = Math.round(mockCompanies.reduce((sum, c) => sum + c.dataCompleteness, 0) / totalCompanies)
 
+  // Data quality distribution based on actual company data
   const dataQualityData = [
-    { name: "Active", value: 65, color: "#10b981" },
-    { name: "Needs Verification", value: 25, color: "#f59e0b" },
-    { name: "Invalid", value: 10, color: "#ef4444" }
+    { name: "Active", value: Math.round((activeCompanies / totalCompanies) * 100), color: "#10b981" },
+    { name: "Needs Verification", value: Math.round((needsVerificationCompanies / totalCompanies) * 100), color: "#f59e0b" },
+    { name: "Invalid", value: Math.round((invalidCompanies / totalCompanies) * 100), color: "#ef4444" }
   ]
 
-  const activityData = [
-    { rep: "John Doe", calls: 145, reached: 87, qualified: 23, followups: 12 },
-    { rep: "Jane Smith", calls: 132, reached: 95, qualified: 31, followups: 8 },
-    { rep: "Mike Johnson", calls: 98, reached: 62, qualified: 18, followups: 15 },
-    { rep: "Sarah Wilson", calls: 156, reached: 102, qualified: 28, followups: 6 }
-  ]
+  // Industry distribution based on actual data
+  const industryData = mockCompanies.reduce((acc, company) => {
+    const industry = company.industrialName
+    acc[industry] = (acc[industry] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  
+  const industryChartData = Object.entries(industryData).map(([name, count]) => ({
+    name,
+    count
+  }))
 
-  const completenessData = [
-    { range: "90-100%", count: 312 },
-    { range: "80-89%", count: 428 },
-    { range: "70-79%", count: 285 },
-    { range: "60-69%", count: 156 },
-    { range: "50-59%", count: 69 }
-  ]
+  // Province distribution based on actual data
+  const provinceData = mockCompanies.reduce((acc, company) => {
+    const province = company.province
+    acc[province] = (acc[province] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  
+  const provinceChartData = Object.entries(provinceData).map(([name, count]) => ({
+    name,
+    count
+  }))
 
-  const weeklyActivityData = [
-    { week: "Week 1", calls: 245, qualified: 18 },
-    { week: "Week 2", calls: 289, qualified: 23 },
-    { week: "Week 3", calls: 356, qualified: 31 },
-    { week: "Week 4", calls: 298, qualified: 25 }
-  ]
+  // Data completeness distribution based on actual scores
+  const completenessRanges = {
+    "90-100%": 0,
+    "80-89%": 0,
+    "70-79%": 0,
+    "60-69%": 0,
+    "50-59%": 0,
+    "Below 50%": 0
+  }
+  
+  mockCompanies.forEach((company) => {
+    const completeness = company.dataCompleteness
+    if (completeness >= 90) completenessRanges["90-100%"]++
+    else if (completeness >= 80) completenessRanges["80-89%"]++
+    else if (completeness >= 70) completenessRanges["70-79%"]++
+    else if (completeness >= 60) completenessRanges["60-69%"]++
+    else if (completeness >= 50) completenessRanges["50-59%"]++
+    else completenessRanges["Below 50%"]++
+  })
+
+  const completenessData = Object.entries(completenessRanges).map(([range, count]) => ({
+    range,
+    count
+  }))
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,7 +109,7 @@ function ReportsPage() {
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -94,40 +118,8 @@ function ReportsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,250</div>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +12% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Calls Made
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">875</div>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +8% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Reach Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">59%</div>
-              <p className="text-xs text-gray-600">520 / 875 calls</p>
+              <div className="text-2xl font-bold">{totalCompanies}</div>
+              <p className="text-xs text-gray-600">In your database</p>
             </CardContent>
           </Card>
 
@@ -135,14 +127,13 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Qualified Leads
+                Active Companies
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">156</div>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +18% from last month
+              <div className="text-2xl font-bold">{activeCompanies}</div>
+              <p className="text-xs text-green-600">
+                {Math.round((activeCompanies / totalCompanies) * 100)}% of total
               </p>
             </CardContent>
           </Card>
@@ -151,47 +142,52 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
+                Needs Review
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{needsVerificationCompanies + invalidCompanies}</div>
+              <p className="text-xs text-orange-600">Verification required</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
                 Data Quality
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">82%</div>
+              <div className="text-2xl font-bold">{avgCompleteness}%</div>
               <p className="text-xs text-gray-600">Avg. completeness</p>
             </CardContent>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Sales Funnel */}
+          {/* Industry Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Sales Funnel</CardTitle>
-              <CardDescription>Conversion rates through the sales process</CardDescription>
+              <CardTitle>Industry Distribution</CardTitle>
+              <CardDescription>Companies by industry sector</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {funnelData.map((stage, index) => (
-                  <div key={stage.stage} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{stage.stage}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{stage.count.toLocaleString()}</span>
-                        <Badge variant="secondary">{stage.percentage}%</Badge>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${stage.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={industryChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#3b82f6" name="Companies" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
-          {/* Data Quality Distribution */}
+          {/* Data Quality Status */}
           <Card>
             <CardHeader>
               <CardTitle>Data Quality Status</CardTitle>
@@ -232,23 +228,22 @@ function ReportsPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Rep Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Province Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Rep Activity</CardTitle>
-              <CardDescription>Individual performance metrics</CardDescription>
+              <CardTitle>Geographic Distribution</CardTitle>
+              <CardDescription>Companies by province</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={activityData}>
+                  <BarChart data={provinceChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="rep" />
+                    <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="calls" fill="#3b82f6" name="Calls Made" />
-                    <Bar dataKey="qualified" fill="#10b981" name="Qualified" />
+                    <Bar dataKey="count" fill="#10b981" name="Companies" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -277,24 +272,47 @@ function ReportsPage() {
           </Card>
         </div>
 
-        {/* Weekly Activity Trend */}
+        {/* Future Features Notice */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Weekly Activity Trend</CardTitle>
-            <CardDescription>Calls and qualifications over time</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Future Features (Not Yet Available)
+            </CardTitle>
+            <CardDescription>The following features will be implemented in future releases with platform admin access</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyActivityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="calls" stroke="#3b82f6" name="Calls Made" strokeWidth={2} />
-                  <Line type="monotone" dataKey="qualified" stroke="#10b981" name="Qualified" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Sales Activity Tracking</div>
+                <div className="text-gray-600 mt-1">Future: Track sales activities and performance</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Sales Rep Performance</div>
+                <div className="text-gray-600 mt-1">Future: Individual representative analytics</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Activity Trends</div>
+                <div className="text-gray-600 mt-1">Future: Historical performance trends</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Lead Scoring Analytics</div>
+                <div className="text-gray-600 mt-1">Future: AI-powered lead insights</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Platform-wide Metrics</div>
+                <div className="text-gray-600 mt-1">Future: Cross-customer aggregated data</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Advanced Reporting</div>
+                <div className="text-gray-600 mt-1">Future: Custom reports and data exports</div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="text-blue-800 text-sm">
+                <strong>Current Scope:</strong> As a customer admin, you see reports based only on your organization&apos;s company data. 
+                Call tracking, sales metrics, and platform-wide analytics are not yet available but will be added with future platform admin features.
+              </div>
             </div>
           </CardContent>
         </Card>
