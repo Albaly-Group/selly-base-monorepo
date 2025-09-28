@@ -1,11 +1,30 @@
 "use client"
 
-import { useAuth } from "@/lib/auth"
+import { useAuth, isPlatformAdmin, isCustomerAdmin, isLegacyAdmin } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
-import { Dashboard } from "@/components/dashboard"
+import { CustomerDashboard } from "@/components/customer-dashboard"
+import { PlatformAdminDashboard } from "@/components/platform-admin-dashboard"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export default function HomePage() {
   const { user, isLoading } = useAuth()
+  const router = useRouter()
+
+  // Redirect users based on their roles to their appropriate dashboards
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (isPlatformAdmin(user)) {
+        router.replace("/platform-admin")
+        return
+      }
+      if (isCustomerAdmin(user) || isLegacyAdmin(user)) {
+        router.replace("/admin")
+        return
+      }
+      // Regular users and staff stay on the home page with customer dashboard
+    }
+  }, [user, isLoading, router])
 
   if (isLoading) {
     return (
@@ -19,5 +38,11 @@ export default function HomePage() {
     return <LoginForm />
   }
 
-  return <Dashboard />
+  // Platform admins should be redirected to /platform-admin, but show their dashboard if they're here
+  if (isPlatformAdmin(user)) {
+    return <PlatformAdminDashboard />
+  }
+
+  // Show customer dashboard for regular users, staff, and customer admins
+  return <CustomerDashboard />
 }

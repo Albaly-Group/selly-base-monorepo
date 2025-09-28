@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Users, Target, Database, BarChart3, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
-export function Dashboard() {
+export function CustomerDashboard() {
   const { user } = useAuth()
 
   if (!user) return null

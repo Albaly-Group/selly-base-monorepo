@@ -133,25 +133,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true)
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
+      const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
 
-    if (foundUser) {
-      const { password: _, role, ...userWithoutPassword } = foundUser
-      const userWithRole = { ...userWithoutPassword, role }
-      
-      setUser(userWithRole)
-      localStorage.setItem("selly-user", JSON.stringify(userWithRole))
-      document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+      if (foundUser) {
+        const { password: _, role, ...userWithoutPassword } = foundUser
+        const userWithRole = { ...userWithoutPassword, role }
+        
+        setUser(userWithRole)
+        localStorage.setItem("selly-user", JSON.stringify(userWithRole))
+        document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+
+        setIsLoading(false)
+        return true
+      }
 
       setIsLoading(false)
-      return true
+      return false
+    } catch (error) {
+      console.error("Login error:", error)
+      setIsLoading(false)
+      return false
     }
-
-    setIsLoading(false)
-    return false
   }
 
   const logout = () => {
