@@ -472,11 +472,8 @@ CREATE TABLE audit_logs (
   request_id TEXT,
   correlation_id TEXT,
   
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  
-  -- Partitioning key for performance
-  partition_date DATE GENERATED ALWAYS AS (created_at::DATE) STORED
-) PARTITION BY RANGE (partition_date);
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+) PARTITION BY RANGE (created_at);
 
 -- User activity tracking
 CREATE TABLE user_activity_logs (
@@ -681,8 +678,8 @@ COMMIT;
 -- This would typically be managed by a cron job or partition manager
 DO $$
 DECLARE
-  start_date DATE := DATE_TRUNC('month', CURRENT_DATE);
-  end_date DATE := start_date + INTERVAL '1 month';
+  start_date TIMESTAMPTZ := DATE_TRUNC('month', CURRENT_TIMESTAMP);
+  end_date TIMESTAMPTZ := start_date + INTERVAL '1 month';
   partition_name TEXT := 'audit_logs_' || TO_CHAR(start_date, 'YYYY_MM');
 BEGIN
   EXECUTE format('CREATE TABLE IF NOT EXISTS %I PARTITION OF audit_logs FOR VALUES FROM (%L) TO (%L)', 
