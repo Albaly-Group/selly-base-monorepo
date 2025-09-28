@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManageOrganizationUsers } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,34 +10,53 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { UserPlus, Edit2, Trash2, Mail } from "lucide-react"
+import { UserPlus, Edit2, Trash2, Mail, AlertTriangle } from "lucide-react"
 
 interface User {
   id: string
   name: string
   email: string
-  role: "user" | "staff" | "admin"
+  role: "user" | "staff" | "customer_admin"
   status: "active" | "suspended"
   lastLogin: string
   createdAt: string
 }
 
 export function UserManagementTab() {
+  const { user: currentUser } = useAuth()
+
+  // Check permissions - only customer admins can manage organization users
+  if (!currentUser || !canManageOrganizationUsers(currentUser)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don't have permission to manage organization users.</p>
+            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show only users from the current user's organization
   const [users, setUsers] = useState<User[]>([
     {
       id: "1",
-      name: "John Admin",
-      email: "admin@example.com",
-      role: "admin",
+      name: "John Staff",
+      email: "john@" + (currentUser.organization?.domain || "organization.com"),
+      role: "staff",
       status: "active",
       lastLogin: "2024-12-08T14:30:00Z",
       createdAt: "2024-01-15T10:00:00Z"
     },
     {
       id: "2",
-      name: "Sarah Staff",
-      email: "staff@example.com",
-      role: "staff",
+      name: "Sarah User",
+      email: "sarah@" + (currentUser.organization?.domain || "organization.com"),
+      role: "user",
       status: "active",
       lastLogin: "2024-12-08T13:15:00Z",
       createdAt: "2024-03-20T09:30:00Z"
@@ -44,10 +64,10 @@ export function UserManagementTab() {
     {
       id: "3",
       name: "Mike User",
-      email: "user@example.com", 
+      email: "mike@" + (currentUser.organization?.domain || "organization.com"), 
       role: "user",
-      status: "active",
-      lastLogin: "2024-12-08T11:45:00Z",
+      status: "suspended",
+      lastLogin: "2024-11-20T16:45:00Z",
       createdAt: "2024-06-10T14:20:00Z"
     },
     {

@@ -136,27 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    console.log("Login attempt:", { email, password })
-    console.log("Available users:", mockUsers.map(u => ({ email: u.email, role: u.role })))
-
     const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
 
     if (foundUser) {
-      console.log("User found:", foundUser)
       const { password: _, role, ...userWithoutPassword } = foundUser
       const userWithRole = { ...userWithoutPassword, role }
-      console.log("Setting user:", userWithRole)
       
       setUser(userWithRole)
       localStorage.setItem("selly-user", JSON.stringify(userWithRole))
-
       document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
 
       setIsLoading(false)
       return true
     }
 
-    console.log("Login failed: User not found")
     setIsLoading(false)
     return false
   }
@@ -239,7 +232,7 @@ export function hasOrganizationAccess(user: User, organizationId?: string): bool
   return user.organization_id === organizationId
 }
 
-// Platform admin specific permissions
+// Platform Admin specific permissions
 export function canManageTenants(user: User): boolean {
   return isPlatformAdmin(user)
 }
@@ -258,4 +251,32 @@ export function canManagePlatformSettings(user: User): boolean {
 
 export function canManageSharedData(user: User): boolean {
   return isPlatformAdmin(user)
+}
+
+// Customer Admin specific permissions
+export function canManageOrganizationUsers(user: User): boolean {
+  return isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+export function canManageOrganizationPolicies(user: User): boolean {
+  return isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+export function canManageOrganizationData(user: User): boolean {
+  return isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+export function canManageOrganizationSettings(user: User): boolean {
+  return isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+// Data access permissions
+export function canAccessSharedData(user: User): boolean {
+  return true // All authenticated users can access shared data
+}
+
+export function canAccessOrganizationData(user: User, orgId?: string): boolean {
+  if (isPlatformAdmin(user)) return true // Platform admins can access all org data
+  if (!orgId || !user.organization_id) return false
+  return user.organization_id === orgId
 }
