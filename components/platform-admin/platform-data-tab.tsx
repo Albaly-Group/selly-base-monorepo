@@ -31,6 +31,7 @@ export function PlatformDataTab() {
   const { user } = useAuth()
   const [sharedCompanies] = useState<SharedCompany[]>(mockSharedCompanies)
   const [showAddCompany, setShowAddCompany] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
   // Check permissions
