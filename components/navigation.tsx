@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth"
+import { useAuth, isPlatformAdmin, isCustomerAdmin, isLegacyAdmin, canManageTenants, canManageOrganizationUsers } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -34,7 +34,8 @@ export function Navigation() {
 
             <NavigationMenu>
               <NavigationMenuList>
-                {(user.role === "user" || user.role === "admin") && (
+                {/* Basic user features - available to all roles except platform admin */}
+                {!isPlatformAdmin(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/lookup" legacyBehavior passHref>
@@ -53,7 +54,8 @@ export function Navigation() {
                   </>
                 )}
 
-                {(user.role === "staff" || user.role === "admin") && (
+                {/* Staff features - available to staff and admin roles */}
+                {(user.role === "staff" || isCustomerAdmin(user) || isLegacyAdmin(user)) && !isPlatformAdmin(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/staff" legacyBehavior passHref>
@@ -72,7 +74,8 @@ export function Navigation() {
                   </>
                 )}
 
-                {(user.role === "user" || user.role === "staff" || user.role === "admin") && (
+                {/* Import/Export - available to non-platform admin users */}
+                {!isPlatformAdmin(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/imports" legacyBehavior passHref>
@@ -91,11 +94,23 @@ export function Navigation() {
                   </>
                 )}
 
-                {user.role === "admin" && (
+                {/* Customer Admin - Organization-specific administration */}
+                {canManageOrganizationUsers(user) && (
                   <NavigationMenuItem>
                     <Link href="/admin" legacyBehavior passHref>
                       <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                        Admin
+                        Organization Admin
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                )}
+
+                {/* Platform Admin - Albaly platform management */}
+                {canManageTenants(user) && (
+                  <NavigationMenuItem>
+                    <Link href="/platform-admin" legacyBehavior passHref>
+                      <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                        Platform Admin
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>

@@ -1,15 +1,34 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManageOrganizationPolicies } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Shield, Download, Users, FileText } from "lucide-react"
+import { Shield, Download, Users, FileText, AlertTriangle } from "lucide-react"
 
 export function PoliciesTab() {
+  const { user: currentUser } = useAuth()
+
+  // Check permissions - only customer admins can manage organization policies
+  if (!currentUser || !canManageOrganizationPolicies(currentUser)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don't have permission to manage organization policies.</p>
+            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const [policies, setPolicies] = useState({
     exportPermissions: {
       userCanExport: true,

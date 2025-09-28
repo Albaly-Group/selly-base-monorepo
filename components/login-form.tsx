@@ -72,6 +72,7 @@ export function LoginForm() {
               <p>User: user@selly.com / password123</p>
               <p>Staff: staff@selly.com / staff123</p>
               <p>Admin: admin@selly.com / admin123</p>
+              <p className="text-purple-600 font-medium">Platform Admin: platform@albaly.com / platform123</p>
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,15 @@
-// Updated to match actual database schema
+// Multi-tenant organization structure
+export interface Organization {
+  id: string
+  name: string
+  domain?: string
+  status: 'active' | 'inactive' | 'suspended'
+  subscription_tier?: 'basic' | 'professional' | 'enterprise'
+  created_at: string
+  updated_at: string
+}
+
+// Updated to match actual database schema with tenant support
 export interface User {
   id: string
   email: string
@@ -8,6 +19,11 @@ export interface User {
   metadata?: Record<string, any> | null
   created_at: string
   updated_at: string
+  // Multi-tenant fields
+  organization_id?: string | null // null for platform admins
+  organization?: Organization | null
+  // Legacy role field for backward compatibility  
+  role?: UserRoleName
   // Roles are loaded separately via user_roles table
   roles?: Role[]
 }
@@ -41,8 +57,19 @@ export interface RolePermission {
   assigned_at: string
 }
 
-// Legacy type for backward compatibility
-export type UserRoleName = "user" | "staff" | "admin"
+// Legacy type for backward compatibility - Extended for multi-tenant
+export type UserRoleName = "user" | "staff" | "admin" | "customer_admin" | "platform_admin"
+
+// Multi-tenant role types
+export type TenantRoles = "customer_user" | "customer_staff" | "customer_admin"
+export type PlatformRoles = "platform_admin" | "platform_staff"
+export type LegacyRoles = "user" | "staff" | "admin"
+
+// Tenant-aware permission context
+export interface TenantContext {
+  organizationId?: string | null
+  isSharedData?: boolean // For Albaly-provided shared data across tenants
+}
 
 export interface FilterOptions {
   industrial?: string
