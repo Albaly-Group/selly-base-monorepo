@@ -7,12 +7,13 @@ import { CompanyTable } from "@/components/company-table"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
-import { mockCompanies, searchCompanies, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
+import { useCompaniesSearch } from "@/lib/hooks/api-hooks"
+import { mockCompanies, searchCompanies, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Filter } from "lucide-react"
+import { Search, Filter, Loader2 } from "lucide-react"
 
 function CompanyLookupPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -25,34 +26,118 @@ function CompanyLookupPage() {
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
   const [hasAppliedFiltering, setHasAppliedFiltering] = useState(false)
   const [isSimpleSearch, setIsSimpleSearch] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Process companies with either simple search or smart filtering
-  const { filteredCompanies, leadScores } = useMemo(() => {
-    // Simple keyword search
+  // Convert smartFiltering criteria to API search filters
+  const apiSearchFilters = useMemo(() => {
+    const filters: any = {
+      page: currentPage,
+      limit: 25,
+    };
+
     if (isSimpleSearch && searchTerm.trim()) {
-      const companies = searchCompanies(mockCompanies, searchTerm)
-      return { filteredCompanies: companies, leadScores: {} }
+      filters.q = searchTerm.trim();
     }
-    
-    // Smart filtering with scoring
-    if (hasAppliedFiltering) {
-      const scoredResults = searchAndScoreCompanies(mockCompanies, smartFiltering)
-      const companies = scoredResults.map(result => result.company)
-      const scores: { [key: string]: WeightedLeadScore } = {}
-      
-      scoredResults.forEach(result => {
-        scores[result.company.id] = result.score
-      })
 
-      return { 
-        filteredCompanies: companies,
-        leadScores: scores 
+    if (hasAppliedFiltering) {
+      // Convert smart filtering criteria to API filters
+      if (smartFiltering.province) {
+        filters.province = smartFiltering.province;
+      }
+      if (smartFiltering.companySize && smartFiltering.companySize.length > 0) {
+        filters.companySize = smartFiltering.companySize;
+      }
+      if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
+        filters.dataSource = smartFiltering.dataSource;
+      }
+      if (smartFiltering.verificationStatus) {
+        filters.verificationStatus = smartFiltering.verificationStatus;
+      }
+      if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
+        filters.dataSensitivity = smartFiltering.dataSensitivity;
+      }
+      // Include search term even with smart filtering
+      if (searchTerm.trim()) {
+        filters.q = searchTerm.trim();
+      }
+    }
+
+    return filters;
+  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, currentPage]);
+
+  // Use API search when we have search criteria, otherwise don't query
+  const shouldSearch = isSimpleSearch && searchTerm.trim() || hasAppliedFiltering;
+  const { 
+    data: apiSearchResult, 
+    isLoading: isApiLoading, 
+    error: apiError,
+    isError: hasApiError 
+  } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
+
+  // Process companies with either API results or fallback to mock data
+  const { filteredCompanies, leadScores, isLoading } = useMemo(() => {
+    // If API is loading, show loading state
+    if (shouldSearch && isApiLoading) {
+      return { filteredCompanies: [], leadScores: {}, isLoading: true };
+    }
+
+    // If API has results, use them
+    if (shouldSearch && apiSearchResult && !hasApiError) {
+      // Convert API results to expected format
+      const companies = apiSearchResult.items.map((item: any) => ({
+        id: item.id,
+        companyNameEn: item.displayName || item.companyNameEn,
+        companyNameTh: item.companyNameTh || '',
+        registrationId: item.registrationId || '',
+        industrialName: item.industry || 'Unknown',
+        province: item.province || '',
+        websiteUrl: item.websiteUrl || '',
+        primaryEmail: item.primaryEmail || '',
+        primaryPhone: item.primaryPhone || '',
+        dataSource: item.dataSource || 'api',
+        verificationStatus: item.verificationStatus || 'unverified',
+        qualityScore: item.qualityScore || 0,
+        contactPersons: item.contactPersons || [],
+        companySize: item.companySize || 'unknown',
+        businessDescription: item.businessDescription || '',
+        dataSensitivity: item.dataSensitivity || 'standard',
+        isSharedData: item.isSharedData || false,
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt || new Date().toISOString(),
+      }));
+
+      return { filteredCompanies: companies, leadScores: {}, isLoading: false };
+    }
+
+    // Fallback to original mock-based logic if API fails or no search criteria
+    if (!shouldSearch || hasApiError) {
+      // Simple keyword search
+      if (isSimpleSearch && searchTerm.trim()) {
+        const companies = searchCompanies(mockCompanies, searchTerm);
+        return { filteredCompanies: companies, leadScores: {}, isLoading: false };
+      }
+      
+      // Smart filtering with scoring
+      if (hasAppliedFiltering) {
+        const scoredResults = searchAndScoreCompanies(mockCompanies, smartFiltering);
+        const companies = scoredResults.map(result => result.company);
+        const scores: { [key: string]: WeightedLeadScore } = {};
+        
+        scoredResults.forEach(result => {
+          scores[result.company.id] = result.score;
+        });
+
+        return { 
+          filteredCompanies: companies,
+          leadScores: scores,
+          isLoading: false
+        };
       }
     }
     
     // No results when nothing is applied
-    return { filteredCompanies: [], leadScores: {} }
-  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch])
+    return { filteredCompanies: [], leadScores: {}, isLoading: false };
+  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, apiSearchResult, isApiLoading, hasApiError, shouldSearch]);
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -247,12 +332,20 @@ function CompanyLookupPage() {
                         </button>
                       </div>
                     )}
+                    {/* API Status Indicator */}
+                    {hasApiError && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center gap-2">
+                        <span className="text-sm text-yellow-800">
+                          Using fallback data (API unavailable)
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2">
                     <button
                       onClick={handleAddToList}
-                      disabled={selectedCompanies.length === 0}
+                      disabled={selectedCompanies.length === 0 || isLoading}
                       className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
                     >
                       Add to List ({selectedCompanies.length})
@@ -268,30 +361,46 @@ function CompanyLookupPage() {
                 </div>
 
                 {/* Results Table */}
-                <CompanyTable
-                  companies={filteredCompanies}
-                  selectedCompanies={selectedCompanies}
-                  onSelectCompany={handleSelectCompany}
-                  onSelectAll={handleSelectAll}
-                  onViewCompany={handleViewCompany}
-                  showLeadScores={hasAppliedFiltering}
-                  leadScores={leadScores}
-                  sortable={true}
-                />
+                {isLoading ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-16">
+                      <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                      <p className="text-gray-600">Searching companies...</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <CompanyTable
+                    companies={filteredCompanies}
+                    selectedCompanies={selectedCompanies}
+                    onSelectCompany={handleSelectCompany}
+                    onSelectAll={handleSelectAll}
+                    onViewCompany={handleViewCompany}
+                    showLeadScores={hasAppliedFiltering}
+                    leadScores={leadScores}
+                    sortable={true}
+                  />
+                )}
 
                 {/* Results Summary */}
-                <div className="text-sm text-gray-600 flex justify-between">
-                  {isSimpleSearch ? (
-                    <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
-                  ) : (
-                    <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
-                  )}
-                  {filteredCompanies.length > 0 && leadScores[filteredCompanies[0]?.id] && (
-                    <span className="text-blue-600">
-                      Sorted by: Highest weighted score first
-                    </span>
-                  )}
-                </div>
+                {!isLoading && (
+                  <div className="text-sm text-gray-600 flex justify-between">
+                    {isSimpleSearch ? (
+                      <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
+                    ) : (
+                      <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
+                    )}
+                    {filteredCompanies.length > 0 && leadScores[filteredCompanies[0]?.id] && (
+                      <span className="text-blue-600">
+                        Sorted by: Highest weighted score first
+                      </span>
+                    )}
+                    {apiSearchResult && (
+                      <span className="text-green-600">
+                        API Results: Page {apiSearchResult.page} of {Math.ceil(apiSearchResult.total / apiSearchResult.limit)}
+                      </span>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </TabsContent>

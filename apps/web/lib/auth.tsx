@@ -134,36 +134,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
-
-      if (foundUser) {
-        const { password: _, role, ...userWithoutPassword } = foundUser
-        const userWithRole = { ...userWithoutPassword, role }
+      // Try to use the real API first
+      try {
+        const { apiClient } = await import('./api-client');
+        const response = await apiClient.login(email, password);
         
-        setUser(userWithRole)
-        localStorage.setItem("selly-user", JSON.stringify(userWithRole))
-        document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+        if (response.access_token && response.user) {
+          // Convert API user format to our app's user format
+          const apiUser = response.user;
+          const appUser: User = {
+            id: apiUser.id,
+            email: apiUser.email,
+            name: `${apiUser.firstName} ${apiUser.lastName}`,
+            role: (apiUser.role as UserRoleName) || 'user',
+            organization_id: apiUser.organization?.id || null,
+            organization: apiUser.organization ? {
+              id: apiUser.organization.id,
+              name: apiUser.organization.name,
+              domain: '', // Not provided by API
+              status: 'active' as const,
+              subscription_tier: 'professional' as const,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            } : null,
+            status: 'active' as const,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          
+          setUser(appUser);
+          localStorage.setItem("selly-user", JSON.stringify(appUser));
+          document.cookie = `selly-user=${JSON.stringify(appUser)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+          
+          setIsLoading(false);
+          return true;
+        }
+      } catch (apiError) {
+        console.log('API login failed, falling back to mock auth:', apiError);
+        
+        // Fall back to mock authentication
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        setIsLoading(false)
-        return true
+        const foundUser = mockUsers.find((u) => u.email === email && u.password === password);
+
+        if (foundUser) {
+          const { password: _, role, ...userWithoutPassword } = foundUser;
+          const userWithRole = { ...userWithoutPassword, role };
+          
+          setUser(userWithRole);
+          localStorage.setItem("selly-user", JSON.stringify(userWithRole));
+          document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
+          setIsLoading(false);
+          return true;
+        }
       }
 
-      setIsLoading(false)
-      return false
+      setIsLoading(false);
+      return false;
     } catch (error) {
-      console.error("Login error:", error)
-      setIsLoading(false)
-      return false
+      console.error("Login error:", error);
+      setIsLoading(false);
+      return false;
     }
   }
 
   const logout = () => {
+    // Clear API client token if it exists
+    try {
+      const { apiClient } = require('./api-client');
+      apiClient.logout();
+    } catch (error) {
+      console.log('API client not available for logout:', error);
+    }
+    
     setUser(null)
     localStorage.removeItem("selly-user")
-
     document.cookie = "selly-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
   }
 
