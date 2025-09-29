@@ -348,9 +348,31 @@ cd apps/web && npm run build
 
 # Common fixes:
 # 1. Ensure root directory is set to "apps/web" in Vercel
-# 2. Check build command: "cd ../.. && npm run build"  
+# 2. Check build command: "cd ../.. && npm ci && npx turbo build --filter=web"  
 # 3. Verify output directory: ".next"
-# 4. Install command should be: "npm install"
+# 4. Install command should be: "npm ci"
+```
+
+**CSS Build Issues on Vercel:**
+```bash
+# If CSS build is incomplete, try these steps:
+# 1. Clear Vercel build cache in dashboard
+# 2. Redeploy the project
+# 3. Ensure critters package is installed for CSS optimization
+# 4. Check that optimizeCss is enabled in next.config.mjs
+```
+
+#### 5. Cache Issues on Vercel
+If builds appear incomplete or CSS is missing:
+```bash
+# Clear cache methods:
+# 1. Go to Vercel Dashboard → Project → Settings → General
+# 2. Scroll to "Build & Development Settings"
+# 3. Clear build cache
+# 4. Redeploy the project
+
+# Or use Vercel CLI:
+vercel --prod --force
 ```
 
 #### 5. CORS Errors
