@@ -176,8 +176,8 @@ export class AuthService {
   }
 
   async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return await bcrypt.hash(password, saltRounds);
+    // Use argon2 for new password hashes to match database storage format
+    return await argon2.hash(password);
   }
 
   /**

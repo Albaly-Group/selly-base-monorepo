@@ -88,4 +88,22 @@ describe('AuthService', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('hashPassword', () => {
+    it('should create argon2 hash for new passwords', async () => {
+      const password = 'newpassword';
+      const hash = await service.hashPassword(password);
+      
+      // Verify it's an argon2 hash
+      expect(hash).toMatch(/^\$argon2id\$/);
+      
+      // Verify the hash can be verified with argon2
+      const isValid = await argon2.verify(hash, password);
+      expect(isValid).toBe(true);
+      
+      // Verify wrong password fails
+      const isInvalid = await argon2.verify(hash, 'wrongpassword');
+      expect(isInvalid).toBe(false);
+    });
+  });
 });
