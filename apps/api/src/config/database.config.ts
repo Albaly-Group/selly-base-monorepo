@@ -9,12 +9,12 @@ function getSslConfig(parsedUrl: { ssl?: boolean } | null) {
   if (parsedUrl?.ssl) {
     return { rejectUnauthorized: false };
   }
-  
+
   // Default production SSL behavior
   if (process.env.NODE_ENV === 'production') {
     return { rejectUnauthorized: false };
   }
-  
+
   // No SSL for development
   return false;
 }
@@ -26,12 +26,12 @@ function parseDatabaseUrl(url: string) {
   try {
     const parsed = new URL(url);
     const searchParams = new URLSearchParams(parsed.search);
-    
+
     // Check for SSL requirements in URL parameters
     const sslMode = searchParams.get('sslmode');
     const ssl = searchParams.get('ssl');
     const requireSsl = sslMode === 'require' || ssl === 'true';
-    
+
     return {
       host: parsed.hostname,
       port: parseInt(parsed.port || '5432', 10),
@@ -41,7 +41,8 @@ function parseDatabaseUrl(url: string) {
       ssl: requireSsl,
     };
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     console.warn('Failed to parse DATABASE_URL:', errorMessage);
     return null;
   }
@@ -66,6 +67,9 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
   const parsedUrl = databaseUrl ? parseDatabaseUrl(databaseUrl) : null;
 
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   return {
     type: 'postgres',
     host: parsedUrl?.host || process.env.DATABASE_HOST || 'localhost',
@@ -76,14 +80,22 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     database: parsedUrl?.database || process.env.DATABASE_NAME || 'selly_base',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-    synchronize: process.env.NODE_ENV !== 'production',
-    logging: process.env.NODE_ENV === 'development',
+    // Disable synchronize by default to prevent metadata table errors
+    // Only enable if explicitly requested
+    synchronize: process.env.DB_SYNC?.toLowerCase() === 'true',
+    migrationsRun: isProduction || process.env.DB_AUTO_MIGRATE?.toLowerCase() === 'true',
+    logging: isDevelopment,
     ssl: getSslConfig(parsedUrl),
+    // Improve connection handling
+    retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3', 10),
+    retryDelay: parseInt(process.env.DB_RETRY_DELAY || '3000', 10),
     extra: {
       connectionLimit: parseInt(
         process.env.DATABASE_CONNECTION_LIMIT || '10',
         10,
       ),
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
     },
   };
 });
