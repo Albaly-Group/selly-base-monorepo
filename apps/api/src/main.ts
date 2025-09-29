@@ -26,11 +26,7 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      /\.albaly\.jp$/,
-    ],
+    origin: ['http://localhost:3000', 'http://localhost:3001', /\.albaly\.jp$/],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
@@ -75,9 +71,7 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3001);
   console.log('🚀 NestJS API is running on http://localhost:3001');
-  console.log(
-    '📚 API Documentation available at http://localhost:3001/docs',
-  );
+  console.log('📚 API Documentation available at http://localhost:3001/docs');
 }
 
 // Only run bootstrap if not in serverless environment

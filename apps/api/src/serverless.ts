@@ -47,15 +47,8 @@ async function createNestServer() {
   app.enableCors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? [
-            /\.vercel\.app$/,
-            /\.albaly\.jp$/,
-          ]
-        : [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            /\.albaly\.jp$/,
-          ],
+        ? [/\.vercel\.app$/, /\.albaly\.jp$/]
+        : ['http://localhost:3000', 'http://localhost:3001', /\.albaly\.jp$/],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
