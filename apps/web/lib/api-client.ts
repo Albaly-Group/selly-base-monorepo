@@ -272,7 +272,7 @@ class ApiClient {
       throw new Error('API not available - no backend URL configured');
     }
 
-    const response = await fetch(`${this.baseUrl}/api/health`, {
+    const response = await fetch(`${this.baseUrl}/health`, {
       method: 'GET',
       headers: this.getHeaders(),
       credentials: 'include',
@@ -288,7 +288,7 @@ class ApiClient {
 
   // Authentication endpoints
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await this.post<LoginResponse>('/api/auth/login', { email, password });
+    const response = await this.post<LoginResponse>('/api/v1/auth/login', { email, password });
     if (response.access_token) {
       this.setToken(response.access_token);
     }
@@ -296,11 +296,11 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<User> {
-    return this.get<User>('/api/auth/me');
+    return this.get<User>('/api/v1/auth/me');
   }
 
   async refreshToken(): Promise<LoginResponse> {
-    const response = await this.post<LoginResponse>('/api/auth/refresh');
+    const response = await this.post<LoginResponse>('/api/v1/auth/refresh');
     if (response.access_token) {
       this.setToken(response.access_token);
     }
@@ -314,71 +314,71 @@ class ApiClient {
 
   // Companies endpoints
   async getCompanies(params?: CompanySearchParams): Promise<ApiResponse<any[]>> {
-    return this.get<ApiResponse<any[]>>('/api/companies', params);
+    return this.get<ApiResponse<any[]>>('/api/v1/companies', params);
   }
 
   async searchCompanies(params?: CompanySearchParams): Promise<PaginatedResponse<any>> {
-    return this.get<PaginatedResponse<any>>('/api/companies/search', params);
+    return this.get<PaginatedResponse<any>>('/api/v1/companies/search', params);
   }
 
   async getCompanyById(id: string, organizationId?: string): Promise<any> {
     const params = organizationId ? { organizationId } : undefined;
-    return this.get<any>(`/api/companies/${id}`, params);
+    return this.get<any>(`/api/v1/companies/${id}`, params);
   }
 
   async createCompany(companyData: any): Promise<any> {
-    return this.post<any>('/api/companies', companyData);
+    return this.post<any>('/api/v1/companies', companyData);
   }
 
   async updateCompany(id: string, updateData: any): Promise<any> {
-    return this.put<any>(`/api/companies/${id}`, updateData);
+    return this.put<any>(`/api/v1/companies/${id}`, updateData);
   }
 
   async deleteCompany(id: string, organizationId?: string): Promise<{ success: boolean; message: string }> {
     const endpoint = organizationId 
-      ? `/api/companies/${id}?organizationId=${organizationId}`
-      : `/api/companies/${id}`;
+      ? `/api/v1/companies/${id}?organizationId=${organizationId}`
+      : `/api/v1/companies/${id}`;
     return this.delete<{ success: boolean; message: string }>(endpoint);
   }
 
   async bulkCreateCompanies(companies: any[]): Promise<any> {
-    return this.post<any>('/api/companies/bulk', { companies });
+    return this.post<any>('/api/v1/companies/bulk', { companies });
   }
 
   // Company Lists endpoints
   async getCompanyLists(organizationId?: string): Promise<any[]> {
     const params = organizationId ? { organizationId } : undefined;
-    return this.get<any[]>('/api/company-lists', params);
+    return this.get<any[]>('/api/v1/company-lists', params);
   }
 
   async getCompanyListById(id: string, organizationId?: string): Promise<any> {
     const params = organizationId ? { organizationId } : undefined;
-    return this.get<any>(`/api/company-lists/${id}`, params);
+    return this.get<any>(`/api/v1/company-lists/${id}`, params);
   }
 
   async createCompanyList(listData: any): Promise<any> {
-    return this.post<any>('/api/company-lists', listData);
+    return this.post<any>('/api/v1/company-lists', listData);
   }
 
   async updateCompanyList(id: string, updateData: any): Promise<any> {
-    return this.put<any>(`/api/company-lists/${id}`, updateData);
+    return this.put<any>(`/api/v1/company-lists/${id}`, updateData);
   }
 
   async deleteCompanyList(id: string): Promise<{ success: boolean; message: string }> {
-    return this.delete<{ success: boolean; message: string }>(`/api/company-lists/${id}`);
+    return this.delete<{ success: boolean; message: string }>(`/api/v1/company-lists/${id}`);
   }
 
   async getCompanyListItems(id: string, organizationId?: string): Promise<any[]> {
     const params = organizationId ? { organizationId } : undefined;
-    return this.get<any[]>(`/api/company-lists/${id}/items`, params);
+    return this.get<any[]>(`/api/v1/company-lists/${id}/items`, params);
   }
 
   async addCompaniesToList(listId: string, companyIds: string[]): Promise<any> {
-    return this.post<any>(`/api/company-lists/${listId}/companies`, { companyIds });
+    return this.post<any>(`/api/v1/company-lists/${listId}/companies`, { companyIds });
   }
 
   async removeCompaniesFromList(listId: string, companyIds: string[]): Promise<any> {
-    return this.delete<any>(`/api/company-lists/${listId}/companies?companyIds=${companyIds.join(',')}`);
+    return this.delete<any>(`/api/v1/company-lists/${listId}/companies?companyIds=${companyIds.join(',')}`);
   }
 }
 
