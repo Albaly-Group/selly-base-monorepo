@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiCompaniesService, SearchFilters, CompanyCreateRequest, CompanyUpdateRequest } from '../services/api-companies-service';
-import { ApiCompanyListsService, CompanyListFilters, CompanyListItemFilters } from '../services/api-company-lists-service';
+import { ApiCompanyListsService } from '../services/api-company-lists-service';
+import { CompanyListFilters, CompanyListItemFilters, CompanyListCreate, CompanyListUpdate, BulkCompanyIdsWithNote, BulkCompanyIds } from '@/lib/types/company-lists';
 import { useAuth } from '@/lib/auth';
-import { CompanyListCreate, CompanyListUpdate, BulkCompanyIdsWithNote, BulkCompanyIds } from '@/lib/types/company-lists';
 
 // Companies hooks
 export function useCompaniesSearch(filters: SearchFilters) {

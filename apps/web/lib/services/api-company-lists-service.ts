@@ -52,8 +52,8 @@ export class ApiCompanyListsService {
       }
 
       // Apply search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
+      if (filters.q) {
+        const searchLower = filters.q.toLowerCase();
         filteredLists = filteredLists.filter(list =>
           list.name.toLowerCase().includes(searchLower) ||
           list.description.toLowerCase().includes(searchLower)
@@ -102,8 +102,8 @@ export class ApiCompanyListsService {
       }
 
       // Apply search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
+      if (filters.q) {
+        const searchLower = filters.q.toLowerCase();
         filteredLists = filteredLists.filter(list =>
           list.name.toLowerCase().includes(searchLower) ||
           list.description.toLowerCase().includes(searchLower)
@@ -272,8 +272,8 @@ export class ApiCompanyListsService {
 
       // Apply search filter
       let filteredItems = companyListItems;
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
+      if (filters.q) {
+        const searchLower = filters.q.toLowerCase();
         filteredItems = companyListItems.filter(item =>
           item.company?.displayName.toLowerCase().includes(searchLower) ||
           item.company?.registrationId?.toLowerCase().includes(searchLower) ||
@@ -281,31 +281,19 @@ export class ApiCompanyListsService {
         );
       }
 
-      // Apply pagination
-      const page = filters.page || 1;
+      // Apply pagination (cursor-based to match interface)
       const limit = filters.limit || 25;
-      const offset = (page - 1) * limit;
-      const paginatedItems = filteredItems.slice(offset, offset + limit);
+      const paginatedItems = filteredItems.slice(0, limit);
 
       return {
         items: paginatedItems,
-        total: filteredItems.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredItems.length / limit),
-        hasNext: offset + limit < filteredItems.length,
-        hasPrev: page > 1,
+        nextCursor: filteredItems.length > limit ? `cursor-${limit}` : null,
       };
     } catch (error) {
       console.error('API getListItems failed, returning empty result:', error);
       return {
         items: [],
-        total: 0,
-        page: 1,
-        limit: 25,
-        totalPages: 0,
-        hasNext: false,
-        hasPrev: false,
+        nextCursor: null,
       };
     }
   }
@@ -352,5 +340,3 @@ export class ApiCompanyListsService {
     }
   }
 }
-
-export { CompanyListFilters, PaginatedCompanyLists, CompanyListItemFilters, PaginatedCompanyListItems };
