@@ -82,8 +82,22 @@ selly-base-monorepo/
 3. **Backend Environment Variables**:
    Configure the following in Vercel Dashboard → Settings → Environment Variables:
    
+   **For Demo/Development (No Database Required):**
    ```bash
-   # Database Configuration (if using PostgreSQL)
+   # Skip database entirely (recommended for quick setup)
+   SKIP_DATABASE=true
+   
+   # JWT Configuration (required)
+   JWT_SECRET=your-jwt-secret-key
+   JWT_EXPIRES_IN=1d
+   
+   # Node Environment
+   NODE_ENV=production
+   ```
+   
+   **For Production with Database:**
+   ```bash
+   # Database Configuration
    DATABASE_HOST=your-db-host
    DATABASE_PORT=5432
    DATABASE_USERNAME=your-username
@@ -93,9 +107,6 @@ selly-base-monorepo/
    # JWT Configuration
    JWT_SECRET=your-jwt-secret-key
    JWT_EXPIRES_IN=1d
-   
-   # Optional: Skip database for demo mode
-   SKIP_DATABASE=true
    
    # Node Environment
    NODE_ENV=production
@@ -193,16 +204,23 @@ After deploying both applications, configure the frontend to connect to the API:
 | `JWT_SECRET` | JWT signing secret | `your-secret-key` |
 | `JWT_EXPIRES_IN` | Token expiration | `1d` |
 
-### Database Variables (Optional)
+### Database Variables
+
+**Option 1: Skip Database (Recommended for Demo)**
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_HOST` | PostgreSQL host | `localhost` |
+| `SKIP_DATABASE` | Skip database entirely | `true` |
+
+**Option 2: Use PostgreSQL Database**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_HOST` | PostgreSQL host | `your-db-host.com` |
 | `DATABASE_PORT` | Database port | `5432` |
 | `DATABASE_USERNAME` | Database user | `postgres` |
-| `DATABASE_PASSWORD` | Database password | `password` |
+| `DATABASE_PASSWORD` | Database password | `your-password` |
 | `DATABASE_NAME` | Database name | `selly_base` |
-| `SKIP_DATABASE` | Skip DB for demo mode | `true` |
 
 ### Setting Environment Variables
 

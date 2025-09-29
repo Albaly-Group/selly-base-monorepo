@@ -2,11 +2,10 @@ import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
-  // For development without actual database, return a mock configuration
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  // Skip database if explicitly requested
   const skipDatabase = process.env.SKIP_DATABASE === 'true';
   
-  if (isDevelopment && skipDatabase) {
+  if (skipDatabase) {
     return {
       type: 'postgres',
       synchronize: false,
