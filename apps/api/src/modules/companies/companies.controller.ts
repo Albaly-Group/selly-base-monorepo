@@ -12,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { User } from '../../entities';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser, CurrentOrganization } from '../auth/current-user.decorator';
+import { CreateCompanyDto, UpdateCompanyDto } from '../../dtos/company.dto';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -25,10 +28,10 @@ interface PaginatedResponse<T> {
   };
 }
 
-// Temporary mock user for development (will be replaced with real auth)
-const mockUser: User = {
+// For endpoints that don't require authentication, we create a mock user
+const createMockUser = (organizationId?: string): User => ({
   id: '123e4567-e89b-12d3-a456-426614174000',
-  organizationId: '123e4567-e89b-12d3-a456-426614174001',
+  organizationId: organizationId || '123e4567-e89b-12d3-a456-426614174001',
   email: 'test@example.com',
   name: 'Test User',
   passwordHash: 'hashed',
@@ -43,7 +46,7 @@ const mockUser: User = {
   organization: {} as any,
   ownedLists: [],
   roles: [],
-};
+});
 
 interface CompanySearchQuery {
   searchTerm?: string;
@@ -77,6 +80,8 @@ export class CompaniesController {
       province: query.province,
     };
 
+    // For public search, use mock user with provided organizationId
+    const mockUser = createMockUser(query.organizationId);
     return this.companiesService.searchCompanies(searchParams, mockUser);
   }
 
@@ -91,25 +96,41 @@ export class CompaniesController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.companiesService.getCompanyById(id, organizationId || mockUser.organizationId);
+    return this.companiesService.getCompanyById(id, organizationId);
   }
 
   @Post()
-  async createCompany(@Body() createCompanyDto: any) {
-    return this.companiesService.createCompany(createCompanyDto, mockUser);
+  @UseGuards(JwtAuthGuard)
+  async createCompany(
+    @Body(new ValidationPipe({ transform: true })) createCompanyDto: CreateCompanyDto,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
+  ) {
+    const userWithOrg = createMockUser(organizationId);
+    return this.companiesService.createCompany(createCompanyDto, userWithOrg);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async updateCompany(
     @Param('id') id: string,
-    @Body() updateCompanyDto: any,
+    @Body(new ValidationPipe({ transform: true })) updateCompanyDto: UpdateCompanyDto,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
   ) {
-    return this.companiesService.updateCompany(id, updateCompanyDto, mockUser);
+    const userWithOrg = createMockUser(organizationId);
+    return this.companiesService.updateCompany(id, updateCompanyDto, userWithOrg);
   }
 
   @Delete(':id')
-  async deleteCompany(@Param('id') id: string) {
-    await this.companiesService.deleteCompany(id, mockUser);
+  @UseGuards(JwtAuthGuard)
+  async deleteCompany(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
+  ) {
+    const userWithOrg = createMockUser(organizationId);
+    await this.companiesService.deleteCompany(id, userWithOrg);
     return { message: 'Company deleted successfully' };
   }
 
@@ -118,6 +139,6 @@ export class CompaniesController {
     @Body('ids') ids: string[],
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.companiesService.getCompaniesByIds(ids, organizationId || mockUser.organizationId);
+    return this.companiesService.getCompaniesByIds(ids, organizationId);
   }
 }
