@@ -1,319 +1,274 @@
-# Database Schema Implementation Plan & Next Agent Prompt
+# ✅ TURBOREPO MONOREPO MIGRATION COMPLETED 
 
-## Current Status: Schema Design Complete ✅
+## Current Status: Monorepo Architecture Complete ✅
 
-The database schema redesign is **complete** with the following key features implemented:
+The project has been **successfully migrated** from a single Next.js application with direct database connection to a **turborepo monorepo structure** with NestJS backend API.
 
-### ✅ Completed: Database Schema v2.0
-- **Multi-tenant SaaS architecture** with organization scoping
-- **SaaS-aware data sourcing** with proper privacy controls
-- **Performance optimizations** with strategic indexing
-- **Complete audit trails** and comprehensive logging
-- **Vector search support** for AI/ML features
-- **Sample data** demonstrating shared vs private data isolation
+### ✅ Architecture Migration Completed:
+- **Turborepo monorepo setup** with proper workspace configuration
+- **NestJS backend application** in `apps/api` (port 3001)
+- **Next.js frontend** migrated to `apps/web` (port 3000)
+- **Shared TypeScript types** package in `packages/types`
+- **API client** for frontend-backend communication
+- **CORS and development server** configuration
+- **Build and development scripts** with Turbo
+- **Integration testing page** at `/api-test`
 
-### Key Schema Features Implemented:
-1. **`organizations`** - Multi-tenant foundation
-2. **`users`** - Organization-scoped users with RBAC
-3. **`companies`** - Canonical company data with privacy controls
-4. **`company_lists`** - Enhanced list management with smart features
-5. **`lead_projects`** - Project-based workflow management
-6. **Complete indexing strategy** for optimal performance
-7. **Materialized views** for complex queries
+### Key Architecture Features Implemented:
+1. **`apps/api`** - NestJS backend with TypeORM foundations
+2. **`apps/web`** - Next.js frontend with API client
+3. **`packages/types`** - Shared type definitions
+4. **Turborepo configuration** for coordinated builds
+5. **API client** replacing direct database access
+6. **Environment configuration** for both applications
 
 ---
 
-## 🚀 NEXT PHASE: Application Implementation
+## 🚀 NEXT PHASE: Complete Backend API Implementation
 
 ### **Task for Next Developer/Agent:**
 
-Implement the application layer to use the new optimized database schema v2.0. The existing frontend components and API endpoints need to be updated to work with the new SaaS-aware multi-tenant architecture.
+Complete the NestJS backend API implementation to fully replace the existing database layer. The monorepo structure is ready - now implement the business logic.
 
 ## Implementation Priority Order
 
-### **Phase 1: Database Connection & Core Services (HIGH PRIORITY)**
+### **Phase 1: ✅ COMPLETED - Monorepo Infrastructure**
 
-#### 1.1 Database Connection Setup
-**File: `/lib/database.ts`** (CREATE NEW)
+#### ✅ 1.1 Turborepo Setup
+- ✅ **Monorepo Structure**: Created `apps/`, `packages/` structure
+- ✅ **Turbo Configuration**: Build pipelines and task orchestration
+- ✅ **Workspace Dependencies**: Proper package.json configurations
+
+#### ✅ 1.2 NestJS Backend (`apps/api`)
+- ✅ **Basic NestJS Application**: Controller, service, module structure
+- ✅ **TypeORM Foundation**: Database configuration and base entities
+- ✅ **API Endpoints**: Health check and sample companies endpoint
+- ✅ **CORS Configuration**: Frontend communication enabled
+
+#### ✅ 1.3 Frontend Migration (`apps/web`)
+- ✅ **Codebase Migration**: Moved all Next.js files to `apps/web`
+- ✅ **API Client**: HTTP client replacing direct database access
+- ✅ **Shared Types Integration**: Using `@selly/types` package
+- ✅ **Environment Configuration**: API URL configuration
+
+#### ✅ 1.4 Shared Types (`packages/types`)
+- ✅ **Type Definitions**: Organization, User, Company types
+- ✅ **API Contracts**: Request/response interfaces
+- ✅ **Build Configuration**: TypeScript compilation
+
+### **Phase 2: Backend API Implementation (HIGH PRIORITY)**
+
+#### 2.1 Complete Database Integration
+**File: `/apps/api/src/database/`** (ENHANCE EXISTING)
 ```typescript
-// Implement PostgreSQL connection pool using pg or Prisma
-// Support connection string from environment variables
-// Include connection pooling and error handling
-// Add organization context for all queries
+// Complete TypeORM entity definitions
+// Add relationships between entities
+// Implement proper indexing strategy
+// Add audit logging entities
 ```
 
-**Environment Variables Needed:**
-```
-DATABASE_URL=postgresql://user:password@host:port/database
-DATABASE_POOL_SIZE=20
-```
-
-#### 1.2 Update Type Definitions
-**File: `/lib/types/company-lists.ts`** (UPDATE EXISTING)
-- Add new fields from schema v2.0:
-  - `organization_id` to CompanyCore
-  - `data_source`, `source_reference`, `is_shared_data`, `data_sensitivity`
-  - Enhanced privacy and multi-tenancy fields
-
-**File: `/lib/types.ts`** (UPDATE EXISTING)
-- Add Organization interface
-- Update User interface with organization_id
-- Add SaaS-specific types
-
-#### 1.3 Database Service Layer
-**File: `/lib/services/database-service.ts`** (CREATE NEW)
+**File: `/apps/api/src/config/`** (ENHANCE EXISTING)
 ```typescript
-// Base database service class with:
-// - Organization-scoped queries
-// - Transaction support
-// - Audit logging integration
-// - Error handling with proper typing
+// Complete database configuration
+// Add connection pooling
+// Environment-based configuration
+// Migration support
 ```
 
-### **Phase 2: Company Data Service (HIGH PRIORITY)**
-
-#### 2.1 Companies Service
-**File: `/lib/services/companies-service.ts`** (CREATE NEW)
+#### 2.2 Companies Service Enhancement
+**File: `/apps/api/src/modules/companies/`** (ENHANCE EXISTING)
 ```typescript
-class CompaniesService {
-  // Search companies with SaaS privacy controls
-  async searchCompanies(organizationId: string, filters: SearchFilters): Promise<SearchResult<CompanySummary>>
-  
-  // Get shared reference data (Albaly/DBD)
-  async getSharedCompanies(filters: SearchFilters): Promise<CompanySummary[]>
-  
-  // Get organization-specific companies
-  async getOrganizationCompanies(organizationId: string, filters: SearchFilters): Promise<CompanySummary[]>
-  
-  // Create customer-specific company
-  async createCompany(organizationId: string, companyData: CompanyCreateRequest): Promise<CompanyCore>
-  
-  // Update company with audit trail
-  async updateCompany(companyId: string, updates: CompanyUpdateRequest, userId: string): Promise<CompanyCore>
+// Complete CompaniesService with all database operations
+// Add organization-scoped queries with proper security
+// Implement search with filtering and pagination
+// Add audit logging for all operations
+// Multi-tenant data isolation
+```
+
+#### 2.3 Authentication & Authorization
+**File: `/apps/api/src/modules/auth/`** (CREATE NEW)
+```typescript
+class AuthService {
+  // JWT-based authentication
+  async login(email: string, password: string): Promise<{ token: string, user: User }>
+  async validateToken(token: string): Promise<User | null>
+  async getUserWithOrganization(userId: string): Promise<User & { organization: Organization }>
+}
+
+// Guards for route protection
+// Organization context middleware
+// Role-based access control
+```
+
+#### 2.4 List Management Service
+**File: `/apps/api/src/modules/lists/`** (CREATE NEW)
+```typescript
+class CompanyListsService {
+  // Create, read, update, delete operations for lists
+  async searchLists(organizationId: string, filters: SearchFilters): Promise<SearchResult<CompanyList>>
+  async addCompaniesToList(listId: string, companyIds: string[], userId: string): Promise<void>
+  async removeCompaniesFromList(listId: string, companyIds: string[], userId: string): Promise<void>
+  // Smart list functionality
+  // Organization-scoped with proper access controls
 }
 ```
 
-#### 2.2 Update Existing Company Lists Service
-**File: `/lib/services/company-lists-service.ts`** (UPDATE EXISTING)
-- Replace mock data with real database queries
-- Add organization scoping to all operations
-- Implement smart list functionality
-- Add lead scoring integration
+### **Phase 3: Frontend API Integration (MEDIUM PRIORITY)**
 
-### **Phase 3: API Endpoints Update (MEDIUM PRIORITY)**
+#### 3.1 Update Existing Components
+**Files: `/apps/web/components/`** (UPDATE EXISTING)
+- Replace all direct database imports with API client calls
+- Update authentication components for API-based auth
+- Add loading states and error handling for API calls
+- Update search and filtering components
 
-#### 3.1 Update Company Lists API
-**Files: `/app/api/v1/company-lists/**/*.ts`** (UPDATE EXISTING)
-- Add organization context from user authentication
-- Implement proper SaaS data filtering
-- Add support for smart list criteria
-- Include audit logging for all operations
+#### 3.2 API Client Enhancement
+**File: `/apps/web/lib/api-client.ts`** (ENHANCE EXISTING)
+- Add authentication token handling
+- Implement retry logic and error handling
+- Add request/response interceptors
+- Cache management for performance
 
-#### 3.2 Add Companies Search API
-**File: `/app/api/v1/companies/route.ts`** (CREATE NEW)
-```typescript
-// GET /api/v1/companies/search - Multi-tenant company search
-// POST /api/v1/companies - Create customer-specific company
-// Support both shared data and organization-private data
-```
+#### 3.3 State Management
+**Files: `/apps/web/lib/`** (CREATE NEW)
+- Add React Query or similar for API state management
+- Implement optimistic updates
+- Add offline support considerations
+- Error boundary implementations
 
-#### 3.3 Add Lead Projects API
-**File: `/app/api/v1/lead-projects/**/*.ts`** (CREATE NEW)
-```typescript
-// Full CRUD operations for lead projects
-// Organization-scoped with proper access controls
-// Integration with company lists and tasks
-```
+### **Phase 4: Advanced Features (MEDIUM PRIORITY)**
 
-### **Phase 4: Frontend Components Update (MEDIUM PRIORITY)**
+#### 4.1 Real-time Features
+- WebSocket integration for real-time updates
+- Live notifications for list changes
+- Collaborative features for team management
 
-#### 4.1 Update Search Components
-**Files: `/components/company-search.tsx`, `/components/company-table.tsx`**
-- Add organization context to all API calls
-- Display data source attribution ("From Albaly list", "Customer input")
-- Add data sensitivity indicators
-- Implement semantic search toggle
+#### 4.2 API Documentation
+- Complete Swagger/OpenAPI documentation
+- API versioning strategy
+- Rate limiting and API quotas
 
-#### 4.2 Update List Management
-**Files: `/components/list-*.tsx`**
-- Add smart list configuration UI
-- Show shared vs private data indicators
-- Add collaboration features for team visibility
-- Implement lead scoring visualization
-
-#### 4.3 Add Multi-tenant Controls
-**Files: `/components/organization-*.tsx`** (CREATE NEW)
-- Organization switcher (if user has multiple orgs)
-- Data source filtering controls
-- Privacy level indicators
-- Shared data browser
-
-### **Phase 5: Authentication & Authorization (HIGH PRIORITY)**
-
-#### 5.1 Update Authentication System
-**File: `/lib/auth.tsx`** (UPDATE EXISTING)
-- Add organization context to user session
-- Support multiple organization memberships
-- Implement RBAC with new permission system
-
-#### 5.2 Add Organization Management
-**Files: `/app/settings/organization/page.tsx`** (CREATE NEW)
-- Organization profile management
-- User invitation and role management
-- Data retention policies
-- Subscription tier controls
-
-### **Phase 6: Advanced Features (LOW PRIORITY)**
-
-#### 6.1 Smart Lists Implementation
-- Auto-updating list criteria engine
-- Background job system for list refresh
-- Smart notification system
-
-#### 6.2 Lead Projects Workflow
-- Complete project management interface
-- Task assignment and tracking
-- Progress dashboards and reporting
-
-#### 6.3 Semantic Search
-- Vector search implementation
-- AI-powered company recommendations
-- Search suggestion system
+#### 4.3 Testing & Quality
+- Unit tests for all API endpoints
+- Integration tests for frontend-backend communication
+- E2E tests for critical workflows
+- API contract testing
 
 ---
 
-## 🔧 Technical Implementation Guidelines
+## 🔧 Development Commands
 
-### Database Best Practices
-1. **Always include organization context** in queries where applicable
-2. **Use prepared statements** to prevent SQL injection
-3. **Implement proper transaction handling** for multi-table operations
-4. **Add comprehensive error handling** with proper error types
-5. **Include audit logging** for all data modifications
+### Start Development Environment
+```bash
+# All applications
+npm run dev
 
-### SaaS Privacy Guidelines
-1. **Never show customer-specific data** to other organizations
-2. **Always validate organization ownership** before data access
-3. **Implement proper data sensitivity controls**
-4. **Use clear data source attribution** in UI
-5. **Respect data visibility settings** (private, team, org, public)
+# Individual apps
+cd apps/api && npm run dev     # Backend: http://localhost:3001
+cd apps/web && npm run dev     # Frontend: http://localhost:3000
+cd packages/types && npm run dev  # Types in watch mode
+```
 
-### Performance Considerations
-1. **Use the materialized view** (`mv_company_search`) for search operations
-2. **Implement proper pagination** for large result sets
-3. **Use database indexes effectively** for complex filters
-4. **Consider caching strategies** for frequently accessed data
-5. **Monitor query performance** and optimize as needed
+### Build & Test
+```bash
+npm run build                  # Build all packages
+npm run lint                   # Lint all packages
+npm test                       # Run tests (when implemented)
+```
 
-### Testing Requirements
-1. **Multi-tenancy isolation testing** - ensure no data leakage
-2. **Performance testing** with realistic data volumes
-3. **API endpoint testing** with proper error scenarios
-4. **Frontend component testing** with mock API responses
-5. **End-to-end testing** of complete user workflows
+### API Testing
+- Health Check: http://localhost:3001/api/health
+- Companies: http://localhost:3001/api/companies  
+- Integration Test Page: http://localhost:3000/api-test
 
 ---
 
 ## 📋 Implementation Checklist
 
-### Phase 1: Foundation ⏳
-- [ ] Set up PostgreSQL connection with pooling
-- [ ] Update TypeScript interfaces for schema v2.0
-- [ ] Create base database service layer
-- [ ] Add environment variable configuration
-- [ ] Test database connectivity and basic queries
+### Phase 2: Backend API ⏳
+- [ ] Complete TypeORM entities with relationships
+- [ ] Implement full companies CRUD with organization scoping
+- [ ] Add JWT authentication system
+- [ ] Create list management API endpoints
+- [ ] Add comprehensive error handling and validation
+- [ ] Implement audit logging across all operations
 
-### Phase 2: Core Services ⏳
-- [ ] Implement CompaniesService with SaaS controls
-- [ ] Update CompanyListsService to use real database
-- [ ] Add comprehensive error handling
-- [ ] Implement audit logging integration
-- [ ] Add unit tests for service layer
+### Phase 3: Frontend Integration ⏳
+- [ ] Update all existing components to use API client
+- [ ] Replace authentication system with API-based auth
+- [ ] Add proper loading states and error handling
+- [ ] Update search and filtering to use backend API
+- [ ] Implement optimistic updates for better UX
 
-### Phase 3: API Layer ⏳
-- [ ] Update existing company-lists API endpoints
-- [ ] Create new companies search API
-- [ ] Add lead projects API endpoints
-- [ ] Implement proper authentication middleware
-- [ ] Add API documentation and testing
-
-### Phase 4: Frontend ⏳
-- [ ] Update search and filter components
-- [ ] Add multi-tenant UI controls
-- [ ] Implement data source indicators
-- [ ] Update list management interface
-- [ ] Add organization management pages
-
-### Phase 5: Integration ⏳
-- [ ] End-to-end testing of updated workflows
-- [ ] Performance optimization and monitoring
-- [ ] Security testing and validation
-- [ ] User acceptance testing
-- [ ] Documentation updates
+### Phase 4: Enhancement ⏳
+- [ ] Add Swagger API documentation
+- [ ] Implement comprehensive testing
+- [ ] Add real-time features with WebSockets
+- [ ] Performance optimization and caching
+- [ ] Security hardening and rate limiting
 
 ---
 
-## 🚨 Critical Requirements
+## 🚨 Critical Migration Notes
 
-### Security & Privacy
-- **MANDATORY**: All queries must include organization scoping where applicable
-- **MANDATORY**: Validate user access rights before any data operations
-- **MANDATORY**: Never expose customer-private data to other organizations
-- **MANDATORY**: Implement proper audit trails for compliance
+### Database Access Pattern
+**OLD (Direct):**
+```typescript
+import DatabaseService from '@/lib/database'
+const companies = await DatabaseService.getInstance().query(sql, params)
+```
 
-### Performance
-- **TARGET**: < 50ms response time for company search queries
-- **TARGET**: < 100ms response time for list operations
-- **TARGET**: Support 1000+ concurrent users
-- **TARGET**: 99.9% API uptime
+**NEW (API):**
+```typescript
+import { apiClient } from '@/lib/api-client'
+const companies = await apiClient.getCompanies(filters)
+```
 
-### Data Quality
-- **ENSURE**: Consistent data source attribution throughout UI
-- **ENSURE**: Proper validation of all user inputs
-- **ENSURE**: Graceful handling of missing or invalid data
-- **ENSURE**: Clear error messages for users
+### Type Safety
+- All types are now shared via `@selly/types` package
+- Frontend and backend use identical type definitions
+- API contracts are type-safe with proper validation
+
+### Development Workflow
+1. Update backend API endpoints in `apps/api`
+2. Update shared types in `packages/types` if needed
+3. Update frontend components in `apps/web` to use new API
+4. Test integration using `/api-test` page
 
 ---
 
-## 📞 Support & Resources
+## 📞 Architecture Resources
 
-### Schema Reference
-- **Primary Schema**: `/selly-base-optimized-schema.sql`
-- **Migration Guide**: `/SCHEMA_MIGRATION_GUIDE.md`
-- **Compatibility Analysis**: `/SCHEMA_COMPATIBILITY_ANALYSIS.md`
+### Documentation
+- **Primary Architecture**: `/docs/TURBOREPO_ARCHITECTURE.md`
+- **Migration Guide**: This updated implementation plan
+- **Original Database Schema**: `/selly-base-optimized-schema.sql`
 
-### Architecture Documents
-- **User Journey Analysis**: `/USER_JOURNEY_OPTIMIZATION.md`
-- **Database Analysis**: `/DATABASE_REDESIGN_ANALYSIS.md`
-- **Project Summary**: `/PROJECT_SUMMARY.md`
-
-### Key Schema Tables
-1. **`organizations`** - Multi-tenant foundation
-2. **`users`** - Organization-scoped users
-3. **`companies`** - Main company data with privacy controls
-4. **`company_lists`** - User-created collections
-5. **`lead_projects`** - Project workflow management
-6. **`audit_logs`** - Comprehensive change tracking
+### Key Files
+- **Turbo Config**: `/turbo.json`
+- **Root Workspace**: `/package.json`
+- **Backend App**: `/apps/api/`
+- **Frontend App**: `/apps/web/`
+- **Shared Types**: `/packages/types/`
 
 ---
 
 ## 🎯 Success Criteria
 
-The implementation will be considered successful when:
+The monorepo migration will be considered complete when:
 
-1. **Multi-tenant data isolation** is working perfectly (no data leakage between organizations)
-2. **Performance targets** are met (< 50ms search, < 100ms lists)
-3. **All existing frontend functionality** works with the new database
-4. **Data source attribution** is clear throughout the UI
-5. **SaaS privacy controls** are properly enforced
-6. **Audit trails** are complete and accessible
-7. **Smart list functionality** is operational
-8. **Lead project workflows** are fully implemented
+1. **✅ COMPLETED**: Turborepo monorepo structure is fully operational
+2. **⏳ IN PROGRESS**: All existing frontend functionality works via API calls
+3. **⏳ IN PROGRESS**: Multi-tenant data isolation is properly enforced  
+4. **⏳ IN PROGRESS**: Authentication system works with JWT tokens
+5. **⏳ IN PROGRESS**: Performance is maintained or improved over direct DB access
+6. **⏳ IN PROGRESS**: All existing features are API-driven
+7. **⏳ IN PROGRESS**: Comprehensive API documentation is available
 
 ---
 
-**Next Agent: Begin with Phase 1 (Database Connection & Core Services) and work through the checklist systematically. Each phase builds on the previous one, so maintain the order for best results.**
+**Next Agent: Focus on Phase 2 (Backend API Implementation) to complete the migration. The infrastructure is ready - now implement the business logic in the NestJS backend.**
 
-**Estimated Timeline: 6-8 weeks for complete implementation**
+**Estimated Timeline: 3-4 weeks for complete backend implementation**
 
-**Priority: HIGH - This is the foundation for the entire SaaS platform upgrade**
+**Priority: HIGH - This completes the architecture transformation from monolithic to service-oriented**

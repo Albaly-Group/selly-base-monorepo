@@ -1,6 +1,86 @@
-# Selly Base - B2B Prospecting Platform
+# Selly Base - B2B Prospecting Platform (Turborepo Monorepo)
 
-## Project Overview
+## Architecture Migration
+
+This project has been **migrated from a single Next.js application** to a **turborepo monorepo structure** with separated frontend and backend applications.
+
+### New Architecture Overview
+
+```
+selly-base-monorepo/
+├── apps/
+│   ├── web/          # Next.js frontend application (port 3000)
+│   └── api/          # NestJS backend API (port 3001)
+├── packages/
+│   └── types/        # Shared TypeScript type definitions
+├── docs/             # Documentation
+├── turbo.json        # Turborepo configuration
+└── package.json      # Root workspace configuration
+```
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Installation & Development
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Start all applications:**
+   ```bash
+   npm run dev
+   ```
+   This will start:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+
+3. **Test API connection:**
+   Visit http://localhost:3000/api-test
+
+### Individual Applications
+
+**Start backend only:**
+```bash
+cd apps/api && npm run dev
+```
+
+**Start frontend only:**
+```bash
+cd apps/web && npm run dev
+```
+
+## Migration Benefits
+
+- ✅ **Separation of Concerns**: Clear frontend/backend boundaries
+- ✅ **Type Safety**: Shared types across applications  
+- ✅ **Scalability**: Independent scaling and deployment
+- ✅ **Better DX**: Parallel development and debugging
+- ✅ **API-First**: RESTful API with future Swagger documentation
+
+## Applications
+
+### Frontend (`apps/web`) - Next.js
+- **Port**: 3000
+- **Features**: All existing UI functionality migrated
+- **API Client**: Communicates with NestJS backend
+
+### Backend (`apps/api`) - NestJS  
+- **Port**: 3001
+- **Features**: REST API, database abstraction, business logic
+- **Endpoints**: `/api/health`, `/api/companies`
+
+### Shared Types (`packages/types`)
+- TypeScript definitions shared between frontend and backend
+- Ensures type safety across the monorepo
+
+---
+
+## Original Project Overview
 Selly Base is a comprehensive B2B prospecting and lead management platform designed for business professionals and staff administrators. The platform enables users to search, filter, and manage company databases with advanced lead scoring capabilities.
 
 ## Current Implementation Status
