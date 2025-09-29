@@ -97,9 +97,22 @@ selly-base-monorepo/
    NODE_ENV=production
    ```
    
-   **For Production with Database:**
+   **For Production with Database (Option A - DATABASE_URL):**
    ```bash
-   # Database Configuration
+   # Database Configuration (Recommended - single connection string with SSL)
+   DATABASE_URL=postgresql://username:password@host:5432/database_name?sslmode=require
+   
+   # JWT Configuration
+   JWT_SECRET=your-jwt-secret-key
+   JWT_EXPIRES_IN=1d
+   
+   # Node Environment
+   NODE_ENV=production
+   ```
+   
+   **For Production with Database (Option B - Individual Variables):**
+   ```bash
+   # Database Configuration (Alternative - individual variables)
    DATABASE_HOST=your-db-host
    DATABASE_PORT=5432
    DATABASE_USERNAME=your-username
@@ -214,7 +227,15 @@ After deploying both applications, configure the frontend to connect to the API:
 |----------|-------------|---------|
 | `SKIP_DATABASE` | Skip database entirely | `true` |
 
-**Option 2: Use PostgreSQL Database**
+**Option 2: Use DATABASE_URL (Recommended for Production)**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/dbname?sslmode=require` |
+
+> **SSL Support**: The `DATABASE_URL` can include SSL parameters such as `?sslmode=require` or `?ssl=true`. These parameters are automatically parsed and applied to the database connection. This is essential for most cloud database providers that require SSL connections.
+
+**Option 3: Use Individual PostgreSQL Variables**
 
 | Variable | Description | Example |
 |----------|-------------|---------|
@@ -223,6 +244,8 @@ After deploying both applications, configure the frontend to connect to the API:
 | `DATABASE_USERNAME` | Database user | `postgres` |
 | `DATABASE_PASSWORD` | Database password | `your-password` |
 | `DATABASE_NAME` | Database name | `selly_base` |
+
+> **Note**: If `DATABASE_URL` is provided, it takes precedence over individual database variables. Most cloud database providers (Heroku Postgres, Supabase, Railway, etc.) provide a `DATABASE_URL` connection string which is more convenient to use.
 
 ### Setting Environment Variables
 
@@ -234,7 +257,11 @@ After deploying both applications, configure the frontend to connect to the API:
 2. **Vercel CLI**:
    ```bash
    vercel env add JWT_SECRET
+   vercel env add DATABASE_URL
+   # OR use individual database variables:
    vercel env add DATABASE_HOST
+   vercel env add DATABASE_USERNAME
+   # etc...
    ```
 
 ## Development vs Production
@@ -282,12 +309,35 @@ The default timeout is 10 seconds. For longer operations:
 ```
 
 #### 3. Database Connection Issues
+
+**SSL Connection Errors** (e.g., "connection is insecure"):
+```bash
+# Add SSL parameters to your DATABASE_URL
+DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=require
+
+# Or use ssl=true parameter
+DATABASE_URL=postgresql://user:pass@host:5432/db?ssl=true
+```
+
+**General Database Issues**:
 ```bash
 # Enable debug logging
 NODE_ENV=development
 
-# Or skip database entirely
+# Or skip database entirely for testing
 SKIP_DATABASE=true
+```
+
+**Common Cloud Provider URLs**:
+```bash
+# Heroku Postgres
+DATABASE_URL=postgres://user:pass@host:5432/db?sslmode=require
+
+# Supabase
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres?sslmode=require
+
+# Railway
+DATABASE_URL=postgresql://postgres:pass@host.railway.app:5432/railway?sslmode=require
 ```
 
 #### 4. Frontend Build Failures

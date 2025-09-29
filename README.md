@@ -171,10 +171,12 @@ For production with PostgreSQL database:
 **Backend (`apps/api/.env`):**
 ```env
 SKIP_DATABASE=false
-DATABASE_URL=postgresql://user:password@localhost:5432/selly_base
+DATABASE_URL=postgresql://user:password@localhost:5432/selly_base?sslmode=require
 NODE_ENV=production
 JWT_SECRET=your-production-secret
 ```
+
+> **Note**: You can use either `DATABASE_URL` (recommended) or individual database environment variables (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`). If `DATABASE_URL` is provided, it takes precedence. For cloud databases, include SSL parameters like `?sslmode=require` or `?ssl=true`.
 
 ## 📊 Current Implementation Status
 
