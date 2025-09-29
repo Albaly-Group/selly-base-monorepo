@@ -26,6 +26,11 @@ async function createNestServer() {
     },
   );
 
+  // Set global prefix for API routes (excluding root endpoints)
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'health', 'docs', 'docs/(.*)'],
+  });
+
   // Global exception filter for consistent error handling
   app.useGlobalFilters(new AllExceptionsFilter());
 

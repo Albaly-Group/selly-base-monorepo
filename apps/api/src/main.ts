@@ -7,6 +7,11 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Set global prefix for API routes (excluding root endpoints)
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'health', 'docs', 'docs/(.*)'],
+  });
+
   // Global exception filter for consistent error handling
   app.useGlobalFilters(new AllExceptionsFilter());
 
@@ -52,7 +57,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
@@ -61,7 +66,7 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3001);
   console.log('🚀 NestJS API is running on http://localhost:3001');
   console.log(
-    '📚 API Documentation available at http://localhost:3001/api/docs',
+    '📚 API Documentation available at http://localhost:3001/docs',
   );
 }
 
