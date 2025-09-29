@@ -1,6 +1,39 @@
 # Deployment Guide
 
-## Vercel Deployment
+## Deployment Options
+
+### Option 1: Separate Vercel Deployments (Recommended)
+
+Deploy frontend and backend as separate Vercel projects for maximum flexibility.
+
+**Quick Start:**
+```bash
+# 1. Push your code to GitHub
+git push origin main
+
+# 2. Create two Vercel projects:
+# - Frontend project: Import repository, set root to `apps/web`
+# - Backend project: Import repository, set root to `apps/api`
+```
+
+**Complete Guide:** See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions.
+
+**Benefits:**
+- Independent scaling and deployment cycles
+- Optimized build configurations per application
+- Team independence (frontend/backend teams)
+- Environment isolation
+
+### Option 2: Traditional Server Deployment
+
+Deploy backend to traditional hosting platforms (Railway, Heroku, etc.).
+
+**Frontend:** Follow Vercel deployment instructions below
+**Backend:** See [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
+
+---
+
+## Vercel Frontend Deployment (Option 2)
 
 This monorepo is configured for deployment on Vercel with the following setup:
 

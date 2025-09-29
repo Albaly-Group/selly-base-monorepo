@@ -11,7 +11,7 @@ import { JwtStrategy } from './jwt.strategy';
 const conditionalImports = [];
 
 // Only include TypeORM if database is not being skipped
-if (process.env.SKIP_DATABASE !== 'true') {
+if (process.env.SKIP_DATABASE?.toLowerCase() !== 'true') {
   conditionalImports.push(TypeOrmModule.forFeature([User, Organization]));
 }
 

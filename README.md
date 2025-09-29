@@ -203,6 +203,9 @@ JWT_SECRET=your-production-secret
 - **Architecture Guide**: [docs/TURBOREPO_ARCHITECTURE.md](./docs/TURBOREPO_ARCHITECTURE.md)
 - **API Documentation**: http://localhost:3001/api/docs (when running)
 - **Company Lists**: [docs/COMPANY_LISTS_IMPLEMENTATION.md](./docs/COMPANY_LISTS_IMPLEMENTATION.md)
+- **Deployment Guides**:
+  - **Full-Stack Vercel Deployment**: [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) ⭐ **Recommended**
+  - **Separate Deployments**: [DEPLOYMENT.md](./DEPLOYMENT.md) | [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
 
 ## 🤝 Contributing
 

@@ -5,7 +5,7 @@ import { AuditService } from './audit.service';
 
 @Module({
   imports: [
-    ...(process.env.SKIP_DATABASE !== 'true' ? [
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' ? [
       TypeOrmModule.forFeature([AuditLog, User, Organization])
     ] : [])
   ],
