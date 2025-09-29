@@ -9,13 +9,19 @@ import {
   Query,
   ValidationPipe,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
 import { User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, CurrentOrganization } from '../auth/current-user.decorator';
-import { CreateCompanyDto, UpdateCompanyDto } from '../../dtos/company.dto';
+import { 
+  CreateCompanyDto, 
+  UpdateCompanyDto, 
+  CompanySearchDto, 
+  BulkCompanyIdsDto 
+} from '../../dtos/enhanced-company.dto';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -49,60 +55,37 @@ const createMockUser = (organizationId?: string): User => ({
   roles: [],
 });
 
-interface CompanySearchQuery {
-  searchTerm?: string;
-  organizationId?: string;
-  includeSharedData?: string;
-  page?: string;
-  limit?: string;
-  dataSensitivity?: string;
-  dataSource?: string;
-  verificationStatus?: string;
-  companySize?: string;
-  province?: string;
-}
-
 @ApiTags('companies')
 @Controller('api/companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Get('search')
-  @ApiOperation({ summary: 'Search companies with filters' })
+  @ApiOperation({ summary: 'Search companies with advanced filters' })
   @ApiQuery({ name: 'searchTerm', required: false, description: 'Search term for company name or description' })
-  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID to filter by' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 50)' })
-  @ApiQuery({ name: 'includeSharedData', required: false, description: 'Include shared data (default: true)' })
+  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID for scoped search' })
+  @ApiQuery({ name: 'includeSharedData', required: false, type: Boolean, description: 'Include shared data in results' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
   @ApiQuery({ name: 'dataSensitivity', required: false, description: 'Filter by data sensitivity' })
   @ApiQuery({ name: 'dataSource', required: false, description: 'Filter by data source' })
   @ApiQuery({ name: 'verificationStatus', required: false, description: 'Filter by verification status' })
   @ApiQuery({ name: 'companySize', required: false, description: 'Filter by company size' })
   @ApiQuery({ name: 'province', required: false, description: 'Filter by province' })
+  @ApiQuery({ name: 'countryCode', required: false, description: 'Filter by country code' })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  async searchCompanies(@Query() query: CompanySearchQuery): Promise<PaginatedResponse<any>> {
-    const searchParams = {
-      searchTerm: query.searchTerm,
-      organizationId: query.organizationId,
-      page: query.page ? parseInt(query.page, 10) : 1,
-      limit: query.limit ? parseInt(query.limit, 10) : 50,
-      includeSharedData: query.includeSharedData !== 'false',
-      dataSensitivity: query.dataSensitivity,
-      dataSource: query.dataSource,
-      verificationStatus: query.verificationStatus,
-      companySize: query.companySize,
-      province: query.province,
-    };
-
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async searchCompanies(@Query() searchDto: CompanySearchDto): Promise<PaginatedResponse<any>> {
     // For public search, use mock user with provided organizationId
-    const mockUser = createMockUser(query.organizationId);
-    return this.companiesService.searchCompanies(searchParams, mockUser);
+    const mockUser = createMockUser(searchDto.organizationId);
+    return this.companiesService.searchCompanies(searchDto, mockUser);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get companies (legacy endpoint)' })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  async getCompanies(@Query() query: CompanySearchQuery): Promise<PaginatedResponse<any>> {
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async getCompanies(@Query() query: CompanySearchDto): Promise<PaginatedResponse<any>> {
     // Legacy endpoint that uses search underneath
     return this.searchCompanies(query);
   }
@@ -117,7 +100,8 @@ export class CompaniesController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.companiesService.getCompanyById(id, organizationId);
+    const mockUser = createMockUser(organizationId);
+    return this.companiesService.getCompanyById(id, organizationId, mockUser);
   }
 
   @Post()
@@ -127,6 +111,7 @@ export class CompaniesController {
   @ApiResponse({ status: 201, description: 'Company created successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Validation error' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async createCompany(
     @Body() createCompanyDto: CreateCompanyDto,
     @CurrentUser() user: any,
@@ -145,6 +130,7 @@ export class CompaniesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Company not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - cannot update this company' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async updateCompany(
     @Param('id') id: string,
     @Body() updateCompanyDto: UpdateCompanyDto,
@@ -177,10 +163,13 @@ export class CompaniesController {
   @Post('bulk')
   @ApiOperation({ summary: 'Get multiple companies by IDs' })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async getCompaniesByIds(
-    @Body('ids') ids: string[],
-    @Query('organizationId') organizationId?: string,
+    @Body() bulkDto: BulkCompanyIdsDto,
   ) {
-    return this.companiesService.getCompaniesByIds(ids, organizationId);
+    // For public bulk access, use mock user
+    const mockUser = createMockUser(bulkDto.organizationId);
+    return this.companiesService.getCompaniesByIds(bulkDto, mockUser);
   }
 }
