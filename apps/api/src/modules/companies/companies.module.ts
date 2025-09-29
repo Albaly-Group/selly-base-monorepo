@@ -8,9 +8,9 @@ import { AuditModule } from '../audit/audit.module';
 @Module({
   imports: [
     // Only import TypeORM features if not skipping database
-    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' ? [
-      TypeOrmModule.forFeature([Company, Organization, User])
-    ] : []),
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true'
+      ? [TypeOrmModule.forFeature([Company, Organization, User])]
+      : []),
     AuditModule,
   ],
   controllers: [CompaniesController],

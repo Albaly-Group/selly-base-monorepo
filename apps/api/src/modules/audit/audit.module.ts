@@ -5,9 +5,9 @@ import { AuditService } from './audit.service';
 
 @Module({
   imports: [
-    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' ? [
-      TypeOrmModule.forFeature([AuditLog, User, Organization])
-    ] : [])
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true'
+      ? [TypeOrmModule.forFeature([AuditLog, User, Organization])]
+      : []),
   ],
   providers: [AuditService],
   exports: [AuditService],

@@ -42,7 +42,11 @@ export class CompanyList {
   @Column({ name: 'total_companies', type: 'integer', default: 0 })
   totalCompanies: number;
 
-  @Column({ name: 'last_activity_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'last_activity_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   lastActivityAt: Date;
 
   @Column({ name: 'is_smart_list', type: 'boolean', default: false })

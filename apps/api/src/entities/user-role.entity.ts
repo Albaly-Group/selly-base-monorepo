@@ -28,7 +28,11 @@ export class UserRole {
   @Column({ name: 'assigned_by', type: 'uuid', nullable: true })
   assignedBy: string;
 
-  @Column({ name: 'assigned_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'assigned_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   assignedAt: Date;
 
   @Column({ name: 'expires_at', type: 'timestamptz', nullable: true })

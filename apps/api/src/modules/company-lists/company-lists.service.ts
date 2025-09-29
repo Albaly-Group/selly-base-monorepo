@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompanyList, CompanyListItem, Company, User } from '../../entities';
@@ -51,7 +56,7 @@ const MOCK_COMPANY_LISTS = [
     lastRefreshedAt: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date(),
-    items: []
+    items: [],
   },
   {
     id: '123e4567-e89b-12d3-a456-426614174004',
@@ -68,24 +73,27 @@ const MOCK_COMPANY_LISTS = [
     lastRefreshedAt: null,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date(),
-    items: []
+    items: [],
   },
 ];
 
 @Injectable()
 export class CompanyListsService {
   constructor(
-    @Optional() @InjectRepository(CompanyList)
+    @Optional()
+    @InjectRepository(CompanyList)
     private companyListRepository?: Repository<CompanyList>,
-    @Optional() @InjectRepository(CompanyListItem)
+    @Optional()
+    @InjectRepository(CompanyListItem)
     private companyListItemRepository?: Repository<CompanyListItem>,
-    @Optional() @InjectRepository(Company)
+    @Optional()
+    @InjectRepository(Company)
     private companyRepository?: Repository<Company>,
   ) {}
 
   async searchCompanyLists(
     params: CompanyListSearchParams,
-    user?: User
+    user?: User,
   ): Promise<PaginatedResponse<any>> {
     if (this.companyListRepository) {
       return this.searchListsFromDatabase(params, user);
@@ -95,7 +103,7 @@ export class CompanyListsService {
 
   private async searchListsFromMockData(
     params: CompanyListSearchParams,
-    user?: User
+    user?: User,
   ): Promise<PaginatedResponse<any>> {
     const {
       searchTerm,
@@ -110,28 +118,30 @@ export class CompanyListsService {
 
     // Scope filtering
     if (scope === 'mine' && user) {
-      lists = lists.filter(list => list.ownerUserId === user.id);
+      lists = lists.filter((list) => list.ownerUserId === user.id);
     } else if (scope === 'organization' && organizationId) {
-      lists = lists.filter(list => 
-        list.organizationId === organizationId || 
-        (list.visibility === 'public' && list.isShared)
+      lists = lists.filter(
+        (list) =>
+          list.organizationId === organizationId ||
+          (list.visibility === 'public' && list.isShared),
       );
     } else if (scope === 'public') {
-      lists = lists.filter(list => list.visibility === 'public');
+      lists = lists.filter((list) => list.visibility === 'public');
     }
 
     // Text search
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      lists = lists.filter(list =>
-        list.name.toLowerCase().includes(term) ||
-        list.description?.toLowerCase().includes(term)
+      lists = lists.filter(
+        (list) =>
+          list.name.toLowerCase().includes(term) ||
+          list.description?.toLowerCase().includes(term),
       );
     }
 
     // Visibility filter
     if (visibility) {
-      lists = lists.filter(list => list.visibility === visibility);
+      lists = lists.filter((list) => list.visibility === visibility);
     }
 
     // Pagination
@@ -155,7 +165,7 @@ export class CompanyListsService {
 
   private async searchListsFromDatabase(
     params: CompanyListSearchParams,
-    user?: User
+    user?: User,
   ): Promise<PaginatedResponse<CompanyList>> {
     // Database implementation would go here
     throw new Error('Database implementation not yet complete');
@@ -169,7 +179,7 @@ export class CompanyListsService {
   }
 
   private async getListByIdFromMockData(id: string, user?: User): Promise<any> {
-    const list = MOCK_COMPANY_LISTS.find(l => l.id === id);
+    const list = MOCK_COMPANY_LISTS.find((l) => l.id === id);
 
     if (!list) {
       throw new NotFoundException('Company list not found');
@@ -185,12 +195,18 @@ export class CompanyListsService {
     return list;
   }
 
-  private async getListByIdFromDatabase(id: string, user?: User): Promise<CompanyList> {
+  private async getListByIdFromDatabase(
+    id: string,
+    user?: User,
+  ): Promise<CompanyList> {
     // Database implementation would go here
     throw new Error('Database implementation not yet complete');
   }
 
-  async createCompanyList(data: CompanyListCreateRequest, user: User): Promise<any> {
+  async createCompanyList(
+    data: CompanyListCreateRequest,
+    user: User,
+  ): Promise<any> {
     const list = {
       id: `list-${Date.now()}`,
       name: data.name,
@@ -206,28 +222,37 @@ export class CompanyListsService {
       lastRefreshedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      items: []
+      items: [],
     };
 
     console.log('Created company list:', list);
     return list;
   }
 
-  async updateCompanyList(id: string, data: CompanyListUpdateRequest, user: User): Promise<any> {
+  async updateCompanyList(
+    id: string,
+    data: CompanyListUpdateRequest,
+    user: User,
+  ): Promise<any> {
     const list = await this.getCompanyListById(id, user);
 
     // Only allow updates by owner or organization admin
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot update this company list');
     }
 
     const updatedList = {
       ...list,
       name: data.name || list.name,
-      description: data.description !== undefined ? data.description : list.description,
+      description:
+        data.description !== undefined ? data.description : list.description,
       visibility: data.visibility || list.visibility,
       isShared: data.visibility === 'public',
-      isSmartList: data.isSmartList !== undefined ? data.isSmartList : list.isSmartList,
+      isSmartList:
+        data.isSmartList !== undefined ? data.isSmartList : list.isSmartList,
       smartCriteria: data.smartCriteria || list.smartCriteria,
       updatedAt: new Date(),
     };
@@ -247,15 +272,22 @@ export class CompanyListsService {
     console.log('Deleted company list:', id);
   }
 
-  async addCompaniesToList(listId: string, companyIds: string[], user: User): Promise<any> {
+  async addCompaniesToList(
+    listId: string,
+    companyIds: string[],
+    user: User,
+  ): Promise<any> {
     const list = await this.getCompanyListById(listId, user);
 
     // Check if user can modify this list
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
-    const items = companyIds.map(companyId => ({
+    const items = companyIds.map((companyId) => ({
       id: `item-${Date.now()}-${companyId}`,
       listId,
       companyId,
@@ -275,11 +307,18 @@ export class CompanyListsService {
     return { message: 'Companies added to list successfully', items };
   }
 
-  async removeCompaniesFromList(listId: string, companyIds: string[], user: User): Promise<any> {
+  async removeCompaniesFromList(
+    listId: string,
+    companyIds: string[],
+    user: User,
+  ): Promise<any> {
     const list = await this.getCompanyListById(listId, user);
 
     // Check if user can modify this list
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
@@ -300,7 +339,12 @@ export class CompanyListsService {
         position: 1,
         customFields: {},
         leadScore: 85.5,
-        scoreBreakdown: { size: 25, industry: 30, location: 15, engagement: 15.5 },
+        scoreBreakdown: {
+          size: 25,
+          industry: 30,
+          location: 15,
+          engagement: 15.5,
+        },
         scoreCalculatedAt: new Date(),
         status: 'qualified',
         statusChangedAt: new Date(),
@@ -311,8 +355,8 @@ export class CompanyListsService {
           nameEn: 'Sample Tech Corp',
           displayName: 'Sample Tech Corp',
           businessDescription: 'Sample technology company for demonstration',
-        }
-      }
+        },
+      },
     ];
   }
 }

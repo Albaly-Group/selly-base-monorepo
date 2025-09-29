@@ -29,7 +29,17 @@ export class AuditLog {
   @Column({
     name: 'action_type',
     type: 'text',
-    enum: ['CREATE', 'READ', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'SEARCH', 'EXPORT', 'IMPORT'],
+    enum: [
+      'CREATE',
+      'READ',
+      'UPDATE',
+      'DELETE',
+      'LOGIN',
+      'LOGOUT',
+      'SEARCH',
+      'EXPORT',
+      'IMPORT',
+    ],
   })
   actionType: string;
 

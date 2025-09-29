@@ -7,7 +7,13 @@ import {
   Request,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AuthService, LoginResponse } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginDto } from '../../dtos/company.dto';
@@ -20,8 +26,8 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Login successful',
     schema: {
       type: 'object',
@@ -39,18 +45,16 @@ export class AuthController {
               properties: {
                 id: { type: 'string' },
                 name: { type: 'string' },
-                slug: { type: 'string' }
-              }
-            }
-          }
-        }
-      }
-    }
+                slug: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(
-    @Body() loginDto: LoginDto,
-  ): Promise<LoginResponse> {
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
     return this.authService.login(loginDto);
   }
 
@@ -58,8 +62,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'User profile retrieved successfully',
     schema: {
       type: 'object',
@@ -73,11 +77,11 @@ export class AuthController {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            slug: { type: 'string' }
-          }
-        }
-      }
-    }
+            slug: { type: 'string' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Request() req: any) {
@@ -85,7 +89,7 @@ export class AuthController {
     if (!user) {
       throw new Error('User not found');
     }
-    
+
     return {
       id: user.id,
       email: user.email,
@@ -99,15 +103,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Token refreshed successfully',
     schema: {
       type: 'object',
       properties: {
-        accessToken: { type: 'string' }
-      }
-    }
+        accessToken: { type: 'string' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async refresh(@Request() req: any): Promise<{ accessToken: string }> {
@@ -116,7 +120,7 @@ export class AuthController {
       email: req.user.email,
       organizationId: req.user.organizationId,
     };
-    
+
     const accessToken = this.authService['jwtService'].sign(payload);
     return { accessToken };
   }

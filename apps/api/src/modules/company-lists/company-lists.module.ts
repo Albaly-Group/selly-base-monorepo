@@ -7,9 +7,16 @@ import { CompanyListsController } from './company-lists.controller';
 @Module({
   imports: [
     // Only import TypeORM features if not skipping database
-    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' ? [
-      TypeOrmModule.forFeature([CompanyList, CompanyListItem, Company, User])
-    ] : [])
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true'
+      ? [
+          TypeOrmModule.forFeature([
+            CompanyList,
+            CompanyListItem,
+            Company,
+            User,
+          ]),
+        ]
+      : []),
   ],
   controllers: [CompanyListsController],
   providers: [CompanyListsService],

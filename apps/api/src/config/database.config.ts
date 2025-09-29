@@ -4,7 +4,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 export default registerAs('database', (): TypeOrmModuleOptions => {
   // Skip database if explicitly requested (case-insensitive)
   const skipDatabase = process.env.SKIP_DATABASE?.toLowerCase() === 'true';
-  
+
   if (skipDatabase) {
     return {
       type: 'postgres',
@@ -27,9 +27,15 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl:
+      process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: false }
+        : false,
     extra: {
-      connectionLimit: parseInt(process.env.DATABASE_CONNECTION_LIMIT || '10', 10),
+      connectionLimit: parseInt(
+        process.env.DATABASE_CONNECTION_LIMIT || '10',
+        10,
+      ),
     },
   };
 });

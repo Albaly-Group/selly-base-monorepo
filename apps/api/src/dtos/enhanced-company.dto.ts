@@ -1,12 +1,12 @@
-import { 
-  IsEmail, 
-  IsString, 
-  IsOptional, 
-  IsUUID, 
-  IsUrl, 
-  IsArray, 
-  IsEnum, 
-  MinLength, 
+import {
+  IsEmail,
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsUrl,
+  IsArray,
+  IsEnum,
+  MinLength,
   MaxLength,
   IsNumber,
   Min,
@@ -18,7 +18,7 @@ import {
   ArrayMinSize,
   IsDecimal,
   IsPhoneNumber,
-  Matches
+  Matches,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -67,11 +67,11 @@ export enum DataSensitivity {
 
 // Enhanced Company DTOs
 export class CreateCompanyDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Company name in English',
     example: 'Albaly Digital Co., Ltd.',
     minLength: 2,
-    maxLength: 255
+    maxLength: 255,
   })
   @IsString({ message: VALIDATION_MESSAGES.STRING_REQUIRED })
   @MinLength(2, { message: 'Company name must be at least 2 characters long' })
@@ -82,18 +82,20 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Company name in Thai',
     example: 'บริษัท อัลบาลี ดิจิทัล จำกัด',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(255, { message: 'Thai company name must not exceed 255 characters' })
+  @MaxLength(255, {
+    message: 'Thai company name must not exceed 255 characters',
+  })
   @Transform(({ value }) => value?.trim())
   companyNameTh?: string;
 
   @ApiPropertyOptional({
     description: 'Business registration number',
     example: '0105562174634',
-    maxLength: 50
+    maxLength: 50,
   })
   @IsOptional()
   @IsString()
@@ -104,17 +106,19 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Business description',
     example: 'Digital transformation and software development company',
-    maxLength: 1000
+    maxLength: 1000,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(1000, { message: 'Business description must not exceed 1000 characters' })
+  @MaxLength(1000, {
+    message: 'Business description must not exceed 1000 characters',
+  })
   @Transform(({ value }) => value?.trim())
   businessDescription?: string;
 
   @ApiPropertyOptional({
     description: 'Company website URL',
-    example: 'https://albaly.com'
+    example: 'https://albaly.com',
   })
   @IsOptional()
   @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
@@ -123,7 +127,7 @@ export class CreateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Primary email address',
-    example: 'info@albaly.com'
+    example: 'info@albaly.com',
   })
   @IsOptional()
   @IsEmail({}, { message: VALIDATION_MESSAGES.EMAIL_INVALID })
@@ -132,7 +136,7 @@ export class CreateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Primary phone number',
-    example: '+66-2-123-4567'
+    example: '+66-2-123-4567',
   })
   @IsOptional()
   @IsString()
@@ -142,7 +146,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Address line 1',
     example: '123 Sukhumvit Road',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -153,7 +157,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Address line 2',
     example: 'Floor 15, Tower A',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -164,7 +168,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'District',
     example: 'Watthana',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -175,7 +179,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Sub-district',
     example: 'Khlong Toei Nuea',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -186,7 +190,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Province',
     example: 'Bangkok',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -197,7 +201,7 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
-    maxLength: 20
+    maxLength: 20,
   })
   @IsOptional()
   @IsString()
@@ -208,20 +212,22 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({
     description: 'Country code (ISO 3166-1 alpha-2)',
     example: 'TH',
-    default: 'TH'
+    default: 'TH',
   })
   @IsOptional()
   @IsString()
   @MaxLength(2)
   @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, { message: 'Country code must be 2 uppercase letters' })
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'Country code must be 2 uppercase letters',
+  })
   @Transform(({ value }) => value?.toUpperCase())
   countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
     enum: CompanySize,
-    example: CompanySize.MEDIUM
+    example: CompanySize.MEDIUM,
   })
   @IsOptional()
   @IsEnum(CompanySize, { message: 'Invalid company size' })
@@ -231,7 +237,7 @@ export class CreateCompanyDto {
     description: 'Estimated employee count',
     example: 50,
     minimum: 1,
-    maximum: 1000000
+    maximum: 1000000,
   })
   @IsOptional()
   @IsNumber({}, { message: 'Employee count must be a number' })
@@ -243,20 +249,22 @@ export class CreateCompanyDto {
     description: 'Company tags for categorization',
     example: ['technology', 'software', 'digital'],
     type: [String],
-    maxItems: 20
+    maxItems: 20,
   })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
   @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) => value?.map((tag: string) => tag.trim().toLowerCase()))
+  @Transform(({ value }) =>
+    value?.map((tag: string) => tag.trim().toLowerCase()),
+  )
   tags?: string[];
 
   @ApiPropertyOptional({
     description: 'Data sensitivity level',
     enum: DataSensitivity,
     example: DataSensitivity.STANDARD,
-    default: DataSensitivity.STANDARD
+    default: DataSensitivity.STANDARD,
   })
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity level' })
@@ -264,11 +272,11 @@ export class CreateCompanyDto {
 }
 
 export class UpdateCompanyDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Company name in English',
     example: 'Albaly Digital Co., Ltd.',
     minLength: 2,
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString({ message: VALIDATION_MESSAGES.STRING_REQUIRED })
@@ -280,18 +288,20 @@ export class UpdateCompanyDto {
   @ApiPropertyOptional({
     description: 'Company name in Thai',
     example: 'บริษัท อัลบาลี ดิจิทัล จำกัด',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(255, { message: 'Thai company name must not exceed 255 characters' })
+  @MaxLength(255, {
+    message: 'Thai company name must not exceed 255 characters',
+  })
   @Transform(({ value }) => value?.trim())
   companyNameTh?: string;
 
   @ApiPropertyOptional({
     description: 'Business registration number',
     example: '0105562174634',
-    maxLength: 50
+    maxLength: 50,
   })
   @IsOptional()
   @IsString()
@@ -302,17 +312,19 @@ export class UpdateCompanyDto {
   @ApiPropertyOptional({
     description: 'Business description',
     example: 'Digital transformation and software development company',
-    maxLength: 1000
+    maxLength: 1000,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(1000, { message: 'Business description must not exceed 1000 characters' })
+  @MaxLength(1000, {
+    message: 'Business description must not exceed 1000 characters',
+  })
   @Transform(({ value }) => value?.trim())
   businessDescription?: string;
 
   @ApiPropertyOptional({
     description: 'Company website URL',
-    example: 'https://albaly.com'
+    example: 'https://albaly.com',
   })
   @IsOptional()
   @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
@@ -321,7 +333,7 @@ export class UpdateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Primary email address',
-    example: 'info@albaly.com'
+    example: 'info@albaly.com',
   })
   @IsOptional()
   @IsEmail({}, { message: VALIDATION_MESSAGES.EMAIL_INVALID })
@@ -330,7 +342,7 @@ export class UpdateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Primary phone number',
-    example: '+66-2-123-4567'
+    example: '+66-2-123-4567',
   })
   @IsOptional()
   @IsString()
@@ -340,7 +352,7 @@ export class UpdateCompanyDto {
   @ApiPropertyOptional({
     description: 'Address line 1',
     example: '123 Sukhumvit Road',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -351,7 +363,7 @@ export class UpdateCompanyDto {
   @ApiPropertyOptional({
     description: 'Address line 2',
     example: 'Floor 15, Tower A',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -362,7 +374,7 @@ export class UpdateCompanyDto {
   @ApiPropertyOptional({
     description: 'Province',
     example: 'Bangkok',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -372,20 +384,22 @@ export class UpdateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH'
+    example: 'TH',
   })
   @IsOptional()
   @IsString()
   @MaxLength(2)
   @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, { message: 'Country code must be 2 uppercase letters' })
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'Country code must be 2 uppercase letters',
+  })
   @Transform(({ value }) => value?.toUpperCase())
   countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
     enum: CompanySize,
-    example: CompanySize.MEDIUM
+    example: CompanySize.MEDIUM,
   })
   @IsOptional()
   @IsEnum(CompanySize, { message: 'Invalid company size' })
@@ -393,7 +407,7 @@ export class UpdateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Estimated employee count',
-    example: 50
+    example: 50,
   })
   @IsOptional()
   @IsNumber({}, { message: 'Employee count must be a number' })
@@ -405,19 +419,21 @@ export class UpdateCompanyDto {
     description: 'Company tags for categorization',
     example: ['technology', 'software', 'digital'],
     type: [String],
-    maxItems: 20
+    maxItems: 20,
   })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
   @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) => value?.map((tag: string) => tag.trim().toLowerCase()))
+  @Transform(({ value }) =>
+    value?.map((tag: string) => tag.trim().toLowerCase()),
+  )
   tags?: string[];
 
   @ApiPropertyOptional({
     description: 'Data sensitivity level',
     enum: DataSensitivity,
-    example: DataSensitivity.STANDARD
+    example: DataSensitivity.STANDARD,
   })
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity level' })
@@ -428,7 +444,7 @@ export class CompanySearchDto {
   @ApiPropertyOptional({
     description: 'Search term for company name or description',
     example: 'technology',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -438,7 +454,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Organization ID for scoped search',
-    format: 'uuid'
+    format: 'uuid',
   })
   @IsOptional()
   @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
@@ -446,7 +462,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Include shared data in results',
-    default: true
+    default: true,
   })
   @IsOptional()
   @IsBoolean()
@@ -461,7 +477,7 @@ export class CompanySearchDto {
   @ApiPropertyOptional({
     description: 'Page number for pagination',
     default: 1,
-    minimum: 1
+    minimum: 1,
   })
   @IsOptional()
   @Type(() => Number)
@@ -473,7 +489,7 @@ export class CompanySearchDto {
     description: 'Number of items per page',
     default: 50,
     minimum: 1,
-    maximum: 100
+    maximum: 100,
   })
   @IsOptional()
   @Type(() => Number)
@@ -484,7 +500,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Filter by data sensitivity',
-    enum: DataSensitivity
+    enum: DataSensitivity,
   })
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity filter' })
@@ -492,7 +508,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Filter by data source',
-    enum: DataSource
+    enum: DataSource,
   })
   @IsOptional()
   @IsEnum(DataSource, { message: 'Invalid data source filter' })
@@ -500,7 +516,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Filter by verification status',
-    enum: VerificationStatus
+    enum: VerificationStatus,
   })
   @IsOptional()
   @IsEnum(VerificationStatus, { message: 'Invalid verification status filter' })
@@ -508,7 +524,7 @@ export class CompanySearchDto {
 
   @ApiPropertyOptional({
     description: 'Filter by company size',
-    enum: CompanySize
+    enum: CompanySize,
   })
   @IsOptional()
   @IsEnum(CompanySize, { message: 'Invalid company size filter' })
@@ -517,7 +533,7 @@ export class CompanySearchDto {
   @ApiPropertyOptional({
     description: 'Filter by province',
     example: 'Bangkok',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -528,7 +544,7 @@ export class CompanySearchDto {
   @ApiPropertyOptional({
     description: 'Filter by country code',
     example: 'TH',
-    maxLength: 2
+    maxLength: 2,
   })
   @IsOptional()
   @IsString()
@@ -540,7 +556,7 @@ export class CompanySearchDto {
   @ApiPropertyOptional({
     description: 'Filter by tags (array of strings)',
     example: ['technology', 'software'],
-    type: [String]
+    type: [String],
   })
   @IsOptional()
   @IsArray()
@@ -552,18 +568,23 @@ export class CompanySearchDto {
 export class BulkCompanyIdsDto {
   @ApiProperty({
     description: 'Array of company UUIDs',
-    example: ['123e4567-e89b-12d3-a456-426614174001', '123e4567-e89b-12d3-a456-426614174002'],
-    type: [String]
+    example: [
+      '123e4567-e89b-12d3-a456-426614174001',
+      '123e4567-e89b-12d3-a456-426614174002',
+    ],
+    type: [String],
   })
   @IsArray()
   @ArrayMinSize(1, { message: 'At least one company ID is required' })
-  @ArrayMaxSize(100, { message: 'Maximum 100 company IDs are allowed per request' })
+  @ArrayMaxSize(100, {
+    message: 'Maximum 100 company IDs are allowed per request',
+  })
   @IsUUID(4, { each: true, message: 'Each company ID must be a valid UUID' })
   ids: string[];
 
   @ApiPropertyOptional({
     description: 'Organization ID for access control',
-    format: 'uuid'
+    format: 'uuid',
   })
   @IsOptional()
   @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
