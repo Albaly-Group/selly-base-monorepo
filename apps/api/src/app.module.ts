@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { CompanyListsModule } from './modules/company-lists/company-lists.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuditModule } from './modules/audit/audit.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 
@@ -19,6 +20,7 @@ const getImports = () => {
     CompaniesModule,
     CompanyListsModule,
     AuthModule,
+    AuditModule,
   ];
 
   // Only add TypeORM if not skipping database

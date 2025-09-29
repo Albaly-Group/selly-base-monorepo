@@ -1,20 +1,14 @@
-import { Injectable, NotFoundException, ForbiddenException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Optional, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder, In } from 'typeorm';
 import { Company, Organization, User } from '../../entities';
-
-interface CompanySearchParams {
-  searchTerm?: string;
-  organizationId?: string;
-  includeSharedData?: boolean;
-  page?: number;
-  limit?: number;
-  dataSensitivity?: string;
-  dataSource?: string;
-  verificationStatus?: string;
-  companySize?: string;
-  province?: string;
-}
+import { AuditService } from '../audit/audit.service';
+import { 
+  CreateCompanyDto, 
+  UpdateCompanyDto, 
+  CompanySearchDto, 
+  BulkCompanyIdsDto 
+} from '../../dtos/enhanced-company.dto';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -28,22 +22,7 @@ interface PaginatedResponse<T> {
   };
 }
 
-interface CompanyCreateRequest {
-  companyNameEn: string;
-  companyNameTh?: string;
-  businessDescription?: string;
-  websiteUrl?: string;
-  primaryEmail?: string;
-  primaryPhone?: string;
-  addressLine1?: string;
-  province?: string;
-  countryCode?: string;
-  tags?: string[];
-}
-
-interface CompanyUpdateRequest extends Partial<CompanyCreateRequest> {}
-
-// Mock data for demonstration
+// Mock data for demonstration - will be replaced with real database queries
 const MOCK_COMPANIES = [
   {
     id: '123e4567-e89b-12d3-a456-426614174001',
@@ -96,23 +75,69 @@ export class CompaniesService {
     private companyRepository?: Repository<Company>,
     @Optional() @InjectRepository(Organization)
     private organizationRepository?: Repository<Organization>,
+    private auditService?: AuditService,
   ) {}
 
   async searchCompanies(
-    params: CompanySearchParams,
+    searchDto: CompanySearchDto,
     user?: User
   ): Promise<PaginatedResponse<any>> {
-    // If database is available, use real implementation
-    if (this.companyRepository) {
-      return this.searchCompaniesFromDatabase(params, user);
-    }
+    const startTime = Date.now();
+    
+    try {
+      // If database is available, use real implementation
+      const result = this.companyRepository 
+        ? await this.searchCompaniesFromDatabase(searchDto, user)
+        : await this.searchCompaniesFromMockData(searchDto, user);
 
-    // Otherwise, use mock data
-    return this.searchCompaniesFromMockData(params, user);
+      // Log search operation
+      if (this.auditService && user && searchDto.searchTerm) {
+        await this.auditService.logSearchOperation(
+          user,
+          searchDto.searchTerm,
+          result.data.length,
+          {
+            metadata: {
+              filters: {
+                organizationId: searchDto.organizationId,
+                includeSharedData: searchDto.includeSharedData,
+                dataSensitivity: searchDto.dataSensitivity,
+                dataSource: searchDto.dataSource,
+                verificationStatus: searchDto.verificationStatus,
+                companySize: searchDto.companySize,
+                province: searchDto.province,
+              },
+              executionTime: Date.now() - startTime,
+              page: searchDto.page,
+              limit: searchDto.limit,
+            },
+          }
+        );
+      }
+
+      return result;
+    } catch (error) {
+      // Log error if audit service is available
+      if (this.auditService && user) {
+        await this.auditService.logUserAction(
+          user,
+          'SEARCH',
+          'Company',
+          undefined,
+          {
+            resourceType: 'search',
+            resourcePath: '/api/companies/search',
+            statusCode: 500,
+            errorMessage: error.message,
+          }
+        );
+      }
+      throw error;
+    }
   }
 
   private async searchCompaniesFromDatabase(
-    params: CompanySearchParams,
+    searchDto: CompanySearchDto,
     user?: User
   ): Promise<PaginatedResponse<Company>> {
     const {
@@ -126,18 +151,20 @@ export class CompaniesService {
       verificationStatus,
       companySize,
       province,
-    } = params;
+      countryCode,
+      tags,
+    } = searchDto;
 
     let query = this.companyRepository!
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization');
 
-    // Multi-tenant filtering
+    // Multi-tenant filtering with enhanced security
     if (organizationId) {
       // Verify user has access to this organization
       if (user && user.organizationId !== organizationId) {
-        throw new ForbiddenException('Access denied to organization');
+        throw new ForbiddenException('Access denied to organization data');
       }
       
       if (includeSharedData) {
@@ -149,17 +176,26 @@ export class CompaniesService {
       }
     } else if (includeSharedData) {
       query.where('company.isSharedData = true');
+    } else {
+      throw new ForbiddenException('Organization ID is required for non-shared data access');
     }
 
-    // Text search
+    // Enhanced text search with full-text capabilities
     if (searchTerm) {
       query.andWhere(
-        '(company.nameEn ILIKE :searchTerm OR company.nameTh ILIKE :searchTerm OR company.businessDescription ILIKE :searchTerm)',
+        `(
+          company.nameEn ILIKE :searchTerm OR 
+          company.nameTh ILIKE :searchTerm OR 
+          company.displayName ILIKE :searchTerm OR 
+          company.businessDescription ILIKE :searchTerm OR
+          company.primaryEmail ILIKE :searchTerm OR
+          :searchTerm = ANY(company.tags)
+        )`,
         { searchTerm: `%${searchTerm}%` }
       );
     }
 
-    // Apply filters
+    // Apply enhanced filters
     if (dataSensitivity) {
       query.andWhere('company.dataSensitivity = :dataSensitivity', { dataSensitivity });
     }
@@ -177,36 +213,47 @@ export class CompaniesService {
     }
 
     if (province) {
-      query.andWhere('company.province = :province', { province });
+      query.andWhere('company.province ILIKE :province', { province: `%${province}%` });
     }
 
-    // Pagination
-    const offset = (page - 1) * limit;
-    query.skip(offset).take(limit);
+    if (countryCode) {
+      query.andWhere('company.countryCode = :countryCode', { countryCode });
+    }
 
-    // Order by relevance and quality
+    if (tags && tags.length > 0) {
+      query.andWhere('company.tags && :tags', { tags });
+    }
+
+    // Enhanced pagination with validation
+    const validatedPage = Math.max(1, page);
+    const validatedLimit = Math.min(Math.max(1, limit), 100);
+    const offset = (validatedPage - 1) * validatedLimit;
+    
+    query.skip(offset).take(validatedLimit);
+
+    // Optimized ordering for better performance
     query.orderBy('company.dataQualityScore', 'DESC')
-      .addOrderBy('company.createdAt', 'DESC');
+      .addOrderBy('company.updatedAt', 'DESC');
 
     const [companies, total] = await query.getManyAndCount();
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / validatedLimit);
 
     return {
       data: companies,
       pagination: {
-        page,
-        limit,
+        page: validatedPage,
+        limit: validatedLimit,
         total,
         totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext: validatedPage < totalPages,
+        hasPrev: validatedPage > 1,
       },
     };
   }
 
   private async searchCompaniesFromMockData(
-    params: CompanySearchParams,
+    searchDto: CompanySearchDto,
     user?: User
   ): Promise<PaginatedResponse<any>> {
     const {
@@ -220,30 +267,42 @@ export class CompaniesService {
       verificationStatus,
       companySize,
       province,
-    } = params;
+      countryCode,
+      tags,
+    } = searchDto;
 
     let companies = [...MOCK_COMPANIES];
 
     // Multi-tenant filtering
     if (organizationId) {
+      // Security check for mock data
+      if (user && user.organizationId !== organizationId) {
+        throw new ForbiddenException('Access denied to organization data');
+      }
+      
       companies = companies.filter(company => 
         company.organizationId === organizationId || (includeSharedData && company.isSharedData)
       );
     } else if (includeSharedData) {
       companies = companies.filter(company => company.isSharedData);
+    } else {
+      throw new ForbiddenException('Organization ID is required for non-shared data access');
     }
 
-    // Text search
+    // Enhanced text search
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       companies = companies.filter(company =>
         company.nameEn.toLowerCase().includes(term) ||
         company.nameTh?.toLowerCase().includes(term) ||
-        company.businessDescription?.toLowerCase().includes(term)
+        company.displayName.toLowerCase().includes(term) ||
+        company.businessDescription?.toLowerCase().includes(term) ||
+        company.primaryEmail?.toLowerCase().includes(term) ||
+        company.tags.some(tag => tag.toLowerCase().includes(term))
       );
     }
 
-    // Apply filters
+    // Apply all filters
     if (dataSource) {
       companies = companies.filter(company => company.dataSource === dataSource);
     }
@@ -257,45 +316,85 @@ export class CompaniesService {
     }
 
     if (province) {
-      companies = companies.filter(company => company.province === province);
+      companies = companies.filter(company => 
+        company.province?.toLowerCase().includes(province.toLowerCase())
+      );
+    }
+
+    if (countryCode) {
+      companies = companies.filter(company => company.countryCode === countryCode);
+    }
+
+    if (tags && tags.length > 0) {
+      companies = companies.filter(company =>
+        tags.some(tag => company.tags.includes(tag.toLowerCase()))
+      );
     }
 
     // Pagination
+    const validatedPage = Math.max(1, page);
+    const validatedLimit = Math.min(Math.max(1, limit), 100);
     const total = companies.length;
-    const totalPages = Math.ceil(total / limit);
-    const offset = (page - 1) * limit;
-    const paginatedCompanies = companies.slice(offset, offset + limit);
+    const totalPages = Math.ceil(total / validatedLimit);
+    const offset = (validatedPage - 1) * validatedLimit;
+    const paginatedCompanies = companies.slice(offset, offset + validatedLimit);
 
     return {
       data: paginatedCompanies,
       pagination: {
-        page,
-        limit,
+        page: validatedPage,
+        limit: validatedLimit,
         total,
         totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext: validatedPage < totalPages,
+        hasPrev: validatedPage > 1,
       },
     };
   }
 
-  async getCompanyById(id: string, organizationId?: string): Promise<any> {
-    if (this.companyRepository) {
-      return this.getCompanyByIdFromDatabase(id, organizationId);
+  async getCompanyById(id: string, organizationId?: string, user?: User): Promise<any> {
+    if (!id || id.trim() === '') {
+      throw new BadRequestException('Company ID is required');
     }
 
-    return this.getCompanyByIdFromMockData(id, organizationId);
+    try {
+      const company = this.companyRepository 
+        ? await this.getCompanyByIdFromDatabase(id, organizationId, user)
+        : await this.getCompanyByIdFromMockData(id, organizationId);
+
+      // Log read operation
+      if (this.auditService && user) {
+        await this.auditService.logCompanyOperation(user, 'READ', id, {
+          metadata: { organizationId },
+        });
+      }
+
+      return company;
+    } catch (error) {
+      // Log error
+      if (this.auditService && user) {
+        await this.auditService.logCompanyOperation(user, 'READ', id, {
+          statusCode: error.status || 500,
+          errorMessage: error.message,
+        });
+      }
+      throw error;
+    }
   }
 
-  private async getCompanyByIdFromDatabase(id: string, organizationId?: string): Promise<Company> {
+  private async getCompanyByIdFromDatabase(id: string, organizationId?: string, user?: User): Promise<Company> {
     let query = this.companyRepository!
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization')
       .where('company.id = :id', { id });
 
-    // Multi-tenant access control
+    // Enhanced multi-tenant access control
     if (organizationId) {
+      if (user && user.organizationId !== organizationId) {
+        throw new ForbiddenException('Access denied to organization data');
+      }
+      
       query.andWhere('(company.organizationId = :organizationId OR company.isSharedData = true)', {
         organizationId,
       });
@@ -306,7 +405,7 @@ export class CompaniesService {
     const company = await query.getOne();
 
     if (!company) {
-      throw new NotFoundException('Company not found');
+      throw new NotFoundException('Company not found or access denied');
     }
 
     return company;
@@ -319,90 +418,374 @@ export class CompaniesService {
       throw new NotFoundException('Company not found');
     }
 
-    // Multi-tenant access control
+    // Multi-tenant access control for mock data
     if (organizationId && company.organizationId !== organizationId && !company.isSharedData) {
-      throw new NotFoundException('Company not found');
+      throw new NotFoundException('Company not found or access denied');
     } else if (!organizationId && !company.isSharedData) {
-      throw new NotFoundException('Company not found');
+      throw new NotFoundException('Company not found or access denied');
     }
 
     return company;
   }
 
-  async createCompany(data: CompanyCreateRequest, user: User): Promise<any> {
-    const company = {
-      id: `company-${Date.now()}`,
-      nameEn: data.companyNameEn,
-      nameTh: data.companyNameTh,
-      displayName: data.companyNameEn || data.companyNameTh || 'Unnamed Company',
-      organizationId: user.organizationId,
-      businessDescription: data.businessDescription,
-      websiteUrl: data.websiteUrl,
-      primaryEmail: data.primaryEmail,
-      primaryPhone: data.primaryPhone,
-      addressLine1: data.addressLine1,
-      province: data.province,
-      countryCode: data.countryCode || 'TH',
-      tags: data.tags || [],
-      dataSource: 'customer_input',
-      isSharedData: false,
-      verificationStatus: 'unverified',
-      dataQualityScore: 0.5,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      contacts: [],
-    };
-
-    // In a real implementation, this would save to database
-    console.log('Created company:', company);
-    return company;
-  }
-
-  async updateCompany(id: string, data: CompanyUpdateRequest, user: User): Promise<any> {
-    const company = await this.getCompanyById(id, user.organizationId);
-
-    // Only allow updates to companies in user's organization
-    if (company.organizationId !== user.organizationId && !company.isSharedData) {
-      throw new ForbiddenException('Cannot update this company');
+  async createCompany(createDto: CreateCompanyDto, user: User): Promise<any> {
+    if (!user || !user.organizationId) {
+      throw new BadRequestException('User organization information is required');
     }
 
-    const updatedCompany = {
-      ...company,
-      nameEn: data.companyNameEn || company.nameEn,
-      nameTh: data.companyNameTh || company.nameTh,
-      displayName: data.companyNameEn || data.companyNameTh || company.displayName,
-      businessDescription: data.businessDescription || company.businessDescription,
-      websiteUrl: data.websiteUrl || company.websiteUrl,
-      primaryEmail: data.primaryEmail || company.primaryEmail,
-      primaryPhone: data.primaryPhone || company.primaryPhone,
-      addressLine1: data.addressLine1 || company.addressLine1,
-      province: data.province || company.province,
-      countryCode: data.countryCode || company.countryCode,
-      tags: data.tags || company.tags,
-      updatedAt: new Date(),
-    };
+    try {
+      const companyData = {
+        id: `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        nameEn: createDto.companyNameEn,
+        nameTh: createDto.companyNameTh || null,
+        displayName: createDto.companyNameEn || createDto.companyNameTh || 'Unnamed Company',
+        primaryRegistrationNo: createDto.primaryRegistrationNo || null,
+        organizationId: user.organizationId,
+        businessDescription: createDto.businessDescription || null,
+        websiteUrl: createDto.websiteUrl || null,
+        primaryEmail: createDto.primaryEmail || null,
+        primaryPhone: createDto.primaryPhone || null,
+        addressLine1: createDto.addressLine1 || null,
+        addressLine2: createDto.addressLine2 || null,
+        district: createDto.district || null,
+        subdistrict: createDto.subdistrict || null,
+        province: createDto.province || null,
+        postalCode: createDto.postalCode || null,
+        countryCode: createDto.countryCode || 'TH',
+        companySize: createDto.companySize || 'small',
+        employeeCountEstimate: createDto.employeeCountEstimate || null,
+        tags: createDto.tags || [],
+        dataSensitivity: createDto.dataSensitivity || 'standard',
+        dataSource: 'customer_input',
+        isSharedData: false,
+        verificationStatus: 'unverified',
+        dataQualityScore: this.calculateDataQualityScore(createDto),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: user.id,
+        updatedBy: user.id,
+        contacts: [],
+      };
 
-    console.log('Updated company:', updatedCompany);
-    return updatedCompany;
+      // In a real implementation, this would save to database
+      if (this.companyRepository) {
+        // Clean the data for TypeORM by converting null to undefined
+        const cleanedData = {
+          ...companyData,
+          nameTh: companyData.nameTh || undefined,
+          primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
+          businessDescription: companyData.businessDescription || undefined,
+          websiteUrl: companyData.websiteUrl || undefined,
+          primaryEmail: companyData.primaryEmail || undefined,
+          primaryPhone: companyData.primaryPhone || undefined,
+          addressLine1: companyData.addressLine1 || undefined,
+          addressLine2: companyData.addressLine2 || undefined,
+          district: companyData.district || undefined,
+          subdistrict: companyData.subdistrict || undefined,
+          province: companyData.province || undefined,
+          postalCode: companyData.postalCode || undefined,
+          employeeCountEstimate: companyData.employeeCountEstimate || undefined,
+        };
+
+        const company = this.companyRepository.create(cleanedData);
+        const savedCompany = await this.companyRepository.save(company);
+        
+        // Log creation
+        if (this.auditService) {
+          await this.auditService.logCompanyOperation(user, 'CREATE', savedCompany.id, {
+            newValues: companyData,
+            metadata: { dataSource: 'customer_input' },
+          });
+        }
+
+        return savedCompany;
+      } else {
+        // Mock implementation
+        console.log('📝 Created company:', companyData);
+        
+        // Log creation for mock
+        if (this.auditService) {
+          await this.auditService.logCompanyOperation(user, 'CREATE', companyData.id, {
+            newValues: companyData,
+            metadata: { dataSource: 'customer_input', mock: true },
+          });
+        }
+
+        return companyData;
+      }
+    } catch (error) {
+      // Log error
+      if (this.auditService && user) {
+        await this.auditService.logUserAction(user, 'CREATE', 'Company', undefined, {
+          resourceType: 'company',
+          statusCode: error.status || 500,
+          errorMessage: error.message,
+        });
+      }
+      throw error;
+    }
+  }
+
+  async updateCompany(id: string, updateDto: UpdateCompanyDto, user: User): Promise<any> {
+    if (!id || id.trim() === '') {
+      throw new BadRequestException('Company ID is required');
+    }
+
+    if (!user || !user.organizationId) {
+      throw new BadRequestException('User organization information is required');
+    }
+
+    try {
+      const existingCompany = await this.getCompanyById(id, user.organizationId, user);
+
+      // Enhanced authorization check
+      if (existingCompany.organizationId !== user.organizationId && !existingCompany.isSharedData) {
+        throw new ForbiddenException('Cannot update this company - insufficient permissions');
+      }
+
+      if (existingCompany.isSharedData) {
+        throw new ForbiddenException('Cannot update shared data companies');
+      }
+
+      const oldValues = { ...existingCompany };
+      const updatedCompany = {
+        ...existingCompany,
+        nameEn: updateDto.companyNameEn || existingCompany.nameEn,
+        nameTh: updateDto.companyNameTh !== undefined ? updateDto.companyNameTh : existingCompany.nameTh,
+        displayName: updateDto.companyNameEn || updateDto.companyNameTh || existingCompany.displayName,
+        primaryRegistrationNo: updateDto.primaryRegistrationNo !== undefined ? updateDto.primaryRegistrationNo : existingCompany.primaryRegistrationNo,
+        businessDescription: updateDto.businessDescription !== undefined ? updateDto.businessDescription : existingCompany.businessDescription,
+        websiteUrl: updateDto.websiteUrl !== undefined ? updateDto.websiteUrl : existingCompany.websiteUrl,
+        primaryEmail: updateDto.primaryEmail !== undefined ? updateDto.primaryEmail : existingCompany.primaryEmail,
+        primaryPhone: updateDto.primaryPhone !== undefined ? updateDto.primaryPhone : existingCompany.primaryPhone,
+        addressLine1: updateDto.addressLine1 !== undefined ? updateDto.addressLine1 : existingCompany.addressLine1,
+        addressLine2: updateDto.addressLine2 !== undefined ? updateDto.addressLine2 : existingCompany.addressLine2,
+        province: updateDto.province !== undefined ? updateDto.province : existingCompany.province,
+        countryCode: updateDto.countryCode !== undefined ? updateDto.countryCode : existingCompany.countryCode,
+        companySize: updateDto.companySize !== undefined ? updateDto.companySize : existingCompany.companySize,
+        employeeCountEstimate: updateDto.employeeCountEstimate !== undefined ? updateDto.employeeCountEstimate : existingCompany.employeeCountEstimate,
+        tags: updateDto.tags !== undefined ? updateDto.tags : existingCompany.tags,
+        dataSensitivity: updateDto.dataSensitivity !== undefined ? updateDto.dataSensitivity : existingCompany.dataSensitivity,
+        dataQualityScore: this.calculateDataQualityScore(updateDto, existingCompany),
+        updatedAt: new Date(),
+        updatedBy: user.id,
+      };
+
+      // Calculate changes for audit log
+      const changes = this.calculateChanges(oldValues, updatedCompany);
+
+      // In a real implementation, save to database
+      if (this.companyRepository) {
+        await this.companyRepository.update(id, updatedCompany);
+        const savedCompany = await this.companyRepository.findOne({ where: { id } });
+        
+        // Log update
+        if (this.auditService) {
+          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
+            oldValues,
+            newValues: updatedCompany,
+            changes,
+          });
+        }
+
+        return savedCompany;
+      } else {
+        // Mock implementation
+        console.log('📝 Updated company:', updatedCompany);
+        
+        // Log update for mock
+        if (this.auditService) {
+          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
+            oldValues,
+            newValues: updatedCompany,
+            changes,
+            metadata: { mock: true },
+          });
+        }
+
+        return updatedCompany;
+      }
+    } catch (error) {
+      // Log error
+      if (this.auditService && user) {
+        await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
+          statusCode: error.status || 500,
+          errorMessage: error.message,
+        });
+      }
+      throw error;
+    }
   }
 
   async deleteCompany(id: string, user: User): Promise<void> {
-    const company = await this.getCompanyById(id, user.organizationId);
-
-    // Only allow deletion of companies in user's organization
-    if (company.organizationId !== user.organizationId) {
-      throw new ForbiddenException('Cannot delete this company');
+    if (!id || id.trim() === '') {
+      throw new BadRequestException('Company ID is required');
     }
 
-    console.log('Deleted company:', id);
+    if (!user || !user.organizationId) {
+      throw new BadRequestException('User organization information is required');
+    }
+
+    try {
+      const company = await this.getCompanyById(id, user.organizationId, user);
+
+      // Enhanced authorization
+      if (company.organizationId !== user.organizationId) {
+        throw new ForbiddenException('Cannot delete this company - insufficient permissions');
+      }
+
+      if (company.isSharedData) {
+        throw new ForbiddenException('Cannot delete shared data companies');
+      }
+
+      // Check for dependencies (lists, etc.)
+      // In a real implementation, check if company is referenced in lists
+      
+      if (this.companyRepository) {
+        await this.companyRepository.delete(id);
+      } else {
+        // Mock deletion
+        console.log('🗑️ Deleted company:', id);
+      }
+
+      // Log deletion
+      if (this.auditService) {
+        await this.auditService.logCompanyOperation(user, 'DELETE', id, {
+          oldValues: company,
+          metadata: { mock: !this.companyRepository },
+        });
+      }
+    } catch (error) {
+      // Log error
+      if (this.auditService && user) {
+        await this.auditService.logCompanyOperation(user, 'DELETE', id, {
+          statusCode: error.status || 500,
+          errorMessage: error.message,
+        });
+      }
+      throw error;
+    }
   }
 
-  async getCompaniesByIds(ids: string[], organizationId?: string): Promise<any[]> {
-    const companies = MOCK_COMPANIES.filter(company => 
-      ids.includes(company.id) && 
-      (company.organizationId === organizationId || company.isSharedData)
-    );
+  async getCompaniesByIds(bulkDto: BulkCompanyIdsDto, user?: User): Promise<any[]> {
+    const { ids, organizationId } = bulkDto;
 
-    return companies;
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('Company IDs array cannot be empty');
+    }
+
+    // Validate UUID format for all IDs
+    const invalidIds = ids.filter(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+    if (invalidIds.length > 0) {
+      throw new BadRequestException(`Invalid UUID format for IDs: ${invalidIds.join(', ')}`);
+    }
+
+    try {
+      let companies;
+      if (this.companyRepository) {
+        let query = this.companyRepository
+          .createQueryBuilder('company')
+          .leftJoinAndSelect('company.contacts', 'contacts')
+          .leftJoinAndSelect('company.organization', 'organization')
+          .where('company.id IN (:...ids)', { ids });
+
+        // Apply multi-tenant filtering
+        if (organizationId) {
+          if (user && user.organizationId !== organizationId) {
+            throw new ForbiddenException('Access denied to organization data');
+          }
+          query.andWhere('(company.organizationId = :organizationId OR company.isSharedData = true)', {
+            organizationId,
+          });
+        } else {
+          query.andWhere('company.isSharedData = true');
+        }
+
+        companies = await query.getMany();
+      } else {
+        // Mock implementation
+        companies = MOCK_COMPANIES.filter(company => 
+          ids.includes(company.id) && 
+          (company.organizationId === organizationId || company.isSharedData)
+        );
+      }
+
+      // Log bulk read operation
+      if (this.auditService && user) {
+        await this.auditService.logUserAction(user, 'READ', 'Company', undefined, {
+          resourceType: 'bulk_companies',
+          resourcePath: '/api/companies/bulk',
+          metadata: {
+            requestedIds: ids.length,
+            foundCompanies: companies.length,
+            organizationId,
+          },
+        });
+      }
+
+      return companies;
+    } catch (error) {
+      // Log error
+      if (this.auditService && user) {
+        await this.auditService.logUserAction(user, 'READ', 'Company', undefined, {
+          resourceType: 'bulk_companies',
+          resourcePath: '/api/companies/bulk',
+          statusCode: error.status || 500,
+          errorMessage: error.message,
+          metadata: { requestedIds: ids.length },
+        });
+      }
+      throw error;
+    }
+  }
+
+  // Helper methods
+  private calculateDataQualityScore(data: CreateCompanyDto | UpdateCompanyDto, existingData?: any): number {
+    let score = 0.0;
+    let maxScore = 0.0;
+
+    const checkField = (field: any, weight: number) => {
+      maxScore += weight;
+      if (field && field.toString().trim() !== '') {
+        score += weight;
+      }
+    };
+
+    // Combine new data with existing for updates
+    const combinedData = existingData ? { ...existingData, ...data } : data;
+
+    checkField(combinedData.companyNameEn || combinedData.nameEn, 0.2);
+    checkField(combinedData.businessDescription, 0.15);
+    checkField(combinedData.websiteUrl, 0.1);
+    checkField(combinedData.primaryEmail, 0.1);
+    checkField(combinedData.primaryPhone, 0.1);
+    checkField(combinedData.addressLine1, 0.1);
+    checkField(combinedData.province, 0.05);
+    checkField(combinedData.primaryRegistrationNo, 0.15);
+    checkField(combinedData.tags && combinedData.tags.length > 0, 0.05);
+
+    return Math.min(1.0, Math.round((score / maxScore) * 100) / 100);
+  }
+
+  private calculateChanges(oldData: any, newData: any): Record<string, { old: any; new: any }> {
+    const changes: Record<string, { old: any; new: any }> = {};
+
+    const compareFields = [
+      'nameEn', 'nameTh', 'displayName', 'primaryRegistrationNo', 'businessDescription',
+      'websiteUrl', 'primaryEmail', 'primaryPhone', 'addressLine1', 'addressLine2',
+      'province', 'countryCode', 'companySize', 'employeeCountEstimate', 'tags',
+      'dataSensitivity'
+    ];
+
+    compareFields.forEach(field => {
+      if (JSON.stringify(oldData[field]) !== JSON.stringify(newData[field])) {
+        changes[field] = {
+          old: oldData[field],
+          new: newData[field]
+        };
+      }
+    });
+
+    return changes;
   }
 }

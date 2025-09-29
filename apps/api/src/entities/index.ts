@@ -6,3 +6,4 @@ export { Company } from './company.entity';
 export { CompanyContact } from './company-contact.entity';
 export { CompanyList } from './company-list.entity';
 export { CompanyListItem } from './company-list-item.entity';
+export { AuditLog } from './audit-log.entity';
