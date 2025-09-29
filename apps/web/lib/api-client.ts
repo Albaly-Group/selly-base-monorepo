@@ -55,16 +55,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  access_token: string;
+  accessToken: string; // Backend returns accessToken, not access_token
   user: {
     id: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
+    name: string; // Backend returns name, not firstName/lastName
+    organizationId: string; // Backend includes organizationId
     organization?: {
       id: string;
       name: string;
+      slug: string; // Backend includes slug
     };
   };
 }
@@ -72,12 +72,12 @@ export interface LoginResponse {
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
+  name: string; // Backend returns name, not firstName/lastName
+  organizationId?: string; // Backend includes organizationId
   organization?: {
     id: string;
     name: string;
+    slug?: string; // Backend includes slug
   };
 }
 
@@ -235,7 +235,7 @@ class ApiClient {
     throw new Error('Max retries exceeded');
   }
 
-  async delete<T>(endpoint: string, retries = 3): Promise<T> {
+  async delete<T>(endpoint: string, data?: any, retries = 3): Promise<T> {
     if (!this.isApiAvailable()) {
       throw new Error('API not available - no backend URL configured');
     }
@@ -245,6 +245,7 @@ class ApiClient {
           method: 'DELETE',
           headers: this.getHeaders(),
           credentials: 'include',
+          body: data ? JSON.stringify(data) : undefined,
         });
 
         if (response.status === 401) {
@@ -289,8 +290,8 @@ class ApiClient {
   // Authentication endpoints
   async login(email: string, password: string): Promise<LoginResponse> {
     const response = await this.post<LoginResponse>('/api/v1/auth/login', { email, password });
-    if (response.access_token) {
-      this.setToken(response.access_token);
+    if (response.accessToken) {
+      this.setToken(response.accessToken);
     }
     return response;
   }
@@ -299,10 +300,10 @@ class ApiClient {
     return this.get<User>('/api/v1/auth/me');
   }
 
-  async refreshToken(): Promise<LoginResponse> {
-    const response = await this.post<LoginResponse>('/api/v1/auth/refresh');
-    if (response.access_token) {
-      this.setToken(response.access_token);
+  async refreshToken(): Promise<{ accessToken: string }> {
+    const response = await this.post<{ accessToken: string }>('/api/v1/auth/refresh');
+    if (response.accessToken) {
+      this.setToken(response.accessToken);
     }
     return response;
   }
@@ -335,10 +336,8 @@ class ApiClient {
   }
 
   async deleteCompany(id: string, organizationId?: string): Promise<{ success: boolean; message: string }> {
-    const endpoint = organizationId 
-      ? `/api/v1/companies/${id}?organizationId=${organizationId}`
-      : `/api/v1/companies/${id}`;
-    return this.delete<{ success: boolean; message: string }>(endpoint);
+    const result = await this.delete<{ message: string }>(`/api/v1/companies/${id}`, organizationId ? { organizationId } : undefined);
+    return { success: true, message: result.message };
   }
 
   async bulkCreateCompanies(companies: any[]): Promise<any> {
@@ -346,9 +345,8 @@ class ApiClient {
   }
 
   // Company Lists endpoints
-  async getCompanyLists(organizationId?: string): Promise<any[]> {
-    const params = organizationId ? { organizationId } : undefined;
-    return this.get<any[]>('/api/v1/company-lists', params);
+  async getCompanyLists(params?: { organizationId?: string; searchTerm?: string; scope?: string; page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/company-lists', params);
   }
 
   async getCompanyListById(id: string, organizationId?: string): Promise<any> {
@@ -365,7 +363,8 @@ class ApiClient {
   }
 
   async deleteCompanyList(id: string): Promise<{ success: boolean; message: string }> {
-    return this.delete<{ success: boolean; message: string }>(`/api/v1/company-lists/${id}`);
+    const result = await this.delete<{ message: string }>(`/api/v1/company-lists/${id}`);
+    return { success: true, message: result.message };
   }
 
   async getCompanyListItems(id: string, organizationId?: string): Promise<any[]> {
@@ -378,7 +377,137 @@ class ApiClient {
   }
 
   async removeCompaniesFromList(listId: string, companyIds: string[]): Promise<any> {
-    return this.delete<any>(`/api/v1/company-lists/${listId}/companies?companyIds=${companyIds.join(',')}`);
+    return this.delete<any>(`/api/v1/company-lists/${listId}/companies`, { companyIds });
+  }
+
+  // Export Management endpoints (to be implemented in backend)
+  async getExportJobs(params?: { status?: string; page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/exports', params);
+  }
+
+  async createExportJob(exportData: any): Promise<any> {
+    return this.post<any>('/api/v1/exports', exportData);
+  }
+
+  async getExportJobById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/exports/${id}`);
+  }
+
+  async downloadExportFile(id: string): Promise<Blob> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
+    const response = await fetch(`${this.baseUrl}/api/v1/exports/${id}/download`, {
+      method: 'GET',
+      headers: this.getHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  async cancelExportJob(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/exports/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  // Import Management endpoints (to be implemented in backend)
+  async getImportJobs(params?: { status?: string; page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/imports', params);
+  }
+
+  async createImportJob(importData: any): Promise<any> {
+    return this.post<any>('/api/v1/imports', importData);
+  }
+
+  async getImportJobById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/imports/${id}`);
+  }
+
+  async validateImportData(id: string): Promise<any> {
+    return this.post<any>(`/api/v1/imports/${id}/validate`);
+  }
+
+  async executeImportJob(id: string): Promise<any> {
+    return this.post<any>(`/api/v1/imports/${id}/execute`);
+  }
+
+  // Staff Management endpoints (to be implemented in backend)
+  async getStaffMembers(params?: { page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/staff', params);
+  }
+
+  async createStaffMember(staffData: any): Promise<any> {
+    return this.post<any>('/api/v1/staff', staffData);
+  }
+
+  async updateStaffMember(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/staff/${id}`, updateData);
+  }
+
+  async deleteStaffMember(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/staff/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  async updateStaffRole(id: string, role: string): Promise<any> {
+    return this.put<any>(`/api/v1/staff/${id}/role`, { role });
+  }
+
+  // Reports & Analytics endpoints (to be implemented in backend)
+  async getDashboardAnalytics(): Promise<any> {
+    return this.get<any>('/api/v1/reports/dashboard');
+  }
+
+  async getDataQualityMetrics(): Promise<any> {
+    return this.get<any>('/api/v1/reports/data-quality');
+  }
+
+  async getUserActivityReports(params?: { startDate?: string; endDate?: string }): Promise<any> {
+    return this.get<any>('/api/v1/reports/user-activity', params);
+  }
+
+  async getExportHistoryReports(params?: { startDate?: string; endDate?: string }): Promise<any> {
+    return this.get<any>('/api/v1/reports/export-history', params);
+  }
+
+  // Admin Management endpoints (to be implemented in backend)
+  async getOrganizationUsers(params?: { page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/admin/users', params);
+  }
+
+  async createOrganizationUser(userData: any): Promise<any> {
+    return this.post<any>('/api/v1/admin/users', userData);
+  }
+
+  async updateOrganizationUser(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/admin/users/${id}`, updateData);
+  }
+
+  async deleteOrganizationUser(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/admin/users/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  async getOrganizationPolicies(): Promise<any> {
+    return this.get<any>('/api/v1/admin/policies');
+  }
+
+  async updateOrganizationPolicies(policies: any): Promise<any> {
+    return this.put<any>('/api/v1/admin/policies', policies);
+  }
+
+  async getIntegrationSettings(): Promise<any> {
+    return this.get<any>('/api/v1/admin/integrations');
+  }
+
+  async updateIntegrationSettings(settings: any): Promise<any> {
+    return this.put<any>('/api/v1/admin/integrations', settings);
   }
 }
 
@@ -406,9 +535,8 @@ export function getCurrentUserFromToken(): Partial<User> | null {
     return {
       id: payload.sub,
       email: payload.email,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      role: payload.role,
+      name: payload.name || 'Unknown User',
+      organizationId: payload.organizationId,
     };
   } catch (error) {
     console.error('Error decoding token:', error);
