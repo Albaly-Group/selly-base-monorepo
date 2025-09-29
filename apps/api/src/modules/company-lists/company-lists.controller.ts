@@ -10,6 +10,7 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { CompanyListsService } from './company-lists.service';
 import { User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -62,11 +63,20 @@ interface CompanyListSearchQuery {
   scope?: string;
 }
 
+@ApiTags('company-lists')
 @Controller('api/company-lists')
 export class CompanyListsController {
   constructor(private readonly companyListsService: CompanyListsService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get company lists with filters' })
+  @ApiQuery({ name: 'searchTerm', required: false, description: 'Search term for list name or description' })
+  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID to filter by' })
+  @ApiQuery({ name: 'visibility', required: false, description: 'Filter by visibility (private, team, organization, public)' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 50)' })
+  @ApiQuery({ name: 'scope', required: false, description: 'Scope filter (mine, organization, public)' })
+  @ApiResponse({ status: 200, description: 'Company lists retrieved successfully' })
   async getCompanyLists(@Query() query: CompanyListSearchQuery): Promise<PaginatedResponse<any>> {
     const searchParams = {
       searchTerm: query.searchTerm,
@@ -83,6 +93,11 @@ export class CompanyListsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get company list by ID' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID for access control' })
+  @ApiResponse({ status: 200, description: 'Company list retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
   async getCompanyListById(@Param('id') id: string, @Query('organizationId') organizationId?: string) {
     const mockUser = createMockUser(organizationId);
     return this.companyListsService.getCompanyListById(id, mockUser);
@@ -90,8 +105,13 @@ export class CompanyListsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Create a new company list' })
+  @ApiResponse({ status: 201, description: 'Company list created successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
   async createCompanyList(
-    @Body(new ValidationPipe({ transform: true })) createListDto: CreateCompanyListDto,
+    @Body() createListDto: CreateCompanyListDto,
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
@@ -101,9 +121,16 @@ export class CompanyListsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update company list by ID' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiResponse({ status: 200, description: 'Company list updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - cannot update this list' })
   async updateCompanyList(
     @Param('id') id: string,
-    @Body(new ValidationPipe({ transform: true })) updateListDto: UpdateCompanyListDto,
+    @Body() updateListDto: UpdateCompanyListDto,
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
@@ -113,6 +140,13 @@ export class CompanyListsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete company list by ID' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiResponse({ status: 200, description: 'Company list deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - cannot delete this list' })
   async deleteCompanyList(
     @Param('id') id: string,
     @CurrentUser() user: any,
@@ -124,6 +158,11 @@ export class CompanyListsController {
   }
 
   @Get(':id/items')
+  @ApiOperation({ summary: 'Get items in a company list' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiQuery({ name: 'organizationId', required: false, description: 'Organization ID for access control' })
+  @ApiResponse({ status: 200, description: 'List items retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
   async getListItems(@Param('id') id: string, @Query('organizationId') organizationId?: string) {
     const mockUser = createMockUser(organizationId);
     return this.companyListsService.getListItems(id, mockUser);
@@ -131,9 +170,16 @@ export class CompanyListsController {
 
   @Post(':id/companies')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Add companies to a list' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiResponse({ status: 200, description: 'Companies added to list successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - cannot modify this list' })
   async addCompaniesToList(
     @Param('id') listId: string,
-    @Body(new ValidationPipe({ transform: true })) body: AddCompaniesToListDto,
+    @Body() body: AddCompaniesToListDto,
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
@@ -143,9 +189,16 @@ export class CompanyListsController {
 
   @Delete(':id/companies')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Remove companies from a list' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiResponse({ status: 200, description: 'Companies removed from list successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - cannot modify this list' })
   async removeCompaniesFromList(
     @Param('id') listId: string,
-    @Body(new ValidationPipe({ transform: true })) body: RemoveCompaniesFromListDto,
+    @Body() body: RemoveCompaniesFromListDto,
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
