@@ -13,7 +13,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginDto } from '../../dtos/company.dto';
 
 @ApiTags('auth')
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

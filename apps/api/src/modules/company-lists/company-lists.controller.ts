@@ -64,7 +64,7 @@ interface CompanyListSearchQuery {
 }
 
 @ApiTags('company-lists')
-@Controller('api/company-lists')
+@Controller('company-lists')
 export class CompanyListsController {
   constructor(private readonly companyListsService: CompanyListsService) {}
 

@@ -56,7 +56,7 @@ const createMockUser = (organizationId?: string): User => ({
 });
 
 @ApiTags('companies')
-@Controller('api/companies')
+@Controller('companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
