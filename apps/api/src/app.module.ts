@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
+import { CompanyListsModule } from './modules/company-lists/company-lists.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 
@@ -15,6 +16,7 @@ const getImports = () => {
       load: [databaseConfig, jwtConfig],
     }),
     CompaniesModule,
+    CompanyListsModule,
   ];
 
   // Only add TypeORM if not skipping database
