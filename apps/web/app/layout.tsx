@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Suspense } from "react"
 import { AuthProvider } from "@/lib/auth"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ReactQueryProvider } from "@/lib/react-query-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -21,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <Suspense fallback={null}>{children}</Suspense>
-          </AuthProvider>
-        </ThemeProvider>
+        <ReactQueryProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+            <AuthProvider>
+              <Suspense fallback={null}>{children}</Suspense>
+            </AuthProvider>
+          </ThemeProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   )
