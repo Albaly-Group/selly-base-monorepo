@@ -2,8 +2,8 @@ import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
-  // Skip database if explicitly requested
-  const skipDatabase = process.env.SKIP_DATABASE === 'true';
+  // Skip database if explicitly requested (case-insensitive)
+  const skipDatabase = process.env.SKIP_DATABASE?.toLowerCase() === 'true';
   
   if (skipDatabase) {
     return {

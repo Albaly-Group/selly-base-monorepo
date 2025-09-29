@@ -84,7 +84,7 @@ selly-base-monorepo/
    
    **For Demo/Development (No Database Required):**
    ```bash
-   # Skip database entirely (recommended for quick setup)
+   # Skip database entirely (case-insensitive: TRUE, true, True all work)
    SKIP_DATABASE=true
    
    # JWT Configuration (required)
@@ -288,7 +288,20 @@ NODE_ENV=development
 SKIP_DATABASE=true
 ```
 
-#### 4. CORS Errors
+#### 4. Frontend Build Failures
+If `apps/web` build fails on Vercel:
+```bash
+# Check local build first
+cd apps/web && npm run build
+
+# Common fixes:
+# 1. Ensure root directory is set to "apps/web" in Vercel
+# 2. Check build command: "cd ../.. && npm run build"  
+# 3. Verify output directory: ".next"
+# 4. Install command should be: "npm install"
+```
+
+#### 5. CORS Errors
 The serverless adapter handles CORS automatically, but you can customize:
 ```typescript
 // apps/api/src/serverless.ts
