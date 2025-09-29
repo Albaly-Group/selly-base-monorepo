@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd .. && npm run build",
+  "buildCommand": "cd ../.. && npm install && npx turbo build --filter=api",
   "outputDirectory": "dist",
   "devCommand": "npm run start:dev",
   "functions": {

@@ -32,14 +32,16 @@ selly-base-monorepo/
 └── package.json           # Root workspace
 ```
 
-### 2. Separate Vercel Configurations
+### 2. Optimized Separate Vercel Configurations
 
 **Frontend Configuration (`apps/web/vercel.json`)**:
-- Configures Next.js build from monorepo
+- Optimized build command that builds only the web app and its dependencies
+- Uses Turbo's `--filter=web` to avoid building unnecessary packages
 - Outputs to `.next` directory
 
 **Backend Configuration (`apps/api/vercel.json`)**:
-- Configures NestJS build from monorepo
+- Optimized build command that builds only the API and its dependencies  
+- Uses Turbo's `--filter=api` to avoid building unnecessary packages
 - Serverless function configuration
 - Routes all requests to the API handler
 
@@ -54,7 +56,7 @@ selly-base-monorepo/
    - **Root Directory**: Set to `apps/web`
 
 2. **Configure Frontend Settings**:
-   - **Build Command**: Automatically detected from `apps/web/vercel.json`
+   - **Build Command**: Optimized to build only web app: `cd ../.. && npm install && npx turbo build --filter=web`
    - **Output Directory**: `.next` (from vercel.json)
    - **Install Command**: `npm install` (at repository root)
 
@@ -75,7 +77,7 @@ selly-base-monorepo/
    - **Root Directory**: Set to `apps/api`
 
 2. **Configure Backend Settings**:
-   - **Build Command**: Automatically detected from `apps/api/vercel.json`
+   - **Build Command**: Optimized to build only API: `cd ../.. && npm install && npx turbo build --filter=api`
    - **Output Directory**: `dist` (from vercel.json)
    - **Install Command**: `npm install` (at repository root)
 
