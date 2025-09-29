@@ -6,12 +6,15 @@
 apps/*/node_modules
 packages/*/node_modules
 
-# next.js
+# next.js build artifacts
 /.next/
 */.next/
 /out/
+**/out/
+apps/web/.next/
+apps/api/dist/
 
-# production
+# production builds
 /build
 /dist
 **/dist
