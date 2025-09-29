@@ -66,6 +66,9 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
   const parsedUrl = databaseUrl ? parseDatabaseUrl(databaseUrl) : null;
 
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   return {
     type: 'postgres',
     host: parsedUrl?.host || process.env.DATABASE_HOST || 'localhost',
@@ -76,14 +79,21 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     database: parsedUrl?.database || process.env.DATABASE_NAME || 'selly_base',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-    synchronize: process.env.NODE_ENV !== 'production',
-    logging: process.env.NODE_ENV === 'development',
+    // Use migrations in production, synchronize in development only if explicitly enabled
+    synchronize: isDevelopment && process.env.DB_SYNC !== 'false',
+    migrationsRun: isProduction,
+    logging: isDevelopment,
     ssl: getSslConfig(parsedUrl),
+    // Improve connection handling
+    retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS || '3', 10),
+    retryDelay: parseInt(process.env.DB_RETRY_DELAY || '3000', 10),
     extra: {
       connectionLimit: parseInt(
         process.env.DATABASE_CONNECTION_LIMIT || '10',
         10,
       ),
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
     },
   };
 });

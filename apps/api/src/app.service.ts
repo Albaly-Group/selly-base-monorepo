@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { DatabaseHealthService } from './database/database-health.service';
 
 @Injectable()
 export class AppService {
+  constructor(
+    private readonly databaseHealthService: DatabaseHealthService,
+  ) {}
+
   getRoot(): object {
     return {
       message: 'Selly Base API',
@@ -15,7 +20,20 @@ export class AppService {
     };
   }
 
-  getHealth(): string {
-    return 'Selly Base API is running with full TypeORM entities and Companies API!';
+  async getHealth(): Promise<object> {
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: 'disabled',
+    };
+
+    try {
+      const isHealthy = await this.databaseHealthService.isHealthy();
+      health.database = isHealthy ? 'connected' : 'disconnected';
+    } catch (error) {
+      health.database = 'error';
+    }
+
+    return health;
   }
 }
