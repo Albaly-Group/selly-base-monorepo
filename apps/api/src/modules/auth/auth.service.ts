@@ -39,7 +39,8 @@ const MOCK_USERS = [
     id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'admin@albaly.com',
     name: 'Admin User',
-    passwordHash: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    passwordHash:
+      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     organizationId: '123e4567-e89b-12d3-a456-426614174001',
     organization: {
       id: '123e4567-e89b-12d3-a456-426614174001',
@@ -52,7 +53,8 @@ const MOCK_USERS = [
     id: '123e4567-e89b-12d3-a456-426614174010',
     email: 'test@example.com',
     name: 'Test User',
-    passwordHash: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    passwordHash:
+      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     organizationId: '123e4567-e89b-12d3-a456-426614174002',
     organization: {
       id: '123e4567-e89b-12d3-a456-426614174002',
@@ -67,17 +69,19 @@ const MOCK_USERS = [
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    @Optional() @InjectRepository(User)
+    @Optional()
+    @InjectRepository(User)
     private userRepository?: Repository<User>,
-    @Optional() @InjectRepository(Organization)
+    @Optional()
+    @InjectRepository(Organization)
     private organizationRepository?: Repository<Organization>,
   ) {}
 
   async login(loginRequest: LoginRequest): Promise<LoginResponse> {
     const { email, password } = loginRequest;
-    
+
     // Use database if available, otherwise use mock data
-    const user = this.userRepository 
+    const user = this.userRepository
       ? await this.validateUserFromDatabase(email, password)
       : await this.validateUserFromMockData(email, password);
 
@@ -105,9 +109,11 @@ export class AuthService {
     };
   }
 
-  private async validateUserFromDatabase(email: string, password: string): Promise<any> {
-    const user = await this.userRepository!
-      .createQueryBuilder('user')
+  private async validateUserFromDatabase(
+    email: string,
+    password: string,
+  ): Promise<any> {
+    const user = await this.userRepository!.createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
       .where('user.email = :email', { email })
       .andWhere('user.status = :status', { status: 'active' })
@@ -125,9 +131,14 @@ export class AuthService {
     return user;
   }
 
-  private async validateUserFromMockData(email: string, password: string): Promise<any> {
-    const user = MOCK_USERS.find(u => u.email === email && u.status === 'active');
-    
+  private async validateUserFromMockData(
+    email: string,
+    password: string,
+  ): Promise<any> {
+    const user = MOCK_USERS.find(
+      (u) => u.email === email && u.status === 'active',
+    );
+
     if (!user) {
       return null;
     }
@@ -160,7 +171,7 @@ export class AuthService {
     }
 
     // Use mock data
-    return MOCK_USERS.find(u => u.id === userId && u.status === 'active');
+    return MOCK_USERS.find((u) => u.id === userId && u.status === 'active');
   }
 
   async hashPassword(password: string): Promise<string> {

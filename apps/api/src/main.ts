@@ -7,26 +7,40 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Set global prefix for API routes (excluding root endpoints)
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'health', 'docs', 'docs/(.*)'],
+  });
+
   // Global exception filter for consistent error handling
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // Enable global validation
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://*.albaly.jp', /\.albaly\.jp$/],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://*.albaly.jp',
+      /\.albaly\.jp$/,
+    ],
     credentials: true,
   });
 
   // Swagger API Documentation
   const config = new DocumentBuilder()
     .setTitle('Selly Base API')
-    .setDescription('The Selly Base API for company and list management with full authentication and validation')
+    .setDescription(
+      'The Selly Base API for company and list management with full authentication and validation',
+    )
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
     .addTag('companies', 'Company management endpoints')
@@ -41,9 +55,9 @@ async function bootstrap() {
       'access-token',
     )
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
@@ -51,7 +65,9 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3001);
   console.log('🚀 NestJS API is running on http://localhost:3001');
-  console.log('📚 API Documentation available at http://localhost:3001/api/docs');
+  console.log(
+    '📚 API Documentation available at http://localhost:3001/docs',
+  );
 }
 
 // Only run bootstrap if not in serverless environment

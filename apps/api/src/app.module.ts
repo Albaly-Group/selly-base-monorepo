@@ -25,7 +25,9 @@ const getImports = () => {
 
   // Only add TypeORM if not skipping database
   if (process.env.SKIP_DATABASE?.toLowerCase() !== 'true') {
-    baseImports.splice(1, 0, 
+    baseImports.splice(
+      1,
+      0,
       TypeOrmModule.forRootAsync({
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => {
@@ -35,7 +37,7 @@ const getImports = () => {
           }
           return dbConfig;
         },
-      })
+      }),
     );
   }
 

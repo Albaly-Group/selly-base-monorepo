@@ -8,7 +8,16 @@ export interface AuditLogData {
   userId?: string;
   entityType: string;
   entityId?: string;
-  actionType: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'SEARCH' | 'EXPORT' | 'IMPORT';
+  actionType:
+    | 'CREATE'
+    | 'READ'
+    | 'UPDATE'
+    | 'DELETE'
+    | 'LOGIN'
+    | 'LOGOUT'
+    | 'SEARCH'
+    | 'EXPORT'
+    | 'IMPORT';
   resourceType?: string;
   resourcePath?: string;
   oldValues?: Record<string, any>;
@@ -26,9 +35,11 @@ export interface AuditLogData {
 @Injectable()
 export class AuditService {
   constructor(
-    @Optional() @InjectRepository(AuditLog)
+    @Optional()
+    @InjectRepository(AuditLog)
     private auditLogRepository?: Repository<AuditLog>,
-    @Optional() @InjectRepository(User)
+    @Optional()
+    @InjectRepository(User)
     private userRepository?: Repository<User>,
   ) {}
 
@@ -59,7 +70,7 @@ export class AuditService {
     actionType: AuditLogData['actionType'],
     entityType: string,
     entityId?: string,
-    options: Partial<AuditLogData> = {}
+    options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.log({
       organizationId: user.organizationId,
@@ -75,7 +86,7 @@ export class AuditService {
     user: User | { id: string; organizationId: string },
     actionType: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     companyId: string,
-    options: Partial<AuditLogData> = {}
+    options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.logUserAction(user, actionType, 'Company', companyId, {
       resourceType: 'company',
@@ -88,7 +99,7 @@ export class AuditService {
     user: User | { id: string; organizationId: string },
     actionType: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     listId: string,
-    options: Partial<AuditLogData> = {}
+    options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.logUserAction(user, actionType, 'CompanyList', listId, {
       resourceType: 'company_list',
@@ -101,7 +112,7 @@ export class AuditService {
     user: User | { id: string; organizationId: string },
     searchTerm: string,
     resultCount: number,
-    options: Partial<AuditLogData> = {}
+    options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.logUserAction(user, 'SEARCH', 'Company', undefined, {
       resourceType: 'search',
@@ -119,7 +130,7 @@ export class AuditService {
     userId: string,
     organizationId: string,
     actionType: 'LOGIN' | 'LOGOUT',
-    options: Partial<AuditLogData> = {}
+    options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.log({
       organizationId,
@@ -144,7 +155,7 @@ export class AuditService {
       offset?: number;
       dateFrom?: Date;
       dateTo?: Date;
-    } = {}
+    } = {},
   ): Promise<{ data: AuditLog[]; total: number }> {
     if (!this.auditLogRepository) {
       return { data: [], total: 0 };
@@ -161,7 +172,7 @@ export class AuditService {
       dateTo,
     } = options;
 
-    let query = this.auditLogRepository
+    const query = this.auditLogRepository
       .createQueryBuilder('audit')
       .leftJoinAndSelect('audit.user', 'user')
       .where('audit.organizationId = :organizationId', { organizationId });

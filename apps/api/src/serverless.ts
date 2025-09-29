@@ -19,32 +19,55 @@ async function createNestServer() {
     AppModule,
     new ExpressAdapter(expressServer),
     {
-      logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug', 'verbose'],
-    }
+      logger:
+        process.env.NODE_ENV === 'production'
+          ? ['error', 'warn']
+          : ['log', 'error', 'warn', 'debug', 'verbose'],
+    },
   );
+
+  // Set global prefix for API routes (excluding root endpoints)
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'health', 'docs', 'docs/(.*)'],
+  });
 
   // Global exception filter for consistent error handling
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // Enable global validation
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://*.vercel.app', /\.vercel\.app$/, 'https://*.albaly.jp', /\.albaly\.jp$/] 
-      : ['http://localhost:3000', 'http://localhost:3001', 'https://*.albaly.jp', /\.albaly\.jp$/],
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? [
+            'https://*.vercel.app',
+            /\.vercel\.app$/,
+            'https://*.albaly.jp',
+            /\.albaly\.jp$/,
+          ]
+        : [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'https://*.albaly.jp',
+            /\.albaly\.jp$/,
+          ],
     credentials: true,
   });
 
   // Swagger API Documentation
   const config = new DocumentBuilder()
     .setTitle('Selly Base API')
-    .setDescription('The Selly Base API for company and list management with full authentication and validation')
+    .setDescription(
+      'The Selly Base API for company and list management with full authentication and validation',
+    )
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
     .addTag('companies', 'Company management endpoints')
@@ -59,7 +82,7 @@ async function createNestServer() {
       'access-token',
     )
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {

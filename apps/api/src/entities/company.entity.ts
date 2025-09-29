@@ -85,7 +85,13 @@ export class Company {
   })
   companySize: string;
 
-  @Column({ name: 'annual_revenue_estimate', type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({
+    name: 'annual_revenue_estimate',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
   annualRevenueEstimate: number;
 
   @Column({ name: 'currency_code', type: 'text', default: 'THB' })
@@ -115,14 +121,26 @@ export class Company {
   @Column({ type: 'text', array: true, default: [] })
   tags: string[];
 
-  @Column({ name: 'data_quality_score', type: 'decimal', precision: 3, scale: 2, default: 0.0 })
+  @Column({
+    name: 'data_quality_score',
+    type: 'decimal',
+    precision: 3,
+    scale: 2,
+    default: 0.0,
+  })
   dataQualityScore: number;
 
   @Column({
     name: 'data_source',
     type: 'text',
     default: 'customer_input',
-    enum: ['albaly_list', 'dbd_registry', 'customer_input', 'data_enrichment', 'third_party'],
+    enum: [
+      'albaly_list',
+      'dbd_registry',
+      'customer_input',
+      'data_enrichment',
+      'third_party',
+    ],
   })
   dataSource: string;
 

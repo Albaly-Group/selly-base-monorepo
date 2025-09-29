@@ -49,7 +49,13 @@ export class CompanyContact {
   @Column({ name: 'linkedin_url', type: 'text', nullable: true })
   linkedinUrl: string;
 
-  @Column({ name: 'confidence_score', type: 'decimal', precision: 3, scale: 2, default: 0.0 })
+  @Column({
+    name: 'confidence_score',
+    type: 'decimal',
+    precision: 3,
+    scale: 2,
+    default: 0.0,
+  })
   confidenceScore: number;
 
   @Column({ name: 'last_verified_at', type: 'timestamptz', nullable: true })

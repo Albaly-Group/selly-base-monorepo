@@ -33,7 +33,13 @@ export class CompanyListItem {
   @Column({ name: 'custom_fields', type: 'jsonb', default: {} })
   customFields: Record<string, any>;
 
-  @Column({ name: 'lead_score', type: 'decimal', precision: 5, scale: 2, default: 0.0 })
+  @Column({
+    name: 'lead_score',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 0.0,
+  })
   leadScore: number;
 
   @Column({ name: 'score_breakdown', type: 'jsonb', default: {} })
@@ -49,13 +55,21 @@ export class CompanyListItem {
   })
   status: string;
 
-  @Column({ name: 'status_changed_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'status_changed_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   statusChangedAt: Date;
 
   @Column({ name: 'added_by_user_id', type: 'uuid', nullable: true })
   addedByUserId: string;
 
-  @Column({ name: 'added_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'added_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   addedAt: Date;
 
   // Relations
