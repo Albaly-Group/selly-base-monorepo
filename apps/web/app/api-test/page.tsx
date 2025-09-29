@@ -43,10 +43,28 @@ export default function ApiTestPage() {
     setError('')
     try {
       // Test with demo credentials
-      const response = await apiClient.login('user@selly.com', 'password123')
-      setError(`Login successful: ${JSON.stringify(response)}`)
+      const response = await apiClient.login('admin@albaly.com', 'password')
+      setError(`✅ Login successful! Token: ${response.accessToken.substring(0, 20)}...
+User: ${response.user.name} (${response.user.email})
+Organization: ${response.user.organization?.name || 'None'}`)
     } catch (err) {
-      setError(`Login failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setError(`❌ Login failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testCurrentUser = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const user = await apiClient.getCurrentUser()
+      setError(`✅ Current user retrieved! 
+Name: ${user.name}
+Email: ${user.email}
+Organization ID: ${user.organizationId || 'None'}`)
+    } catch (err) {
+      setError(`❌ Get current user failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -111,6 +129,25 @@ export default function ApiTestPage() {
                 className="w-full"
               >
                 {loading ? 'Testing...' : 'Test Login (Demo User)'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Current User Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Get Current User
+                <Badge variant="outline">GET /api/v1/auth/me</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testCurrentUser} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Current User'}
               </Button>
             </CardContent>
           </Card>

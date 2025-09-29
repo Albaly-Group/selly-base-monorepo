@@ -379,6 +379,136 @@ class ApiClient {
   async removeCompaniesFromList(listId: string, companyIds: string[]): Promise<any> {
     return this.delete<any>(`/api/v1/company-lists/${listId}/companies`, { companyIds });
   }
+
+  // Export Management endpoints (to be implemented in backend)
+  async getExportJobs(params?: { status?: string; page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/exports', params);
+  }
+
+  async createExportJob(exportData: any): Promise<any> {
+    return this.post<any>('/api/v1/exports', exportData);
+  }
+
+  async getExportJobById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/exports/${id}`);
+  }
+
+  async downloadExportFile(id: string): Promise<Blob> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
+    const response = await fetch(`${this.baseUrl}/api/v1/exports/${id}/download`, {
+      method: 'GET',
+      headers: this.getHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  async cancelExportJob(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/exports/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  // Import Management endpoints (to be implemented in backend)
+  async getImportJobs(params?: { status?: string; page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/imports', params);
+  }
+
+  async createImportJob(importData: any): Promise<any> {
+    return this.post<any>('/api/v1/imports', importData);
+  }
+
+  async getImportJobById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/imports/${id}`);
+  }
+
+  async validateImportData(id: string): Promise<any> {
+    return this.post<any>(`/api/v1/imports/${id}/validate`);
+  }
+
+  async executeImportJob(id: string): Promise<any> {
+    return this.post<any>(`/api/v1/imports/${id}/execute`);
+  }
+
+  // Staff Management endpoints (to be implemented in backend)
+  async getStaffMembers(params?: { page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/staff', params);
+  }
+
+  async createStaffMember(staffData: any): Promise<any> {
+    return this.post<any>('/api/v1/staff', staffData);
+  }
+
+  async updateStaffMember(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/staff/${id}`, updateData);
+  }
+
+  async deleteStaffMember(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/staff/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  async updateStaffRole(id: string, role: string): Promise<any> {
+    return this.put<any>(`/api/v1/staff/${id}/role`, { role });
+  }
+
+  // Reports & Analytics endpoints (to be implemented in backend)
+  async getDashboardAnalytics(): Promise<any> {
+    return this.get<any>('/api/v1/reports/dashboard');
+  }
+
+  async getDataQualityMetrics(): Promise<any> {
+    return this.get<any>('/api/v1/reports/data-quality');
+  }
+
+  async getUserActivityReports(params?: { startDate?: string; endDate?: string }): Promise<any> {
+    return this.get<any>('/api/v1/reports/user-activity', params);
+  }
+
+  async getExportHistoryReports(params?: { startDate?: string; endDate?: string }): Promise<any> {
+    return this.get<any>('/api/v1/reports/export-history', params);
+  }
+
+  // Admin Management endpoints (to be implemented in backend)
+  async getOrganizationUsers(params?: { page?: number; limit?: number }): Promise<any> {
+    return this.get<any>('/api/v1/admin/users', params);
+  }
+
+  async createOrganizationUser(userData: any): Promise<any> {
+    return this.post<any>('/api/v1/admin/users', userData);
+  }
+
+  async updateOrganizationUser(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/admin/users/${id}`, updateData);
+  }
+
+  async deleteOrganizationUser(id: string): Promise<{ success: boolean; message: string }> {
+    const result = await this.delete<{ message: string }>(`/api/v1/admin/users/${id}`);
+    return { success: true, message: result.message };
+  }
+
+  async getOrganizationPolicies(): Promise<any> {
+    return this.get<any>('/api/v1/admin/policies');
+  }
+
+  async updateOrganizationPolicies(policies: any): Promise<any> {
+    return this.put<any>('/api/v1/admin/policies', policies);
+  }
+
+  async getIntegrationSettings(): Promise<any> {
+    return this.get<any>('/api/v1/admin/integrations');
+  }
+
+  async updateIntegrationSettings(settings: any): Promise<any> {
+    return this.put<any>('/api/v1/admin/integrations', settings);
+  }
 }
 
 // Export singleton instance
