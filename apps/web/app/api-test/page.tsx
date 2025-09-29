@@ -61,7 +61,7 @@ export default function ApiTestPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Health Check
-                <Badge variant="outline">GET /api/health</Badge>
+                <Badge variant="outline">GET /health</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -87,7 +87,7 @@ export default function ApiTestPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Companies
-                <Badge variant="outline">GET /api/companies</Badge>
+                <Badge variant="outline">GET /api/v1/companies</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
