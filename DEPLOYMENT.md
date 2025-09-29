@@ -1,6 +1,38 @@
 # Deployment Guide
 
-## Vercel Deployment
+## Deployment Options
+
+### Option 1: Full-Stack Vercel Deployment (Recommended)
+
+Deploy both frontend and backend together as a unified application with serverless functions.
+
+**Quick Start:**
+```bash
+# 1. Push your code to GitHub
+git push origin main
+
+# 2. Connect to Vercel and deploy
+# Visit https://vercel.com/new and import your repository
+```
+
+**Complete Guide:** See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions.
+
+**Benefits:**
+- Single deployment for entire application
+- Serverless scaling and performance
+- Unified domain (no CORS configuration needed)
+- Simplified environment setup
+
+### Option 2: Separate Deployments
+
+Deploy frontend and backend separately (legacy approach).
+
+**Frontend:** Follow Vercel deployment instructions below
+**Backend:** See [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
+
+---
+
+## Vercel Frontend Deployment (Option 2)
 
 This monorepo is configured for deployment on Vercel with the following setup:
 

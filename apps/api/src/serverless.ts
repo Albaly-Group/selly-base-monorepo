@@ -1,11 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import express from 'express';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+const expressServer = express();
+
+let cachedNestApp: any = null;
+
+async function createNestServer() {
+  if (cachedNestApp) {
+    return cachedNestApp;
+  }
+
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(expressServer),
+    {
+      logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug', 'verbose'],
+    }
+  );
 
   // Global exception filter for consistent error handling
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -19,7 +35,9 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: process.env.NODE_ENV === 'production' 
+      ? ['https://*.vercel.app', /\.vercel\.app$/] 
+      : ['http://localhost:3000', 'http://localhost:3001'],
     credentials: true,
   });
 
@@ -49,12 +67,10 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3001);
-  console.log('🚀 NestJS API is running on http://localhost:3001');
-  console.log('📚 API Documentation available at http://localhost:3001/api/docs');
+  await app.init();
+  cachedNestApp = app;
+
+  return app;
 }
 
-// Only run bootstrap if not in serverless environment
-if (require.main === module) {
-  bootstrap();
-}
+export { createNestServer, expressServer };
