@@ -1,12 +1,12 @@
-# Vercel Deployment Guide for Full-Stack Application
+# Vercel Deployment Guide for Separated Applications
 
-This guide explains how to deploy both the Next.js frontend and NestJS backend API to Vercel as a unified full-stack application.
+This guide explains how to deploy the Next.js frontend and NestJS backend API as separate Vercel projects.
 
 ## Architecture Overview
 
 Our application consists of:
-- **Frontend**: Next.js application in `apps/web/`
-- **Backend**: NestJS API with serverless adapter in `apps/api/`
+- **Frontend**: Next.js application in `apps/web/` (separate Vercel project)
+- **Backend**: NestJS API with serverless adapter in `apps/api/` (separate Vercel project)
 - **Shared Types**: TypeScript definitions in `packages/types/`
 
 The backend API is configured to run as Vercel serverless functions while maintaining full NestJS functionality.
@@ -17,42 +17,69 @@ The backend API is configured to run as Vercel serverless functions while mainta
 
 ```
 selly-base-monorepo/
-├── api/                     # Vercel serverless function
-│   └── index.ts            # Serverless entry point
 ├── apps/
-│   ├── web/                # Next.js frontend
-│   └── api/                # NestJS backend
+│   ├── web/                # Next.js frontend (Project 1)
+│   │   ├── vercel.json    # Frontend configuration
+│   │   └── ...
+│   └── api/                # NestJS backend (Project 2)
+│       ├── api/
+│       │   └── index.ts   # Serverless entry point
+│       ├── vercel.json    # Backend configuration
 │       └── src/
 │           ├── serverless.ts  # Serverless adapter
 │           └── main.ts       # Traditional server (dev mode)
 ├── packages/types/         # Shared TypeScript types
-├── vercel.json            # Vercel configuration
 └── package.json           # Root workspace
 ```
 
-### 2. Vercel Configuration
+### 2. Separate Vercel Configurations
 
-The `vercel.json` file configures:
-- **Frontend**: Next.js application from `apps/web/`
-- **Backend**: Serverless function from `api/index.ts`
-- **Routing**: API requests to `/api/*` route to the serverless function
+**Frontend Configuration (`apps/web/vercel.json`)**:
+- Configures Next.js build from monorepo
+- Outputs to `.next` directory
+
+**Backend Configuration (`apps/api/vercel.json`)**:
+- Configures NestJS build from monorepo
+- Serverless function configuration
+- Routes all requests to the API handler
 
 ### 3. Deployment Steps
 
-#### Option A: Deploy from Vercel Dashboard
+#### Deploy Frontend (Project 1)
 
-1. **Connect Repository**:
+1. **Create Frontend Project**:
    - Go to [Vercel Dashboard](https://vercel.com/dashboard)
    - Click "New Project"
    - Import your Git repository
+   - **Root Directory**: Set to `apps/web`
 
-2. **Configure Project Settings**:
-   - **Build Command**: `npm run build` (automatically detected)
-   - **Output Directory**: `apps/web/.next` (automatically configured)
-   - **Install Command**: `npm install` (automatically detected)
-   - **Root Directory**: Leave empty (deploy from repository root)
+2. **Configure Frontend Settings**:
+   - **Build Command**: Automatically detected from `apps/web/vercel.json`
+   - **Output Directory**: `.next` (from vercel.json)
+   - **Install Command**: `npm install` (at repository root)
 
 3. **Environment Variables**:
+   ```bash
+   # Optional: Point to your API deployment
+   NEXT_PUBLIC_API_URL=https://your-api-project.vercel.app
+   
+   # Or leave empty to use mock data
+   ```
+
+#### Deploy Backend (Project 2)
+
+1. **Create Backend Project**:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "New Project"
+   - Import the same Git repository
+   - **Root Directory**: Set to `apps/api`
+
+2. **Configure Backend Settings**:
+   - **Build Command**: Automatically detected from `apps/api/vercel.json`
+   - **Output Directory**: `dist` (from vercel.json)
+   - **Install Command**: `npm install` (at repository root)
+
+3. **Backend Environment Variables**:
    Configure the following in Vercel Dashboard → Settings → Environment Variables:
    
    ```bash
@@ -76,8 +103,9 @@ The `vercel.json` file configures:
 
 4. **Deploy**: Click "Deploy"
 
-#### Option B: Deploy via Vercel CLI
+#### Deploy via Vercel CLI
 
+**Frontend Deployment:**
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -85,15 +113,20 @@ npm i -g vercel
 # Login to Vercel
 vercel login
 
-# Deploy from repository root
+# Deploy frontend
+cd apps/web
 vercel
 
-# Follow the prompts:
-# - Set up and deploy "selly-base-monorepo"? [Y/n] y
-# - Which scope? Select your team/personal account
-# - Link to existing project? [y/N] n
-# - What's your project's name? selly-base-api
-# - In which directory is your code located? ./
+# Follow the prompts for frontend configuration
+```
+
+**Backend Deployment:**
+```bash
+# Deploy backend (in a separate project)
+cd apps/api
+vercel
+
+# Follow the prompts for backend configuration
 ```
 
 ### 4. How It Works
@@ -107,16 +140,16 @@ The NestJS API runs as serverless functions through:
    - Configures Express adapter for serverless environment
    - Handles CORS, validation, and Swagger documentation
 
-2. **Vercel Function** (`api/index.ts`):
+2. **Vercel Function** (`apps/api/api/index.ts`):
    - Entry point for serverless requests
    - Imports compiled NestJS application
    - Routes all requests to the NestJS app
 
 3. **Request Flow**:
    ```
-   https://your-app.vercel.app/api/health
+   https://your-api.vercel.app/health
    ↓
-   Vercel Routes → /api/index.ts
+   Vercel Routes → /api/index.ts (in apps/api)
    ↓
    Serverless NestJS → AppController.getHealth()
    ↓
@@ -125,16 +158,30 @@ The NestJS API runs as serverless functions through:
 
 #### Frontend Integration
 
-The Next.js frontend automatically works with the serverless backend:
-- API calls to `/api/*` are routed to the serverless functions
-- No additional configuration needed
-- Same codebase works for development and production
+The Next.js frontend connects to the backend API:
+- Configure `NEXT_PUBLIC_API_URL` to point to your API deployment
+- API calls to the configured URL are routed to the serverless functions
+- Both applications can be developed and deployed independently
 
 ## API Documentation
 
 Once deployed, your API documentation is available at:
-- **Swagger UI**: `https://your-app.vercel.app/api/docs`
-- **Health Check**: `https://your-app.vercel.app/api/health`
+- **Swagger UI**: `https://your-api.vercel.app/docs`
+- **Health Check**: `https://your-api.vercel.app/health`
+
+## Frontend Configuration
+
+After deploying both applications, configure the frontend to connect to the API:
+
+1. **Set API URL Environment Variable**:
+   ```bash
+   # In your frontend Vercel project settings
+   NEXT_PUBLIC_API_URL=https://your-api.vercel.app
+   ```
+
+2. **Alternative: Use Mock Data**:
+   - Don't set `NEXT_PUBLIC_API_URL`
+   - Frontend will automatically use mock data for development
 
 ## Environment Variables
 
@@ -180,10 +227,11 @@ npm run dev
 - Backend: `http://localhost:3001` (traditional NestJS server)
 - API Docs: `http://localhost:3001/api/docs`
 
-### Production Mode (Vercel)
-- Frontend + Backend: `https://your-app.vercel.app`
-- API Docs: `https://your-app.vercel.app/api/docs`
-- Health Check: `https://your-app.vercel.app/api/health`
+### Production Mode (Separate Vercel Projects)
+- **Frontend**: `https://your-frontend.vercel.app`
+- **Backend API**: `https://your-api.vercel.app`
+- **API Docs**: `https://your-api.vercel.app/docs`
+- **Health Check**: `https://your-api.vercel.app/health`
 
 ## Troubleshooting
 
@@ -268,24 +316,18 @@ app.enableCors({
 - Use external storage (AWS S3, Cloudinary)
 - Vercel has file size limits for serverless functions
 
-## Migration from Separate Deployments
+## Benefits of Separate Deployments
 
-If you previously deployed frontend and backend separately:
+### Advantages
+- **Independent Scaling**: Frontend and backend scale independently
+- **Separate Teams**: Different teams can deploy independently
+- **Environment Isolation**: Different environment variables and configurations
+- **Technology Flexibility**: Easier to migrate to different platforms if needed
 
-1. **Update Frontend Environment**:
-   ```bash
-   # Remove separate API URL
-   # The API is now available at the same domain
-   unset NEXT_PUBLIC_API_URL
-   ```
-
-2. **Database Migration**:
-   - Keep existing database
-   - Update connection details in Vercel environment variables
-
-3. **DNS Updates**:
-   - Frontend and API now share the same domain
-   - Update any external integrations
+### Considerations
+- **CORS Configuration**: Need to configure CORS between domains
+- **Environment Variables**: Must set `NEXT_PUBLIC_API_URL` in frontend
+- **Two Deployments**: Requires managing two separate Vercel projects
 
 ## Next Steps
 

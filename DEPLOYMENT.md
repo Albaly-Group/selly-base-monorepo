@@ -2,30 +2,31 @@
 
 ## Deployment Options
 
-### Option 1: Full-Stack Vercel Deployment (Recommended)
+### Option 1: Separate Vercel Deployments (Recommended)
 
-Deploy both frontend and backend together as a unified application with serverless functions.
+Deploy frontend and backend as separate Vercel projects for maximum flexibility.
 
 **Quick Start:**
 ```bash
 # 1. Push your code to GitHub
 git push origin main
 
-# 2. Connect to Vercel and deploy
-# Visit https://vercel.com/new and import your repository
+# 2. Create two Vercel projects:
+# - Frontend project: Import repository, set root to `apps/web`
+# - Backend project: Import repository, set root to `apps/api`
 ```
 
 **Complete Guide:** See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions.
 
 **Benefits:**
-- Single deployment for entire application
-- Serverless scaling and performance
-- Unified domain (no CORS configuration needed)
-- Simplified environment setup
+- Independent scaling and deployment cycles
+- Optimized build configurations per application
+- Team independence (frontend/backend teams)
+- Environment isolation
 
-### Option 2: Separate Deployments
+### Option 2: Traditional Server Deployment
 
-Deploy frontend and backend separately (legacy approach).
+Deploy backend to traditional hosting platforms (Railway, Heroku, etc.).
 
 **Frontend:** Follow Vercel deployment instructions below
 **Backend:** See [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)

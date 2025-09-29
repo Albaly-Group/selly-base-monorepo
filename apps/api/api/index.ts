@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Import the serverless setup
-const { createNestServer, expressServer } = require('../apps/api/dist/serverless');
+const { createNestServer, expressServer } = require('../dist/serverless');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Initialize NestJS application
