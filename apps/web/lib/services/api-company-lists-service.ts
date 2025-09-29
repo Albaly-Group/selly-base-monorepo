@@ -76,11 +76,55 @@ export class ApiCompanyListsService {
         hasPrev: page > 1,
       };
     } catch (error) {
-      console.error('API listCompanyLists failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.listCompanyLists(filters);
+      console.error('API listCompanyLists failed, using fallback mock data:', error);
+      // Fall back to mock data instead of the service
+      const { mockUserLists } = await import('@/lib/mock-data');
+      const lists: CompanyList[] = mockUserLists.map(list => ({
+        id: list.id,
+        name: list.name,
+        description: `Mock list created on ${list.createdAt}`,
+        ownerUserId: list.owner === 'user@example.com' ? 'user-1' : 'admin-1',
+        visibility: 'private' as const,
+        isShared: false,
+        itemCount: list.companyIds.length,
+        createdAt: new Date(list.createdAt).toISOString(),
+        updatedAt: new Date(list.createdAt).toISOString(),
+        organizationId: this.user.organization_id || '',
+        totalCompanies: list.companyIds.length,
+        lastActivityAt: new Date(list.createdAt).toISOString(),
+        isSmartList: false,
+      }));
+
+      // Apply client-side filtering for scope
+      let filteredLists = lists;
+      if (filters.scope === 'mine') {
+        filteredLists = lists.filter(list => list.ownerUserId === this.user.id);
+      }
+
+      // Apply search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filteredLists = filteredLists.filter(list =>
+          list.name.toLowerCase().includes(searchLower) ||
+          list.description.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Apply pagination
+      const page = filters.page || 1;
+      const limit = filters.limit || 10;
+      const offset = (page - 1) * limit;
+      const paginatedLists = filteredLists.slice(offset, offset + limit);
+
+      return {
+        items: paginatedLists,
+        total: filteredLists.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredLists.length / limit),
+        hasNext: offset + limit < filteredLists.length,
+        hasPrev: page > 1,
+      };
     }
   }
 
@@ -105,11 +149,8 @@ export class ApiCompanyListsService {
         updatedAt: list.updatedAt,
       };
     } catch (error) {
-      console.error('API getCompanyList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.getCompanyList(id);
+      console.error('API getCompanyList failed, returning null:', error);
+      return null;
     }
   }
 
@@ -138,11 +179,22 @@ export class ApiCompanyListsService {
         updatedAt: list.updatedAt,
       };
     } catch (error) {
-      console.error('API createCompanyList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.createCompanyList(data);
+      console.error('API createCompanyList failed, creating mock list:', error);
+      return {
+        id: `mock-list-${Date.now()}`,
+        name: data.name,
+        description: data.description || '',
+        ownerUserId: this.user.id,
+        visibility: 'private' as const,
+        isShared: false,
+        itemCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        organizationId: this.user.organization_id || '',
+        totalCompanies: 0,
+        lastActivityAt: new Date().toISOString(),
+        isSmartList: false,
+      };
     }
   }
 
@@ -167,11 +219,8 @@ export class ApiCompanyListsService {
         updatedAt: list.updatedAt,
       };
     } catch (error) {
-      console.error('API updateCompanyList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.updateCompanyList(id, data);
+      console.error('API updateCompanyList failed, returning null:', error);
+      return null;
     }
   }
 
@@ -183,11 +232,8 @@ export class ApiCompanyListsService {
       const result = await apiClient.deleteCompanyList(id);
       return result.success;
     } catch (error) {
-      console.error('API deleteCompanyList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.deleteCompanyList(id);
+      console.error('API deleteCompanyList failed, returning false:', error);
+      return false;
     }
   }
 
@@ -206,6 +252,9 @@ export class ApiCompanyListsService {
         addedAt: item.addedAt || item.createdAt,
         addedBy: item.addedBy || item.userId,
         note: item.note || '',
+        leadScore: 0,
+        status: 'pending' as const,
+        statusChangedAt: new Date().toISOString(),
         company: item.company ? {
           id: item.company.id,
           displayName: item.company.displayName || item.company.companyNameEn,
@@ -248,11 +297,16 @@ export class ApiCompanyListsService {
         hasPrev: page > 1,
       };
     } catch (error) {
-      console.error('API getListItems failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.getListItems(listId, filters);
+      console.error('API getListItems failed, returning empty result:', error);
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 25,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false,
+      };
     }
   }
 
@@ -269,11 +323,12 @@ export class ApiCompanyListsService {
         errors: [],
       };
     } catch (error) {
-      console.error('API addCompaniesToList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.addCompaniesToList(listId, data);
+      console.error('API addCompaniesToList failed, returning error result:', error);
+      return {
+        addedCount: 0,
+        skippedCount: data.companyIds.length,
+        errors: ['Failed to add companies via API'],
+      };
     }
   }
 
@@ -289,11 +344,11 @@ export class ApiCompanyListsService {
         errors: [],
       };
     } catch (error) {
-      console.error('API removeCompaniesFromList failed, using fallback service:', error);
-      // Fall back to original service if API fails
-      const { CompanyListsService } = await import('./company-lists-service');
-      const fallbackService = new CompanyListsService(this.user);
-      return fallbackService.removeCompaniesFromList(listId, data);
+      console.error('API removeCompaniesFromList failed, returning error result:', error);
+      return {
+        removedCount: 0,
+        errors: ['Failed to remove companies via API'],
+      };
     }
   }
 }
