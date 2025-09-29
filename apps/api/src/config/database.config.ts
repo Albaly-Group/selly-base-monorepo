@@ -80,9 +80,10 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     database: parsedUrl?.database || process.env.DATABASE_NAME || 'selly_base',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-    // Use migrations in production, synchronize in development only if explicitly enabled
-    synchronize: isDevelopment && process.env.DB_SYNC !== 'false',
-    migrationsRun: isProduction,
+    // Disable synchronize by default to prevent metadata table errors
+    // Only enable if explicitly requested
+    synchronize: process.env.DB_SYNC?.toLowerCase() === 'true',
+    migrationsRun: isProduction || process.env.DB_AUTO_MIGRATE?.toLowerCase() === 'true',
     logging: isDevelopment,
     ssl: getSslConfig(parsedUrl),
     // Improve connection handling

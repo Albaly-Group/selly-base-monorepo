@@ -36,10 +36,24 @@ DATABASE_PASSWORD=postgres
 DATABASE_NAME=selly_base
 ```
 
+## ⚠️ Important: Database Initialization
+
+After configuring your database connection, you **must** initialize the database schema:
+
+```bash
+# Required: Run migrations to create all tables
+npm run migration:run
+```
+
+**Why is this required?** 
+- By default, schema synchronization is disabled to prevent data loss
+- Migrations ensure your database has the correct schema
+- This prevents "typeorm_metadata does not exist" errors
+
 ## Database Migration Commands
 
 ```bash
-# Run migrations (creates tables)
+# Run migrations (creates tables) - REQUIRED FOR FIRST SETUP
 npm run migration:run
 
 # Show migration status
@@ -55,12 +69,31 @@ npm run migration:generate -- src/database/migrations/NewMigration
 npm run migration:create -- src/database/migrations/NewMigration
 ```
 
+## Advanced Configuration
+
+```bash
+# Enable automatic schema synchronization (NOT recommended for production)
+DB_SYNC=true npm run start:dev
+
+# Enable automatic migration on startup
+DB_AUTO_MIGRATE=true npm run start:dev
+```
+
 ## Troubleshooting Database Issues
 
 ### "relation typeorm_metadata does not exist"
-This error is fixed by running migrations:
+**Solution:** Run migrations to initialize the database schema:
 ```bash
 npm run migration:run
+```
+
+**Root Cause:** The database exists but doesn't have the required tables. TypeORM needs either:
+1. Existing tables (created by migrations), OR  
+2. Schema synchronization enabled (not recommended)
+
+**Alternative:** Enable synchronization temporarily:
+```bash
+DB_SYNC=true npm run start:dev
 ```
 
 ### Connection Refused
@@ -152,6 +185,8 @@ When running, visit:
 | `DATABASE_USER` | Database username | postgres | No* |
 | `DATABASE_PASSWORD` | Database password | postgres | No* |
 | `DATABASE_NAME` | Database name | selly_base | No* |
+| `DB_SYNC` | Enable schema synchronization | false | No |
+| `DB_AUTO_MIGRATE` | Run migrations on startup | false | No |
 | `JWT_SECRET` | JWT signing secret | - | Yes |
 | `JWT_EXPIRES_IN` | JWT expiration time | 1d | No |
 | `NODE_ENV` | Environment mode | development | No |
