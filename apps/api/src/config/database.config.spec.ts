@@ -41,6 +41,27 @@ describe('Database Configuration', () => {
       expect(config.database).toBe('testdb');
     });
 
+    it('should parse common cloud provider DATABASE_URL formats', () => {
+      // Test with a realistic Heroku/Supabase/Railway-style URL
+      process.env.DATABASE_URL = 'postgresql://user123:pass456@ec2-1-2-3-4.compute-1.amazonaws.com:5432/d1a2b3c4d5e6f7';
+      process.env.SKIP_DATABASE = 'false';
+      
+      // Clear individual env vars to ensure URL is used
+      delete process.env.DATABASE_HOST;
+      delete process.env.DATABASE_PORT;
+      delete process.env.DATABASE_USER;
+      delete process.env.DATABASE_PASSWORD;
+      delete process.env.DATABASE_NAME;
+
+      const config = databaseConfig();
+      
+      expect(config.host).toBe('ec2-1-2-3-4.compute-1.amazonaws.com');
+      expect(config.port).toBe(5432);
+      expect(config.username).toBe('user123');
+      expect(config.password).toBe('pass456');
+      expect(config.database).toBe('d1a2b3c4d5e6f7');
+    });
+
     it('should fallback to individual environment variables when DATABASE_URL is not set', () => {
       // Clear DATABASE_URL
       delete process.env.DATABASE_URL;

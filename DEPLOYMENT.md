@@ -71,8 +71,19 @@ NEXT_PUBLIC_API_URL=https://your-api-project.vercel.app
 JWT_SECRET=your-jwt-secret-key
 JWT_EXPIRES_IN=1d
 
-# Database (optional - can use SKIP_DATABASE=true for demo)
+# Database options:
+# Option 1: Skip database (demo/development)
 SKIP_DATABASE=true
+
+# Option 2: Use DATABASE_URL (recommended for production)
+# DATABASE_URL=postgresql://user:password@host:5432/dbname
+
+# Option 3: Use individual variables (alternative)
+# DATABASE_HOST=your-db-host
+# DATABASE_PORT=5432
+# DATABASE_USERNAME=your-username
+# DATABASE_PASSWORD=your-password
+# DATABASE_NAME=your-database
 ```
 
 ## Troubleshooting

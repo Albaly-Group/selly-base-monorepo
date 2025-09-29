@@ -97,9 +97,22 @@ selly-base-monorepo/
    NODE_ENV=production
    ```
    
-   **For Production with Database:**
+   **For Production with Database (Option A - DATABASE_URL):**
    ```bash
-   # Database Configuration
+   # Database Configuration (Recommended - single connection string)
+   DATABASE_URL=postgresql://username:password@host:5432/database_name
+   
+   # JWT Configuration
+   JWT_SECRET=your-jwt-secret-key
+   JWT_EXPIRES_IN=1d
+   
+   # Node Environment
+   NODE_ENV=production
+   ```
+   
+   **For Production with Database (Option B - Individual Variables):**
+   ```bash
+   # Database Configuration (Alternative - individual variables)
    DATABASE_HOST=your-db-host
    DATABASE_PORT=5432
    DATABASE_USERNAME=your-username
@@ -214,7 +227,13 @@ After deploying both applications, configure the frontend to connect to the API:
 |----------|-------------|---------|
 | `SKIP_DATABASE` | Skip database entirely | `true` |
 
-**Option 2: Use PostgreSQL Database**
+**Option 2: Use DATABASE_URL (Recommended for Production)**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/dbname` |
+
+**Option 3: Use Individual PostgreSQL Variables**
 
 | Variable | Description | Example |
 |----------|-------------|---------|
@@ -223,6 +242,8 @@ After deploying both applications, configure the frontend to connect to the API:
 | `DATABASE_USERNAME` | Database user | `postgres` |
 | `DATABASE_PASSWORD` | Database password | `your-password` |
 | `DATABASE_NAME` | Database name | `selly_base` |
+
+> **Note**: If `DATABASE_URL` is provided, it takes precedence over individual database variables. Most cloud database providers (Heroku Postgres, Supabase, Railway, etc.) provide a `DATABASE_URL` connection string which is more convenient to use.
 
 ### Setting Environment Variables
 
@@ -234,7 +255,11 @@ After deploying both applications, configure the frontend to connect to the API:
 2. **Vercel CLI**:
    ```bash
    vercel env add JWT_SECRET
+   vercel env add DATABASE_URL
+   # OR use individual database variables:
    vercel env add DATABASE_HOST
+   vercel env add DATABASE_USERNAME
+   # etc...
    ```
 
 ## Development vs Production
