@@ -518,8 +518,8 @@ INSERT INTO organizations (id, name, slug, status) VALUES
 ('550e8400-e29b-41d4-a716-446655440000', 'Albaly Digital', 'albaly', 'active');
 
 INSERT INTO users (id, organization_id, email, name, password_hash, status) VALUES
-('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Admin User', '$argon2id$v=19$m=65536,t=3,p=4$dummy_hash', 'active'),
-('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'sales@albaly.com', 'Sales User', '$argon2id$v=19$m=65536,t=3,p=4$dummy_hash', 'active');
+('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Admin User', '$argon2id$v=19$m=65536,t=3,p=4$clFYWADU2PbVhevZqNF2vw$YhuDguM0Mx2nrfD+nh+Fex2rb/dhtSz4ITG4jlFTelE', 'active'),
+('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'sales@albaly.com', 'Sales User', '$argon2id$v=19$m=65536,t=3,p=4$bJK7WPLivowC4cBYYZDXTQ$1SMka+oPB08ZzrD1p/eN5sLRgINSfhJapWKkZk3o/cA', 'active');
 
 INSERT INTO ref_industry_codes (code, title_en, title_th, classification_system, level) VALUES
 ('46', 'Wholesale trade', 'ขายส่ง', 'TSIC_2009', 2),
@@ -542,7 +542,7 @@ INSERT INTO organizations (id, name, slug, status, subscription_tier) VALUES
 ('550e8400-e29b-41d4-a716-446655440001', 'Demo Customer Corp', 'demo-customer', 'active', 'professional');
 
 INSERT INTO users (id, organization_id, email, name, password_hash, status) VALUES
-('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$dummy_hash', 'active');
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$K0k8WdQZ3HeHuLc6dvNhGg$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM', 'active');
 
 -- Sample companies demonstrating different data sources and privacy levels
 -- 1. Shared Albaly reference data (available to all customers)

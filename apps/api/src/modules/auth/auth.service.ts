@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import * as argon2 from 'argon2';
 import { User, Organization } from '../../entities';
 
 export interface LoginRequest {
@@ -123,7 +124,7 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await this.verifyPassword(password, user.passwordHash);
     if (!isPasswordValid) {
       return null;
     }
@@ -143,7 +144,7 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await this.verifyPassword(password, user.passwordHash);
     if (!isPasswordValid) {
       return null;
     }
@@ -175,7 +176,38 @@ export class AuthService {
   }
 
   async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return await bcrypt.hash(password, saltRounds);
+    // Use argon2 for new password hashes to match database storage format
+    return await argon2.hash(password);
+  }
+
+  /**
+   * Verify password against hash, supporting both bcrypt and argon2 formats
+   * @param password Plain text password
+   * @param hash Hashed password (either bcrypt or argon2)
+   * @returns Promise<boolean> indicating if password is valid
+   */
+  private async verifyPassword(password: string, hash: string): Promise<boolean> {
+    try {
+      // Check if it's an argon2 hash (starts with $argon2)
+      if (hash.startsWith('$argon2')) {
+        return await argon2.verify(hash, password);
+      }
+      
+      // Check if it's a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+      if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+        return await bcrypt.compare(password, hash);
+      }
+      
+      // If we can't identify the hash type, try bcrypt first (for backward compatibility)
+      try {
+        return await bcrypt.compare(password, hash);
+      } catch {
+        // If bcrypt fails, try argon2
+        return await argon2.verify(hash, password);
+      }
+    } catch (error) {
+      // If all verification attempts fail, return false
+      return false;
+    }
   }
 }
