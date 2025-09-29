@@ -290,16 +290,11 @@ CREATE TABLE lead_project_tasks (
   project_id UUID NOT NULL REFERENCES lead_projects(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
-  task_type TEXT CHECK (task_type IN ('research', 'outreach', 'followup', 'demo', 'proposal', 'negotiation')),
+  task_type TEXT CHECK (task_type IN ('research', 'outreach', 'followup', 'demo', 'proposal')),
   priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
-  status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'blocked', 'completed', 'cancelled')),
+  status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'completed', 'cancelled')),
   assigned_to_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  assigned_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   due_date TIMESTAMPTZ,
-  estimated_hours INTEGER,
-  actual_hours INTEGER,
-  depends_on_task_ids UUID[],
-  blocks_task_ids UUID[],
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
