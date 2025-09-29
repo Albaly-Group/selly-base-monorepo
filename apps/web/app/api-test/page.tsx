@@ -38,6 +38,20 @@ export default function ApiTestPage() {
     }
   }
 
+  const testLogin = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      // Test with demo credentials
+      const response = await apiClient.login('user@selly.com', 'password123')
+      setError(`Login successful: ${JSON.stringify(response)}`)
+    } catch (err) {
+      setError(`Login failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -55,7 +69,7 @@ export default function ApiTestPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Health Check Test */}
           <Card>
             <CardHeader>
@@ -79,6 +93,25 @@ export default function ApiTestPage() {
                   <div className="text-green-700 mt-1">{healthStatus}</div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Login Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Login Test
+                <Badge variant="outline">POST /api/v1/auth/login</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testLogin} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Login (Demo User)'}
+              </Button>
             </CardContent>
           </Card>
 
