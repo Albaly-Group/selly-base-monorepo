@@ -1,3 +1,16 @@
 {
-  "/api-test/page": "app/api-test/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/v1/company-lists/[listId]/items/route": "app/api/v1/company-lists/[listId]/items/route.js",
+  "/api/v1/company-lists/[listId]/route": "app/api/v1/company-lists/[listId]/route.js",
+  "/api/v1/company-lists/route": "app/api/v1/company-lists/route.js",
+  "/admin/page": "app/admin/page.js",
+  "/api-test/page": "app/api-test/page.js",
+  "/exports/page": "app/exports/page.js",
+  "/imports/page": "app/imports/page.js",
+  "/lists/page": "app/lists/page.js",
+  "/lookup/page": "app/lookup/page.js",
+  "/page": "app/page.js",
+  "/platform-admin/page": "app/platform-admin/page.js",
+  "/reports/page": "app/reports/page.js",
+  "/staff/page": "app/staff/page.js"
 }
