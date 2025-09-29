@@ -3,28 +3,49 @@
  * Maps to PostgreSQL schema: common_company_lists, common_company_registrations, etc.
  */
 
-// Core entity types matching DB schema
+// Core entity types matching DB schema v2.0
 export interface CompanyCore {
   id: string
+  organization_id?: string | null  // NULL for shared data, UUID for customer-specific
   companyNameEn: string
   companyNameTh?: string | null
+  companyNameLocal?: string | null
+  displayName: string
   registrationId?: string | null
   dunsNumber?: string | null
-  addressLine?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
   district?: string | null
-  amphoe?: string | null
+  subdistrict?: string | null
   provinceDetected?: string | null
   countryCode?: string | null
-  businessTypeText?: string | null
-  description?: string | null
-  website?: string | null
+  businessDescription?: string | null
+  establishedDate?: string | null
+  employeeCountEstimate?: number | null
+  companySize?: 'micro' | 'small' | 'medium' | 'large' | 'enterprise' | null
+  annualRevenueEstimate?: number | null
+  currencyCode?: string | null
+  websiteUrl?: string | null
   linkedinUrl?: string | null
   logoUrl?: string | null
-  tel?: string | null
-  email?: string | null
-  mainShareholderNationality?: string | null
+  primaryEmail?: string | null
+  primaryPhone?: string | null
+  industryClassification?: Record<string, any>
+  tags?: string[]
+  
+  // SaaS-aware data sourcing and privacy
+  dataSource: 'albaly_list' | 'dbd_registry' | 'customer_input' | 'data_enrichment' | 'third_party'
+  sourceReference?: string | null
+  isSharedData: boolean  // true for Albaly/DBD, false for customer-specific
+  dataSensitivity: 'public' | 'standard' | 'confidential' | 'restricted'
+  
+  dataQualityScore: number
+  verificationStatus: 'verified' | 'unverified' | 'disputed' | 'inactive'
+  lastEnrichedAt?: string | null
   createdAt: string
   updatedAt: string
+  createdBy?: string | null
+  updatedBy?: string | null
 }
 
 export interface CompanyRegistration {
@@ -80,36 +101,71 @@ export interface ShareholderNationality {
   }
 }
 
-// Company List entities
+// Company List entities (Schema v2.0 with SaaS multi-tenancy)
 export interface CompanyList {
   id: string
+  organizationId: string
   name: string
   description?: string | null
   ownerUserId: string
-  visibility: 'private' | 'org' | 'public'
+  visibility: 'private' | 'team' | 'organization' | 'public'
   isShared: boolean
-  itemCount: number
+  totalCompanies: number  // denormalized count
+  lastActivityAt: string
+  
+  // Smart list features
+  isSmartList: boolean
+  smartCriteria?: Record<string, any> | null
+  lastRefreshedAt?: string | null
+  
   createdAt: string
   updatedAt: string
 }
 
 export interface CompanyListItem {
   itemId: string
+  listId: string
+  companyId: string
   note?: string | null
   position?: number | null
+  customFields?: Record<string, any>  // extensible metadata
+  
+  // Enhanced lead scoring
+  leadScore: number  // 0.0-100.0
+  scoreBreakdown?: Record<string, number> | null  // detailed scoring factors
+  scoreCalculatedAt?: string | null
+  
+  // Status tracking
+  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'rejected'
+  statusChangedAt: string
+  
   addedAt: string
-  addedByUserId: string
+  addedByUserId?: string | null
   company: CompanySummary
 }
 
-// Summary/aggregated views
+// Summary/aggregated views (Schema v2.0)
 export interface CompanySummary {
   companyId: string
+  organizationId?: string | null
   name: string
+  displayName: string
   registrationNo?: string | null
   province?: string | null
   country?: string | null
   website?: string | null
+  
+  // Data source and privacy info
+  dataSource: 'albaly_list' | 'dbd_registry' | 'customer_input' | 'data_enrichment' | 'third_party'
+  sourceReference?: string | null
+  isSharedData: boolean
+  dataSensitivity: 'public' | 'standard' | 'confidential' | 'restricted'
+  
+  // Enhanced metadata
+  companySize?: 'micro' | 'small' | 'medium' | 'large' | 'enterprise' | null
+  verificationStatus: 'verified' | 'unverified' | 'disputed' | 'inactive'
+  dataQualityScore: number
+  
   headTags: Array<{
     key: string
     name: string
@@ -119,6 +175,7 @@ export interface CompanySummary {
     titleEn: string
   }>
   contactsCount: number
+  listMembershipCount: number
 }
 
 export interface CompanyDetail {

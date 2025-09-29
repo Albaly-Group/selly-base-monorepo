@@ -1,50 +1,67 @@
-# Company Lists End-to-End Implementation
+# Company Lists End-to-End Implementation (Updated for Schema v2.0)
 
 ## Overview
-This document provides a complete implementation guide for the Company Lists feature, mapping from the provided OpenAPI specification to a DB-aware system with proper entity relationships, CRUD operations, and security.
+This document provides a complete implementation guide for the Company Lists feature, updated to align with the new optimized database schema v2.0. The implementation maps to a multi-tenant, performance-optimized system with proper entity relationships, CRUD operations, and security.
 
-## 1. Entity Model & Attribute Mapping
+## Schema v2.0 Alignment
+This implementation now aligns with the new optimized schema (`selly-base-optimized-schema.sql`) which provides:
+- **Multi-tenant architecture** with organization-scoped data
+- **Single source of truth** for company data via unified `companies` table
+- **Performance optimizations** including materialized views and strategic indexing
+- **Enhanced audit trails** and comprehensive logging
+- **Vector search capabilities** for AI-powered features
+
+## 1. Entity Model & Attribute Mapping (Schema v2.0)
 
 ### Core Entities
-The implementation maps the following entities from the database schema:
+The implementation maps the following entities from the optimized database schema:
 
-#### CompanyCore
-Maps to `common_companies` table:
+#### CompanyCore  
+Maps to `companies` table (unified canonical source):
 - `id` → Primary key (UUID)
-- `companyNameEn` → company_name_en 
-- `companyNameTh` → company_name_th
-- `registrationId` → registration_id (legacy)
+- `companyNameEn` → name_en
+- `companyNameTh` → name_th
+- `registrationId` → primary_registration_no
 - `dunsNumber` → duns_number
-- Location fields: `addressLine`, `district`, `amphoe`, `provinceDetected`, `countryCode`
-- Contact fields: `website`, `linkedinUrl`, `tel`, `email`
-- Business fields: `businessTypeText`, `description`
-- `mainShareholderNationality` → main_shareholder_nationality
+- Location fields: `addressLine1`, `addressLine2`, `district`, `subdistrict`, `province`, `countryCode`
+- Contact fields: `websiteUrl`, `linkedinUrl`, `primaryPhone`, `primaryEmail`
+- Business fields: `businessDescription`, `companySize`, `industryClassification`
+- Search fields: `searchVector`, `embeddingVector`, `dataQualityScore`
 
 #### CompanyList
-Maps to `user_company_lists` table:
+Maps to `company_lists` table (multi-tenant aware):
 - `id` → Primary key (UUID)
-- `name` → list_name
+- `organizationId` → organization_id (FK to organizations)
+- `name` → name
 - `description` → description
 - `ownerUserId` → owner_user_id (FK to users)
-- `visibility` → visibility_level ('private', 'org', 'public')
+- `visibility` → visibility ('private', 'team', 'organization', 'public')
 - `isShared` → is_shared
-- `itemCount` → Computed from `user_company_list_items` count
+- `isSmartList` → is_smart_list (auto-updating based on criteria)
+- `totalCompanies` → total_companies (denormalized count)
+- `lastActivityAt` → last_activity_at
 - Timestamps: `createdAt`, `updatedAt`
 
 #### CompanyListItem
-Maps to `user_company_list_items` table:
+Maps to `company_list_items` table (enhanced with lead scoring):
 - `itemId` → Primary key (UUID)
 - `note` → note
 - `position` → position (for manual ordering)
-- `addedAt` → created_at
+- `customFields` → custom_fields (JSONB for extensibility)
+- `leadScore` → lead_score (0.0-100.0)
+- `scoreBreakdown` → score_breakdown (JSONB with scoring details)
+- `status` → status ('new', 'contacted', 'qualified', 'converted', 'rejected')
+- `addedAt` → added_at
 - `addedByUserId` → added_by_user_id (FK to users)
-- `company` → Joined CompanySummary from related tables
+- `company` → Joined from materialized view `mv_company_search`
 
-### Foreign Key Relationships
+### Foreign Key Relationships (Schema v2.0)
+- `CompanyList.organizationId` → `organizations.id` (ON DELETE CASCADE)
 - `CompanyList.ownerUserId` → `users.id` (ON DELETE CASCADE)
 - `CompanyListItem.addedByUserId` → `users.id` (ON DELETE SET NULL)
-- `CompanyListItem.companyId` → `common_companies.id` (ON DELETE CASCADE)
-- `CompanyListItem.listId` → `user_company_lists.id` (ON DELETE CASCADE)
+- `CompanyListItem.companyId` → `companies.id` (ON DELETE CASCADE)
+- `CompanyListItem.listId` → `company_lists.id` (ON DELETE CASCADE)
+- `User.organizationId` → `organizations.id` (ON DELETE CASCADE)
 
 ## 2. Gaps & Proposed Migrations
 

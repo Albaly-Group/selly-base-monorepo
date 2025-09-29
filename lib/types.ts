@@ -2,9 +2,12 @@
 export interface Organization {
   id: string
   name: string
+  slug: string
   domain?: string
   status: 'active' | 'inactive' | 'suspended'
   subscription_tier?: 'basic' | 'professional' | 'enterprise'
+  settings?: Record<string, any>
+  metadata?: Record<string, any>
   created_at: string
   updated_at: string
 }
@@ -12,15 +15,18 @@ export interface Organization {
 // Updated to match actual database schema with tenant support
 export interface User {
   id: string
+  organization_id: string
   email: string
   name: string
   avatar_url?: string | null
   status: 'active' | 'inactive' | 'suspended'
+  last_login_at?: string | null
+  email_verified_at?: string | null
+  settings?: Record<string, any>
   metadata?: Record<string, any> | null
   created_at: string
   updated_at: string
-  // Multi-tenant fields
-  organization_id?: string | null // null for platform admins
+  // Related organization data
   organization?: Organization | null
   // Legacy role field for backward compatibility  
   role?: UserRoleName
