@@ -85,11 +85,24 @@ async function createNestServer() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document, {
+  
+  // Configure Swagger UI with appropriate asset loading for environment
+  const swaggerConfig: any = {
     swaggerOptions: {
       persistAuthorization: true,
     },
-  });
+  };
+
+  // In serverless environments, use CDN-hosted assets to avoid static file serving issues
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    swaggerConfig.customCssUrl = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css';
+    swaggerConfig.customJs = [
+      'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js',
+      'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js',
+    ];
+  }
+
+  SwaggerModule.setup('docs', app, document, swaggerConfig);
 
   await app.init();
   cachedNestApp = app;
