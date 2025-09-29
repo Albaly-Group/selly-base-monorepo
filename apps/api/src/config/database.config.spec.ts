@@ -102,6 +102,66 @@ describe('Database Configuration', () => {
       expect(config.database).toBe('selly_base');
     });
 
+    it('should parse DATABASE_URL with SSL parameters', () => {
+      // Test with SSL mode require
+      process.env.DATABASE_URL = 'postgresql://user123:pass456@testhost:5432/testdb?sslmode=require';
+      process.env.SKIP_DATABASE = 'false';
+      process.env.NODE_ENV = 'production';
+      
+      // Clear individual env vars to ensure URL is used
+      delete process.env.DATABASE_HOST;
+      delete process.env.DATABASE_PORT;
+      delete process.env.DATABASE_USER;
+      delete process.env.DATABASE_PASSWORD;
+      delete process.env.DATABASE_NAME;
+
+      const config = databaseConfig();
+      
+      expect(config.host).toBe('testhost');
+      expect(config.port).toBe(5432);
+      expect(config.username).toBe('user123');
+      expect(config.password).toBe('pass456');
+      expect(config.database).toBe('testdb');
+      expect(config.ssl).toEqual({ rejectUnauthorized: false });
+    });
+
+    it('should parse DATABASE_URL with ssl=true parameter', () => {
+      // Test with ssl=true parameter
+      process.env.DATABASE_URL = 'postgresql://user123:pass456@testhost:5432/testdb?ssl=true';
+      process.env.SKIP_DATABASE = 'false';
+      process.env.NODE_ENV = 'development';
+      
+      // Clear individual env vars to ensure URL is used
+      delete process.env.DATABASE_HOST;
+      delete process.env.DATABASE_PORT;
+      delete process.env.DATABASE_USER;
+      delete process.env.DATABASE_PASSWORD;
+      delete process.env.DATABASE_NAME;
+
+      const config = databaseConfig();
+      
+      expect(config.host).toBe('testhost');
+      expect(config.ssl).toEqual({ rejectUnauthorized: false });
+    });
+
+    it('should not use SSL when no SSL parameters in DATABASE_URL and not production', () => {
+      // Test without SSL parameters in development
+      process.env.DATABASE_URL = 'postgresql://user123:pass456@testhost:5432/testdb';
+      process.env.SKIP_DATABASE = 'false';
+      process.env.NODE_ENV = 'development';
+      
+      // Clear individual env vars to ensure URL is used
+      delete process.env.DATABASE_HOST;
+      delete process.env.DATABASE_PORT;
+      delete process.env.DATABASE_USER;
+      delete process.env.DATABASE_PASSWORD;
+      delete process.env.DATABASE_NAME;
+
+      const config = databaseConfig();
+      
+      expect(config.ssl).toBe(false);
+    });
+
     it('should skip database when SKIP_DATABASE is true', () => {
       process.env.DATABASE_URL = 'postgresql://testuser:testpass@testhost:5433/testdb';
       process.env.SKIP_DATABASE = 'true';

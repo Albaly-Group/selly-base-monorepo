@@ -99,8 +99,8 @@ selly-base-monorepo/
    
    **For Production with Database (Option A - DATABASE_URL):**
    ```bash
-   # Database Configuration (Recommended - single connection string)
-   DATABASE_URL=postgresql://username:password@host:5432/database_name
+   # Database Configuration (Recommended - single connection string with SSL)
+   DATABASE_URL=postgresql://username:password@host:5432/database_name?sslmode=require
    
    # JWT Configuration
    JWT_SECRET=your-jwt-secret-key
@@ -231,7 +231,9 @@ After deploying both applications, configure the frontend to connect to the API:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/dbname` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/dbname?sslmode=require` |
+
+> **SSL Support**: The `DATABASE_URL` can include SSL parameters such as `?sslmode=require` or `?ssl=true`. These parameters are automatically parsed and applied to the database connection. This is essential for most cloud database providers that require SSL connections.
 
 **Option 3: Use Individual PostgreSQL Variables**
 
@@ -307,12 +309,35 @@ The default timeout is 10 seconds. For longer operations:
 ```
 
 #### 3. Database Connection Issues
+
+**SSL Connection Errors** (e.g., "connection is insecure"):
+```bash
+# Add SSL parameters to your DATABASE_URL
+DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=require
+
+# Or use ssl=true parameter
+DATABASE_URL=postgresql://user:pass@host:5432/db?ssl=true
+```
+
+**General Database Issues**:
 ```bash
 # Enable debug logging
 NODE_ENV=development
 
-# Or skip database entirely
+# Or skip database entirely for testing
 SKIP_DATABASE=true
+```
+
+**Common Cloud Provider URLs**:
+```bash
+# Heroku Postgres
+DATABASE_URL=postgres://user:pass@host:5432/db?sslmode=require
+
+# Supabase
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres?sslmode=require
+
+# Railway
+DATABASE_URL=postgresql://postgres:pass@host.railway.app:5432/railway?sslmode=require
 ```
 
 #### 4. Frontend Build Failures

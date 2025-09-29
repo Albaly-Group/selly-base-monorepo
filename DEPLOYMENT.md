@@ -76,7 +76,7 @@ JWT_EXPIRES_IN=1d
 SKIP_DATABASE=true
 
 # Option 2: Use DATABASE_URL (recommended for production)
-# DATABASE_URL=postgresql://user:password@host:5432/dbname
+# DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
 
 # Option 3: Use individual variables (alternative)
 # DATABASE_HOST=your-db-host

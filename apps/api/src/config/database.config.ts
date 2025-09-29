@@ -2,17 +2,43 @@ import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 /**
- * Parse DATABASE_URL format: postgresql://user:password@host:port/dbname
+ * Get SSL configuration based on parsed URL and environment
+ */
+function getSslConfig(parsedUrl: { ssl?: boolean } | null) {
+  // If DATABASE_URL explicitly specifies SSL requirement
+  if (parsedUrl?.ssl) {
+    return { rejectUnauthorized: false };
+  }
+  
+  // Default production SSL behavior
+  if (process.env.NODE_ENV === 'production') {
+    return { rejectUnauthorized: false };
+  }
+  
+  // No SSL for development
+  return false;
+}
+
+/**
+ * Parse DATABASE_URL format: postgresql://user:password@host:port/dbname?sslmode=require
  */
 function parseDatabaseUrl(url: string) {
   try {
     const parsed = new URL(url);
+    const searchParams = new URLSearchParams(parsed.search);
+    
+    // Check for SSL requirements in URL parameters
+    const sslMode = searchParams.get('sslmode');
+    const ssl = searchParams.get('ssl');
+    const requireSsl = sslMode === 'require' || ssl === 'true';
+    
     return {
       host: parsed.hostname,
       port: parseInt(parsed.port || '5432', 10),
       username: parsed.username,
       password: parsed.password,
       database: parsed.pathname.slice(1), // Remove leading slash
+      ssl: requireSsl,
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -52,10 +78,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
-    ssl:
-      process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : false,
+    ssl: getSslConfig(parsedUrl),
     extra: {
       connectionLimit: parseInt(
         process.env.DATABASE_CONNECTION_LIMIT || '10',
