@@ -139,15 +139,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { apiClient } = await import('./api-client');
         const response = await apiClient.login(email, password);
         
-        if (response.access_token && response.user) {
+        if (response.accessToken && response.user) {
           // Convert API user format to our app's user format
           const apiUser = response.user;
           const appUser: User = {
             id: apiUser.id,
             email: apiUser.email,
-            name: `${apiUser.firstName} ${apiUser.lastName}`,
-            role: (apiUser.role as UserRoleName) || 'user',
-            organization_id: apiUser.organization?.id || null,
+            name: apiUser.name,
+            role: 'user' as UserRoleName, // Default role, could be enhanced later
+            organization_id: apiUser.organizationId || null,
             organization: apiUser.organization ? {
               id: apiUser.organization.id,
               name: apiUser.organization.name,
