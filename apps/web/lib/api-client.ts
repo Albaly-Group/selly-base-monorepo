@@ -12,9 +12,8 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:3001';
   }
   
-  // For production without explicit API URL, return empty string to disable API
-  // This will cause all API calls to fail gracefully and use fallback data
-  return '';
+  // For production, use the deployed backend URL
+  return 'https://selly-base-backend.vercel.app';
 };
 
 const API_BASE_URL = getApiBaseUrl();
