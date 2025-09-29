@@ -92,6 +92,10 @@ CREATE TABLE user_roles (
 
 CREATE TABLE companies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  
+  -- Multi-tenant scoping: NULL for shared reference data, UUID for customer-specific data
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  
   name_en TEXT NOT NULL,
   name_th TEXT,
   name_local TEXT,
@@ -127,7 +131,17 @@ CREATE TABLE companies (
   ) STORED,
   embedding_vector VECTOR(768),
   data_quality_score DECIMAL(3,2) DEFAULT 0.0,
-  source_systems TEXT[] DEFAULT '{}',
+  
+  -- SaaS-aware data sourcing and privacy
+  data_source TEXT NOT NULL DEFAULT 'customer_input' CHECK (
+    data_source IN ('albaly_list', 'dbd_registry', 'customer_input', 'data_enrichment', 'third_party')
+  ),
+  source_reference TEXT, -- Reference to original source (e.g., "DBD-2024-Q1", "Albaly-Tech-Companies")
+  is_shared_data BOOLEAN DEFAULT false, -- True for Albaly/DBD data, False for customer-specific
+  data_sensitivity TEXT DEFAULT 'standard' CHECK (
+    data_sensitivity IN ('public', 'standard', 'confidential', 'restricted')
+  ),
+  
   last_enriched_at TIMESTAMPTZ,
   verification_status TEXT DEFAULT 'unverified' CHECK (
     verification_status IN ('verified', 'unverified', 'disputed', 'inactive')
@@ -136,10 +150,17 @@ CREATE TABLE companies (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   created_by UUID,
   updated_by UUID,
+  
+  -- Constraints
   CONSTRAINT valid_coordinates CHECK (
     (latitude IS NULL AND longitude IS NULL) OR 
     (latitude IS NOT NULL AND longitude IS NOT NULL AND
      latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180)
+  ),
+  -- Shared data (Albaly/DBD) should not belong to specific organization
+  CONSTRAINT valid_shared_data_scope CHECK (
+    (is_shared_data = true AND organization_id IS NULL) OR 
+    (is_shared_data = false AND organization_id IS NOT NULL)
   )
 );
 
@@ -251,8 +272,9 @@ CREATE TABLE lead_project_companies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES lead_projects(id) ON DELETE CASCADE,
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  source_method TEXT CHECK (source_method IN ('manual', 'import', 'smart_list', 'api')),
+  source_method TEXT CHECK (source_method IN ('albaly_list', 'dbd_import', 'customer_manual', 'smart_list', 'api_integration')),
   source_list_id UUID REFERENCES company_lists(id) ON DELETE SET NULL,
+  source_description TEXT, -- E.g., "From Albaly Tech Companies List", "Customer manual entry"
   priority_score DECIMAL(5,2) DEFAULT 0.0,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'assigned', 'contacted', 'qualified', 'converted', 'rejected')),
   assigned_to_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -376,6 +398,7 @@ CREATE TABLE user_activity_logs (
 CREATE MATERIALIZED VIEW mv_company_search AS
 SELECT 
   c.id,
+  c.organization_id,
   c.name_en,
   c.name_th,
   c.display_name,
@@ -388,6 +411,10 @@ SELECT
   c.tags,
   c.verification_status,
   c.data_quality_score,
+  c.data_source,
+  c.source_reference,
+  c.is_shared_data,
+  c.data_sensitivity,
   c.search_vector,
   COALESCE(cc.contact_count, 0) as contact_count,
   pr.registration_no as primary_registration_no_full,
@@ -419,6 +446,11 @@ LEFT JOIN (
 CREATE INDEX idx_users_organization_email ON users(organization_id, email);
 CREATE INDEX idx_users_organization_status ON users(organization_id, status);
 CREATE INDEX idx_users_last_login ON users(last_login_at DESC) WHERE last_login_at IS NOT NULL;
+
+-- Companies (Multi-tenant and source-aware indexes)
+CREATE INDEX idx_companies_organization ON companies(organization_id);
+CREATE INDEX idx_companies_org_source ON companies(organization_id, data_source);
+CREATE INDEX idx_companies_shared_data ON companies(is_shared_data) WHERE is_shared_data = true;
 CREATE INDEX idx_companies_name_trgm ON companies USING gin(name_en gin_trgm_ops);
 CREATE INDEX idx_companies_search_vector ON companies USING gin(search_vector);
 CREATE INDEX idx_companies_province ON companies(province) WHERE province IS NOT NULL;
@@ -510,6 +542,58 @@ INSERT INTO ref_tags (key, name, description, category, color) VALUES
 ('startup', 'Startup', 'Early stage startup companies', 'stage', '#dc2626'),
 ('high_priority', 'High Priority', 'High priority prospect', 'priority', '#ea580c');
 
+-- Add sample customer organization for SaaS demo
+INSERT INTO organizations (id, name, slug, status, subscription_tier) VALUES
+('550e8400-e29b-41d4-a716-446655440001', 'Demo Customer Corp', 'demo-customer', 'active', 'professional');
+
+INSERT INTO users (id, organization_id, email, name, password_hash, status) VALUES
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$dummy_hash', 'active');
+
+-- Sample companies demonstrating different data sources and privacy levels
+-- 1. Shared Albaly reference data (available to all customers)
+INSERT INTO companies (
+  id, organization_id, name_en, name_th, province, business_description,
+  data_source, source_reference, is_shared_data, data_sensitivity, 
+  verification_status, created_by
+) VALUES 
+(
+  '550e8400-e29b-41d4-a716-446655440010', NULL,
+  'Siam Commercial Bank PCL', 'ธนาคารไทยพาณิชย์ จำกัด (มหาชน)',
+  'Bangkok', 'Leading commercial bank in Thailand',
+  'albaly_list', 'Albaly-Fortune-500-Thailand-2024', 
+  true, 'public', 'verified',
+  '550e8400-e29b-41d4-a716-446655440001'
+),
+(
+  '550e8400-e29b-41d4-a716-446655440011', NULL,
+  'CP Foods PCL', 'บริษัท เจริญโภคภัณฑ์อาหาร จำกัด (มหาชน)',
+  'Bangkok', 'Food and agribusiness conglomerate',
+  'dbd_registry', 'DBD-Public-Companies-2024-Q4',
+  true, 'public', 'verified',
+  '550e8400-e29b-41d4-a716-446655440001'
+);
+
+-- 2. Customer-specific private data 
+INSERT INTO companies (
+  id, organization_id, name_en, province, business_description,
+  data_source, source_reference, is_shared_data, data_sensitivity,
+  verification_status, created_by
+) VALUES
+(
+  '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440001',
+  'Local Bangkok Restaurant Chain', 'Bangkok', 'Restaurant franchise with 15 locations',
+  'customer_input', 'Customer manual entry - 2024-12-18',
+  false, 'confidential', 'unverified',
+  '550e8400-e29b-41d4-a716-446655440003'
+),
+(
+  '550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440001', 
+  'Bangkok Tech Startup Ltd', 'Bangkok', 'AI/ML software development company',
+  'customer_input', 'Customer prospect research - 2024-12-18',
+  false, 'standard', 'unverified',
+  '550e8400-e29b-41d4-a716-446655440003'
+);
+
 COMMIT;
 
 -- =========================================================
@@ -532,16 +616,27 @@ END $$;
 -- COMMENTS & DOCUMENTATION
 -- =========================================================
 
-COMMENT ON DATABASE postgres IS 'Selly Base - B2B Prospecting Platform Database';
-COMMENT ON TABLE organizations IS 'Multi-tenant organizations/customers';
+COMMENT ON DATABASE postgres IS 'Selly Base - B2B Prospecting SaaS Platform Database';
+COMMENT ON TABLE organizations IS 'Multi-tenant organizations/customers for SaaS isolation';
 COMMENT ON TABLE users IS 'Users scoped to organizations with RBAC';
-COMMENT ON TABLE companies IS 'Canonical company data - single source of truth';
+COMMENT ON TABLE companies IS 'Canonical company data with SaaS privacy controls - shared reference data (organization_id=NULL) and customer-specific data (organization_id set)';
 COMMENT ON TABLE company_lists IS 'User-created company collections with smart list support';
 COMMENT ON TABLE lead_projects IS 'Lead generation campaigns and projects';
 COMMENT ON TABLE audit_logs IS 'Comprehensive audit trail for all data changes';
+
+COMMENT ON COLUMN companies.organization_id IS 'NULL for shared reference data (Albaly/DBD), UUID for customer-specific private data';
+COMMENT ON COLUMN companies.data_source IS 'Source of company data: albaly_list, dbd_registry, customer_input, data_enrichment, third_party';
+COMMENT ON COLUMN companies.source_reference IS 'Reference to original data source for provenance tracking';
+COMMENT ON COLUMN companies.is_shared_data IS 'True for Albaly/DBD shared data, False for customer-specific private data';
+COMMENT ON COLUMN companies.data_sensitivity IS 'Data sensitivity level for access control';
 COMMENT ON COLUMN companies.search_vector IS 'Generated tsvector for full-text search';
 COMMENT ON COLUMN companies.embedding_vector IS 'ML embedding vector for semantic search';
 COMMENT ON COLUMN companies.data_quality_score IS 'Computed data quality score 0.0-1.0';
+
+COMMENT ON INDEX idx_companies_organization IS 'Organization scoping for SaaS multi-tenancy';
+COMMENT ON INDEX idx_companies_org_source IS 'Combined organization and data source filtering';
+COMMENT ON INDEX idx_companies_shared_data IS 'Fast access to shared reference data';
 COMMENT ON INDEX idx_companies_name_trgm IS 'Trigram index for fuzzy company name search';
 COMMENT ON INDEX idx_companies_search_vector IS 'Full-text search index';
-COMMENT ON MATERIALIZED VIEW mv_company_search IS 'Optimized view for company search with pre-computed aggregations';
+
+COMMENT ON MATERIALIZED VIEW mv_company_search IS 'Optimized view for company search with SaaS privacy controls and pre-computed aggregations';
