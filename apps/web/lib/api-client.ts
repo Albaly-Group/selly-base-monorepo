@@ -1,6 +1,23 @@
 // API client for communicating with NestJS backend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Determine the API base URL based on environment
+const getApiBaseUrl = (): string => {
+  // Use environment variable if set
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // For development, use localhost
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  
+  // For production without explicit API URL, return empty string to disable API
+  // This will cause all API calls to fail gracefully and use fallback data
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface ApiResponse<T> {
   data: T;
@@ -77,6 +94,11 @@ class ApiClient {
     }
   }
 
+  // Check if API is available (has a valid base URL)
+  isApiAvailable(): boolean {
+    return !!this.baseUrl && this.baseUrl !== '';
+  }
+
   // Token management
   setToken(token: string) {
     this.token = token;
@@ -109,6 +131,10 @@ class ApiClient {
   }
 
   async get<T>(endpoint: string, params?: Record<string, any>, retries = 3): Promise<T> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
     const url = new URL(endpoint, this.baseUrl);
     
     if (params) {
@@ -146,6 +172,9 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, data?: any, retries = 3): Promise<T> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
     for (let i = 0; i < retries; i++) {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -175,6 +204,10 @@ class ApiClient {
   }
 
   async put<T>(endpoint: string, data?: any, retries = 3): Promise<T> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
     for (let i = 0; i < retries; i++) {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -204,6 +237,9 @@ class ApiClient {
   }
 
   async delete<T>(endpoint: string, retries = 3): Promise<T> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
     for (let i = 0; i < retries; i++) {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -233,6 +269,10 @@ class ApiClient {
 
   // Health check
   async healthCheck(): Promise<string> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
     const response = await fetch(`${this.baseUrl}/api/health`, {
       method: 'GET',
       headers: this.getHeaders(),

@@ -44,13 +44,40 @@ The build process works as follows:
 
 ### Environment Variables
 
-Make sure to configure these in Vercel:
+**CRITICAL**: Configure these environment variables in Vercel Dashboard for production:
 
+#### Required for Production
 ```
-NEXT_PUBLIC_API_URL=https://your-api-domain.com
+NEXT_PUBLIC_API_URL=https://your-backend-api-url.com
+```
+
+**Important Notes:**
+- Without `NEXT_PUBLIC_API_URL`, the frontend will operate in **fallback mode** using mock data only
+- The backend API must be deployed separately (e.g., on Railway, Heroku, or another Vercel project)
+- Do **NOT** use `localhost` URLs in production environment variables
+- The API URL should be the full base URL including protocol (https://)
+
+#### For Development
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NODE_ENV=development
 ```
 
 ### Troubleshooting
+
+#### API Connection Issues in Production
+
+**Problem**: Frontend calls `http://localhost:3001/api/auth/login` in Vercel deployment and fails.
+
+**Solution**: 
+1. Set `NEXT_PUBLIC_API_URL` environment variable in Vercel Dashboard
+2. Deploy your backend API to a production service
+3. Use the production backend URL (e.g., `https://your-api.vercel.app`)
+
+**Fallback Behavior**: 
+- If `NEXT_PUBLIC_API_URL` is not set, the app will use mock data
+- Users can still log in with demo accounts and browse mock company data
+- This allows the frontend to be deployed independently while the backend is being set up
 
 #### Missing routes-manifest.json Error
 
