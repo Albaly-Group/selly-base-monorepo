@@ -16,8 +16,8 @@ export class AppService {
           registrationId: 'REG123',
           dataSource: 'albaly_list',
           isSharedData: true,
-        }
-      ]
+        },
+      ],
     };
   }
 }
