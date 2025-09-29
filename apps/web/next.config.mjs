@@ -10,7 +10,8 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    optimizeCss: false,
+    // Enable CSS optimization for proper Vercel deployment
+    optimizeCss: true,
   },
 }
 
