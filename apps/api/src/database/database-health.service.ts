@@ -13,7 +13,8 @@ export class DatabaseHealthService implements OnModuleInit {
 
   async onModuleInit() {
     // Skip health check if database is disabled
-    if (this.configService.get('SKIP_DATABASE')?.toLowerCase() === 'true') {
+    const skipDatabase = this.configService.get<string>('SKIP_DATABASE')?.toLowerCase() === 'true';
+    if (skipDatabase) {
       this.logger.log('Database health check skipped (SKIP_DATABASE=true)');
       return;
     }
@@ -42,17 +43,24 @@ export class DatabaseHealthService implements OnModuleInit {
       this.logger.log('✅ Database connection is healthy');
     } catch (error) {
       this.logger.error('❌ Database health check failed:', error.message);
-      
+
       // Specific handling for common database issues
       if (error.message?.includes('typeorm_metadata')) {
-        this.logger.warn('💡 Hint: Run migrations to initialize database schema');
+        this.logger.warn(
+          '💡 Hint: Run migrations to initialize database schema',
+        );
         this.logger.warn('   Command: npm run migration:run');
-      } else if (error.message?.includes('database') && error.message?.includes('does not exist')) {
-        this.logger.warn('💡 Hint: Create the database first or check DATABASE_NAME');
+      } else if (
+        error.message?.includes('database') &&
+        error.message?.includes('does not exist')
+      ) {
+        this.logger.warn(
+          '💡 Hint: Create the database first or check DATABASE_NAME',
+        );
       } else if (error.message?.includes('connection')) {
         this.logger.warn('💡 Hint: Check database connection settings');
       }
-      
+
       throw error;
     }
   }

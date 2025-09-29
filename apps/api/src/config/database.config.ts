@@ -9,12 +9,12 @@ function getSslConfig(parsedUrl: { ssl?: boolean } | null) {
   if (parsedUrl?.ssl) {
     return { rejectUnauthorized: false };
   }
-  
+
   // Default production SSL behavior
   if (process.env.NODE_ENV === 'production') {
     return { rejectUnauthorized: false };
   }
-  
+
   // No SSL for development
   return false;
 }
@@ -26,12 +26,12 @@ function parseDatabaseUrl(url: string) {
   try {
     const parsed = new URL(url);
     const searchParams = new URLSearchParams(parsed.search);
-    
+
     // Check for SSL requirements in URL parameters
     const sslMode = searchParams.get('sslmode');
     const ssl = searchParams.get('ssl');
     const requireSsl = sslMode === 'require' || ssl === 'true';
-    
+
     return {
       host: parsed.hostname,
       port: parseInt(parsed.port || '5432', 10),
@@ -41,7 +41,8 @@ function parseDatabaseUrl(url: string) {
       ssl: requireSsl,
     };
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     console.warn('Failed to parse DATABASE_URL:', errorMessage);
     return null;
   }

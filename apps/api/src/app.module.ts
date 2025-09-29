@@ -36,9 +36,11 @@ const getImports = () => {
           if (!dbConfig) {
             throw new Error('Database configuration not found');
           }
-          
-          console.log(`🔧 Database configuration loaded for: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}`);
-          
+
+          console.log(
+            `🔧 Database configuration loaded for: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}`,
+          );
+
           return {
             ...dbConfig,
             // Add connection event handlers for better debugging

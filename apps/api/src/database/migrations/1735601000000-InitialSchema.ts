@@ -182,20 +182,48 @@ export class InitialSchema1735601000000 implements MigrationInterface {
     `);
 
     // Create indexes for better performance
-    await queryRunner.query(`CREATE INDEX "IDX_organizations_slug" ON "organizations" ("slug")`);
-    await queryRunner.query(`CREATE INDEX "IDX_users_organization_id" ON "users" ("organization_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_users_email" ON "users" ("email")`);
-    await queryRunner.query(`CREATE INDEX "IDX_companies_organization_id" ON "companies" ("organization_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_companies_name_en" ON "companies" ("name_en")`);
-    await queryRunner.query(`CREATE INDEX "IDX_companies_display_name" ON "companies" ("display_name")`);
-    await queryRunner.query(`CREATE INDEX "IDX_companies_tags" ON "companies" USING gin ("tags")`);
-    await queryRunner.query(`CREATE INDEX "IDX_company_lists_organization_id" ON "company_lists" ("organization_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_company_list_items_list_id" ON "company_list_items" ("list_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_company_list_items_company_id" ON "company_list_items" ("company_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_company_contacts_company_id" ON "company_contacts" ("company_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_audit_logs_organization_id" ON "audit_logs" ("organization_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_audit_logs_entity" ON "audit_logs" ("entity_type", "entity_id")`);
-    await queryRunner.query(`CREATE INDEX "IDX_audit_logs_created_at" ON "audit_logs" ("created_at")`);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_organizations_slug" ON "organizations" ("slug")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_users_organization_id" ON "users" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_users_email" ON "users" ("email")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_companies_organization_id" ON "companies" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_companies_name_en" ON "companies" ("name_en")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_companies_display_name" ON "companies" ("display_name")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_companies_tags" ON "companies" USING gin ("tags")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_company_lists_organization_id" ON "company_lists" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_company_list_items_list_id" ON "company_list_items" ("list_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_company_list_items_company_id" ON "company_list_items" ("company_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_company_contacts_company_id" ON "company_contacts" ("company_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_audit_logs_organization_id" ON "audit_logs" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_audit_logs_entity" ON "audit_logs" ("entity_type", "entity_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_audit_logs_created_at" ON "audit_logs" ("created_at")`,
+    );
 
     // Insert default roles
     await queryRunner.query(`
@@ -218,7 +246,7 @@ export class InitialSchema1735601000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "companies"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "organizations"`);
-    
+
     // Drop extensions if no other tables use them
     await queryRunner.query(`DROP EXTENSION IF EXISTS "citext"`);
     await queryRunner.query(`DROP EXTENSION IF EXISTS "uuid-ossp"`);

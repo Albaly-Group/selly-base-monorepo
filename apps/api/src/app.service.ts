@@ -1,11 +1,9 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DatabaseHealthService } from './database/database-health.service';
 
 @Injectable()
 export class AppService {
-  constructor(
-    private readonly databaseHealthService: DatabaseHealthService,
-  ) {}
+  constructor(private readonly databaseHealthService: DatabaseHealthService) {}
 
   getRoot(): object {
     return {
@@ -30,7 +28,7 @@ export class AppService {
     try {
       const isHealthy = await this.databaseHealthService.isHealthy();
       health.database = isHealthy ? 'connected' : 'disconnected';
-    } catch (error) {
+    } catch {
       health.database = 'error';
     }
 
