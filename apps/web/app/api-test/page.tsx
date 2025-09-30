@@ -116,6 +116,32 @@ Organization ID: ${user.organizationId || 'None'}`)
     }
   }
 
+  const testImports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getImportJobs()
+      setError(`✅ Import jobs retrieved! Found ${response.data?.length || 0} import jobs`)
+    } catch (err) {
+      setError(`❌ Get import jobs failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testStaff = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getStaffMembers()
+      setError(`✅ Staff members retrieved! Found ${response.data?.length || 0} staff members`)
+    } catch (err) {
+      setError(`❌ Get staff members failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -287,6 +313,44 @@ Organization ID: ${user.organizationId || 'None'}`)
                 className="w-full"
               >
                 {loading ? 'Testing...' : 'Test Get Admin Users'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Imports Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Import Jobs
+                <Badge variant="outline">GET /api/v1/imports</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testImports} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Import Jobs'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Staff Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Staff Members
+                <Badge variant="outline">GET /api/v1/staff</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testStaff} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Staff Members'}
               </Button>
             </CardContent>
           </Card>
