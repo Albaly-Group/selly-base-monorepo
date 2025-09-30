@@ -123,7 +123,14 @@ export class Company {
   tags: string[];
 
   // Generated column in database: to_tsvector('english', name_en || ' ' || business_description)
-  @Column({ name: 'search_vector', type: 'tsvector', select: false, insert: false, update: false, nullable: true })
+  @Column({
+    name: 'search_vector',
+    type: 'tsvector',
+    select: false,
+    insert: false,
+    update: false,
+    nullable: true,
+  })
   searchVector: any;
 
   // Vector embedding for semantic search (pgvector extension)
