@@ -1,69 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { ExportJobsTable } from "@/components/export-jobs-table"
 import { requireAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, FileText, Clock, CheckCircle } from "lucide-react"
 
 function ExportsPage() {
-  // Mock export jobs data
-  const exportJobs = [
-    {
-      id: "1",
-      filename: "bangkok-logistics-leads.csv",
-      status: "completed",
-      scope: "List: Bangkok Logistics Leads",
-      format: "CSV",
-      totalRecords: 234,
-      fileSize: "45.2 KB",
-      requestedBy: "user@example.com",
-      createdAt: "2024-12-08T14:30:00Z",
-      completedAt: "2024-12-08T14:30:15Z",
-      downloadUrl: "#"
-    },
-    {
-      id: "2", 
-      filename: "manufacturing-prospects.xlsx",
-      status: "completed",
-      scope: "Filtered Results: Manufacturing & Bangkok",
-      format: "Excel",
-      totalRecords: 156,
-      fileSize: "78.3 KB",
-      requestedBy: "admin@example.com",
-      createdAt: "2024-12-08T13:15:00Z",
-      completedAt: "2024-12-08T13:15:25Z",
-      downloadUrl: "#"
-    },
-    {
-      id: "3",
-      filename: "staff-database-export.csv", 
-      status: "processing",
-      scope: "Full Database Export",
-      format: "CSV",
-      totalRecords: 1250,
-      requestedBy: "staff@example.com",
-      createdAt: "2024-12-08T15:45:00Z"
-    },
-    {
-      id: "4",
-      filename: "selected-companies.xlsx",
-      status: "expired",
-      scope: "Manual Selection (45 companies)",
-      format: "Excel", 
-      totalRecords: 45,
-      fileSize: "23.1 KB",
-      requestedBy: "user@example.com",
-      createdAt: "2024-12-05T10:20:00Z",
-      completedAt: "2024-12-05T10:20:12Z",
-      expiresAt: "2024-12-08T10:20:12Z"
+  const [exportJobs, setExportJobs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>('')
+
+  useEffect(() => {
+    const fetchExportJobs = async () => {
+      try {
+        setLoading(true)
+        const response = await apiClient.getExportJobs()
+        setExportJobs(response.data || [])
+      } catch (err) {
+        console.error('Failed to fetch export jobs:', err)
+        setError('Failed to load export jobs. Using demo data.')
+        // Fallback to mock data if backend fails
+        setExportJobs([
+          {
+            id: "1",
+            filename: "bangkok-logistics-leads.csv",
+            status: "completed",
+            scope: "List: Bangkok Logistics Leads",
+            format: "CSV",
+            totalRecords: 234,
+            fileSize: "45.2 KB",
+            requestedBy: "user@example.com",
+            createdAt: "2024-12-08T14:30:00Z",
+            completedAt: "2024-12-08T14:30:15Z",
+            downloadUrl: "#"
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchExportJobs()
+  }, [])
 
   const activeExports = exportJobs.filter(job => job.status === "completed" && !job.expiresAt)
   const expiredExports = exportJobs.filter(job => job.status === "expired")
   const processingExports = exportJobs.filter(job => job.status === "processing")
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="container mx-auto px-4 py-6">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading export jobs...</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

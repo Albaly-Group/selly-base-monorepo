@@ -98,7 +98,7 @@ export class ImportsController {
       totalRecords: 100,
       validRecords: 98,
       errorRecords: 2,
-      warnings: 5,
+      warningCount: 5,
       message: 'Validation completed',
       errors: [
         { row: 5, column: 'email', message: 'Invalid email format' },
