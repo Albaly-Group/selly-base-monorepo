@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { mockUserLists, addCompaniesToList, createCompanyList } from "@/lib/mock-data"
+import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,13 +23,38 @@ interface AddToListDialogProps {
   onSuccess: () => void
 }
 
+interface CompanyList {
+  id: string
+  name: string
+  description?: string
+}
+
 export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSuccess }: AddToListDialogProps) {
   const [listOption, setListOption] = useState<"existing" | "new">("existing")
   const [selectedListId, setSelectedListId] = useState("")
   const [newListName, setNewListName] = useState("")
   const [newListDescription, setNewListDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [lists, setLists] = useState<CompanyList[]>([])
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Fetch user lists when dialog opens
+  useEffect(() => {
+    if (open) {
+      const fetchLists = async () => {
+        try {
+          const response = await apiClient.getCompanyLists()
+          if (response.data) {
+            setLists(response.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch lists:', error)
+          setLists([])
+        }
+      }
+      fetchLists()
+    }
+  }, [open])
 
   const handleSubmit = async () => {
     setIsLoading(true)
@@ -46,9 +71,11 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
           return
         }
 
-        const newList = createCompanyList(newListName.trim(), newListDescription.trim() || undefined)
+        const newList = await apiClient.createCompanyList({
+          name: newListName.trim(),
+          description: newListDescription.trim() || undefined
+        })
         targetListId = newList.id
-        console.log('Created new list:', newList)
       }
 
       if (!targetListId) {
@@ -58,48 +85,28 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       }
 
       // Add companies to the list
-      const result = addCompaniesToList(targetListId, selectedCompanyIds)
-
-      // Show success/warning messages
-      let successMessage = ""
-      if (result.added.length > 0) {
-        successMessage = `Successfully added ${result.added.length} companies to the list.`
-      }
-
-      if (result.skipped.length > 0) {
-        const duplicates = result.skipped.filter(s => s.reason === 'DUPLICATE').length
-        const notFound = result.skipped.filter(s => s.reason === 'NOT_FOUND').length
-        
-        if (duplicates > 0) successMessage += ` ${duplicates} already in list.`
-        if (notFound > 0) successMessage += ` ${notFound} companies not found.`
-      }
-
-      setMessage({ type: 'success', text: successMessage })
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      console.log('Add to list result:', result)
-
-      // Wait a moment to show success message, then close
+      await apiClient.addCompaniesToList(targetListId, selectedCompanyIds)
+      
+      setMessage({ 
+        type: 'success', 
+        text: `Successfully added ${selectedCompanyIds.length} companies to the list.` 
+      })
+      
+      // Close dialog and trigger refresh after a short delay
       setTimeout(() => {
         onSuccess()
         onOpenChange(false)
-        
+        setMessage(null)
         // Reset form
         setListOption("existing")
         setSelectedListId("")
         setNewListName("")
         setNewListDescription("")
-        setMessage(null)
       }, 1500)
-
-    } catch (error: any) {
-      console.error("Error adding companies to list:", error)
-      setMessage({ 
-        type: 'error', 
-        text: error.message || "Failed to add companies to list. Please try again." 
-      })
+      
+    } catch (error) {
+      console.error('Error adding companies to list:', error)
+      setMessage({ type: 'error', text: 'Failed to add companies to list.' })
     } finally {
       setIsLoading(false)
     }
@@ -145,7 +152,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
                   <SelectValue placeholder="Choose a list..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockUserLists.map((list) => (
+                  {lists.map((list) => (
                     <SelectItem key={list.id} value={list.id}>
                       {list.name} ({list.companyIds.length} companies)
                     </SelectItem>
