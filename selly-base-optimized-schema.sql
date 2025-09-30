@@ -387,6 +387,46 @@ CREATE TABLE user_activity_logs (
 );
 
 -- =========================================================
+-- DATA EXPORT & IMPORT MANAGEMENT
+-- =========================================================
+
+CREATE TABLE export_jobs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed', 'expired')),
+  scope TEXT,
+  format TEXT NOT NULL DEFAULT 'CSV' CHECK (format IN ('CSV', 'Excel', 'JSON')),
+  total_records INTEGER DEFAULT 0,
+  file_size TEXT,
+  download_url TEXT,
+  requested_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  completed_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE import_jobs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed', 'validating')),
+  total_records INTEGER DEFAULT 0,
+  processed_records INTEGER DEFAULT 0,
+  valid_records INTEGER DEFAULT 0,
+  error_records INTEGER DEFAULT 0,
+  uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  completed_at TIMESTAMPTZ,
+  errors JSONB DEFAULT '[]',
+  warnings JSONB DEFAULT '[]',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
 -- PERFORMANCE OPTIMIZATION
 -- =========================================================
 
@@ -471,6 +511,15 @@ CREATE INDEX idx_activity_org_type ON user_activity_logs(organization_id, activi
 CREATE INDEX idx_contacts_company ON company_contacts(company_id);
 CREATE INDEX idx_contacts_email ON company_contacts(email) WHERE email IS NOT NULL AND is_opted_out = false;
 
+-- Export/Import job indexes
+CREATE INDEX idx_export_jobs_org_status ON export_jobs(organization_id, status);
+CREATE INDEX idx_export_jobs_requested_by ON export_jobs(requested_by);
+CREATE INDEX idx_export_jobs_created_at ON export_jobs(created_at DESC);
+CREATE INDEX idx_export_jobs_expires_at ON export_jobs(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX idx_import_jobs_org_status ON import_jobs(organization_id, status);
+CREATE INDEX idx_import_jobs_uploaded_by ON import_jobs(uploaded_by);
+CREATE INDEX idx_import_jobs_created_at ON import_jobs(created_at DESC);
+
 -- =========================================================
 -- TRIGGERS
 -- =========================================================
@@ -480,6 +529,8 @@ CREATE TRIGGER trigger_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXEC
 CREATE TRIGGER trigger_companies_updated_at BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
 CREATE TRIGGER trigger_company_lists_updated_at BEFORE UPDATE ON company_lists FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
 CREATE TRIGGER trigger_lead_projects_updated_at BEFORE UPDATE ON lead_projects FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+CREATE TRIGGER trigger_export_jobs_updated_at BEFORE UPDATE ON export_jobs FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+CREATE TRIGGER trigger_import_jobs_updated_at BEFORE UPDATE ON import_jobs FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
 
 CREATE OR REPLACE FUNCTION trigger_update_list_counts()
 RETURNS TRIGGER AS $$
