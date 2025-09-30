@@ -181,6 +181,48 @@ export class InitialSchema1735601000000 implements MigrationInterface {
       )
     `);
 
+    // Create export_jobs table
+    await queryRunner.query(`
+      CREATE TABLE "export_jobs" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "organization_id" uuid REFERENCES "organizations"("id") ON DELETE CASCADE,
+        "filename" text NOT NULL,
+        "status" text NOT NULL DEFAULT 'queued' CHECK ("status" IN ('queued', 'processing', 'completed', 'failed', 'expired')),
+        "scope" text,
+        "format" text NOT NULL DEFAULT 'CSV' CHECK ("format" IN ('CSV', 'Excel', 'JSON')),
+        "total_records" integer DEFAULT 0,
+        "file_size" text,
+        "download_url" text,
+        "requested_by" uuid REFERENCES "users"("id") ON DELETE SET NULL,
+        "completed_at" TIMESTAMPTZ,
+        "expires_at" TIMESTAMPTZ,
+        "metadata" jsonb DEFAULT '{}',
+        "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create import_jobs table
+    await queryRunner.query(`
+      CREATE TABLE "import_jobs" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "organization_id" uuid REFERENCES "organizations"("id") ON DELETE CASCADE,
+        "filename" text NOT NULL,
+        "status" text NOT NULL DEFAULT 'queued' CHECK ("status" IN ('queued', 'processing', 'completed', 'failed', 'validating')),
+        "total_records" integer DEFAULT 0,
+        "processed_records" integer DEFAULT 0,
+        "valid_records" integer DEFAULT 0,
+        "error_records" integer DEFAULT 0,
+        "uploaded_by" uuid REFERENCES "users"("id") ON DELETE SET NULL,
+        "completed_at" TIMESTAMPTZ,
+        "errors" jsonb DEFAULT '[]',
+        "warnings" jsonb DEFAULT '[]',
+        "metadata" jsonb DEFAULT '{}',
+        "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create indexes for better performance
     await queryRunner.query(
       `CREATE INDEX "IDX_organizations_slug" ON "organizations" ("slug")`,
@@ -224,6 +266,72 @@ export class InitialSchema1735601000000 implements MigrationInterface {
     await queryRunner.query(
       `CREATE INDEX "IDX_audit_logs_created_at" ON "audit_logs" ("created_at")`,
     );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_export_jobs_organization_id" ON "export_jobs" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_export_jobs_status" ON "export_jobs" ("status")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_export_jobs_created_at" ON "export_jobs" ("created_at")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_import_jobs_organization_id" ON "import_jobs" ("organization_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_import_jobs_status" ON "import_jobs" ("status")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_import_jobs_created_at" ON "import_jobs" ("created_at")`,
+    );
+
+    // Create trigger function for updated_at columns
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION trigger_updated_at()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.updated_at = CURRENT_TIMESTAMP;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    // Create triggers for updated_at columns
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_organizations_updated_at 
+      BEFORE UPDATE ON "organizations" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_users_updated_at 
+      BEFORE UPDATE ON "users" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_companies_updated_at 
+      BEFORE UPDATE ON "companies" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_company_lists_updated_at 
+      BEFORE UPDATE ON "company_lists" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_company_contacts_updated_at 
+      BEFORE UPDATE ON "company_contacts" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_export_jobs_updated_at 
+      BEFORE UPDATE ON "export_jobs" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trigger_import_jobs_updated_at 
+      BEFORE UPDATE ON "import_jobs" 
+      FOR EACH ROW EXECUTE FUNCTION trigger_updated_at();
+    `);
 
     // Insert default roles
     await queryRunner.query(`
@@ -237,6 +345,8 @@ export class InitialSchema1735601000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop tables in reverse order to respect foreign key constraints
+    await queryRunner.query(`DROP TABLE IF EXISTS "import_jobs"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "export_jobs"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "audit_logs"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "company_contacts"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "company_list_items"`);
@@ -246,6 +356,9 @@ export class InitialSchema1735601000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "companies"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "organizations"`);
+
+    // Drop trigger function
+    await queryRunner.query(`DROP FUNCTION IF EXISTS trigger_updated_at()`);
 
     // Drop extensions if no other tables use them
     await queryRunner.query(`DROP EXTENSION IF EXISTS "citext"`);
