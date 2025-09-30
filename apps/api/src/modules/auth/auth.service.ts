@@ -23,6 +23,11 @@ export interface LoginResponse {
       name: string;
       slug: string;
     };
+    roles?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+    }>;
   };
 }
 
@@ -98,6 +103,13 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
+    // Map roles from the user entity
+    const roles = user.roles?.map((userRole: any) => ({
+      id: userRole.role.id,
+      name: userRole.role.name,
+      description: userRole.role.description,
+    })) || [];
+
     return {
       accessToken,
       user: {
@@ -106,6 +118,7 @@ export class AuthService {
         name: user.name,
         organizationId: user.organizationId,
         organization: user.organization,
+        roles: roles,
       },
     };
   }
@@ -116,6 +129,8 @@ export class AuthService {
   ): Promise<any> {
     const user = await this.userRepository!.createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoinAndSelect('user.roles', 'userRole')
+      .leftJoinAndSelect('userRole.role', 'role')
       .where('user.email = :email', { email })
       .andWhere('user.status = :status', { status: 'active' })
       .getOne();
@@ -172,6 +187,8 @@ export class AuthService {
       return await this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.organization', 'organization')
+        .leftJoinAndSelect('user.roles', 'userRole')
+        .leftJoinAndSelect('userRole.role', 'role')
         .where('user.id = :userId', { userId })
         .andWhere('user.status = :status', { status: 'active' })
         .getOne();

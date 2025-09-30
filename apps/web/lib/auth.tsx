@@ -143,15 +143,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Convert API user format to our app's user format
           const apiUser = response.user;
           
-          // Check if we have role information for this user in our mock data
-          const mockUser = mockUsers.find((u) => u.email === email);
-          const userRole = mockUser?.role || 'user' as UserRoleName;
+          // Determine role from API roles array or fall back to mock data
+          let userRole: UserRoleName = 'user'; // default
+          
+          if (apiUser.roles && apiUser.roles.length > 0) {
+            // Use the first role from the API response
+            const primaryRole = apiUser.roles[0].name;
+            // Map database role names to our UserRoleName type
+            if (['user', 'staff', 'admin', 'customer_admin', 'platform_admin', 'customer_staff', 'customer_user'].includes(primaryRole)) {
+              userRole = primaryRole as UserRoleName;
+            }
+          } else {
+            // If no roles from API, check mock data as fallback
+            const mockUser = mockUsers.find((u) => u.email === email);
+            userRole = mockUser?.role || 'user' as UserRoleName;
+          }
           
           const appUser: User = {
             id: apiUser.id,
             email: apiUser.email,
             name: apiUser.name,
-            role: userRole, // Use role from mock data if available, otherwise default to 'user'
+            role: userRole,
             organization_id: apiUser.organizationId || null,
             organization: apiUser.organization ? {
               id: apiUser.organization.id,
@@ -162,6 +174,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             } : null,
+            roles: apiUser.roles?.map(r => ({
+              id: r.id,
+              name: r.name,
+              description: r.description || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })),
             status: 'active' as const,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
