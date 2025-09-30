@@ -29,7 +29,8 @@ export class Company {
   @Column({ name: 'name_local', type: 'text', nullable: true })
   nameLocal: string;
 
-  @Column({ name: 'display_name', type: 'text' })
+  // Generated column in database: COALESCE(name_en, name_th)
+  @Column({ name: 'display_name', type: 'text', insert: false, update: false })
   displayName: string;
 
   @Column({ name: 'primary_registration_no', type: 'text', nullable: true })
@@ -120,6 +121,14 @@ export class Company {
 
   @Column({ type: 'text', array: true, default: [] })
   tags: string[];
+
+  // Generated column in database: to_tsvector('english', name_en || ' ' || business_description)
+  @Column({ name: 'search_vector', type: 'tsvector', select: false, insert: false, update: false, nullable: true })
+  searchVector: any;
+
+  // Vector embedding for semantic search (pgvector extension)
+  @Column({ name: 'embedding_vector', type: 'text', nullable: true })
+  embeddingVector: string;
 
   @Column({
     name: 'data_quality_score',
