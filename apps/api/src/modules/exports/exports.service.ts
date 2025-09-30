@@ -14,9 +14,9 @@ export class ExportsService {
     private organizationRepository?: Repository<Organization>,
   ) {}
 
-  async getExportJobs(params?: { 
-    status?: string; 
-    page?: number; 
+  async getExportJobs(params?: {
+    status?: string;
+    page?: number;
     limit?: number;
     organizationId?: string;
   }) {
@@ -33,11 +33,15 @@ export class ExportsService {
           .leftJoinAndSelect('export_job.requestedByUser', 'user');
 
         if (params?.status) {
-          queryBuilder.andWhere('export_job.status = :status', { status: params.status });
+          queryBuilder.andWhere('export_job.status = :status', {
+            status: params.status,
+          });
         }
 
         if (params?.organizationId) {
-          queryBuilder.andWhere('export_job.organizationId = :orgId', { orgId: params.organizationId });
+          queryBuilder.andWhere('export_job.organizationId = :orgId', {
+            orgId: params.organizationId,
+          });
         }
 
         queryBuilder
@@ -56,7 +60,7 @@ export class ExportsService {
             totalPages: Math.ceil(total / limit),
             hasNext: page * limit < total,
             hasPrev: page > 1,
-          }
+          },
         };
       } else {
         // Mock implementation fallback
@@ -97,7 +101,7 @@ export class ExportsService {
           status: 'queued',
           filename: exportData.filename,
           createdAt: new Date().toISOString(),
-          message: 'Export job created successfully (mock mode)'
+          message: 'Export job created successfully (mock mode)',
         };
       }
     } catch (error) {
@@ -107,7 +111,7 @@ export class ExportsService {
         status: 'queued',
         filename: exportData.filename,
         createdAt: new Date().toISOString(),
-        message: 'Export job created successfully (mock mode - DB error)'
+        message: 'Export job created successfully (mock mode - DB error)',
       };
     }
   }
@@ -123,11 +127,13 @@ export class ExportsService {
           .where('export_job.id = :id', { id });
 
         if (organizationId) {
-          queryBuilder.andWhere('export_job.organizationId = :orgId', { orgId: organizationId });
+          queryBuilder.andWhere('export_job.organizationId = :orgId', {
+            orgId: organizationId,
+          });
         }
 
         const exportJob = await queryBuilder.getOne();
-        
+
         if (!exportJob) {
           throw new NotFoundException('Export job not found');
         }
@@ -153,11 +159,13 @@ export class ExportsService {
           .where('id = :id', { id });
 
         if (organizationId) {
-          queryBuilder.andWhere('organizationId = :orgId', { orgId: organizationId });
+          queryBuilder.andWhere('organizationId = :orgId', {
+            orgId: organizationId,
+          });
         }
 
         const result = await queryBuilder.execute();
-        
+
         if (result.affected === 0) {
           throw new NotFoundException('Export job not found');
         }
@@ -165,11 +173,15 @@ export class ExportsService {
         return { message: `Export job ${id} cancelled successfully` };
       } else {
         // Mock implementation fallback
-        return { message: `Export job ${id} cancelled successfully (mock mode)` };
+        return {
+          message: `Export job ${id} cancelled successfully (mock mode)`,
+        };
       }
     } catch (error) {
       console.error('Database operation failed, using mock response:', error);
-      return { message: `Export job ${id} cancelled successfully (mock mode - DB error)` };
+      return {
+        message: `Export job ${id} cancelled successfully (mock mode - DB error)`,
+      };
     }
   }
 
@@ -187,7 +199,7 @@ export class ExportsService {
         requestedBy: 'user@example.com',
         createdAt: '2024-12-08T14:30:00Z',
         completedAt: '2024-12-08T14:30:15Z',
-        downloadUrl: '#'
+        downloadUrl: '#',
       },
       {
         id: '2',
@@ -200,12 +212,12 @@ export class ExportsService {
         requestedBy: 'admin@example.com',
         createdAt: '2024-12-08T13:15:00Z',
         completedAt: '2024-12-08T13:15:25Z',
-        downloadUrl: '#'
-      }
+        downloadUrl: '#',
+      },
     ];
 
-    const filteredData = params?.status 
-      ? mockData.filter(job => job.status === params.status)
+    const filteredData = params?.status
+      ? mockData.filter((job) => job.status === params.status)
       : mockData;
 
     return {
@@ -216,8 +228,8 @@ export class ExportsService {
         total: filteredData.length,
         totalPages: 1,
         hasNext: false,
-        hasPrev: false
-      }
+        hasPrev: false,
+      },
     };
   }
 
@@ -233,7 +245,7 @@ export class ExportsService {
       requestedBy: 'user@example.com',
       createdAt: '2024-12-08T14:30:00Z',
       completedAt: '2024-12-08T14:30:15Z',
-      downloadUrl: '#'
+      downloadUrl: '#',
     };
   }
 }

@@ -131,12 +131,14 @@ export class CompaniesController {
     description: 'Filter by country code',
   })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  @UsePipes(new ValidationPipe({ 
-    transform: true, 
-    whitelist: true,
-    forbidNonWhitelisted: false,
-    skipMissingProperties: true
-  }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: false,
+      skipMissingProperties: true,
+    }),
+  )
   async searchCompanies(
     @Query() searchDto: CompanySearchDto,
   ): Promise<PaginatedResponse<any>> {
@@ -161,7 +163,7 @@ export class CompaniesController {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 10,
     };
-    
+
     const mockUser = createMockUser(organizationId);
     return this.companiesService.searchCompanies(searchDto as any, mockUser);
   }

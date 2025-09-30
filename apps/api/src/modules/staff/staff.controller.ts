@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { StaffService } from './staff.service';
 
@@ -9,7 +18,10 @@ export class StaffController {
 
   @Get()
   @ApiOperation({ summary: 'Get staff members' })
-  @ApiResponse({ status: 200, description: 'Staff members retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff members retrieved successfully',
+  })
   async getStaffMembers(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -24,20 +36,29 @@ export class StaffController {
 
   @Post()
   @ApiOperation({ summary: 'Create staff member' })
-  @ApiResponse({ status: 201, description: 'Staff member created successfully' })
-  async createStaffMember(@Body() staffData: {
-    name: string;
-    email: string;
-    password?: string;
-    organizationId?: string;
-    role?: string;
-  }) {
+  @ApiResponse({
+    status: 201,
+    description: 'Staff member created successfully',
+  })
+  async createStaffMember(
+    @Body()
+    staffData: {
+      name: string;
+      email: string;
+      password?: string;
+      organizationId?: string;
+      role?: string;
+    },
+  ) {
     return this.staffService.createStaffMember(staffData);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update staff member' })
-  @ApiResponse({ status: 200, description: 'Staff member updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member updated successfully',
+  })
   async updateStaffMember(
     @Param('id') id: string,
     @Body() updateData: any,
@@ -48,7 +69,10 @@ export class StaffController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete staff member' })
-  @ApiResponse({ status: 200, description: 'Staff member deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member deleted successfully',
+  })
   async deleteStaffMember(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
@@ -58,7 +82,10 @@ export class StaffController {
 
   @Put(':id/role')
   @ApiOperation({ summary: 'Update staff member role' })
-  @ApiResponse({ status: 200, description: 'Staff member role updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member role updated successfully',
+  })
   async updateStaffRole(
     @Param('id') id: string,
     @Body() roleData: { role: string },

@@ -7,10 +7,9 @@ import { ImportJob, Organization } from '../../entities';
 @Module({
   imports: [
     // Only include TypeORM if database is not skipped
-    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' 
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true'
       ? [TypeOrmModule.forFeature([ImportJob, Organization])]
-      : []
-    ),
+      : []),
   ],
   controllers: [ImportsController],
   providers: [ImportsService],

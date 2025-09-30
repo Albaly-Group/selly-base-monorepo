@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ExportsService } from './exports.service';
 
@@ -9,7 +17,10 @@ export class ExportsController {
 
   @Get()
   @ApiOperation({ summary: 'Get export jobs' })
-  @ApiResponse({ status: 200, description: 'Export jobs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Export jobs retrieved successfully',
+  })
   async getExportJobs(
     @Query('status') status?: string,
     @Query('page') page?: string,
@@ -27,19 +38,25 @@ export class ExportsController {
   @Post()
   @ApiOperation({ summary: 'Create export job' })
   @ApiResponse({ status: 201, description: 'Export job created successfully' })
-  async createExportJob(@Body() exportData: {
-    filename: string;
-    scope?: string;
-    format?: 'CSV' | 'Excel' | 'JSON';
-    organizationId?: string;
-    requestedBy?: string;
-  }) {
+  async createExportJob(
+    @Body()
+    exportData: {
+      filename: string;
+      scope?: string;
+      format?: 'CSV' | 'Excel' | 'JSON';
+      organizationId?: string;
+      requestedBy?: string;
+    },
+  ) {
     return this.exportsService.createExportJob(exportData);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get export job by ID' })
-  @ApiResponse({ status: 200, description: 'Export job retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Export job retrieved successfully',
+  })
   async getExportJobById(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
@@ -53,17 +70,21 @@ export class ExportsController {
   async downloadExportFile(@Param('id') id: string) {
     // This endpoint would typically stream the file or return a signed URL
     // For now, return mock CSV data
-    const csvData = 'Name,Email,Company\nJohn Doe,john@example.com,Example Corp\nJane Smith,jane@example.com,Tech Ltd';
+    const csvData =
+      'Name,Email,Company\nJohn Doe,john@example.com,Example Corp\nJane Smith,jane@example.com,Tech Ltd';
     return {
       data: csvData,
       filename: `export-${id}.csv`,
-      contentType: 'text/csv'
+      contentType: 'text/csv',
     };
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Cancel export job' })
-  @ApiResponse({ status: 200, description: 'Export job cancelled successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Export job cancelled successfully',
+  })
   async cancelExportJob(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,

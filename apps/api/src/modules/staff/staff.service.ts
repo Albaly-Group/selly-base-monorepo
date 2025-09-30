@@ -20,8 +20,8 @@ export class StaffService {
     private organizationRepository?: Repository<Organization>,
   ) {}
 
-  async getStaffMembers(params?: { 
-    page?: number; 
+  async getStaffMembers(params?: {
+    page?: number;
     limit?: number;
     organizationId?: string;
   }) {
@@ -39,18 +39,17 @@ export class StaffService {
           .leftJoinAndSelect('userRole.role', 'role');
 
         if (params?.organizationId) {
-          queryBuilder.andWhere('user.organizationId = :orgId', { orgId: params.organizationId });
+          queryBuilder.andWhere('user.organizationId = :orgId', {
+            orgId: params.organizationId,
+          });
         }
 
-        queryBuilder
-          .orderBy('user.createdAt', 'DESC')
-          .skip(skip)
-          .take(limit);
+        queryBuilder.orderBy('user.createdAt', 'DESC').skip(skip).take(limit);
 
         const [users, total] = await queryBuilder.getManyAndCount();
 
         // Transform users to include role information
-        const transformedUsers = users.map(user => ({
+        const transformedUsers = users.map((user) => ({
           id: user.id,
           name: user.name,
           email: user.email,
@@ -58,8 +57,9 @@ export class StaffService {
           lastLogin: user.lastLoginAt,
           createdAt: user.createdAt,
           organization: user.organization?.name,
-          roles: user.roles?.map(ur => ur.role?.name).filter(Boolean) || [],
-          permissions: user.roles?.flatMap(ur => ur.role?.permissions || []) || [],
+          roles: user.roles?.map((ur) => ur.role?.name).filter(Boolean) || [],
+          permissions:
+            user.roles?.flatMap((ur) => ur.role?.permissions || []) || [],
         }));
 
         return {
@@ -71,7 +71,7 @@ export class StaffService {
             totalPages: Math.ceil(total / limit),
             hasNext: page * limit < total,
             hasPrev: page > 1,
-          }
+          },
         };
       } else {
         // Mock implementation fallback
@@ -105,7 +105,9 @@ export class StaffService {
 
         // Assign role if provided
         if (staffData.role && this.roleRepository && this.userRoleRepository) {
-          const role = await this.roleRepository.findOne({ where: { name: staffData.role } });
+          const role = await this.roleRepository.findOne({
+            where: { name: staffData.role },
+          });
           if (role) {
             const userRole = this.userRoleRepository.create({
               userId: savedUser.id,
@@ -118,7 +120,7 @@ export class StaffService {
 
         return {
           ...savedUser,
-          message: 'Staff member created successfully'
+          message: 'Staff member created successfully',
         };
       } else {
         // Mock implementation fallback
@@ -129,7 +131,7 @@ export class StaffService {
           role: staffData.role || 'user',
           status: 'active',
           createdAt: new Date().toISOString(),
-          message: 'Staff member created successfully (mock mode)'
+          message: 'Staff member created successfully (mock mode)',
         };
       }
     } catch (error) {
@@ -141,12 +143,16 @@ export class StaffService {
         role: staffData.role || 'user',
         status: 'active',
         createdAt: new Date().toISOString(),
-        message: 'Staff member created successfully (mock mode - DB error)'
+        message: 'Staff member created successfully (mock mode - DB error)',
       };
     }
   }
 
-  async updateStaffMember(id: string, updateData: any, organizationId?: string) {
+  async updateStaffMember(
+    id: string,
+    updateData: any,
+    organizationId?: string,
+  ) {
     try {
       if (this.userRepository) {
         // Database implementation
@@ -157,11 +163,13 @@ export class StaffService {
           .where('id = :id', { id });
 
         if (organizationId) {
-          queryBuilder.andWhere('organizationId = :orgId', { orgId: organizationId });
+          queryBuilder.andWhere('organizationId = :orgId', {
+            orgId: organizationId,
+          });
         }
 
         const result = await queryBuilder.execute();
-        
+
         if (result.affected === 0) {
           throw new NotFoundException('Staff member not found');
         }
@@ -170,7 +178,7 @@ export class StaffService {
           id,
           ...updateData,
           updatedAt: new Date().toISOString(),
-          message: 'Staff member updated successfully'
+          message: 'Staff member updated successfully',
         };
       } else {
         // Mock implementation fallback
@@ -178,7 +186,7 @@ export class StaffService {
           id,
           ...updateData,
           updatedAt: new Date().toISOString(),
-          message: 'Staff member updated successfully (mock mode)'
+          message: 'Staff member updated successfully (mock mode)',
         };
       }
     } catch (error) {
@@ -187,7 +195,7 @@ export class StaffService {
         id,
         ...updateData,
         updatedAt: new Date().toISOString(),
-        message: 'Staff member updated successfully (mock mode - DB error)'
+        message: 'Staff member updated successfully (mock mode - DB error)',
       };
     }
   }
@@ -202,11 +210,13 @@ export class StaffService {
           .where('id = :id', { id });
 
         if (organizationId) {
-          queryBuilder.andWhere('organizationId = :orgId', { orgId: organizationId });
+          queryBuilder.andWhere('organizationId = :orgId', {
+            orgId: organizationId,
+          });
         }
 
         const result = await queryBuilder.execute();
-        
+
         if (result.affected === 0) {
           throw new NotFoundException('Staff member not found');
         }
@@ -214,11 +224,15 @@ export class StaffService {
         return { message: `Staff member ${id} deleted successfully` };
       } else {
         // Mock implementation fallback
-        return { message: `Staff member ${id} deleted successfully (mock mode)` };
+        return {
+          message: `Staff member ${id} deleted successfully (mock mode)`,
+        };
       }
     } catch (error) {
       console.error('Database operation failed, using mock response:', error);
-      return { message: `Staff member ${id} deleted successfully (mock mode - DB error)` };
+      return {
+        message: `Staff member ${id} deleted successfully (mock mode - DB error)`,
+      };
     }
   }
 
@@ -226,7 +240,9 @@ export class StaffService {
     try {
       if (this.roleRepository && this.userRoleRepository) {
         // Database implementation
-        const roleEntity = await this.roleRepository.findOne({ where: { name: role } });
+        const roleEntity = await this.roleRepository.findOne({
+          where: { name: role },
+        });
         if (!roleEntity) {
           throw new NotFoundException('Role not found');
         }
@@ -250,7 +266,7 @@ export class StaffService {
           id,
           role,
           updatedAt: new Date().toISOString(),
-          message: `Staff member role updated to ${role}`
+          message: `Staff member role updated to ${role}`,
         };
       } else {
         // Mock implementation fallback
@@ -258,7 +274,7 @@ export class StaffService {
           id,
           role,
           updatedAt: new Date().toISOString(),
-          message: `Staff member role updated to ${role} (mock mode)`
+          message: `Staff member role updated to ${role} (mock mode)`,
         };
       }
     } catch (error) {
@@ -267,7 +283,7 @@ export class StaffService {
         id,
         role,
         updatedAt: new Date().toISOString(),
-        message: `Staff member role updated to ${role} (mock mode - DB error)`
+        message: `Staff member role updated to ${role} (mock mode - DB error)`,
       };
     }
   }
@@ -284,7 +300,7 @@ export class StaffService {
         lastLogin: '2024-12-08T09:30:00Z',
         createdAt: '2024-01-15T10:00:00Z',
         roles: ['admin'],
-        permissions: ['read', 'write', 'admin']
+        permissions: ['read', 'write', 'admin'],
       },
       {
         id: '2',
@@ -295,7 +311,7 @@ export class StaffService {
         lastLogin: '2024-12-08T14:15:00Z',
         createdAt: '2024-02-20T11:30:00Z',
         roles: ['manager'],
-        permissions: ['read', 'write']
+        permissions: ['read', 'write'],
       },
       {
         id: '3',
@@ -306,8 +322,8 @@ export class StaffService {
         lastLogin: '2024-12-05T16:45:00Z',
         createdAt: '2024-03-10T09:00:00Z',
         roles: ['user'],
-        permissions: ['read']
-      }
+        permissions: ['read'],
+      },
     ];
 
     return {
@@ -318,8 +334,8 @@ export class StaffService {
         total: mockData.length,
         totalPages: 1,
         hasNext: false,
-        hasPrev: false
-      }
+        hasPrev: false,
+      },
     };
   }
 }

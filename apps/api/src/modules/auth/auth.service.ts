@@ -124,7 +124,10 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await this.verifyPassword(password, user.passwordHash);
+    const isPasswordValid = await this.verifyPassword(
+      password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       return null;
     }
@@ -144,7 +147,10 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await this.verifyPassword(password, user.passwordHash);
+    const isPasswordValid = await this.verifyPassword(
+      password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       return null;
     }
@@ -186,18 +192,25 @@ export class AuthService {
    * @param hash Hashed password (either bcrypt or argon2)
    * @returns Promise<boolean> indicating if password is valid
    */
-  private async verifyPassword(password: string, hash: string): Promise<boolean> {
+  private async verifyPassword(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     try {
       // Check if it's an argon2 hash (starts with $argon2)
       if (hash.startsWith('$argon2')) {
         return await argon2.verify(hash, password);
       }
-      
+
       // Check if it's a bcrypt hash (starts with $2a$, $2b$, or $2y$)
-      if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+      if (
+        hash.startsWith('$2a$') ||
+        hash.startsWith('$2b$') ||
+        hash.startsWith('$2y$')
+      ) {
         return await bcrypt.compare(password, hash);
       }
-      
+
       // If we can't identify the hash type, try bcrypt first (for backward compatibility)
       try {
         return await bcrypt.compare(password, hash);

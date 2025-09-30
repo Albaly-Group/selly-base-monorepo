@@ -7,10 +7,9 @@ import { ExportJob, Organization } from '../../entities';
 @Module({
   imports: [
     // Only include TypeORM if database is not skipped
-    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true' 
+    ...(process.env.SKIP_DATABASE?.toLowerCase() !== 'true'
       ? [TypeOrmModule.forFeature([ExportJob, Organization])]
-      : []
-    ),
+      : []),
   ],
   controllers: [ExportsController],
   providers: [ExportsService],

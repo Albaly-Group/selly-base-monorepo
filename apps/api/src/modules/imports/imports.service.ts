@@ -14,9 +14,9 @@ export class ImportsService {
     private organizationRepository?: Repository<Organization>,
   ) {}
 
-  async getImportJobs(params?: { 
-    status?: string; 
-    page?: number; 
+  async getImportJobs(params?: {
+    status?: string;
+    page?: number;
     limit?: number;
     organizationId?: string;
   }) {
@@ -33,11 +33,15 @@ export class ImportsService {
           .leftJoinAndSelect('import_job.uploadedByUser', 'user');
 
         if (params?.status) {
-          queryBuilder.andWhere('import_job.status = :status', { status: params.status });
+          queryBuilder.andWhere('import_job.status = :status', {
+            status: params.status,
+          });
         }
 
         if (params?.organizationId) {
-          queryBuilder.andWhere('import_job.organizationId = :orgId', { orgId: params.organizationId });
+          queryBuilder.andWhere('import_job.organizationId = :orgId', {
+            orgId: params.organizationId,
+          });
         }
 
         queryBuilder
@@ -56,7 +60,7 @@ export class ImportsService {
             totalPages: Math.ceil(total / limit),
             hasNext: page * limit < total,
             hasPrev: page > 1,
-          }
+          },
         };
       } else {
         // Mock implementation fallback
@@ -92,7 +96,7 @@ export class ImportsService {
           status: 'queued',
           filename: importData.filename,
           createdAt: new Date().toISOString(),
-          message: 'Import job created successfully (mock mode)'
+          message: 'Import job created successfully (mock mode)',
         };
       }
     } catch (error) {
@@ -102,7 +106,7 @@ export class ImportsService {
         status: 'queued',
         filename: importData.filename,
         createdAt: new Date().toISOString(),
-        message: 'Import job created successfully (mock mode - DB error)'
+        message: 'Import job created successfully (mock mode - DB error)',
       };
     }
   }
@@ -118,11 +122,13 @@ export class ImportsService {
           .where('import_job.id = :id', { id });
 
         if (organizationId) {
-          queryBuilder.andWhere('import_job.organizationId = :orgId', { orgId: organizationId });
+          queryBuilder.andWhere('import_job.organizationId = :orgId', {
+            orgId: organizationId,
+          });
         }
 
         const importJob = await queryBuilder.getOne();
-        
+
         if (!importJob) {
           throw new NotFoundException('Import job not found');
         }
@@ -143,7 +149,7 @@ export class ImportsService {
       if (this.importJobRepository) {
         // Database implementation
         const importJob = await this.getImportJobById(id, organizationId);
-        
+
         // Update status to validating
         if (this.importJobRepository) {
           await this.importJobRepository.update(id, {
@@ -152,12 +158,24 @@ export class ImportsService {
             errorRecords: 2,
             errors: [
               { row: 5, column: 'email', message: 'Invalid email format' },
-              { row: 12, column: 'companyName', message: 'Missing company name' }
+              {
+                row: 12,
+                column: 'companyName',
+                message: 'Missing company name',
+              },
             ],
             warnings: [
-              { row: 3, column: 'phone', message: 'Phone number format may be incorrect' },
-              { row: 8, column: 'website', message: 'Website URL not reachable' }
-            ]
+              {
+                row: 3,
+                column: 'phone',
+                message: 'Phone number format may be incorrect',
+              },
+              {
+                row: 8,
+                column: 'website',
+                message: 'Website URL not reachable',
+              },
+            ],
           });
         }
 
@@ -171,12 +189,16 @@ export class ImportsService {
           message: 'Validation completed',
           errors: [
             { row: 5, column: 'email', message: 'Invalid email format' },
-            { row: 12, column: 'companyName', message: 'Missing company name' }
+            { row: 12, column: 'companyName', message: 'Missing company name' },
           ],
           warnings: [
-            { row: 3, column: 'phone', message: 'Phone number format may be incorrect' },
-            { row: 8, column: 'website', message: 'Website URL not reachable' }
-          ]
+            {
+              row: 3,
+              column: 'phone',
+              message: 'Phone number format may be incorrect',
+            },
+            { row: 8, column: 'website', message: 'Website URL not reachable' },
+          ],
         };
       } else {
         // Mock implementation fallback
@@ -210,14 +232,14 @@ export class ImportsService {
         return {
           id,
           status: 'processing',
-          message: 'Import job execution started'
+          message: 'Import job execution started',
         };
       } else {
         // Mock implementation fallback
         return {
           id,
           status: 'processing',
-          message: 'Import job execution started (mock mode)'
+          message: 'Import job execution started (mock mode)',
         };
       }
     } catch (error) {
@@ -225,7 +247,7 @@ export class ImportsService {
       return {
         id,
         status: 'processing',
-        message: 'Import job execution started (mock mode - DB error)'
+        message: 'Import job execution started (mock mode - DB error)',
       };
     }
   }
@@ -242,7 +264,7 @@ export class ImportsService {
         errorRecords: 2,
         uploadedBy: 'admin@example.com',
         createdAt: '2024-12-08T10:30:00Z',
-        completedAt: '2024-12-08T10:32:15Z'
+        completedAt: '2024-12-08T10:32:15Z',
       },
       {
         id: '2',
@@ -250,12 +272,12 @@ export class ImportsService {
         status: 'processing',
         totalRecords: 500,
         uploadedBy: 'user@example.com',
-        createdAt: '2024-12-08T11:15:00Z'
-      }
+        createdAt: '2024-12-08T11:15:00Z',
+      },
     ];
 
-    const filteredData = params?.status 
-      ? mockData.filter(job => job.status === params.status)
+    const filteredData = params?.status
+      ? mockData.filter((job) => job.status === params.status)
       : mockData;
 
     return {
@@ -266,8 +288,8 @@ export class ImportsService {
         total: filteredData.length,
         totalPages: 1,
         hasNext: false,
-        hasPrev: false
-      }
+        hasPrev: false,
+      },
     };
   }
 
@@ -281,7 +303,7 @@ export class ImportsService {
       errorRecords: 2,
       uploadedBy: 'user@example.com',
       createdAt: '2024-12-08T10:30:00Z',
-      completedAt: '2024-12-08T10:32:15Z'
+      completedAt: '2024-12-08T10:32:15Z',
     };
   }
 
@@ -296,12 +318,16 @@ export class ImportsService {
       message: 'Validation completed',
       errors: [
         { row: 5, column: 'email', message: 'Invalid email format' },
-        { row: 12, column: 'companyName', message: 'Missing company name' }
+        { row: 12, column: 'companyName', message: 'Missing company name' },
       ],
       warnings: [
-        { row: 3, column: 'phone', message: 'Phone number format may be incorrect' },
-        { row: 8, column: 'website', message: 'Website URL not reachable' }
-      ]
+        {
+          row: 3,
+          column: 'phone',
+          message: 'Phone number format may be incorrect',
+        },
+        { row: 8, column: 'website', message: 'Website URL not reachable' },
+      ],
     };
   }
 }
