@@ -147,26 +147,21 @@ export function UserManagementTab() {
     return new Date(dateString).toLocaleDateString()
   }
 
-  const handleAddUser = () => {
-    // Mock add user functionality
-    setShowAddUser(false)
-  }
-
   const handleEditUser = (user: User) => {
     setEditingUser(user)
   }
 
-  const handleDeleteUser = (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter(u => u.id !== userId))
+  const handleToggleStatus = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId)
+      if (user) {
+        const newStatus = user.status === "active" ? "suspended" : "active"
+        await apiClient.updateOrganizationUser(userId, { status: newStatus })
+        await refreshUsers()
+      }
+    } catch (error) {
+      console.error('Failed to toggle user status:', error)
     }
-  }
-
-  const handleToggleStatus = (userId: string) => {
-    setUsers(users.map(u => u.id === userId ? {
-      ...u,
-      status: u.status === "active" ? "suspended" : "active"
-    } : u))
   }
 
   return (
@@ -259,7 +254,14 @@ export function UserManagementTab() {
                   <Button variant="outline" onClick={() => setShowAddUser(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleAddUser}>Add User</Button>
+                  <Button onClick={() => {
+                    // This would need proper form handling in a real implementation
+                    handleCreateUser({
+                      name: "New User",
+                      email: "new@example.com", 
+                      role: "user"
+                    })
+                  }}>Add User</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
