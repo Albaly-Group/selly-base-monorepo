@@ -355,11 +355,13 @@ cd apps/web && npm run build
 
 **CSS Build Issues on Vercel:**
 ```bash
-# If CSS build is incomplete, try these steps:
-# 1. Clear Vercel build cache in dashboard
-# 2. Redeploy the project
-# 3. Ensure critters package is installed for CSS optimization
-# 4. Check that optimizeCss is enabled in next.config.mjs
+# If CSS build fails with "Cannot find module 'critters'" error:
+# 1. Ensure critters is listed in dependencies (not devDependencies) in apps/web/package.json
+# 2. Clear Vercel build cache in dashboard and redeploy
+# 3. Check that optimizeCss is enabled in next.config.mjs
+
+# Common error during prerendering /404 page:
+# Error: Cannot find module 'critters' - Fixed by moving critters to dependencies
 ```
 
 #### 5. Cache Issues on Vercel
