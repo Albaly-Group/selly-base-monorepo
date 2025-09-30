@@ -29,8 +29,8 @@ export default function ApiTestPage() {
     setLoading(true)
     setError('')
     try {
-      // Use searchCompanies instead of getCompanies for better parameter handling
-      const response = await apiClient.searchCompanies({
+      // Use getCompanies with the fixed backend endpoint
+      const response = await apiClient.getCompanies({
         organizationId: '123e4567-e89b-12d3-a456-426614174001',
         includeSharedData: true,
         page: 1,

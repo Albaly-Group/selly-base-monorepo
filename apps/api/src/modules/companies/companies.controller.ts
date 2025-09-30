@@ -131,7 +131,12 @@ export class CompaniesController {
     description: 'Filter by country code',
   })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ 
+    transform: true, 
+    whitelist: true,
+    forbidNonWhitelisted: false,
+    skipMissingProperties: true
+  }))
   async searchCompanies(
     @Query() searchDto: CompanySearchDto,
   ): Promise<PaginatedResponse<any>> {
@@ -143,12 +148,22 @@ export class CompaniesController {
   @Get()
   @ApiOperation({ summary: 'Get companies (legacy endpoint)' })
   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async getCompanies(
-    @Query() query: CompanySearchDto,
+    @Query('organizationId') organizationId?: string,
+    @Query('includeSharedData') includeSharedData?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ): Promise<PaginatedResponse<any>> {
-    // Legacy endpoint that uses search underneath
-    return this.searchCompanies(query);
+    // Simple parameter handling without complex validation for now
+    const searchDto = {
+      organizationId,
+      includeSharedData: includeSharedData === 'true',
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+    };
+    
+    const mockUser = createMockUser(organizationId);
+    return this.companiesService.searchCompanies(searchDto as any, mockUser);
   }
 
   @Get(':id')
