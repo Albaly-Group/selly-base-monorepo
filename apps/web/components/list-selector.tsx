@@ -21,6 +21,7 @@ interface ListSelectorProps {
   selectedListId: string
   onSelectList: (listId: string) => void
   onListsUpdate?: () => void // Add callback for when lists are updated
+  isLoading?: boolean // Add loading state
 }
 
 // Enhanced component using new CompanyList types

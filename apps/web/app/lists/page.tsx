@@ -1,34 +1,86 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { ListSelector } from "@/components/list-selector"
 import { ListTable } from "@/components/list-table"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
-import { mockCompanies, mockUserLists, searchAndScoreCompanies, removeCompaniesFromList, type WeightedLeadScore } from "@/lib/mock-data"
+import { searchAndScoreCompanies, removeCompaniesFromList, type WeightedLeadScore } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Filter, Target } from "lucide-react"
 
+interface CompanyList {
+  id: string
+  name: string
+  companyIds: string[]
+  createdAt: string
+  status: "Active" | "Inactive"
+  owner: string
+}
+
 function ListManagementPage() {
-  const [selectedListId, setSelectedListId] = useState<string>(mockUserLists[0]?.id || "")
+  const [userLists, setUserLists] = useState<CompanyList[]>([])
+  const [listCompanies, setListCompanies] = useState<Company[]>([])
+  const [selectedListId, setSelectedListId] = useState<string>("")
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
   const [showSmartFiltering, setShowSmartFiltering] = useState(false)
   const [showSmartFilteringDialog, setShowSmartFilteringDialog] = useState(false)
   const [smartFiltering, setSmartFiltering] = useState<SmartFilteringCriteria>({})
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0) // Add refresh key for data updates
+  const [isLoading, setIsLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  // Get companies in the selected list
-  const selectedList = mockUserLists.find((list) => list.id === selectedListId)
-  const listCompanies = useMemo(() => {
-    if (!selectedList) return []
-    return mockCompanies.filter((company) => selectedList.companyIds.includes(company.id))
-  }, [selectedList, refreshKey]) // Include refreshKey in dependency
+  // Fetch user lists from backend
+  useEffect(() => {
+    const fetchLists = async () => {
+      try {
+        setIsLoading(true)
+        const response = await apiClient.getCompanyLists()
+        if (response.data) {
+          setUserLists(response.data)
+          if (response.data.length > 0 && !selectedListId) {
+            setSelectedListId(response.data[0].id)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch company lists:', error)
+        setUserLists([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchLists()
+  }, [refreshKey])
+
+  // Fetch companies for selected list
+  useEffect(() => {
+    const fetchListCompanies = async () => {
+      if (!selectedListId) {
+        setListCompanies([])
+        return
+      }
+
+      try {
+        const response = await apiClient.getCompanyListItems(selectedListId)
+        setListCompanies(response || [])
+      } catch (error) {
+        console.error('Failed to fetch list companies:', error)
+        setListCompanies([])
+      }
+    }
+
+    fetchListCompanies()
+  }, [selectedListId, refreshKey])
+
+  // Get selected list details
+  const selectedList = userLists.find((list) => list.id === selectedListId)
 
   // Apply smart filtering if active
   const { displayCompanies, leadScores } = useMemo(() => {
@@ -70,19 +122,16 @@ function ListManagementPage() {
     }
   }
 
-  const handleRemoveFromList = () => {
-    // Use the new removeCompaniesFromList function
+  const handleRemoveFromList = async () => {
     if (selectedList && selectedCompanies.length > 0) {
       try {
-        const result = removeCompaniesFromList(selectedList.id, selectedCompanies)
-        console.log("Remove from list result:", result)
+        await apiClient.removeCompaniesFromList(selectedList.id, selectedCompanies)
         
         // Refresh the data
         setRefreshKey(prev => prev + 1)
         setSelectedCompanies([])
         
-        // Show simple alert for now
-        alert(`Removed ${result.removed.length} companies from list.`)
+        alert(`Removed ${selectedCompanies.length} companies from list.`)
       } catch (error) {
         console.error("Error removing companies:", error)
         alert("Error removing companies from list.")
@@ -163,10 +212,11 @@ function ListManagementPage() {
           {/* List Selector Sidebar */}
           <div className="lg:col-span-1">
             <ListSelector 
-              lists={mockUserLists} 
+              lists={userLists} 
               selectedListId={selectedListId} 
               onSelectList={setSelectedListId}
               onListsUpdate={() => setRefreshKey(prev => prev + 1)}
+              isLoading={isLoading}
             />
           </div>
 

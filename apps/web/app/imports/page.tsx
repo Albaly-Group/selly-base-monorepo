@@ -1,54 +1,69 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { ImportWizard } from "@/components/import-wizard"
 import { ImportJobsTable } from "@/components/import-jobs-table"
 import { requireAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Upload, FileText, Database } from "lucide-react"
 
+interface ImportJob {
+  id: string
+  filename: string
+  status: string
+  totalRecords?: number
+  processedRecords?: number
+  validRecords?: number
+  errorRecords?: number
+  createdAt: string
+  completedAt?: string
+  uploadedBy?: string
+  errorMessage?: string
+}
+
 function ImportsPage() {
   const [showImportWizard, setShowImportWizard] = useState(false)
+  const [importJobs, setImportJobs] = useState<ImportJob[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   
-  // Mock import jobs data
-  const importJobs = [
-    {
-      id: "1",
-      filename: "companies_q4_2024.xlsx",
-      status: "completed",
-      totalRows: 1250,
-      processedRows: 1180,
-      errorRows: 70,
-      createdAt: "2024-12-08T14:30:00Z",
-      completedAt: "2024-12-08T14:32:15Z",
-      importedBy: "admin@example.com"
-    },
-    {
-      id: "2", 
-      filename: "prospect_list_bangkok.csv",
-      status: "processing",
-      totalRows: 850,
-      processedRows: 420,
-      errorRows: 12,
-      createdAt: "2024-12-08T15:15:00Z",
-      importedBy: "staff@example.com"
-    },
-    {
-      id: "3",
-      filename: "vendor_contacts.xlsx", 
-      status: "failed",
-      totalRows: 320,
-      processedRows: 0,
-      errorRows: 320,
-      createdAt: "2024-12-08T13:45:00Z",
-      failedAt: "2024-12-08T13:46:30Z",
-      importedBy: "admin@example.com",
-      errorMessage: "Invalid file format: Missing required column 'registration_id'"
+  // Fetch import jobs from backend
+  useEffect(() => {
+    const fetchImportJobs = async () => {
+      try {
+        setIsLoading(true)
+        const response = await apiClient.getImportJobs()
+        if (response.data) {
+          setImportJobs(response.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch import jobs:', error)
+        // Fallback to empty array if backend fails
+        setImportJobs([])
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ]
+
+    fetchImportJobs()
+  }, [])
+
+  const refreshImportJobs = () => {
+    const fetchImportJobs = async () => {
+      try {
+        const response = await apiClient.getImportJobs()
+        if (response.data) {
+          setImportJobs(response.data)
+        }
+      } catch (error) {
+        console.error('Failed to refresh import jobs:', error)
+      }
+    }
+    fetchImportJobs()
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,7 +147,15 @@ function ImportsPage() {
           </TabsContent>
 
           <TabsContent value="jobs" className="space-y-6">
-            <ImportJobsTable jobs={importJobs} />
+            {isLoading ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <p className="text-gray-500">Loading import jobs...</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <ImportJobsTable jobs={importJobs} onRefresh={refreshImportJobs} />
+            )}
           </TabsContent>
         </Tabs>
 
@@ -140,6 +163,7 @@ function ImportsPage() {
         <ImportWizard 
           open={showImportWizard}
           onOpenChange={setShowImportWizard}
+          onImportComplete={refreshImportJobs}
         />
       </main>
     </div>

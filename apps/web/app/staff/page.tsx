@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { StaffTable } from "@/components/staff-table"
 import { CompanyEditDialog } from "@/components/company-edit-dialog"
 import { BulkActionsPanel } from "@/components/bulk-actions-panel"
-import { mockCompanies, searchCompanies, filterCompanies } from "@/lib/mock-data"
 import { requireAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import type { Company, FilterOptions } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,32 +19,63 @@ function StaffDashboardPage() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
   const [editingCompany, setEditingCompany] = useState<Company | null>(null)
   const [showBulkActions, setShowBulkActions] = useState(false)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  // Filter and search companies
-  const filteredCompanies = useMemo(() => {
-    let companies = mockCompanies
-
-    // Apply search
-    if (searchTerm) {
-      companies = searchCompanies(companies, searchTerm)
+  // Fetch companies from backend
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        setIsLoading(true)
+        const response = await apiClient.searchCompanies({
+          searchTerm: searchTerm || undefined,
+          page: 1,
+          limit: 1000 // Get all companies for staff management
+        })
+        
+        if (response.data) {
+          setCompanies(response.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch companies:', error)
+        setCompanies([])
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    // Apply filters
-    companies = filterCompanies(companies, filters)
+    fetchCompanies()
+  }, [searchTerm, refreshKey])
 
-    return companies
-  }, [searchTerm, filters])
+  // Filter companies based on current filters
+  const filteredCompanies = useMemo(() => {
+    let filtered = companies
+
+    // Apply additional filters if needed
+    if (filters.industry) {
+      filtered = filtered.filter(c => c.industrialName === filters.industry)
+    }
+    if (filters.province) {
+      filtered = filtered.filter(c => c.province === filters.province)
+    }
+    if (filters.verificationStatus) {
+      filtered = filtered.filter(c => c.verificationStatus === filters.verificationStatus)
+    }
+
+    return filtered
+  }, [companies, filters])
 
   // Statistics
   const stats = useMemo(() => {
-    const total = mockCompanies.length
-    const active = mockCompanies.filter((c) => c.verificationStatus === "Active").length
-    const needsVerification = mockCompanies.filter((c) => c.verificationStatus === "Needs Verification").length
-    const invalid = mockCompanies.filter((c) => c.verificationStatus === "Invalid").length
-    const avgCompleteness = Math.round(mockCompanies.reduce((sum, c) => sum + c.dataCompleteness, 0) / total)
+    const total = companies.length
+    const active = companies.filter((c) => c.verificationStatus === "Active").length
+    const needsVerification = companies.filter((c) => c.verificationStatus === "Needs Verification").length
+    const invalid = companies.filter((c) => c.verificationStatus === "Invalid").length
+    const avgCompleteness = total > 0 ? Math.round(companies.reduce((sum, c) => sum + (c.dataCompleteness || 0), 0) / total) : 0
 
     return { total, active, needsVerification, invalid, avgCompleteness }
-  }, [])
+  }, [companies])
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -62,14 +93,27 @@ function StaffDashboardPage() {
     }
   }
 
-  const handleApprove = (companyId: string) => {
-    console.log("Approving company:", companyId)
-    // Here you would update the company status to Active
+  const handleApprove = async (companyId: string) => {
+    try {
+      await apiClient.updateCompany(companyId, { verificationStatus: "Active" })
+      setRefreshKey(prev => prev + 1) // Refresh the data
+      console.log("Company approved:", companyId)
+    } catch (error) {
+      console.error("Error approving company:", error)
+    }
   }
 
-  const handleReject = (companyId: string, reason: string) => {
-    console.log("Rejecting company:", companyId, "Reason:", reason)
-    // Here you would update the company status to Invalid with reason
+  const handleReject = async (companyId: string, reason: string) => {
+    try {
+      await apiClient.updateCompany(companyId, { 
+        verificationStatus: "Invalid",
+        rejectionReason: reason 
+      })
+      setRefreshKey(prev => prev + 1) // Refresh the data
+      console.log("Company rejected:", companyId, "Reason:", reason)
+    } catch (error) {
+      console.error("Error rejecting company:", error)
+    }
   }
 
   const handleEdit = (company: Company) => {
@@ -248,8 +292,14 @@ function StaffDashboardPage() {
 
         {/* Results Summary */}
         <div className="mt-4 text-sm text-gray-600">
-          Showing {filteredCompanies.length} of {mockCompanies.length} companies
-          {selectedCompanies.length > 0 && ` • ${selectedCompanies.length} selected`}
+          {isLoading ? (
+            "Loading companies..."
+          ) : (
+            <>
+              Showing {filteredCompanies.length} of {companies.length} companies
+              {selectedCompanies.length > 0 && ` • ${selectedCompanies.length} selected`}
+            </>
+          )}
         </div>
 
         {/* Edit Dialog */}
@@ -257,9 +307,15 @@ function StaffDashboardPage() {
           company={editingCompany}
           open={!!editingCompany}
           onOpenChange={(open) => !open && setEditingCompany(null)}
-          onSave={(updatedCompany) => {
-            console.log("Saving company:", updatedCompany)
-            setEditingCompany(null)
+          onSave={async (updatedCompany) => {
+            try {
+              await apiClient.updateCompany(updatedCompany.id, updatedCompany)
+              setRefreshKey(prev => prev + 1) // Refresh the data
+              setEditingCompany(null)
+              console.log("Company updated:", updatedCompany)
+            } catch (error) {
+              console.error("Error updating company:", error)
+            }
           }}
         />
 
