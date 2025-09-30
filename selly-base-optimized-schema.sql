@@ -351,25 +351,28 @@ CREATE TABLE ref_tags (
 -- AUDIT & LOGGING
 -- =========================================================
 
+-- Application-level audit logs (matches TypeORM AuditLog entity)
 CREATE TABLE audit_logs (
-  id UUID,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  table_name TEXT NOT NULL,
-  record_id UUID NOT NULL,
-  operation TEXT NOT NULL CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE')),
-  old_data JSONB,
-  new_data JSONB,
-  changed_fields TEXT[],
-  user_id UUID,
-  organization_id UUID,
-  session_id TEXT,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  entity_type TEXT NOT NULL,
+  entity_id UUID,
+  action_type TEXT NOT NULL CHECK (action_type IN ('CREATE', 'READ', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'SEARCH', 'EXPORT', 'IMPORT')),
+  resource_type TEXT,
+  resource_path TEXT,
+  old_values JSONB,
+  new_values JSONB,
+  changes JSONB,
   ip_address INET,
   user_agent TEXT,
-  api_endpoint TEXT,
+  session_id TEXT,
   request_id TEXT,
-  correlation_id TEXT,
-  PRIMARY KEY (id, created_at)
-) PARTITION BY RANGE (created_at);
+  status_code INTEGER,
+  error_message TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE user_activity_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -503,9 +506,10 @@ CREATE INDEX idx_list_items_score ON company_list_items(lead_score DESC) WHERE l
 CREATE INDEX idx_lead_projects_org_status ON lead_projects(organization_id, status);
 CREATE INDEX idx_lead_projects_owner ON lead_projects(owner_user_id);
 CREATE INDEX idx_lead_projects_dates ON lead_projects(start_date, target_end_date);
-CREATE INDEX idx_audit_logs_table_record ON audit_logs(table_name, record_id, created_at DESC);
+CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id, created_at DESC);
 CREATE INDEX idx_audit_logs_user_time ON audit_logs(user_id, created_at DESC);
 CREATE INDEX idx_audit_logs_org_time ON audit_logs(organization_id, created_at DESC);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action_type, created_at DESC);
 CREATE INDEX idx_activity_user_type ON user_activity_logs(user_id, activity_type, created_at DESC);
 CREATE INDEX idx_activity_org_type ON user_activity_logs(organization_id, activity_type, created_at DESC);
 CREATE INDEX idx_contacts_company ON company_contacts(company_id);
@@ -736,15 +740,8 @@ COMMIT;
 -- MAINTENANCE & MONITORING
 -- =========================================================
 
-DO $$
-DECLARE
-  start_date TIMESTAMPTZ := DATE_TRUNC('month', CURRENT_TIMESTAMP);
-  end_date TIMESTAMPTZ := start_date + INTERVAL '1 month';
-  partition_name TEXT := 'audit_logs_' || TO_CHAR(start_date, 'YYYY_MM');
-BEGIN
-  EXECUTE format('CREATE TABLE IF NOT EXISTS %I PARTITION OF audit_logs FOR VALUES FROM (%L) TO (%L)', 
-    partition_name, start_date, end_date);
-END $$;
+-- Note: audit_logs table no longer uses partitioning for simpler application-level auditing
+-- If partitioning is needed in production for performance, consider implementing it based on created_at
 
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY mv_company_search;
 
@@ -758,7 +755,9 @@ COMMENT ON TABLE users IS 'Users scoped to organizations with RBAC';
 COMMENT ON TABLE companies IS 'Canonical company data with SaaS privacy controls - shared reference data (organization_id=NULL) and customer-specific data (organization_id set)';
 COMMENT ON TABLE company_lists IS 'User-created company collections with smart list support';
 COMMENT ON TABLE lead_projects IS 'Lead generation campaigns and projects';
-COMMENT ON TABLE audit_logs IS 'Comprehensive audit trail for all data changes';
+COMMENT ON TABLE audit_logs IS 'Application-level audit trail for user actions and data changes (matches TypeORM AuditLog entity)';
+COMMENT ON TABLE export_jobs IS 'Export job tracking with file metadata';
+COMMENT ON TABLE import_jobs IS 'Import job tracking with validation and error handling';
 
 COMMENT ON COLUMN companies.organization_id IS 'NULL for shared reference data (Albaly/DBD), UUID for customer-specific private data';
 COMMENT ON COLUMN companies.data_source IS 'Source of company data: albaly_list, dbd_registry, customer_input, data_enrichment, third_party';
