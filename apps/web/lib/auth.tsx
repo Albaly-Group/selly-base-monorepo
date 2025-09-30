@@ -142,11 +142,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (response.accessToken && response.user) {
           // Convert API user format to our app's user format
           const apiUser = response.user;
+          
+          // Check if we have role information for this user in our mock data
+          const mockUser = mockUsers.find((u) => u.email === email);
+          const userRole = mockUser?.role || 'user' as UserRoleName;
+          
           const appUser: User = {
             id: apiUser.id,
             email: apiUser.email,
             name: apiUser.name,
-            role: 'user' as UserRoleName, // Default role, could be enhanced later
+            role: userRole, // Use role from mock data if available, otherwise default to 'user'
             organization_id: apiUser.organizationId || null,
             organization: apiUser.organization ? {
               id: apiUser.organization.id,
