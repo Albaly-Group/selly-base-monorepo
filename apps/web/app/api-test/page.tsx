@@ -77,6 +77,45 @@ Organization ID: ${user.organizationId || 'None'}`)
     }
   }
 
+  const testExports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getExportJobs()
+      setError(`✅ Export jobs retrieved! Found ${response.data?.length || 0} export jobs`)
+    } catch (err) {
+      setError(`❌ Get export jobs failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testReports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getDashboardAnalytics()
+      setError(`✅ Dashboard analytics retrieved! Total Companies: ${response.totalCompanies || 0}`)
+    } catch (err) {
+      setError(`❌ Get dashboard analytics failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testAdminUsers = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getOrganizationUsers()
+      setError(`✅ Admin users retrieved! Found ${response.data?.length || 0} users`)
+    } catch (err) {
+      setError(`❌ Get admin users failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -192,6 +231,63 @@ Organization ID: ${user.organizationId || 'None'}`)
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Exports Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Export Jobs
+                <Badge variant="outline">GET /api/v1/exports</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testExports} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Export Jobs'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Reports Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Dashboard Analytics
+                <Badge variant="outline">GET /api/v1/reports/dashboard</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testReports} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Dashboard Analytics'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Admin Users Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Admin Users
+                <Badge variant="outline">GET /api/v1/admin/users</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testAdminUsers} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Admin Users'}
+              </Button>
             </CardContent>
           </Card>
         </div>

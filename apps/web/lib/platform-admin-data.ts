@@ -2,6 +2,7 @@
 // This file ensures data consistency across all platform admin components
 
 import type { Organization, User } from "./types"
+import { apiClient } from "./api-client"
 
 // Shared data models for platform admin
 export interface TenantData extends Organization {
@@ -27,6 +28,58 @@ export interface SharedCompany {
   createdBy: string
   isShared: boolean
   tenantCount?: number
+}
+
+// Updated utility functions that use backend APIs where available
+export async function getTotalUsers(): Promise<number> {
+  try {
+    const response = await apiClient.getOrganizationUsers()
+    return response.data?.length || 0
+  } catch (error) {
+    console.error('Failed to fetch users from backend, using fallback:', error)
+    return mockTenantData.reduce((sum, tenant) => sum + tenant.user_count, 0)
+  }
+}
+
+export async function getTotalDataRecords(): Promise<number> {
+  try {
+    const response = await apiClient.getDashboardAnalytics()
+    return response.totalCompanies || 0
+  } catch (error) {
+    console.error('Failed to fetch analytics from backend, using fallback:', error)
+    return mockTenantData.reduce((sum, tenant) => sum + tenant.data_count, 0)
+  }
+}
+
+export async function getActiveTenants(): Promise<number> {
+  try {
+    const response = await apiClient.getDashboardAnalytics()
+    return response.activeUsers || 0
+  } catch (error) {
+    console.error('Failed to fetch analytics from backend, using fallback:', error)
+    return mockTenantData.filter(tenant => tenant.status === "active").length
+  }
+}
+
+export async function getPlatformAnalytics(): Promise<any> {
+  try {
+    return await apiClient.getDashboardAnalytics()
+  } catch (error) {
+    console.error('Failed to fetch platform analytics from backend, using fallback:', error)
+    return {
+      totalCompanies: 1250,
+      totalLists: 45,
+      totalExports: 128,
+      totalImports: 67,
+      activeUsers: 23,
+      dataQualityScore: 0.89,
+      monthlyGrowth: {
+        companies: 12.5,
+        exports: 8.3,
+        users: 5.2
+      }
+    }
+  }
 }
 
 // Mock data for consistent usage across platform admin components
@@ -212,18 +265,6 @@ export const mockSharedCompanies: SharedCompany[] = [
 ]
 
 // Utility functions for data consistency
-export function getTotalUsers(): number {
-  return mockTenantData.reduce((sum, tenant) => sum + tenant.user_count, 0)
-}
-
-export function getTotalDataRecords(): number {
-  return mockTenantData.reduce((sum, tenant) => sum + tenant.data_count, 0)
-}
-
-export function getActiveTenants(): number {
-  return mockTenantData.filter(tenant => tenant.status === "active").length
-}
-
 export function getTenantUsageLevel(dataCount: number): "high" | "medium" | "low" {
   if (dataCount > 5000) return "high"
   if (dataCount > 1000) return "medium"
