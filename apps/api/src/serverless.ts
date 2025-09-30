@@ -48,7 +48,12 @@ async function createNestServer() {
     origin:
       process.env.NODE_ENV === 'production'
         ? [/\.vercel\.app$/, /\.albaly\.jp$/]
-        : ['http://localhost:3000', 'http://localhost:3001', /\.albaly\.jp$/],
+        : [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            /\.vercel\.app$/,
+            /\.albaly\.jp$/,
+          ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
