@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { TenantManagementTab } from "@/components/platform-admin/tenant-management-tab"
 import { PlatformDataTab } from "@/components/platform-admin/platform-data-tab"
@@ -12,9 +12,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Users, Database, BarChart3, Settings, Shield } from "lucide-react"
-import { getTotalUsers, getTotalDataRecords, getActiveTenants, mockSharedCompanies } from "@/lib/platform-admin-data"
+import { getTotalUsers, getTotalDataRecords, getActiveTenants, getPlatformAnalytics, mockSharedCompanies } from "@/lib/platform-admin-data"
 
 function PlatformAdminPage() {
+  const [platformData, setPlatformData] = useState({
+    totalUsers: 0,
+    totalData: 0,
+    activeTenants: 0,
+    systemHealth: 98.5,
+    analytics: null
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPlatformData = async () => {
+      try {
+        setLoading(true)
+        const [totalUsers, totalData, activeTenants, analytics] = await Promise.all([
+          getTotalUsers(),
+          getTotalDataRecords(), 
+          getActiveTenants(),
+          getPlatformAnalytics()
+        ])
+
+        setPlatformData({
+          totalUsers,
+          totalData,
+          activeTenants,
+          systemHealth: 98.5, // Mock for now
+          analytics
+        })
+      } catch (error) {
+        console.error('Failed to fetch platform data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlatformData()
+  }, [])
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -42,7 +78,9 @@ function PlatformAdminPage() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{getActiveTenants()}</div>
+              <div className="text-2xl font-bold">
+                {loading ? "..." : platformData.activeTenants}
+              </div>
               <p className="text-xs text-muted-foreground">
                 +2 from last month
               </p>
@@ -55,7 +93,9 @@ function PlatformAdminPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{getTotalUsers().toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                {loading ? "..." : platformData.totalUsers.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Across all tenants
               </p>
@@ -68,7 +108,9 @@ function PlatformAdminPage() {
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockSharedCompanies.length.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                {loading ? "..." : (platformData.analytics?.totalCompanies || mockSharedCompanies.length).toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Available to all tenants
               </p>
@@ -81,7 +123,9 @@ function PlatformAdminPage() {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">99.9%</div>
+              <div className="text-2xl font-bold">
+                {loading ? "..." : `${platformData.systemHealth}%`}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Uptime this month
               </p>

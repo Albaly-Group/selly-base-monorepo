@@ -29,10 +29,17 @@ export default function ApiTestPage() {
     setLoading(true)
     setError('')
     try {
-      const response = await apiClient.getCompanies()
+      // Use getCompanies with the fixed backend endpoint
+      const response = await apiClient.getCompanies({
+        organizationId: '123e4567-e89b-12d3-a456-426614174001',
+        includeSharedData: true,
+        page: 1,
+        limit: 10
+      })
       setCompanies(response.data || [])
+      setError(`✅ Companies retrieved! Found ${response.data?.length || 0} companies`)
     } catch (err) {
-      setError(`Get companies failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setError(`❌ Get companies failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -65,6 +72,45 @@ Email: ${user.email}
 Organization ID: ${user.organizationId || 'None'}`)
     } catch (err) {
       setError(`❌ Get current user failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testExports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getExportJobs()
+      setError(`✅ Export jobs retrieved! Found ${response.data?.length || 0} export jobs`)
+    } catch (err) {
+      setError(`❌ Get export jobs failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testReports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getDashboardAnalytics()
+      setError(`✅ Dashboard analytics retrieved! Total Companies: ${response.totalCompanies || 0}`)
+    } catch (err) {
+      setError(`❌ Get dashboard analytics failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testAdminUsers = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await apiClient.getOrganizationUsers()
+      setError(`✅ Admin users retrieved! Found ${response.data?.length || 0} users`)
+    } catch (err) {
+      setError(`❌ Get admin users failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -185,6 +231,63 @@ Organization ID: ${user.organizationId || 'None'}`)
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Exports Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Export Jobs
+                <Badge variant="outline">GET /api/v1/exports</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testExports} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Export Jobs'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Reports Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Dashboard Analytics
+                <Badge variant="outline">GET /api/v1/reports/dashboard</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testReports} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Dashboard Analytics'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Admin Users Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Admin Users
+                <Badge variant="outline">GET /api/v1/admin/users</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={testAdminUsers} 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Testing...' : 'Test Get Admin Users'}
+              </Button>
             </CardContent>
           </Card>
         </div>
