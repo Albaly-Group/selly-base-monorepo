@@ -29,10 +29,17 @@ export default function ApiTestPage() {
     setLoading(true)
     setError('')
     try {
-      const response = await apiClient.getCompanies()
+      // Use searchCompanies instead of getCompanies for better parameter handling
+      const response = await apiClient.searchCompanies({
+        organizationId: '123e4567-e89b-12d3-a456-426614174001',
+        includeSharedData: true,
+        page: 1,
+        limit: 10
+      })
       setCompanies(response.data || [])
+      setError(`✅ Companies retrieved! Found ${response.data?.length || 0} companies`)
     } catch (err) {
-      setError(`Get companies failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setError(`❌ Get companies failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
