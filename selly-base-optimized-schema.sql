@@ -559,18 +559,41 @@ CREATE TRIGGER trigger_company_list_items_count
 -- =========================================================
 
 INSERT INTO roles (name, description, is_system_role, permissions) VALUES
-('platform_admin', 'Platform Administrator', true, ARRAY['*']),
-('org_admin', 'Organization Administrator', true, ARRAY['org:*', 'users:*', 'lists:*', 'projects:*']),
-('team_lead', 'Team Lead', true, ARRAY['projects:*', 'lists:*', 'companies:read']),
-('sales_user', 'Sales User', true, ARRAY['lists:create', 'lists:read:own', 'companies:read', 'contacts:read']),
-('viewer', 'Read-only User', true, ARRAY['companies:read', 'lists:read:shared']);
+-- Platform roles
+('platform_admin', 'Platform Administrator with full system access', true, ARRAY['*']),
+('platform_staff', 'Platform staff with limited system access', true, ARRAY['platform:read', 'organizations:read', 'users:read']),
+-- Multi-tenant customer roles (matching TypeScript migration)
+('customer_admin', 'Organization administrator with full organization access', true, ARRAY['org:*', 'users:*', 'lists:*', 'projects:*']),
+('customer_staff', 'Organization staff with limited access', true, ARRAY['projects:*', 'lists:*', 'companies:read']),
+('customer_user', 'Basic organization user', true, ARRAY['lists:create', 'lists:read:own', 'companies:read', 'contacts:read']),
+-- Legacy roles for backward compatibility
+('admin', 'Legacy admin role', true, ARRAY['org:*', 'users:*', 'lists:*', 'projects:*']),
+('staff', 'Legacy staff role', true, ARRAY['projects:*', 'lists:*', 'companies:read']),
+('user', 'Legacy user role', true, ARRAY['lists:create', 'lists:read:own', 'companies:read']);
 
-INSERT INTO organizations (id, name, slug, status) VALUES
-('550e8400-e29b-41d4-a716-446655440000', 'Albaly Digital', 'albaly', 'active');
+-- Organizations for multi-tenant testing
+INSERT INTO organizations (id, name, slug, status, subscription_tier) VALUES
+('550e8400-e29b-41d4-a716-446655440000', 'Albaly Digital', 'albaly', 'active', 'enterprise'),
+('550e8400-e29b-41d4-a716-446655440001', 'Demo Customer Corp', 'demo-customer', 'active', 'professional'),
+('550e8400-e29b-41d4-a716-446655440010', 'Sample Enterprise Ltd', 'sample-enterprise', 'active', 'enterprise');
 
-INSERT INTO users (id, organization_id, email, name, password_hash, status) VALUES
-('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Admin User', '$argon2id$v=19$m=65536,t=3,p=4$clFYWADU2PbVhevZqNF2vw$YhuDguM0Mx2nrfD+nh+Fex2rb/dhtSz4ITG4jlFTelE', 'active'),
-('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'sales@albaly.com', 'Sales User', '$argon2id$v=19$m=65536,t=3,p=4$bJK7WPLivowC4cBYYZDXTQ$1SMka+oPB08ZzrD1p/eN5sLRgINSfhJapWKkZk3o/cA', 'active');
+-- Comprehensive test users covering all role scenarios
+INSERT INTO users (id, organization_id, email, name, password_hash, status, email_verified_at) VALUES
+-- Platform users (no specific organization)
+('550e8400-e29b-41d4-a716-446655440001', NULL, 'platform@albaly.com', 'Platform Admin', '$argon2id$v=19$m=65536,t=3,p=4$clFYWADU2PbVhevZqNF2vw$YhuDguM0Mx2nrfD+nh+Fex2rb/dhtSz4ITG4jlFTelE', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440002', NULL, 'support@albaly.com', 'Platform Staff', '$argon2id$v=19$m=65536,t=3,p=4$bJK7WPLivowC4cBYYZDXTQ$1SMka+oPB08ZzrD1p/eN5sLRgINSfhJapWKkZk3o/cA', 'active', CURRENT_TIMESTAMP),
+-- Albaly Digital organization users
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Albaly Admin', '$argon2id$v=19$m=65536,t=3,p=4$K0k8WdQZ3HeHuLc6dvNhGg$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440000', 'staff@albaly.com', 'Albaly Staff', '$argon2id$v=19$m=65536,t=3,p=4$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440000', 'user@albaly.com', 'Albaly User', '$argon2id$v=19$m=65536,t=3,p=4$9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+-- Demo Customer Corp users  
+('550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440001', 'admin@democustomer.com', 'Customer Admin', '$argon2id$v=19$m=65536,t=3,p=4$dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440001', 'staff@democustomer.com', 'Customer Staff', '$argon2id$v=19$m=65536,t=3,p=4$Lh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3d$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3db$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+-- Sample Enterprise users with legacy roles
+('550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440010', 'admin@sampleenterprise.com', 'Legacy Admin', '$argon2id$v=19$m=65536,t=3,p=4$39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbh$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440010', 'staff@sampleenterprise.com', 'Legacy Staff', '$argon2id$v=19$m=65536,t=3,p=4$9Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbhL$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440021', '550e8400-e29b-41d4-a716-446655440010', 'user@sampleenterprise.com', 'Legacy User', '$argon2id$v=19$m=65536,t=3,p=4$Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbhLh$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP);
 
 INSERT INTO ref_industry_codes (code, title_en, title_th, classification_system, level) VALUES
 ('46', 'Wholesale trade', 'ขายส่ง', 'TSIC_2009', 2),
@@ -588,12 +611,79 @@ INSERT INTO ref_tags (key, name, description, category, color) VALUES
 ('startup', 'Startup', 'Early stage startup companies', 'stage', '#dc2626'),
 ('high_priority', 'High Priority', 'High priority prospect', 'priority', '#ea580c');
 
--- Add sample customer organization for SaaS demo
-INSERT INTO organizations (id, name, slug, status, subscription_tier) VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'Demo Customer Corp', 'demo-customer', 'active', 'professional');
+-- User role assignments - this is crucial for the app to work properly
+-- Platform users get platform roles
+INSERT INTO user_roles (user_id, role_id, organization_id, assigned_by, assigned_at) VALUES
+-- Platform Admin
+((SELECT id FROM users WHERE email = 'platform@albaly.com'), 
+ (SELECT id FROM roles WHERE name = 'platform_admin'), 
+ '550e8400-e29b-41d4-a716-446655440000',
+ (SELECT id FROM users WHERE email = 'platform@albaly.com'),
+ CURRENT_TIMESTAMP),
 
-INSERT INTO users (id, organization_id, email, name, password_hash, status) VALUES
-('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$K0k8WdQZ3HeHuLc6dvNhGg$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM', 'active');
+-- Platform Staff  
+((SELECT id FROM users WHERE email = 'support@albaly.com'), 
+ (SELECT id FROM roles WHERE name = 'platform_staff'), 
+ '550e8400-e29b-41d4-a716-446655440000',
+ (SELECT id FROM users WHERE email = 'platform@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+-- Albaly Digital organization role assignments
+((SELECT id FROM users WHERE email = 'admin@albaly.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_admin'), 
+ '550e8400-e29b-41d4-a716-446655440000',
+ (SELECT id FROM users WHERE email = 'platform@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'staff@albaly.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_staff'), 
+ '550e8400-e29b-41d4-a716-446655440000',
+ (SELECT id FROM users WHERE email = 'admin@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'user@albaly.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_user'), 
+ '550e8400-e29b-41d4-a716-446655440000',
+ (SELECT id FROM users WHERE email = 'admin@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+-- Demo Customer Corp organization role assignments
+((SELECT id FROM users WHERE email = 'admin@democustomer.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_admin'), 
+ '550e8400-e29b-41d4-a716-446655440001',
+ (SELECT id FROM users WHERE email = 'platform@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'staff@democustomer.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_staff'), 
+ '550e8400-e29b-41d4-a716-446655440001',
+ (SELECT id FROM users WHERE email = 'admin@democustomer.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'user@democustomer.com'), 
+ (SELECT id FROM roles WHERE name = 'customer_user'), 
+ '550e8400-e29b-41d4-a716-446655440001',
+ (SELECT id FROM users WHERE email = 'admin@democustomer.com'),
+ CURRENT_TIMESTAMP),
+
+-- Sample Enterprise (legacy roles for backward compatibility testing)
+((SELECT id FROM users WHERE email = 'admin@sampleenterprise.com'), 
+ (SELECT id FROM roles WHERE name = 'admin'), 
+ '550e8400-e29b-41d4-a716-446655440010',
+ (SELECT id FROM users WHERE email = 'platform@albaly.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'staff@sampleenterprise.com'), 
+ (SELECT id FROM roles WHERE name = 'staff'), 
+ '550e8400-e29b-41d4-a716-446655440010',
+ (SELECT id FROM users WHERE email = 'admin@sampleenterprise.com'),
+ CURRENT_TIMESTAMP),
+
+((SELECT id FROM users WHERE email = 'user@sampleenterprise.com'), 
+ (SELECT id FROM roles WHERE name = 'user'), 
+ '550e8400-e29b-41d4-a716-446655440010',
+ (SELECT id FROM users WHERE email = 'admin@sampleenterprise.com'),
+ CURRENT_TIMESTAMP);
 
 -- Sample companies demonstrating different data sources and privacy levels
 -- 1. Shared Albaly reference data (available to all customers)
@@ -603,7 +693,7 @@ INSERT INTO companies (
   verification_status, created_by
 ) VALUES 
 (
-  '550e8400-e29b-41d4-a716-446655440010', NULL,
+  '550e8400-e29b-41d4-a716-446655440030', NULL,
   'Siam Commercial Bank PCL', 'ธนาคารไทยพาณิชย์ จำกัด (มหาชน)',
   'Bangkok', 'Leading commercial bank in Thailand',
   'albaly_list', 'Albaly-Fortune-500-Thailand-2024', 
@@ -611,7 +701,7 @@ INSERT INTO companies (
   '550e8400-e29b-41d4-a716-446655440001'
 ),
 (
-  '550e8400-e29b-41d4-a716-446655440011', NULL,
+  '550e8400-e29b-41d4-a716-446655440031', NULL,
   'CP Foods PCL', 'บริษัท เจริญโภคภัณฑ์อาหาร จำกัด (มหาชน)',
   'Bangkok', 'Food and agribusiness conglomerate',
   'dbd_registry', 'DBD-Public-Companies-2024-Q4',
@@ -626,18 +716,18 @@ INSERT INTO companies (
   verification_status, created_by
 ) VALUES
 (
-  '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440001',
+  '550e8400-e29b-41d4-a716-446655440032', '550e8400-e29b-41d4-a716-446655440001',
   'Local Bangkok Restaurant Chain', 'Bangkok', 'Restaurant franchise with 15 locations',
   'customer_input', 'Customer manual entry - 2024-12-18',
   false, 'confidential', 'unverified',
-  '550e8400-e29b-41d4-a716-446655440003'
+  '550e8400-e29b-41d4-a716-446655440008'
 ),
 (
-  '550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440001', 
+  '550e8400-e29b-41d4-a716-446655440033', '550e8400-e29b-41d4-a716-446655440001', 
   'Bangkok Tech Startup Ltd', 'Bangkok', 'AI/ML software development company',
   'customer_input', 'Customer prospect research - 2024-12-18',
   false, 'standard', 'unverified',
-  '550e8400-e29b-41d4-a716-446655440003'
+  '550e8400-e29b-41d4-a716-446655440008'
 );
 
 COMMIT;
