@@ -66,6 +66,11 @@ export interface LoginResponse {
       name: string;
       slug: string; // Backend includes slug
     };
+    roles?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+    }>;
   };
 }
 
@@ -79,6 +84,11 @@ export interface User {
     name: string;
     slug?: string; // Backend includes slug
   };
+  roles?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+  }>;
 }
 
 class ApiClient {

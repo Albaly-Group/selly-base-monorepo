@@ -90,12 +90,20 @@ export class AuthController {
       throw new Error('User not found');
     }
 
+    // Map roles from the user entity
+    const roles = user.roles?.map((userRole: any) => ({
+      id: userRole.role.id,
+      name: userRole.role.name,
+      description: userRole.role.description,
+    })) || [];
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       organizationId: user.organizationId,
       organization: user.organization,
+      roles: roles,
     };
   }
 
