@@ -21,9 +21,9 @@ export class ExportJob {
   @Column({ type: 'text' })
   filename: string;
 
-  @Column({ 
+  @Column({
     type: 'text',
-    default: 'queued'
+    default: 'queued',
   })
   status: 'queued' | 'processing' | 'completed' | 'failed' | 'expired';
 

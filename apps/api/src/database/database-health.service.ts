@@ -13,7 +13,8 @@ export class DatabaseHealthService implements OnModuleInit {
 
   async onModuleInit() {
     // Skip health check if database is disabled
-    const skipDatabase = this.configService.get<string>('SKIP_DATABASE')?.toLowerCase() === 'true';
+    const skipDatabase =
+      this.configService.get<string>('SKIP_DATABASE')?.toLowerCase() === 'true';
     if (skipDatabase) {
       this.logger.log('Database health check skipped (SKIP_DATABASE=true)');
       return;

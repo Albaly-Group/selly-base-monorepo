@@ -83,7 +83,8 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     // Disable synchronize by default to prevent metadata table errors
     // Only enable if explicitly requested
     synchronize: process.env.DB_SYNC?.toLowerCase() === 'true',
-    migrationsRun: isProduction || process.env.DB_AUTO_MIGRATE?.toLowerCase() === 'true',
+    migrationsRun:
+      isProduction || process.env.DB_AUTO_MIGRATE?.toLowerCase() === 'true',
     logging: isDevelopment,
     ssl: getSslConfig(parsedUrl),
     // Improve connection handling

@@ -9,7 +9,10 @@ export class ImportsController {
 
   @Get()
   @ApiOperation({ summary: 'Get import jobs' })
-  @ApiResponse({ status: 200, description: 'Import jobs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Import jobs retrieved successfully',
+  })
   async getImportJobs(
     @Query('status') status?: string,
     @Query('page') page?: string,
@@ -27,17 +30,23 @@ export class ImportsController {
   @Post()
   @ApiOperation({ summary: 'Create import job' })
   @ApiResponse({ status: 201, description: 'Import job created successfully' })
-  async createImportJob(@Body() importData: {
-    filename: string;
-    organizationId?: string;
-    uploadedBy?: string;
-  }) {
+  async createImportJob(
+    @Body()
+    importData: {
+      filename: string;
+      organizationId?: string;
+      uploadedBy?: string;
+    },
+  ) {
     return this.importsService.createImportJob(importData);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get import job by ID' })
-  @ApiResponse({ status: 200, description: 'Import job retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Import job retrieved successfully',
+  })
   async getImportJobById(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
@@ -47,7 +56,10 @@ export class ImportsController {
 
   @Post(':id/validate')
   @ApiOperation({ summary: 'Validate import data' })
-  @ApiResponse({ status: 200, description: 'Import data validated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Import data validated successfully',
+  })
   async validateImportData(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
