@@ -378,16 +378,18 @@ vercel --prod --force
 ```
 
 #### 5. CORS Errors
-The serverless adapter handles CORS automatically, but you can customize:
+The serverless adapter handles CORS automatically and supports `.vercel.app` domains in all environments:
 ```typescript
 // apps/api/src/serverless.ts
 app.enableCors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://*.vercel.app', /\.vercel\.app$/] 
-    : ['http://localhost:3000', 'http://localhost:3001'],
+    ? [/\.vercel\.app$/, /\.albaly\.jp$/] 
+    : ['http://localhost:3000', 'http://localhost:3001', /\.vercel\.app$/, /\.albaly\.jp$/],
   credentials: true,
 });
 ```
+
+Note: Both production and development modes now support `.vercel.app` domains, allowing flexible deployment scenarios.
 
 ### Logs and Debugging
 

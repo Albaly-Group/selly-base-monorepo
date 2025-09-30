@@ -26,7 +26,12 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', /\.albaly\.jp$/],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      /\.vercel\.app$/,
+      /\.albaly\.jp$/,
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
