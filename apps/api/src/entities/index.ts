@@ -7,3 +7,6 @@ export { CompanyContact } from './company-contact.entity';
 export { CompanyList } from './company-list.entity';
 export { CompanyListItem } from './company-list-item.entity';
 export { AuditLog } from './audit-log.entity';
+export { ExportJob } from './export-job.entity';
+export { ImportJob } from './import-job.entity';
+export { StaffMember } from './staff-member.entity';
