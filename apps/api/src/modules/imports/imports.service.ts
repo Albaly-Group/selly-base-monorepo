@@ -145,19 +145,21 @@ export class ImportsService {
         const importJob = await this.getImportJobById(id, organizationId);
         
         // Update status to validating
-        await this.importJobRepository.update(id, {
-          status: 'validating',
-          validRecords: 98,
-          errorRecords: 2,
-          errors: [
-            { row: 5, column: 'email', message: 'Invalid email format' },
-            { row: 12, column: 'companyName', message: 'Missing company name' }
-          ],
-          warnings: [
-            { row: 3, column: 'phone', message: 'Phone number format may be incorrect' },
-            { row: 8, column: 'website', message: 'Website URL not reachable' }
-          ]
-        });
+        if (this.importJobRepository) {
+          await this.importJobRepository.update(id, {
+            status: 'validating',
+            validRecords: 98,
+            errorRecords: 2,
+            errors: [
+              { row: 5, column: 'email', message: 'Invalid email format' },
+              { row: 12, column: 'companyName', message: 'Missing company name' }
+            ],
+            warnings: [
+              { row: 3, column: 'phone', message: 'Phone number format may be incorrect' },
+              { row: 8, column: 'website', message: 'Website URL not reachable' }
+            ]
+          });
+        }
 
         return {
           id,
@@ -196,11 +198,13 @@ export class ImportsService {
 
         // Simulate processing (in real implementation, this would be async)
         setTimeout(async () => {
-          await this.importJobRepository.update(id, {
-            status: 'completed',
-            completedAt: new Date(),
-            processedRecords: 98,
-          });
+          if (this.importJobRepository) {
+            await this.importJobRepository.update(id, {
+              status: 'completed',
+              completedAt: new Date(),
+              processedRecords: 98,
+            });
+          }
         }, 1000);
 
         return {
