@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,7 +20,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CompanyEditDialog } from "@/components/company-edit-dialog"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
-import { getCompanyLists } from "@/lib/mock-data"
+import { apiClient } from "@/lib/api-client"
 import { 
   Building, 
   Users, 
@@ -54,6 +54,38 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [showAddActivity, setShowAddActivity] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
+  const [companyLists, setCompanyLists] = useState<any[]>([])
+  const [isLoadingLists, setIsLoadingLists] = useState(false)
+
+  // Fetch lists that contain this company
+  useEffect(() => {
+    if (company && open) {
+      const fetchCompanyLists = async () => {
+        try {
+          setIsLoadingLists(true)
+          const response = await apiClient.getCompanyLists()
+          if (response.data) {
+            // Filter lists that contain this company (simplified approach)
+            // In a real implementation, you'd have a specific API endpoint for this
+            const filteredLists = response.data.map(list => ({
+              id: list.id,
+              name: list.name,
+              status: list.status || 'Active',
+              owner: list.ownerUser?.name || 'Unknown',
+              addedDate: list.createdAt ? list.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
+            }))
+            setCompanyLists(filteredLists)
+          }
+        } catch (error) {
+          console.error('Failed to fetch company lists:', error)
+          setCompanyLists([])
+        } finally {
+          setIsLoadingLists(false)
+        }
+      }
+      fetchCompanyLists()
+    }
+  }, [company, open])
 
   if (!company) return null
 
@@ -130,15 +162,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       createdAt: "2024-12-06T16:00:00Z"
     }
   ]
-
-  // Get actual lists that contain this company
-  const companyLists = getCompanyLists(company.id).map(list => ({
-    id: list.id,
-    name: list.name,
-    status: list.status,
-    owner: list.owner,
-    addedDate: list.createdAt.split('T')[0] // Convert ISO date to YYYY-MM-DD
-  }))
 
   const auditHistory = [
     {

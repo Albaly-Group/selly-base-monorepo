@@ -6,9 +6,57 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Search, Users, Target, Database, BarChart3, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
+
+interface DashboardStats {
+  totalCompanies: number
+  totalLists: number
+  dataQualityScore: number
+  monthlyGrowth: {
+    companies: number
+    exports: number
+    users: number
+  }
+}
 
 export function CustomerDashboard() {
   const { user } = useAuth()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [analyticsData, listsData] = await Promise.all([
+          apiClient.getDashboardAnalytics(),
+          apiClient.getCompanyLists().catch(() => ({ data: [] }))
+        ])
+        
+        setStats({
+          totalCompanies: analyticsData.totalCompanies || 0,
+          totalLists: Array.isArray(listsData.data) ? listsData.data.length : 0,
+          dataQualityScore: analyticsData.dataQualityScore || 0,
+          monthlyGrowth: analyticsData.monthlyGrowth || { companies: 0, exports: 0, users: 0 }
+        })
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error)
+        // Fallback to reasonable defaults
+        setStats({
+          totalCompanies: 0,
+          totalLists: 0,
+          dataQualityScore: 0,
+          monthlyGrowth: { companies: 0, exports: 0, users: 0 }
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchDashboardData()
+    }
+  }, [user])
 
   if (!user) return null
 
@@ -89,8 +137,12 @@ export function CustomerDashboard() {
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,847</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
+              <div className="text-2xl font-bold">
+                {isLoading ? "..." : stats?.totalCompanies.toLocaleString() || "0"}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{stats?.monthlyGrowth.companies || 0}% from last month
+              </p>
             </CardContent>
           </Card>
 
@@ -100,7 +152,9 @@ export function CustomerDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{user.role === "user" ? "3" : "156"}</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? "..." : stats?.totalLists || "0"}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {user.role === "user" ? "Your saved lists" : "Platform-wide"}
               </p>
@@ -113,7 +167,9 @@ export function CustomerDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">87%</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? "..." : Math.round((stats?.dataQualityScore || 0) * 100) + "%"}
+              </div>
               <p className="text-xs text-muted-foreground">Average completeness</p>
             </CardContent>
           </Card>

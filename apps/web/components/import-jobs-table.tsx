@@ -22,9 +22,10 @@ interface ImportJob {
 
 interface ImportJobsTableProps {
   jobs: ImportJob[]
+  onRefresh?: () => void
 }
 
-export function ImportJobsTable({ jobs }: ImportJobsTableProps) {
+export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
