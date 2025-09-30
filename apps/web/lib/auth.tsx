@@ -289,17 +289,30 @@ export function requireAuth(allowedRoles?: UserRoleName[]) {
     }
 }
 
-// Multi-tenant utility functions  
+// Multi-tenant utility functions
+// Helper to check if user has a specific role by name
+export function hasRole(user: User, roleName: string): boolean {
+  // Check the primary role field (backward compatibility)
+  if (user.role === roleName) return true
+  
+  // Check the roles array (new RBAC system)
+  if (user.roles && user.roles.length > 0) {
+    return user.roles.some(r => r.name === roleName)
+  }
+  
+  return false
+}
+
 export function isPlatformAdmin(user: User): boolean {
-  return user.role === 'platform_admin'
+  return hasRole(user, 'platform_admin')
 }
 
 export function isCustomerAdmin(user: User): boolean {
-  return user.role === 'customer_admin' || user.role === 'admin' // backward compatibility
+  return hasRole(user, 'customer_admin') || hasRole(user, 'admin') // backward compatibility
 }
 
 export function isLegacyAdmin(user: User): boolean {
-  return user.role === 'admin'
+  return hasRole(user, 'admin')
 }
 
 export function hasOrganizationAccess(user: User, organizationId?: string): boolean {
