@@ -4,6 +4,41 @@
 **Status:** ✅ COMPLETE - Full backend-frontend integration verified  
 **Database:** PostgreSQL with comprehensive schema  
 **Integration Test:** All API endpoints working with frontend
+**Latest Update:** October 2025 - Schema alignment verification completed
+
+## 🎯 LATEST SCHEMA ALIGNMENT (October 2025)
+
+### Summary
+Completed comprehensive review to ensure TypeORM entities strictly match the SQL seed schema. Made corrections to both TypeORM entities and SQL schema to achieve 100% alignment.
+
+### Changes Made
+
+#### 1. Company Entity Corrections
+- **`display_name`**: Changed from regular column to generated column (matches SQL `GENERATED ALWAYS AS COALESCE(name_en, name_th) STORED`)
+- **`search_vector`**: Added tsvector column (generated, read-only in TypeORM)
+- **`embedding_vector`**: Added vector(768) column for pgvector semantic search
+
+#### 2. Audit Logs Schema Redesign
+- **Problem**: SQL had database-trigger-style audit_logs (table_name, record_id, operation) while TypeORM used application-level auditing (entity_type, entity_id, action_type)
+- **Solution**: Updated SQL schema to match TypeORM AuditLog entity for consistency
+- **Removed**: Partitioning approach (simplified for application-level auditing)
+- **Updated**: Indexes to match new schema (entity_type, action_type)
+
+#### 3. Additional SQL Tables (No TypeORM Entities)
+The following tables exist in SQL for future expansion but are not currently used by backend:
+- `company_registrations` - Additional registration tracking
+- `lead_project_*` - Lead generation projects (3 tables)
+- `ref_industry_codes`, `ref_regions`, `ref_tags` - Reference data
+- `user_activity_logs` - Alternative activity tracking
+
+These tables are preserved in SQL for future features but don't need TypeORM entities until required.
+
+### Verification Status
+- ✅ All TypeORM entities compile successfully
+- ✅ Entity columns match SQL table definitions
+- ✅ Generated columns properly marked as read-only
+- ✅ Indexes updated to match schema changes
+- ✅ Build passes without errors
 
 ## OVERVIEW
 
@@ -46,13 +81,21 @@ CREATE TABLE import_jobs (
 | User | `users` | ✅ Complete | Authentication and user management |
 | Role | `roles` | ✅ Complete | Role-based access control |
 | UserRole | `user_roles` | ✅ Complete | User-role assignments |
-| Company | `companies` | ✅ Complete | Core business entity with full relations |
+| Company | `companies` | ✅ Complete | Core business entity with full relations, generated columns (display_name, search_vector), vector embedding support |
 | CompanyContact | `company_contacts` | ✅ Complete | Contact information for companies |
 | CompanyList | `company_lists` | ✅ Complete | User-created company lists |
 | CompanyListItem | `company_list_items` | ✅ Complete | Items within company lists |
-| AuditLog | `audit_logs` | ✅ Complete | Full audit trail |
+| AuditLog | `audit_logs` | ✅ Complete | Application-level audit trail (SQL updated to match TypeORM) |
 | **ExportJob** | `export_jobs` | ✅ Complete | **NEW**: Matches SQL schema exactly |
 | **ImportJob** | `import_jobs` | ✅ Complete | **NEW**: Matches SQL schema exactly |
+
+### 📋 SQL TABLES WITHOUT TYPEORM ENTITIES (Future Expansion)
+| SQL Table | Purpose | Status |
+|-----------|---------|--------|
+| `company_registrations` | Multiple registration tracking per company | Not yet needed by backend |
+| `lead_projects`, `lead_project_companies`, `lead_project_tasks` | Lead generation project management | Reserved for future feature |
+| `ref_industry_codes`, `ref_regions`, `ref_tags` | Reference data tables | Can be added when needed |
+| `user_activity_logs` | Alternative activity tracking | Alternative to audit_logs |
 
 ### ❌ REMOVED ENTITIES (Schema Alignment)
 | Entity | Reason | Replacement |
