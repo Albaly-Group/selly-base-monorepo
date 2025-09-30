@@ -20,11 +20,12 @@ import { Upload, FileText, CheckCircle, AlertTriangle, X } from "lucide-react"
 interface ImportWizardProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onImportComplete?: () => void
 }
 
 type ImportStep = "upload" | "mapping" | "validation" | "processing" | "complete"
 
-export function ImportWizard({ open, onOpenChange }: ImportWizardProps) {
+export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWizardProps) {
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)

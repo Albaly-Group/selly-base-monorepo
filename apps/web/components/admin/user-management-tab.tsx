@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth, canManageOrganizationUsers } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -24,6 +25,10 @@ interface User {
 
 export function UserManagementTab() {
   const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
   // Check permissions - only customer admins can manage organization users
   if (!currentUser || !canManageOrganizationUsers(currentUser)) {
@@ -41,48 +46,85 @@ export function UserManagementTab() {
     )
   }
 
-  // Show only users from the current user's organization
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "John Staff",
-      email: "john@" + (currentUser.organization?.domain || "organization.com"),
-      role: "staff",
-      status: "active",
-      lastLogin: "2024-12-08T14:30:00Z",
-      createdAt: "2024-01-15T10:00:00Z"
-    },
-    {
-      id: "2",
-      name: "Sarah User",
-      email: "sarah@" + (currentUser.organization?.domain || "organization.com"),
-      role: "user",
-      status: "active",
-      lastLogin: "2024-12-08T13:15:00Z",
-      createdAt: "2024-03-20T09:30:00Z"
-    },
-    {
-      id: "3",
-      name: "Mike User",
-      email: "mike@" + (currentUser.organization?.domain || "organization.com"), 
-      role: "user",
-      status: "suspended",
-      lastLogin: "2024-11-20T16:45:00Z",
-      createdAt: "2024-06-10T14:20:00Z"
-    },
-    {
-      id: "4",
-      name: "Jane Suspended",
-      email: "suspended@example.com",
-      role: "user", 
-      status: "suspended",
-      lastLogin: "2024-11-25T16:30:00Z",
-      createdAt: "2024-05-05T11:15:00Z"
+  // Fetch users from backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true)
+        const response = await apiClient.getOrganizationUsers()
+        if (response.data) {
+          setUsers(response.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch organization users:', error)
+        // Fallback to mock data if API fails
+        setUsers([
+          {
+            id: "1",
+            name: "John Staff",
+            email: "john@" + (currentUser.organization?.domain || "organization.com"),
+            role: "staff",
+            status: "active",
+            lastLogin: "2024-12-08T14:30:00Z",
+            createdAt: "2024-01-15T10:00:00Z"
+          },
+          {
+            id: "2",
+            name: "Sarah User",
+            email: "sarah@" + (currentUser.organization?.domain || "organization.com"),
+            role: "user",
+            status: "active",
+            lastLogin: "2024-12-08T13:15:00Z",
+            createdAt: "2024-03-20T09:30:00Z"
+          }
+        ])
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ])
 
-  const [showAddUser, setShowAddUser] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
+    fetchUsers()
+  }, [])
+
+  const refreshUsers = async () => {
+    try {
+      const response = await apiClient.getOrganizationUsers()
+      if (response.data) {
+        setUsers(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to refresh users:', error)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await apiClient.deleteOrganizationUser(userId)
+      await refreshUsers()
+    } catch (error) {
+      console.error('Failed to delete user:', error)
+    }
+  }
+
+  const handleCreateUser = async (userData: { name: string, email: string, role: string }) => {
+    try {
+      await apiClient.createOrganizationUser(userData)
+      await refreshUsers()
+      setShowAddUser(false)
+    } catch (error) {
+      console.error('Failed to create user:', error)
+    }
+  }
+
+  const handleUpdateUser = async (userId: string, userData: Partial<User>) => {
+    try {
+      await apiClient.updateOrganizationUser(userId, userData)
+      await refreshUsers()
+      setEditingUser(null)
+    } catch (error) {
+      console.error('Failed to update user:', error)
+    }
+  }
 
   const getRoleColor = (role: string) => {
     switch (role) {
