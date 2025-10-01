@@ -101,9 +101,12 @@ The schema includes sample data:
   - Sample Enterprise (550e8400-e29b-41d4-a716-446655440010)
 
 - **Users:**
-  - admin@albaly.com / Admin User
-  - staff@albaly.com / Staff User
+  - admin@albaly.com / Albaly Admin
+  - staff@albaly.com / Albaly Staff
+  - user@albaly.com / Albaly User
   - admin@sampleenterprise.com / Legacy Admin
+
+> **Note:** User passwords in the database are hashed using Argon2id. The default test password for all sample users is typically `password123` (check with your team for the exact password). You can verify login functionality through the API endpoint: `POST /api/v1/auth/login`
 
 ## Common Commands
 
