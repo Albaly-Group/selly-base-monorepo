@@ -153,7 +153,12 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should get companies list with pagination', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 1, limit: 10 })
+        .query({ 
+          page: 1, 
+          limit: 10,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -173,7 +178,13 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should search companies by keyword', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ keyword: 'tech', page: 1, limit: 10 })
+        .query({ 
+          keyword: 'tech', 
+          page: 1, 
+          limit: 10,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -185,7 +196,13 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should filter companies by industry', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ industry: 'Technology', page: 1, limit: 10 })
+        .query({ 
+          industry: 'Technology', 
+          page: 1, 
+          limit: 10,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -215,6 +232,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         industry: 'Technology',
         website: 'https://test-company.example.com',
         description: 'Test company created by E2E tests',
+        organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
       };
 
       const response = await request(app.getHttpServer())
@@ -617,7 +635,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       // Get initial company count
       const initialResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 1, limit: 1 })
+        .query({ 
+          page: 1, 
+          limit: 1,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       const initialTotal = initialResponse.body.pagination.total;
@@ -636,7 +659,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       // Verify count increased
       const afterResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 1, limit: 1 })
+        .query({ 
+          page: 1, 
+          limit: 1,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       const afterTotal = afterResponse.body.pagination.total;
@@ -650,7 +678,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       // All data should be scoped to the logged-in user's organization
       const companiesResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 1, limit: 100 })
+        .query({ 
+          page: 1, 
+          limit: 100,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       const companies = companiesResponse.body.data;
@@ -669,12 +702,22 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 1, limit: 5 })
+        .query({ 
+          page: 1, 
+          limit: 5,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ page: 2, limit: 5 })
+        .query({ 
+          page: 2, 
+          limit: 5,
+          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true'
+        })
         .expect(200);
 
       // If there are enough records, pages should be different
