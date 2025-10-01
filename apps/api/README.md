@@ -41,21 +41,28 @@ DATABASE_NAME=selly_base
 After configuring your database connection, you **must** initialize the database schema:
 
 ```bash
-# Required: Run migrations to create all tables
-npm run migration:run
+# Required: Run the SQL schema file to create all tables
+psql -U postgres -d selly_base -f selly-base-optimized-schema.sql
 ```
 
 **Why is this required?** 
-- By default, schema synchronization is disabled to prevent data loss
-- Migrations ensure your database has the correct schema
-- This prevents "typeorm_metadata does not exist" errors
+- The database schema includes many PostgreSQL extensions (pgcrypto, vector, pg_trgm, etc.)
+- The SQL file creates all tables, indexes, and triggers in one go
+- This prevents "relation does not exist" errors
+
+**Alternative: TypeORM Migrations**
+If you prefer using TypeORM migrations for development:
+```bash
+# Enable automatic migration on startup
+DB_AUTO_MIGRATE=true npm run start:dev
+
+# Or run migrations manually
+npm run migration:run
+```
 
 ## Database Migration Commands
 
 ```bash
-# Run migrations (creates tables) - REQUIRED FOR FIRST SETUP
-npm run migration:run
-
 # Show migration status
 npm run migration:show
 
@@ -81,20 +88,39 @@ DB_AUTO_MIGRATE=true npm run start:dev
 
 ## Troubleshooting Database Issues
 
-### "relation typeorm_metadata does not exist"
-**Solution:** Run migrations to initialize the database schema:
+### "relation 'users' does not exist" or "relation 'organizations' does not exist"
+**Solution:** Initialize the database schema using the SQL file:
 ```bash
-npm run migration:run
+psql -U postgres -d selly_base -f selly-base-optimized-schema.sql
+```
+
+**Root Cause:** The database exists but doesn't have the required tables. The schema hasn't been initialized yet.
+
+**Temporary Workaround:** The application will automatically fall back to mock authentication when tables don't exist, but this is NOT suitable for production. You'll see these warnings in the logs:
+```
+❌ Database tables not found. Please initialize schema: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql
+💡 Falling back to mock authentication. This is not suitable for production!
+```
+
+**Alternative Solutions:**
+1. Enable automatic migration on startup (uses TypeORM migrations):
+   ```bash
+   DB_AUTO_MIGRATE=true npm run start:dev
+   ```
+2. Enable schema synchronization (NOT recommended for production):
+   ```bash
+   DB_SYNC=true npm run start:dev
+   ```
+
+### "relation typeorm_metadata does not exist"
+**Solution:** Initialize the database schema using the SQL file:
+```bash
+psql -U postgres -d selly_base -f selly-base-optimized-schema.sql
 ```
 
 **Root Cause:** The database exists but doesn't have the required tables. TypeORM needs either:
-1. Existing tables (created by migrations), OR  
+1. Existing tables (created by the SQL schema file), OR  
 2. Schema synchronization enabled (not recommended)
-
-**Alternative:** Enable synchronization temporarily:
-```bash
-DB_SYNC=true npm run start:dev
-```
 
 ### Connection Refused
 Check your database configuration and ensure PostgreSQL is running:

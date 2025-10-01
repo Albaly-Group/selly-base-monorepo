@@ -41,16 +41,39 @@ export class DatabaseHealthService implements OnModuleInit {
     try {
       // Simple health check query
       await this.dataSource!.query('SELECT 1');
-      this.logger.log('✅ Database connection is healthy');
+
+      // Check if migrations have been run by checking for critical tables
+      try {
+        await this.dataSource!.query('SELECT 1 FROM "users" LIMIT 1');
+        await this.dataSource!.query('SELECT 1 FROM "organizations" LIMIT 1');
+        this.logger.log(
+          '✅ Database connection is healthy and schema is initialized',
+        );
+      } catch (tableError) {
+        if (tableError.message?.includes('does not exist')) {
+          this.logger.error(
+            '❌ Database tables do not exist - schema needs to be initialized',
+          );
+          this.logger.warn(
+            '💡 REQUIRED: Initialize database schema using the SQL file:',
+          );
+          this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations');
+          throw new Error(
+            'Database schema not initialized. Please run the SQL schema file.',
+          );
+        }
+        throw tableError;
+      }
     } catch (error) {
       this.logger.error('❌ Database health check failed:', error.message);
 
       // Specific handling for common database issues
       if (error.message?.includes('typeorm_metadata')) {
         this.logger.warn(
-          '💡 Hint: Run migrations to initialize database schema',
+          '💡 Hint: Initialize database schema using the SQL file',
         );
-        this.logger.warn('   Command: npm run migration:run');
+        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
       } else if (
         error.message?.includes('database') &&
         error.message?.includes('does not exist')
@@ -60,6 +83,14 @@ export class DatabaseHealthService implements OnModuleInit {
         );
       } else if (error.message?.includes('connection')) {
         this.logger.warn('💡 Hint: Check database connection settings');
+      } else if (
+        error.message?.includes('does not exist') &&
+        error.message?.includes('relation')
+      ) {
+        this.logger.warn(
+          '💡 Hint: Tables do not exist. Initialize schema using the SQL file',
+        );
+        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
       }
 
       throw error;
