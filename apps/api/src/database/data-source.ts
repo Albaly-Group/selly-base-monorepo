@@ -20,4 +20,8 @@ export const AppDataSource = new DataSource({
     process.env.NODE_ENV === 'production'
       ? { rejectUnauthorized: false }
       : false,
+  // Set search_path to ensure queries look in the public schema
+  extra: {
+    options: '-c search_path=public',
+  },
 });
