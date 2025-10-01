@@ -57,8 +57,12 @@ export class DatabaseHealthService implements OnModuleInit {
           this.logger.warn(
             '💡 REQUIRED: Initialize database schema using the SQL file:',
           );
-          this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
-          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations');
+          this.logger.warn(
+            '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+          );
+          this.logger.warn(
+            '   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations',
+          );
           throw new Error(
             'Database schema not initialized. Please run the SQL schema file.',
           );
@@ -73,7 +77,9 @@ export class DatabaseHealthService implements OnModuleInit {
         this.logger.warn(
           '💡 Hint: Initialize database schema using the SQL file',
         );
-        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+        this.logger.warn(
+          '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+        );
       } else if (
         error.message?.includes('database') &&
         error.message?.includes('does not exist')
@@ -90,7 +96,9 @@ export class DatabaseHealthService implements OnModuleInit {
         this.logger.warn(
           '💡 Hint: Tables do not exist. Initialize schema using the SQL file',
         );
-        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+        this.logger.warn(
+          '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+        );
       }
 
       throw error;

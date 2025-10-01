@@ -6,7 +6,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompanyLists, CompanyListItems, Companies, Users, CompanyLists as CompanyList, CompanyListItems as CompanyListItem, Companies as Company, Users as User } from '../../entities';
+import {
+  CompanyLists,
+  CompanyListItems,
+  Companies,
+  Users,
+  CompanyLists as CompanyList,
+  CompanyListItems as CompanyListItem,
+  Companies as Company,
+  Users as User,
+} from '../../entities';
 
 interface CompanyListSearchParams {
   searchTerm?: string;

@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Companies, Organizations, Users, Companies as Company, Organizations as Organization, Users as User } from '../../entities';
+import {
+  Companies,
+  Organizations,
+  Users,
+  Companies as Company,
+  Organizations as Organization,
+  Users as User,
+} from '../../entities';
 import { CompaniesService } from './companies.service';
 import { CompaniesController } from './companies.controller';
 import { AuditModule } from '../audit/audit.module';

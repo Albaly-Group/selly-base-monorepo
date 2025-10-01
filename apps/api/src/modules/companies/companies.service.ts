@@ -7,7 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, In } from 'typeorm';
-import { Companies, Organizations, Users, Companies as Company, Organizations as Organization, Users as User } from '../../entities';
+import {
+  Companies,
+  Organizations,
+  Users,
+  Companies as Company,
+  Organizations as Organization,
+  Users as User,
+} from '../../entities';
 import { AuditService } from '../audit/audit.service';
 import {
   CreateCompanyDto,

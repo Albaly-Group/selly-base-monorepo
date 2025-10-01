@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ExportJobs, Organizations, Users, ExportJobs as ExportJob, Organizations as Organization, Users as User } from '../../entities';
+import {
+  ExportJobs,
+  Organizations,
+  Users,
+  ExportJobs as ExportJob,
+  Organizations as Organization,
+  Users as User,
+} from '../../entities';
 
 @Injectable()
 export class ExportsService {

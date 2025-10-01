@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuditLogs, Users, Organizations, AuditLogs as AuditLog, Users as User, Organizations as Organization } from '../../entities';
+import {
+  AuditLogs,
+  Users,
+  Organizations,
+  AuditLogs as AuditLog,
+  Users as User,
+  Organizations as Organization,
+} from '../../entities';
 import { AuditService } from './audit.service';
 
 @Module({

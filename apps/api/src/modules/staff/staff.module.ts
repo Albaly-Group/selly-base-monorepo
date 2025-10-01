@@ -2,7 +2,16 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StaffController } from './staff.controller';
 import { StaffService } from './staff.service';
-import { Users, Roles, UserRoles, Organizations, Users as User, Roles as Role, UserRoles as UserRole, Organizations as Organization } from '../../entities';
+import {
+  Users,
+  Roles,
+  UserRoles,
+  Organizations,
+  Users as User,
+  Roles as Role,
+  UserRoles as UserRole,
+  Organizations as Organization,
+} from '../../entities';
 
 @Module({
   imports: [

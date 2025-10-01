@@ -49,8 +49,6 @@ describe('AdminController', () => {
     });
   });
 
-
-
   describe('createOrganizationUser', () => {
     it('should create new organization user', async () => {
       const userData = {

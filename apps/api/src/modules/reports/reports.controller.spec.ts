@@ -29,7 +29,7 @@ describe('ReportsController', () => {
       expect(result).toHaveProperty('dataQualityScore');
       expect(result).toHaveProperty('monthlyGrowth');
       expect(result).toHaveProperty('recentActivity');
-      
+
       expect(typeof result.totalCompanies).toBe('number');
       expect(typeof result.dataQualityScore).toBe('number');
       expect(Array.isArray(result.recentActivity)).toBe(true);
@@ -66,7 +66,7 @@ describe('ReportsController', () => {
       expect(result).toHaveProperty('metrics');
       expect(result).toHaveProperty('issues');
       expect(result).toHaveProperty('trends');
-      
+
       expect(typeof result.overallScore).toBe('number');
       expect(result.overallScore).toBeGreaterThanOrEqual(0);
       expect(result.overallScore).toBeLessThanOrEqual(1);
@@ -119,8 +119,11 @@ describe('ReportsController', () => {
     it('should accept custom date range', async () => {
       const startDate = '2024-01-01';
       const endDate = '2024-01-31';
-      
-      const result = await controller.getUserActivityReports(startDate, endDate);
+
+      const result = await controller.getUserActivityReports(
+        startDate,
+        endDate,
+      );
 
       expect(result.period.startDate).toBe(startDate);
       expect(result.period.endDate).toBe(endDate);
@@ -166,8 +169,11 @@ describe('ReportsController', () => {
     it('should accept custom date range', async () => {
       const startDate = '2024-01-01';
       const endDate = '2024-01-31';
-      
-      const result = await controller.getExportHistoryReports(startDate, endDate);
+
+      const result = await controller.getExportHistoryReports(
+        startDate,
+        endDate,
+      );
 
       expect(result.period.startDate).toBe(startDate);
       expect(result.period.endDate).toBe(endDate);

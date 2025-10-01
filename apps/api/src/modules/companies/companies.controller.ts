@@ -46,24 +46,25 @@ interface PaginatedResponse<T> {
 }
 
 // For endpoints that don't require authentication, we create a mock user
-const createMockUser = (organizationId?: string): User => ({
-  id: '123e4567-e89b-12d3-a456-426614174000',
-  organizationId: organizationId || '123e4567-e89b-12d3-a456-426614174001',
-  email: 'test@example.com',
-  name: 'Test User',
-  passwordHash: 'hashed',
-  avatarUrl: null,
-  status: 'active',
-  lastLoginAt: null,
-  emailVerifiedAt: new Date(),
-  settings: {},
-  metadata: {},
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  organization: {} as any,
+const createMockUser = (organizationId?: string): User =>
+  ({
+    id: '123e4567-e89b-12d3-a456-426614174000',
+    organizationId: organizationId || '123e4567-e89b-12d3-a456-426614174001',
+    email: 'test@example.com',
+    name: 'Test User',
+    passwordHash: 'hashed',
+    avatarUrl: null,
+    status: 'active',
+    lastLoginAt: null,
+    emailVerifiedAt: new Date(),
+    settings: {},
+    metadata: {},
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    organization: {} as any,
     companyLists: [],
-  userRoles2: [],
-} as unknown as User);
+    userRoles2: [],
+  }) as unknown as User;
 
 @ApiTags('companies')
 @Controller('companies')

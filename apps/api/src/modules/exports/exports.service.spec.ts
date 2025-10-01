@@ -56,7 +56,7 @@ describe('ExportsService', () => {
   describe('getExportJobs', () => {
     it('should return paginated export jobs from mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getExportJobs({
         page: 1,
         limit: 10,
@@ -70,7 +70,7 @@ describe('ExportsService', () => {
 
     it('should filter export jobs by status', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getExportJobs({
         status: 'completed',
         page: 1,
@@ -78,14 +78,14 @@ describe('ExportsService', () => {
       });
 
       expect(result.data.length).toBeGreaterThan(0);
-      result.data.forEach(job => {
+      result.data.forEach((job) => {
         expect(job.status).toBe('completed');
       });
     });
 
     it('should handle pagination parameters', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getExportJobs({
         page: 2,
         limit: 5,
@@ -99,7 +99,7 @@ describe('ExportsService', () => {
   describe('getExportJobById', () => {
     it('should return export job by id from mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getExportJobById('1');
 
       expect(result).toBeDefined();
@@ -110,7 +110,7 @@ describe('ExportsService', () => {
   describe('createExportJob', () => {
     it('should create export job with mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const exportData = {
         filename: 'test-export.csv',
         scope: 'Test Export',
@@ -126,7 +126,7 @@ describe('ExportsService', () => {
 
     it('should set initial status to queued', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       const exportData = {
         filename: 'test-export.csv',
         scope: 'Test Export',
@@ -141,9 +141,9 @@ describe('ExportsService', () => {
   describe('deleteExportJob', () => {
     it('should delete export job by id', async () => {
       const serviceWithoutRepo = new ExportsService(undefined, undefined);
-      
+
       await serviceWithoutRepo.deleteExportJob('1');
-      
+
       // If no error is thrown, test passes
       expect(true).toBe(true);
     });

@@ -1,7 +1,12 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuditLogs, Users, AuditLogs as AuditLog, Users as User } from '../../entities';
+import {
+  AuditLogs,
+  Users,
+  AuditLogs as AuditLog,
+  Users as User,
+} from '../../entities';
 
 export interface AuditLogData {
   organizationId: string;

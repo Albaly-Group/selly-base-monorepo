@@ -56,7 +56,7 @@ describe('ImportsService', () => {
   describe('getImportJobs', () => {
     it('should return paginated import jobs from mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getImportJobs({
         page: 1,
         limit: 10,
@@ -70,7 +70,7 @@ describe('ImportsService', () => {
 
     it('should filter import jobs by status', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getImportJobs({
         status: 'completed',
         page: 1,
@@ -78,14 +78,14 @@ describe('ImportsService', () => {
       });
 
       expect(result.data.length).toBeGreaterThan(0);
-      result.data.forEach(job => {
+      result.data.forEach((job) => {
         expect(job.status).toBe('completed');
       });
     });
 
     it('should handle pagination parameters', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getImportJobs({
         page: 2,
         limit: 5,
@@ -99,7 +99,7 @@ describe('ImportsService', () => {
   describe('getImportJobById', () => {
     it('should return import job by id from mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.getImportJobById('1');
 
       expect(result).toBeDefined();
@@ -110,7 +110,7 @@ describe('ImportsService', () => {
   describe('createImportJob', () => {
     it('should create import job with mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const importData = {
         filename: 'test-import.csv',
         uploadedBy: 'test@example.com',
@@ -125,7 +125,7 @@ describe('ImportsService', () => {
 
     it('should set initial status to queued', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const importData = {
         filename: 'test-import.csv',
       };
@@ -139,7 +139,7 @@ describe('ImportsService', () => {
   describe('executeImportJob', () => {
     it('should execute import job from mock data when repository is not available', async () => {
       const serviceWithoutRepo = new ImportsService(undefined, undefined);
-      
+
       const result = await serviceWithoutRepo.executeImportJob('1');
 
       expect(result).toBeDefined();
