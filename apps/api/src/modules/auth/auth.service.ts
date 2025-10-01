@@ -164,7 +164,7 @@ export class AuthService {
         error.message?.includes('relation')
       ) {
         this.logger.error(
-          '❌ Database tables not found. Please run migrations: npm run migration:run',
+          '❌ Database tables not found. Please initialize schema: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
         );
         this.logger.warn(
           '💡 Falling back to mock authentication. This is not suitable for production!',

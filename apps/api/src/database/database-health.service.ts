@@ -52,15 +52,15 @@ export class DatabaseHealthService implements OnModuleInit {
       } catch (tableError) {
         if (tableError.message?.includes('does not exist')) {
           this.logger.error(
-            '❌ Database tables do not exist - migrations need to be run',
+            '❌ Database tables do not exist - schema needs to be initialized',
           );
           this.logger.warn(
-            '💡 REQUIRED: Run migrations to create database tables:',
+            '💡 REQUIRED: Initialize database schema using the SQL file:',
           );
-          this.logger.warn('   Command: npm run migration:run');
-          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file');
+          this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations');
           throw new Error(
-            'Database schema not initialized. Please run migrations: npm run migration:run',
+            'Database schema not initialized. Please run the SQL schema file.',
           );
         }
         throw tableError;
@@ -71,9 +71,9 @@ export class DatabaseHealthService implements OnModuleInit {
       // Specific handling for common database issues
       if (error.message?.includes('typeorm_metadata')) {
         this.logger.warn(
-          '💡 Hint: Run migrations to initialize database schema',
+          '💡 Hint: Initialize database schema using the SQL file',
         );
-        this.logger.warn('   Command: npm run migration:run');
+        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
       } else if (
         error.message?.includes('database') &&
         error.message?.includes('does not exist')
@@ -88,9 +88,9 @@ export class DatabaseHealthService implements OnModuleInit {
         error.message?.includes('relation')
       ) {
         this.logger.warn(
-          '💡 Hint: Tables do not exist. Run migrations to create them',
+          '💡 Hint: Tables do not exist. Initialize schema using the SQL file',
         );
-        this.logger.warn('   Command: npm run migration:run');
+        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
       }
 
       throw error;
