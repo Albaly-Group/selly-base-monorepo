@@ -6,8 +6,6 @@ import {
   ManyToOne,
   OneToMany,
 } from "typeorm";
-import { CommonCompanyTags } from "./CommonCompanyTags";
-import { RefTagCategories } from "./RefTagCategories";
 
 @Index("ref_tags_pkey", ["id"], { unique: true })
 @Index("ref_tags_key_key", ["key"], { unique: true })
@@ -26,32 +24,50 @@ export class RefTags {
   @Column("text", { name: "name" })
   name: string;
 
-  @Column("smallint", { name: "depth", nullable: true, default: () => "0" })
-  depth: number | null;
+  @Column("text", { name: "description", nullable: true })
+  description: string | null;
 
-  @Column("jsonb", { name: "metadata", nullable: true })
-  metadata: object | null;
+  @Column("text", { name: "color", nullable: true })
+  color: string | null;
 
-  @OneToMany(
-    () => CommonCompanyTags,
-    (commonCompanyTags) => commonCompanyTags.tag
-  )
-  commonCompanyTags: CommonCompanyTags[];
+  @Column("text", { name: "icon", nullable: true })
+  icon: string | null;
 
-  @ManyToOne(
-    () => RefTagCategories,
-    (refTagCategories) => refTagCategories.refTags,
-    { onDelete: "CASCADE" }
-  )
-  @JoinColumn([{ name: "category_id", referencedColumnName: "id" }])
-  category: RefTagCategories;
+  @Column("text", { name: "category", nullable: true })
+  category: string | null;
 
-  @ManyToOne(() => RefTags, (refTags) => refTags.refTags, {
-    onDelete: "SET NULL",
+  @Column("boolean", {
+    name: "is_system_tag",
+    nullable: true,
+    default: () => "false",
   })
-  @JoinColumn([{ name: "parent_id", referencedColumnName: "id" }])
-  parent: RefTags;
+  isSystemTag: boolean | null;
 
-  @OneToMany(() => RefTags, (refTags) => refTags.parent)
+  @Column("boolean", {
+    name: "is_active",
+    nullable: true,
+    default: () => "true",
+  })
+  isActive: boolean | null;
+
+  @Column("timestamp with time zone", {
+    name: "created_at",
+    nullable: true,
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  createdAt: Date | null;
+
+  @Column("timestamp with time zone", {
+    name: "updated_at",
+    nullable: true,
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  updatedAt: Date | null;
+
+  @ManyToOne(() => RefTags, (refTags) => refTags.refTags)
+  @JoinColumn([{ name: "parent_tag_id", referencedColumnName: "id" }])
+  parentTag: RefTags;
+
+  @OneToMany(() => RefTags, (refTags) => refTags.parentTag)
   refTags: RefTags[];
 }

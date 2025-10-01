@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
-import { User, Organization } from '../../entities';
+import { Users, Organizations, Users as User, Organizations as Organization } from '../../entities';
 
 export interface LoginRequest {
   email: string;
@@ -83,11 +83,11 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     @Optional()
-    @InjectRepository(User)
-    private userRepository?: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository?: Repository<Users>,
     @Optional()
-    @InjectRepository(Organization)
-    private organizationRepository?: Repository<Organization>,
+    @InjectRepository(Organizations)
+    private organizationRepository?: Repository<Organizations>,
   ) {}
 
   async login(loginRequest: LoginRequest): Promise<LoginResponse> {

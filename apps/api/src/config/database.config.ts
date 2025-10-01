@@ -78,7 +78,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     password:
       parsedUrl?.password || process.env.DATABASE_PASSWORD || 'postgres',
     database: parsedUrl?.database || process.env.DATABASE_NAME || 'selly_base',
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    entities: [__dirname + '/../entities/*{.ts,.js}'],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     // Disable synchronize by default to prevent metadata table errors
     // Only enable if explicitly requested
