@@ -97,8 +97,6 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
       ),
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
-      // Set search_path to ensure queries look in the public schema
-      options: '-c search_path=public',
     },
   };
 });

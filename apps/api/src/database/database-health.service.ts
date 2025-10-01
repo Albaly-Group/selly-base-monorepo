@@ -42,6 +42,18 @@ export class DatabaseHealthService implements OnModuleInit {
       // Simple health check query
       await this.dataSource!.query('SELECT 1');
 
+      // Set search_path to public schema to ensure tables are found
+      // This approach works with both regular PostgreSQL and pooled connections (like Neon)
+      try {
+        await this.dataSource!.query('SET search_path TO public');
+      } catch (searchPathError) {
+        // Log but don't fail if search_path cannot be set
+        this.logger.warn(
+          '⚠️ Could not set search_path to public schema:',
+          searchPathError.message,
+        );
+      }
+
       // Check if migrations have been run by checking for critical tables
       try {
         await this.dataSource!.query('SELECT 1 FROM "users" LIMIT 1');

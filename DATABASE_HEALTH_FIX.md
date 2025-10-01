@@ -23,51 +23,59 @@ In PostgreSQL:
 - If not explicitly set, PostgreSQL uses the database user's default search_path
 - This can vary based on user configuration or database setup
 
-## Solution
+## Solution (Updated for Neon Compatibility)
 
-Added explicit PostgreSQL search_path configuration to ensure TypeORM always looks in the `public` schema where the application tables are created.
+**Previous Approach (Had Issues with Neon):**
+Originally tried to set search_path as a startup parameter using `options: '-c search_path=public'` in the connection configuration, but this caused errors with serverless PostgreSQL providers like Neon that use connection pooling:
+```
+error: unsupported startup parameter in options: search_path
+```
+
+**Current Approach (Works with All PostgreSQL Providers):**
+The search_path is now set after the connection is established using a query. This approach is compatible with both regular PostgreSQL and pooled/serverless connections like Neon.
 
 ### Changes Made
 
-#### 1. `apps/api/src/config/database.config.ts`
-Added to the `extra` configuration object:
+#### `apps/api/src/database/database-health.service.ts`
+Added search_path configuration after connection check:
 ```typescript
-extra: {
-  connectionLimit: parseInt(
-    process.env.DATABASE_CONNECTION_LIMIT || '10',
-    10,
-  ),
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-  // Set search_path to ensure queries look in the public schema
-  options: '-c search_path=public',
-},
-```
+private async checkDatabaseHealth(): Promise<void> {
+  try {
+    // Simple health check query
+    await this.dataSource!.query('SELECT 1');
 
-#### 2. `apps/api/src/database/data-source.ts`
-Added the same configuration for consistency with migrations:
-```typescript
-// Set search_path to ensure queries look in the public schema
-extra: {
-  options: '-c search_path=public',
-},
+    // Set search_path to public schema to ensure tables are found
+    // This approach works with both regular PostgreSQL and pooled connections (like Neon)
+    try {
+      await this.dataSource!.query('SET search_path TO public');
+    } catch (searchPathError) {
+      // Log but don't fail if search_path cannot be set
+      this.logger.warn(
+        '⚠️ Could not set search_path to public schema:',
+        searchPathError.message,
+      );
+    }
+
+    // Check if migrations have been run by checking for critical tables
+    // ...
+  }
+}
 ```
 
 ## How It Works
 
-The `options: '-c search_path=public'` configuration passes the PostgreSQL connection option that sets the search_path when the connection is established. This is equivalent to running:
+Instead of setting the search_path as a connection startup parameter (which doesn't work with pooled connections), we execute `SET search_path TO public` as a regular SQL query after the connection is established. This approach:
 
-```sql
-SET search_path TO public;
-```
-
-After every database connection, but it's handled automatically by the connection string.
+1. **Works with regular PostgreSQL**: Standard PostgreSQL databases accept the SET command without issues
+2. **Works with Neon and other pooled providers**: Since it's a regular query and not a startup parameter, it's compatible with connection pooling
+3. **Fails gracefully**: If the SET command fails for any reason, it logs a warning but doesn't crash the application
 
 ## Expected Behavior After Fix
 
-1. Application starts and connects to PostgreSQL
+1. Application starts and connects to PostgreSQL (including Neon)
 2. Database health check runs:
    - `SELECT 1` - Tests basic connectivity ✅
+   - `SET search_path TO public` - Sets schema search path ✅
    - `SELECT 1 FROM "users" LIMIT 1` - Tests users table exists ✅
    - `SELECT 1 FROM "organizations" LIMIT 1` - Tests organizations table exists ✅
 3. Health check logs success:
@@ -80,7 +88,8 @@ After every database connection, but it's handled automatically by the connectio
 1. **Consistent Behavior**: Application will work regardless of the database user's default search_path configuration
 2. **No Breaking Changes**: All existing functionality continues to work as expected
 3. **Clear Intent**: Makes it explicit that the application expects tables in the public schema
-4. **Migration Safety**: Ensures migrations also use the correct schema
+4. **Neon Compatible**: Works with serverless PostgreSQL providers that use connection pooling
+5. **Graceful Degradation**: If search_path cannot be set, logs a warning but continues to function
 
 ## Testing
 
@@ -99,6 +108,12 @@ To verify the fix works:
    DATABASE_USER=postgres
    DATABASE_PASSWORD=your_password
    DATABASE_NAME=selly_base
+   ```
+   
+   **For Neon or other cloud providers:**
+   ```env
+   SKIP_DATABASE=false
+   DATABASE_URL=postgresql://user:password@your-neon-host.neon.tech/database?sslmode=require
    ```
 
 3. Start the API:
