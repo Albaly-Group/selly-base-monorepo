@@ -86,6 +86,7 @@ selly-base-monorepo/
    ```
    
    📖 **Detailed Docker Guide:** See [DOCKER_SETUP.md](DOCKER_SETUP.md)
+   📚 **Complete Docker Documentation:** See [DOCKER_INDEX.md](DOCKER_INDEX.md)
 
 5. **Test the integration:**
    - Visit http://localhost:3000/api-test
