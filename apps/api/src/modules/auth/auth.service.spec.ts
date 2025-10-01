@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
-import { User, Organization } from '../../entities';
+import { Users, Organizations } from '../../entities';
 import * as bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 
@@ -22,11 +22,11 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: getRepositoryToken(User),
+          provide: getRepositoryToken(Users),
           useValue: {},
         },
         {
-          provide: getRepositoryToken(Organization),
+          provide: getRepositoryToken(Organizations),
           useValue: {},
         },
       ],

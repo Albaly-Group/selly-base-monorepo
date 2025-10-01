@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, In } from 'typeorm';
-import { Company, Organization, User } from '../../entities';
+import { Companies, Organizations, Users, Companies as Company, Organizations as Organization, Users as User } from '../../entities';
 import { AuditService } from '../audit/audit.service';
 import {
   CreateCompanyDto,
@@ -79,11 +79,11 @@ const MOCK_COMPANIES = [
 export class CompaniesService {
   constructor(
     @Optional()
-    @InjectRepository(Company)
-    private companyRepository?: Repository<Company>,
+    @InjectRepository(Companies)
+    private companyRepository?: Repository<Companies>,
     @Optional()
-    @InjectRepository(Organization)
-    private organizationRepository?: Repository<Organization>,
+    @InjectRepository(Organizations)
+    private organizationRepository?: Repository<Organizations>,
     private auditService?: AuditService,
   ) {}
 
@@ -516,7 +516,7 @@ export class CompaniesService {
         dataSource: 'customer_input',
         isSharedData: false,
         verificationStatus: 'unverified',
-        dataQualityScore: this.calculateDataQualityScore(createDto),
+        dataQualityScore: this.calculateDataQualityScore(createDto).toString(),
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: user.id,

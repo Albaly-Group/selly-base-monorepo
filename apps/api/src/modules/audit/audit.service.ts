@@ -1,7 +1,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuditLog, User } from '../../entities';
+import { AuditLogs, Users, AuditLogs as AuditLog, Users as User } from '../../entities';
 
 export interface AuditLogData {
   organizationId: string;
@@ -36,11 +36,11 @@ export interface AuditLogData {
 export class AuditService {
   constructor(
     @Optional()
-    @InjectRepository(AuditLog)
-    private auditLogRepository?: Repository<AuditLog>,
+    @InjectRepository(AuditLogs)
+    private auditLogRepository?: Repository<AuditLogs>,
     @Optional()
-    @InjectRepository(User)
-    private userRepository?: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository?: Repository<Users>,
   ) {}
 
   async log(data: AuditLogData): Promise<void> {
@@ -73,7 +73,7 @@ export class AuditService {
     options: Partial<AuditLogData> = {},
   ): Promise<void> {
     await this.log({
-      organizationId: user.organizationId,
+      organizationId: user.organizationId || '',
       userId: user.id,
       entityType,
       entityId,
