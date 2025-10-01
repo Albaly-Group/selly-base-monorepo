@@ -1,38 +1,28 @@
-// New entities matching SQL schema
-export { Organization } from './Organization';
-export { User } from './User';
-export { Role } from './Role';
-export { UserRole } from './UserRole';
-export { Company } from './Company';
-export { CompanyList } from './CompanyList';
-export { CompanyListItem } from './CompanyListItem';
-export { AuditLog } from './AuditLog';
-export { ExportJob } from './ExportJob';
-export { ImportJob } from './ImportJob';
-
-// Legacy entities (keeping for backwards compatibility if needed)
+// Core entities (plural form matching database tables)
+export { Organizations } from './Organizations';
 export { Users } from './Users';
 export { Roles } from './Roles';
 export { UserRoles } from './UserRoles';
-export { Permissions } from './Permissions';
-export { UserPermissions } from './UserPermissions';
-export { RolePermissions } from './RolePermissions';
-export { Clients } from './Clients';
-export { CommonCompanyLists } from './CommonCompanyLists';
-export { CommonCompanyClassifications } from './CommonCompanyClassifications';
-export { CommonCompanyContacts } from './CommonCompanyContacts';
-export { CommonCompanyRegistrations } from './CommonCompanyRegistrations';
-export { CommonCompanyShareholdersNationality } from './CommonCompanyShareholdersNationality';
-export { CommonCompanyTags } from './CommonCompanyTags';
-export { LeadListingImportRows } from './LeadListingImportRows';
-export { LeadListingImports } from './LeadListingImports';
-export { LeadListingProjectCompanies } from './LeadListingProjectCompanies';
-export { LeadListingProjects } from './LeadListingProjects';
-export { LeadListingTasks } from './LeadListingTasks';
-export { LeadListingTimelogs } from './LeadListingTimelogs';
-export { Leads } from './Leads';
-export { RefRegistrationAuthorities } from './RefRegistrationAuthorities';
-export { RefRegistrationTypes } from './RefRegistrationTypes';
-export { RefTagCategories } from './RefTagCategories';
+
+// Company entities
+export { Companies } from './Companies';
+export { CompanyLists } from './CompanyLists';
+export { CompanyListItems } from './CompanyListItems';
+export { CompanyContacts } from './CompanyContacts';
+export { CompanyRegistrations } from './CompanyRegistrations';
+
+// Audit & job tracking entities
+export { AuditLogs } from './AuditLogs';
+export { ExportJobs } from './ExportJobs';
+export { ImportJobs } from './ImportJobs';
+export { UserActivityLogs } from './UserActivityLogs';
+
+// Lead project entities
+export { LeadProjects } from './LeadProjects';
+export { LeadProjectCompanies } from './LeadProjectCompanies';
+export { LeadProjectTasks } from './LeadProjectTasks';
+
+// Reference data entities
 export { RefTags } from './RefTags';
-export { RefTsic_2009 } from './RefTsic_2009';
+export { RefIndustryCodes } from './RefIndustryCodes';
+export { RefRegions } from './RefRegions';

@@ -19,7 +19,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CompanyListsService } from './company-lists.service';
-import { User } from '../../entities';
+import { Users, Users as User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   CurrentUser,
@@ -60,9 +60,9 @@ const createMockUser = (organizationId?: string): User => ({
   createdAt: new Date(),
   updatedAt: new Date(),
   organization: {} as any,
-  ownedLists: [],
-  roles: [],
-});
+  companyLists: [],
+  userRoles2: [],
+} as unknown as User);
 
 interface CompanyListSearchQuery {
   searchTerm?: string;

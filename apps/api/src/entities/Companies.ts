@@ -163,7 +163,7 @@ export class Companies {
   @Column("tsvector", { name: "search_vector", nullable: true })
   searchVector: string | null;
 
-  @Column("USER-DEFINED", { name: "embedding_vector", nullable: true })
+  @Column("text", { name: "embedding_vector", nullable: true })
   embeddingVector: string | null;
 
   @Column("numeric", {

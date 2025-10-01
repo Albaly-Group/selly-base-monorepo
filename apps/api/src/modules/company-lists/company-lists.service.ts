@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompanyList, CompanyListItem, Company, User } from '../../entities';
+import { CompanyLists, CompanyListItems, Companies, Users, CompanyLists as CompanyList, CompanyListItems as CompanyListItem, Companies as Company, Users as User } from '../../entities';
 
 interface CompanyListSearchParams {
   searchTerm?: string;
@@ -81,14 +81,14 @@ const MOCK_COMPANY_LISTS = [
 export class CompanyListsService {
   constructor(
     @Optional()
-    @InjectRepository(CompanyList)
-    private companyListRepository?: Repository<CompanyList>,
+    @InjectRepository(CompanyLists)
+    private companyListRepository?: Repository<CompanyLists>,
     @Optional()
-    @InjectRepository(CompanyListItem)
-    private companyListItemRepository?: Repository<CompanyListItem>,
+    @InjectRepository(CompanyListItems)
+    private companyListItemRepository?: Repository<CompanyListItems>,
     @Optional()
-    @InjectRepository(Company)
-    private companyRepository?: Repository<Company>,
+    @InjectRepository(Companies)
+    private companyRepository?: Repository<Companies>,
   ) {}
 
   async searchCompanyLists(

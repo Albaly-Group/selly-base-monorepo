@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ExportJob, Organization, User } from '../../entities';
+import { ExportJobs, Organizations, Users, ExportJobs as ExportJob, Organizations as Organization, Users as User } from '../../entities';
 
 @Injectable()
 export class ExportsService {
   constructor(
     @Optional()
-    @InjectRepository(ExportJob)
-    private exportJobRepository?: Repository<ExportJob>,
+    @InjectRepository(ExportJobs)
+    private exportJobRepository?: Repository<ExportJobs>,
     @Optional()
-    @InjectRepository(Organization)
-    private organizationRepository?: Repository<Organization>,
+    @InjectRepository(Organizations)
+    private organizationRepository?: Repository<Organizations>,
   ) {}
 
   async getExportJobs(params?: {

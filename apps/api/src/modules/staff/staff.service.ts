@@ -1,23 +1,23 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, Role, UserRole, Organization } from '../../entities';
+import { Users, Roles, UserRoles, Organizations, Users as User, Roles as Role, UserRoles as UserRole, Organizations as Organization } from '../../entities';
 
 @Injectable()
 export class StaffService {
   constructor(
     @Optional()
-    @InjectRepository(User)
-    private userRepository?: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository?: Repository<Users>,
     @Optional()
-    @InjectRepository(Role)
-    private roleRepository?: Repository<Role>,
+    @InjectRepository(Roles)
+    private roleRepository?: Repository<Roles>,
     @Optional()
-    @InjectRepository(UserRole)
-    private userRoleRepository?: Repository<UserRole>,
+    @InjectRepository(UserRoles)
+    private userRoleRepository?: Repository<UserRoles>,
     @Optional()
-    @InjectRepository(Organization)
-    private organizationRepository?: Repository<Organization>,
+    @InjectRepository(Organizations)
+    private organizationRepository?: Repository<Organizations>,
   ) {}
 
   async getStaffMembers(params?: {
@@ -35,7 +35,7 @@ export class StaffService {
         const queryBuilder = this.userRepository
           .createQueryBuilder('user')
           .leftJoinAndSelect('user.organization', 'organization')
-          .leftJoinAndSelect('user.roles', 'userRole')
+          .leftJoinAndSelect('user.userRoles2', 'userRole')
           .leftJoinAndSelect('userRole.role', 'role');
 
         if (params?.organizationId) {
@@ -57,9 +57,9 @@ export class StaffService {
           lastLogin: user.lastLoginAt,
           createdAt: user.createdAt,
           organization: user.organization?.name,
-          roles: user.roles?.map((ur) => ur.role?.name).filter(Boolean) || [],
+          roles: user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
           permissions:
-            user.roles?.flatMap((ur) => ur.role?.permissions || []) || [],
+            user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
         }));
 
         return {
