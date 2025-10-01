@@ -117,7 +117,7 @@ export class AuthService {
 
     // Map roles from the user entity
     const roles =
-      user.roles?.map((userRole: any) => ({
+      user.userRoles2?.map((userRole: any) => ({
         id: userRole.role.id,
         name: userRole.role.name,
         description: userRole.role.description,
@@ -143,7 +143,7 @@ export class AuthService {
     try {
       const user = await this.userRepository!.createQueryBuilder('user')
         .leftJoinAndSelect('user.organization', 'organization')
-        .leftJoinAndSelect('user.roles', 'userRole')
+        .leftJoinAndSelect('user.userRoles2', 'userRole')
         .leftJoinAndSelect('userRole.role', 'role')
         .where('user.email = :email', { email })
         .andWhere('user.status = :status', { status: 'active' })
@@ -220,7 +220,7 @@ export class AuthService {
       return await this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.organization', 'organization')
-        .leftJoinAndSelect('user.roles', 'userRole')
+        .leftJoinAndSelect('user.userRoles2', 'userRole')
         .leftJoinAndSelect('userRole.role', 'role')
         .where('user.id = :userId', { userId })
         .andWhere('user.status = :status', { status: 'active' })
