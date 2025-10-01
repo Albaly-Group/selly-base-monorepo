@@ -2,7 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompanyListsService } from './company-lists.service';
-import { CompanyLists, CompanyListItems, Companies, Organizations, Users } from '../../entities';
+import {
+  CompanyLists,
+  CompanyListItems,
+  Companies,
+  Organizations,
+  Users,
+} from '../../entities';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('CompanyListsService', () => {
@@ -87,7 +93,7 @@ describe('CompanyListsService', () => {
         undefined,
         undefined,
       );
-      
+
       const result = await serviceWithoutRepo.searchCompanyLists({
         page: 1,
         limit: 10,
@@ -107,7 +113,7 @@ describe('CompanyListsService', () => {
         undefined,
         undefined,
       );
-      
+
       const result = await serviceWithoutRepo.searchCompanyLists({
         page: 2,
         limit: 5,
@@ -127,9 +133,11 @@ describe('CompanyListsService', () => {
         undefined,
         undefined,
       );
-      
+
       // Use a mock list ID that exists in the mock data
-      const result = await serviceWithoutRepo.getCompanyListById('123e4567-e89b-12d3-a456-426614174003');
+      const result = await serviceWithoutRepo.getCompanyListById(
+        '123e4567-e89b-12d3-a456-426614174003',
+      );
 
       expect(result).toBeDefined();
       expect(result.id).toBe('123e4567-e89b-12d3-a456-426614174003');
@@ -145,19 +153,22 @@ describe('CompanyListsService', () => {
         undefined,
         undefined,
       );
-      
+
       const mockUser: any = {
         id: 'user1',
         organizationId: 'org1',
       };
-      
+
       const listData = {
         name: 'Test List',
         description: 'Test description',
         visibility: 'private' as const,
       };
 
-      const result = await serviceWithoutRepo.createCompanyList(listData, mockUser);
+      const result = await serviceWithoutRepo.createCompanyList(
+        listData,
+        mockUser,
+      );
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -173,18 +184,18 @@ describe('CompanyListsService', () => {
         undefined,
         undefined,
       );
-      
+
       // Use owner user ID and matching organization ID from mock data
       const mockUser: any = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         organizationId: '123e4567-e89b-12d3-a456-426614174001',
       };
-      
+
       // Use a mock list ID that exists in the mock data
       const result = await serviceWithoutRepo.addCompaniesToList(
         '123e4567-e89b-12d3-a456-426614174003',
         ['company1', 'company2'],
-        mockUser
+        mockUser,
       );
 
       expect(result).toBeDefined();

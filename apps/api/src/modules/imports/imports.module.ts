@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ImportsController } from './imports.controller';
 import { ImportsService } from './imports.service';
-import { ImportJobs, Organizations, ImportJobs as ImportJob, Organizations as Organization } from '../../entities';
+import {
+  ImportJobs,
+  Organizations,
+  ImportJobs as ImportJob,
+  Organizations as Organization,
+} from '../../entities';
 
 @Module({
   imports: [

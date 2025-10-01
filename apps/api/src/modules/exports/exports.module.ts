@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExportsController } from './exports.controller';
 import { ExportsService } from './exports.service';
-import { ExportJobs, Organizations, ExportJobs as ExportJob, Organizations as Organization } from '../../entities';
+import {
+  ExportJobs,
+  Organizations,
+  ExportJobs as ExportJob,
+  Organizations as Organization,
+} from '../../entities';
 
 @Module({
   imports: [

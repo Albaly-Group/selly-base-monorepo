@@ -42,6 +42,18 @@ export class DatabaseHealthService implements OnModuleInit {
       // Simple health check query
       await this.dataSource!.query('SELECT 1');
 
+      // Set search_path to public schema to ensure tables are found
+      // This approach works with both regular PostgreSQL and pooled connections (like Neon)
+      try {
+        await this.dataSource!.query('SET search_path TO public');
+      } catch (searchPathError) {
+        // Log but don't fail if search_path cannot be set
+        this.logger.warn(
+          '⚠️ Could not set search_path to public schema:',
+          searchPathError.message,
+        );
+      }
+
       // Check if migrations have been run by checking for critical tables
       try {
         await this.dataSource!.query('SELECT 1 FROM "users" LIMIT 1');
@@ -57,8 +69,12 @@ export class DatabaseHealthService implements OnModuleInit {
           this.logger.warn(
             '💡 REQUIRED: Initialize database schema using the SQL file:',
           );
-          this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
-          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations');
+          this.logger.warn(
+            '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+          );
+          this.logger.warn(
+            '   OR set DB_AUTO_MIGRATE=true in your .env file to use TypeORM migrations',
+          );
           throw new Error(
             'Database schema not initialized. Please run the SQL schema file.',
           );
@@ -73,7 +89,9 @@ export class DatabaseHealthService implements OnModuleInit {
         this.logger.warn(
           '💡 Hint: Initialize database schema using the SQL file',
         );
-        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+        this.logger.warn(
+          '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+        );
       } else if (
         error.message?.includes('database') &&
         error.message?.includes('does not exist')
@@ -90,7 +108,9 @@ export class DatabaseHealthService implements OnModuleInit {
         this.logger.warn(
           '💡 Hint: Tables do not exist. Initialize schema using the SQL file',
         );
-        this.logger.warn('   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql');
+        this.logger.warn(
+          '   Command: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
+        );
       }
 
       throw error;

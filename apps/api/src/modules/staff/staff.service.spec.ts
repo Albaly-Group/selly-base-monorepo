@@ -66,8 +66,13 @@ describe('StaffService', () => {
 
   describe('getStaffMembers', () => {
     it('should return paginated staff members from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new StaffService(undefined, undefined, undefined, undefined);
-      
+      const serviceWithoutRepo = new StaffService(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+
       const result = await serviceWithoutRepo.getStaffMembers({
         page: 1,
         limit: 10,
@@ -80,8 +85,13 @@ describe('StaffService', () => {
     });
 
     it('should handle pagination parameters', async () => {
-      const serviceWithoutRepo = new StaffService(undefined, undefined, undefined, undefined);
-      
+      const serviceWithoutRepo = new StaffService(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+
       const result = await serviceWithoutRepo.getStaffMembers({
         page: 2,
         limit: 5,
@@ -94,8 +104,13 @@ describe('StaffService', () => {
 
   describe('createStaffMember', () => {
     it('should create staff member with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new StaffService(undefined, undefined, undefined, undefined);
-      
+      const serviceWithoutRepo = new StaffService(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+
       const staffData = {
         name: 'New Staff',
         email: 'newstaff@example.com',

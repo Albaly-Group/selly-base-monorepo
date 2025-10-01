@@ -1,7 +1,16 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Users, Roles, UserRoles, Organizations, Users as User, Roles as Role, UserRoles as UserRole, Organizations as Organization } from '../../entities';
+import {
+  Users,
+  Roles,
+  UserRoles,
+  Organizations,
+  Users as User,
+  Roles as Role,
+  UserRoles as UserRole,
+  Organizations as Organization,
+} from '../../entities';
 
 @Injectable()
 export class StaffService {
@@ -57,7 +66,8 @@ export class StaffService {
           lastLogin: user.lastLoginAt,
           createdAt: user.createdAt,
           organization: user.organization?.name,
-          roles: user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+          roles:
+            user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
           permissions:
             user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
         }));
