@@ -102,7 +102,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .post('/api/v1/auth/login')
         .send({
           email: 'admin@albaly.com',
-          password: 'password123',
+          password: 'password',
         })
         .expect(201);
 
