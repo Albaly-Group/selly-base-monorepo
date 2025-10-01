@@ -1,17 +1,28 @@
-import { Column, Entity, Index, OneToMany, OneToOne } from "typeorm";
-import { Clients } from "./Clients";
-import { CommonCompanyTags } from "./CommonCompanyTags";
-import { LeadListingImports } from "./LeadListingImports";
-import { LeadListingProjectCompanies } from "./LeadListingProjectCompanies";
-import { LeadListingProjects } from "./LeadListingProjects";
-import { LeadListingTasks } from "./LeadListingTasks";
-import { LeadListingTimelogs } from "./LeadListingTimelogs";
-import { Leads } from "./Leads";
-import { UserPermissions } from "./UserPermissions";
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
+import { AuditLogs } from "./AuditLogs";
+import { CompanyListItems } from "./CompanyListItems";
+import { CompanyLists } from "./CompanyLists";
+import { ExportJobs } from "./ExportJobs";
+import { ImportJobs } from "./ImportJobs";
+import { LeadProjectCompanies } from "./LeadProjectCompanies";
+import { LeadProjectTasks } from "./LeadProjectTasks";
+import { LeadProjects } from "./LeadProjects";
+import { UserActivityLogs } from "./UserActivityLogs";
 import { UserRoles } from "./UserRoles";
+import { Organizations } from "./Organizations";
 
+@Index("idx_users_organization_email", ["email", "organizationId"], {})
 @Index("users_email_key", ["email"], { unique: true })
 @Index("users_pkey", ["id"], { unique: true })
+@Index("idx_users_last_login", ["lastLoginAt"], {})
+@Index("idx_users_organization_status", ["organizationId", "status"], {})
 @Entity("users", { schema: "public" })
 export class Users {
   @Column("uuid", {
@@ -21,95 +32,113 @@ export class Users {
   })
   id: string;
 
-  @Column("text", { name: "name" })
-  name: string;
+  @Column("uuid", { name: "organization_id", nullable: true })
+  organizationId: string | null;
 
   @Column("citext", { name: "email", unique: true })
   email: string;
 
-  @Column("text", { name: "password" })
-  password: string;
+  @Column("text", { name: "name" })
+  name: string;
+
+  @Column("text", { name: "password_hash" })
+  passwordHash: string;
 
   @Column("text", { name: "avatar_url", nullable: true })
   avatarUrl: string | null;
 
-  @Column("text", { name: "status", nullable: true, default: () => "'active'" })
-  status: string | null;
+  @Column("text", { name: "status", default: () => "'active'" })
+  status: string;
 
-  @Column("jsonb", { name: "metadata", nullable: true })
+  @Column("timestamp with time zone", { name: "last_login_at", nullable: true })
+  lastLoginAt: Date | null;
+
+  @Column("timestamp with time zone", {
+    name: "email_verified_at",
+    nullable: true,
+  })
+  emailVerifiedAt: Date | null;
+
+  @Column("jsonb", { name: "settings", nullable: true, default: {} })
+  settings: object | null;
+
+  @Column("jsonb", { name: "metadata", nullable: true, default: {} })
   metadata: object | null;
 
   @Column("timestamp with time zone", {
     name: "created_at",
     nullable: true,
-    default: () => "now()",
+    default: () => "CURRENT_TIMESTAMP",
   })
   createdAt: Date | null;
 
   @Column("timestamp with time zone", {
     name: "updated_at",
     nullable: true,
-    default: () => "now()",
+    default: () => "CURRENT_TIMESTAMP",
   })
   updatedAt: Date | null;
 
-  @OneToMany(() => Clients, (clients) => clients.addedBy)
-  clients: Clients[];
+  @OneToMany(() => AuditLogs, (auditLogs) => auditLogs.user)
+  auditLogs: AuditLogs[];
 
   @OneToMany(
-    () => CommonCompanyTags,
-    (commonCompanyTags) => commonCompanyTags.addedBy
+    () => CompanyListItems,
+    (companyListItems) => companyListItems.addedByUser
   )
-  commonCompanyTags: CommonCompanyTags[];
+  companyListItems: CompanyListItems[];
+
+  @OneToMany(() => CompanyLists, (companyLists) => companyLists.ownerUser)
+  companyLists: CompanyLists[];
+
+  @OneToMany(() => ExportJobs, (exportJobs) => exportJobs.requestedBy2)
+  exportJobs: ExportJobs[];
+
+  @OneToMany(() => ImportJobs, (importJobs) => importJobs.uploadedBy2)
+  importJobs: ImportJobs[];
 
   @OneToMany(
-    () => LeadListingImports,
-    (leadListingImports) => leadListingImports.uploadedBy
+    () => LeadProjectCompanies,
+    (leadProjectCompanies) => leadProjectCompanies.addedByUser
   )
-  leadListingImports: LeadListingImports[];
+  leadProjectCompanies: LeadProjectCompanies[];
 
   @OneToMany(
-    () => LeadListingProjectCompanies,
-    (leadListingProjectCompanies) => leadListingProjectCompanies.contributor
+    () => LeadProjectCompanies,
+    (leadProjectCompanies) => leadProjectCompanies.assignedToUser
   )
-  leadListingProjectCompanies: LeadListingProjectCompanies[];
+  leadProjectCompanies2: LeadProjectCompanies[];
 
   @OneToMany(
-    () => LeadListingProjects,
-    (leadListingProjects) => leadListingProjects.pm
+    () => LeadProjectTasks,
+    (leadProjectTasks) => leadProjectTasks.assignedToUser
   )
-  leadListingProjects: LeadListingProjects[];
+  leadProjectTasks: LeadProjectTasks[];
+
+  @OneToMany(() => LeadProjects, (leadProjects) => leadProjects.ownerUser)
+  leadProjects: LeadProjects[];
+
+  @OneToMany(() => LeadProjects, (leadProjects) => leadProjects.pmUser)
+  leadProjects2: LeadProjects[];
+
+  @OneToMany(() => LeadProjects, (leadProjects) => leadProjects.teamLeadUser)
+  leadProjects3: LeadProjects[];
 
   @OneToMany(
-    () => LeadListingProjects,
-    (leadListingProjects) => leadListingProjects.tl
+    () => UserActivityLogs,
+    (userActivityLogs) => userActivityLogs.user
   )
-  leadListingProjects2: LeadListingProjects[];
+  userActivityLogs: UserActivityLogs[];
 
-  @OneToOne(
-    () => LeadListingTasks,
-    (leadListingTasks) => leadListingTasks.assignedUser
-  )
-  leadListingTasks: LeadListingTasks;
-
-  @OneToMany(
-    () => LeadListingTasks,
-    (leadListingTasks) => leadListingTasks.createdBy
-  )
-  leadListingTasks2: LeadListingTasks[];
-
-  @OneToOne(
-    () => LeadListingTimelogs,
-    (leadListingTimelogs) => leadListingTimelogs.user
-  )
-  leadListingTimelogs: LeadListingTimelogs;
-
-  @OneToMany(() => Leads, (leads) => leads.addedBy)
-  leads: Leads[];
-
-  @OneToMany(() => UserPermissions, (userPermissions) => userPermissions.user)
-  userPermissions: UserPermissions[];
+  @OneToMany(() => UserRoles, (userRoles) => userRoles.assignedBy)
+  userRoles: UserRoles[];
 
   @OneToMany(() => UserRoles, (userRoles) => userRoles.user)
-  userRoles: UserRoles[];
+  userRoles2: UserRoles[];
+
+  @ManyToOne(() => Organizations, (organizations) => organizations.users, {
+    onDelete: "CASCADE",
+  })
+  @JoinColumn([{ name: "organization_id", referencedColumnName: "id" }])
+  organization: Organizations;
 }

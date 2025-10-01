@@ -1,5 +1,4 @@
 import { Column, Entity, Index, OneToMany } from "typeorm";
-import { RolePermissions } from "./RolePermissions";
 import { UserRoles } from "./UserRoles";
 
 @Index("roles_pkey", ["id"], { unique: true })
@@ -19,22 +18,34 @@ export class Roles {
   @Column("text", { name: "description", nullable: true })
   description: string | null;
 
+  @Column("boolean", {
+    name: "is_system_role",
+    nullable: true,
+    default: () => "false",
+  })
+  isSystemRole: boolean | null;
+
+  @Column("text", {
+    name: "permissions",
+    nullable: true,
+    array: true,
+    default: () => "'{}'[]",
+  })
+  permissions: string[] | null;
+
   @Column("timestamp with time zone", {
     name: "created_at",
     nullable: true,
-    default: () => "now()",
+    default: () => "CURRENT_TIMESTAMP",
   })
   createdAt: Date | null;
 
   @Column("timestamp with time zone", {
     name: "updated_at",
     nullable: true,
-    default: () => "now()",
+    default: () => "CURRENT_TIMESTAMP",
   })
   updatedAt: Date | null;
-
-  @OneToMany(() => RolePermissions, (rolePermissions) => rolePermissions.role)
-  rolePermissions: RolePermissions[];
 
   @OneToMany(() => UserRoles, (userRoles) => userRoles.role)
   userRoles: UserRoles[];
