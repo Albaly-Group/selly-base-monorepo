@@ -81,6 +81,30 @@ DB_AUTO_MIGRATE=true npm run start:dev
 
 ## Troubleshooting Database Issues
 
+### "relation 'users' does not exist" or "relation 'organizations' does not exist"
+**Solution:** Run migrations to initialize the database schema:
+```bash
+npm run migration:run
+```
+
+**Root Cause:** The database exists but doesn't have the required tables. The migrations haven't been run yet.
+
+**Temporary Workaround:** The application will automatically fall back to mock authentication when tables don't exist, but this is NOT suitable for production. You'll see these warnings in the logs:
+```
+❌ Database tables not found. Please run migrations: npm run migration:run
+💡 Falling back to mock authentication. This is not suitable for production!
+```
+
+**Alternative Solutions:**
+1. Enable automatic migration on startup:
+   ```bash
+   DB_AUTO_MIGRATE=true npm run start:dev
+   ```
+2. Enable schema synchronization (NOT recommended for production):
+   ```bash
+   DB_SYNC=true npm run start:dev
+   ```
+
 ### "relation typeorm_metadata does not exist"
 **Solution:** Run migrations to initialize the database schema:
 ```bash
@@ -90,11 +114,6 @@ npm run migration:run
 **Root Cause:** The database exists but doesn't have the required tables. TypeORM needs either:
 1. Existing tables (created by migrations), OR  
 2. Schema synchronization enabled (not recommended)
-
-**Alternative:** Enable synchronization temporarily:
-```bash
-DB_SYNC=true npm run start:dev
-```
 
 ### Connection Refused
 Check your database configuration and ensure PostgreSQL is running:
