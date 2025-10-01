@@ -33,6 +33,7 @@ selly-base-monorepo/
 ### Prerequisites
 - Node.js 18+
 - npm
+- Docker & Docker Compose (optional - for local database)
 - PostgreSQL (optional - works with mock data)
 
 ### Installation & Development
@@ -51,7 +52,7 @@ selly-base-monorepo/
    cp apps/web/.env.example apps/web/.env
    ```
 
-3. **Start development environment:**
+3. **Option A: Start with Mock Data (Fastest)**
    ```bash
    npm run dev
    ```
@@ -60,9 +61,37 @@ selly-base-monorepo/
    - 🚀 Backend API: http://localhost:3001
    - 📚 API Docs: http://localhost:3001/api/docs
 
-4. **Test the integration:**
+4. **Option B: Start with Docker PostgreSQL (Full Backend Testing)**
+   ```bash
+   # Start PostgreSQL with pgvector
+   docker-compose up -d postgres
+   
+   # Copy Docker environment configuration
+   cp .env.docker apps/api/.env
+   
+   # Start development
+   npm run dev
+   ```
+   
+   **Includes:**
+   - ✅ PostgreSQL 16 with pgvector extension
+   - ✅ Automatic schema initialization
+   - ✅ Sample data pre-loaded
+   - ✅ All PostgreSQL extensions (pg_trgm, pgcrypto, citext, uuid-ossp)
+   
+   **Optional:** Start pgAdmin for database management:
+   ```bash
+   docker-compose --profile with-pgadmin up -d
+   # Access at http://localhost:5050 (admin@selly.com / admin123)
+   ```
+   
+   📖 **Detailed Docker Guide:** See [DOCKER_SETUP.md](DOCKER_SETUP.md)
+   📚 **Complete Docker Documentation:** See [DOCKER_INDEX.md](DOCKER_INDEX.md)
+
+5. **Test the integration:**
    - Visit http://localhost:3000/api-test
    - Explore API at http://localhost:3001/api/docs
+   - Check health: http://localhost:3001/api/health
 
 ## 🛠️ Backend API Features (Production Ready)
 
