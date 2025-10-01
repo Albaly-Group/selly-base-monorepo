@@ -4,7 +4,7 @@ A NestJS-based backend API for the Selly Base B2B prospecting platform.
 
 ## Database Setup
 
-This API uses PostgreSQL with TypeORM. The application supports two modes:
+This API uses PostgreSQL with TypeORM. The application supports three modes:
 
 ### 1. Database Disabled Mode (Demo/Development)
 ```bash
@@ -12,13 +12,37 @@ This API uses PostgreSQL with TypeORM. The application supports two modes:
 SKIP_DATABASE=true npm run start:dev
 ```
 
-### 2. Database Enabled Mode (Production/Full Development)
+### 2. Docker PostgreSQL with pgvector (Recommended for Full Testing) 🐳
+
+The easiest way to test the full backend with a real database:
+
 ```bash
-# Run with database connection
+# From repository root, start PostgreSQL with pgvector
+docker-compose up -d postgres
+
+# Copy Docker environment configuration
+cp ../../.env.docker .env
+
+# Start the API
 npm run start:dev
 ```
 
-## Database Configuration
+**What this gives you:**
+- ✅ PostgreSQL 16 with pgvector extension
+- ✅ Automatic schema initialization from `selly-base-optimized-schema.sql`
+- ✅ All required extensions (pgvector, pg_trgm, pgcrypto, citext, uuid-ossp)
+- ✅ Sample data pre-loaded
+- ✅ Ready to use in seconds
+
+**Optional:** Start pgAdmin for database management:
+```bash
+docker-compose --profile with-pgadmin up -d
+# Access at http://localhost:5050 (admin@selly.com / admin123)
+```
+
+📖 **See detailed Docker guide:** [../../DOCKER_SETUP.md](../../DOCKER_SETUP.md)
+
+### 3. Manual PostgreSQL Setup (Production/Custom Setup)
 
 Configure the database using either:
 
@@ -36,13 +60,15 @@ DATABASE_PASSWORD=postgres
 DATABASE_NAME=selly_base
 ```
 
-## ⚠️ Important: Database Initialization
+## ⚠️ Important: Database Initialization (Manual Setup Only)
 
-After configuring your database connection, you **must** initialize the database schema:
+**Note:** If using Docker (recommended), schema is automatically initialized. Skip this section.
+
+After configuring your database connection manually, you **must** initialize the database schema:
 
 ```bash
 # Required: Run the SQL schema file to create all tables
-psql -U postgres -d selly_base -f selly-base-optimized-schema.sql
+psql -U postgres -d selly_base -f ../../selly-base-optimized-schema.sql
 ```
 
 **Why is this required?** 
