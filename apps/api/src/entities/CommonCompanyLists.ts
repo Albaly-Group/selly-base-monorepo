@@ -89,7 +89,7 @@ export class CommonCompanyLists {
   @Column("text", { name: "source", nullable: true, array: true })
   source: string[] | null;
 
-  @Column("USER-DEFINED", { name: "vector_embedding", nullable: true })
+  @Column("text", { name: "vector_embedding", nullable: true })
   vectorEmbedding: string | null;
 
   @Column("text", { name: "main_shareholder_nationality", nullable: true })
