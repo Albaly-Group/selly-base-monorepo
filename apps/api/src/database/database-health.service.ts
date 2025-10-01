@@ -41,7 +41,30 @@ export class DatabaseHealthService implements OnModuleInit {
     try {
       // Simple health check query
       await this.dataSource!.query('SELECT 1');
-      this.logger.log('✅ Database connection is healthy');
+
+      // Check if migrations have been run by checking for critical tables
+      try {
+        await this.dataSource!.query('SELECT 1 FROM "users" LIMIT 1');
+        await this.dataSource!.query('SELECT 1 FROM "organizations" LIMIT 1');
+        this.logger.log(
+          '✅ Database connection is healthy and schema is initialized',
+        );
+      } catch (tableError) {
+        if (tableError.message?.includes('does not exist')) {
+          this.logger.error(
+            '❌ Database tables do not exist - migrations need to be run',
+          );
+          this.logger.warn(
+            '💡 REQUIRED: Run migrations to create database tables:',
+          );
+          this.logger.warn('   Command: npm run migration:run');
+          this.logger.warn('   OR set DB_AUTO_MIGRATE=true in your .env file');
+          throw new Error(
+            'Database schema not initialized. Please run migrations: npm run migration:run',
+          );
+        }
+        throw tableError;
+      }
     } catch (error) {
       this.logger.error('❌ Database health check failed:', error.message);
 
@@ -60,6 +83,14 @@ export class DatabaseHealthService implements OnModuleInit {
         );
       } else if (error.message?.includes('connection')) {
         this.logger.warn('💡 Hint: Check database connection settings');
+      } else if (
+        error.message?.includes('does not exist') &&
+        error.message?.includes('relation')
+      ) {
+        this.logger.warn(
+          '💡 Hint: Tables do not exist. Run migrations to create them',
+        );
+        this.logger.warn('   Command: npm run migration:run');
       }
 
       throw error;

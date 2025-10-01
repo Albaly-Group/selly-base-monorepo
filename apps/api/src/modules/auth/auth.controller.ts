@@ -91,11 +91,12 @@ export class AuthController {
     }
 
     // Map roles from the user entity
-    const roles = user.roles?.map((userRole: any) => ({
-      id: userRole.role.id,
-      name: userRole.role.name,
-      description: userRole.role.description,
-    })) || [];
+    const roles =
+      user.roles?.map((userRole: any) => ({
+        id: userRole.role.id,
+        name: userRole.role.name,
+        description: userRole.role.description,
+      })) || [];
 
     return {
       id: user.id,

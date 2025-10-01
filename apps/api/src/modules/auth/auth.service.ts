@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  Optional,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -73,6 +78,8 @@ const MOCK_USERS = [
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     @Optional()
@@ -104,11 +111,12 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     // Map roles from the user entity
-    const roles = user.roles?.map((userRole: any) => ({
-      id: userRole.role.id,
-      name: userRole.role.name,
-      description: userRole.role.description,
-    })) || [];
+    const roles =
+      user.roles?.map((userRole: any) => ({
+        id: userRole.role.id,
+        name: userRole.role.name,
+        description: userRole.role.description,
+      })) || [];
 
     return {
       accessToken,
@@ -127,27 +135,47 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<any> {
-    const user = await this.userRepository!.createQueryBuilder('user')
-      .leftJoinAndSelect('user.organization', 'organization')
-      .leftJoinAndSelect('user.roles', 'userRole')
-      .leftJoinAndSelect('userRole.role', 'role')
-      .where('user.email = :email', { email })
-      .andWhere('user.status = :status', { status: 'active' })
-      .getOne();
+    try {
+      const user = await this.userRepository!.createQueryBuilder('user')
+        .leftJoinAndSelect('user.organization', 'organization')
+        .leftJoinAndSelect('user.roles', 'userRole')
+        .leftJoinAndSelect('userRole.role', 'role')
+        .where('user.email = :email', { email })
+        .andWhere('user.status = :status', { status: 'active' })
+        .getOne();
 
-    if (!user) {
-      return null;
+      if (!user) {
+        return null;
+      }
+
+      const isPasswordValid = await this.verifyPassword(
+        password,
+        user.passwordHash,
+      );
+      if (!isPasswordValid) {
+        return null;
+      }
+
+      return user;
+    } catch (error) {
+      // Handle database errors gracefully
+      if (
+        error.message?.includes('does not exist') &&
+        error.message?.includes('relation')
+      ) {
+        this.logger.error(
+          '❌ Database tables not found. Please run migrations: npm run migration:run',
+        );
+        this.logger.warn(
+          '💡 Falling back to mock authentication. This is not suitable for production!',
+        );
+        // Fall back to mock data instead of failing
+        return await this.validateUserFromMockData(email, password);
+      }
+      // For other database errors, log and rethrow
+      this.logger.error('Database query failed:', error.message);
+      throw error;
     }
-
-    const isPasswordValid = await this.verifyPassword(
-      password,
-      user.passwordHash,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-
-    return user;
   }
 
   private async validateUserFromMockData(
