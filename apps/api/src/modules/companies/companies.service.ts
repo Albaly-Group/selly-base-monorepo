@@ -172,7 +172,8 @@ export class CompaniesService {
     } = searchDto;
 
     const query = this.companyRepository!.createQueryBuilder('company')
-      .leftJoinAndSelect('company.contacts', 'contacts')
+      // Note: contacts relation not yet defined in entity
+      // .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization');
 
     // Multi-tenant filtering with enhanced security
@@ -434,7 +435,8 @@ export class CompaniesService {
     user?: User,
   ): Promise<Company> {
     const query = this.companyRepository!.createQueryBuilder('company')
-      .leftJoinAndSelect('company.contacts', 'contacts')
+      // Note: contacts relation not yet defined in entity
+      // .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization')
       .where('company.id = :id', { id });
 
@@ -842,7 +844,8 @@ export class CompaniesService {
       if (this.companyRepository) {
         const query = this.companyRepository
           .createQueryBuilder('company')
-          .leftJoinAndSelect('company.contacts', 'contacts')
+          // Note: contacts relation not yet defined in entity
+          // .leftJoinAndSelect('company.contacts', 'contacts')
           .leftJoinAndSelect('company.organization', 'organization')
           .where('company.id IN (:...ids)', { ids });
 
