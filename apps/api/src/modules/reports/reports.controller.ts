@@ -54,12 +54,12 @@ export class ReportsController {
     // Mock implementation
     return {
       overallScore: 0.89,
-      metrics: {
-        completeness: 0.92,
-        accuracy: 0.88,
-        consistency: 0.85,
-        timeliness: 0.91,
-      },
+      metrics: [
+        { name: 'completeness', score: 0.92 },
+        { name: 'accuracy', score: 0.88 },
+        { name: 'consistency', score: 0.85 },
+        { name: 'timeliness', score: 0.91 },
+      ],
       issues: [
         { field: 'email', count: 45, severity: 'medium' },
         { field: 'phone', count: 23, severity: 'low' },

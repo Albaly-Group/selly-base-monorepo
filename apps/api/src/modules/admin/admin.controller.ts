@@ -227,4 +227,66 @@ export class AdminController {
       message: 'Integration settings updated successfully',
     };
   }
+
+  @Get('activity-logs')
+  @ApiOperation({ summary: 'Get activity logs' })
+  @ApiResponse({
+    status: 200,
+    description: 'Activity logs retrieved successfully',
+  })
+  async getActivityLogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    // Mock implementation
+    const mockLogs = [
+      {
+        id: '1',
+        timestamp: '2024-12-08T14:30:00Z',
+        user: 'admin@albaly.com',
+        action: 'company.created',
+        resource: 'Company',
+        resourceId: 'c1',
+        description: 'Created new company: Bangkok Logistics Ltd.',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0...',
+      },
+      {
+        id: '2',
+        timestamp: '2024-12-08T14:25:00Z',
+        user: 'manager@albaly.com',
+        action: 'export.completed',
+        resource: 'Export',
+        resourceId: 'e123',
+        description: 'Export job completed: 234 records',
+        ipAddress: '192.168.1.101',
+        userAgent: 'Mozilla/5.0...',
+      },
+      {
+        id: '3',
+        timestamp: '2024-12-08T14:20:00Z',
+        user: 'user@albaly.com',
+        action: 'list.updated',
+        resource: 'CompanyList',
+        resourceId: 'l456',
+        description: 'Updated list: Target Prospects',
+        ipAddress: '192.168.1.102',
+        userAgent: 'Mozilla/5.0...',
+      },
+    ];
+
+    return {
+      data: mockLogs,
+      pagination: {
+        page: parseInt(page || '1', 10),
+        limit: parseInt(limit || '50', 10),
+        total: mockLogs.length,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+    };
+  }
 }

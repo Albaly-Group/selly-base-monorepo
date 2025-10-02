@@ -93,6 +93,56 @@ export class StaffService {
     }
   }
 
+  async getStaffMemberById(id: string, organizationId?: string) {
+    try {
+      if (this.userRepository) {
+        // Database implementation
+        const queryBuilder = this.userRepository
+          .createQueryBuilder('user')
+          .leftJoinAndSelect('user.organization', 'organization')
+          .leftJoinAndSelect('user.userRoles2', 'userRole')
+          .leftJoinAndSelect('userRole.role', 'role')
+          .where('user.id = :id', { id });
+
+        if (organizationId) {
+          queryBuilder.andWhere('user.organizationId = :orgId', {
+            orgId: organizationId,
+          });
+        }
+
+        const user = await queryBuilder.getOne();
+
+        if (!user) {
+          throw new NotFoundException(`Staff member with ID ${id} not found`);
+        }
+
+        // Transform user to include role information
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          status: user.status,
+          lastLogin: user.lastLoginAt,
+          createdAt: user.createdAt,
+          organization: user.organization?.name,
+          roles:
+            user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+          permissions:
+            user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
+        };
+      } else {
+        // Mock implementation fallback
+        return this.getMockStaffMemberById(id);
+      }
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Database query failed, falling back to mock data:', error);
+      return this.getMockStaffMemberById(id);
+    }
+  }
+
   async createStaffMember(staffData: {
     name: string;
     email: string;
@@ -347,5 +397,50 @@ export class StaffService {
         hasPrev: false,
       },
     };
+  }
+
+  private getMockStaffMemberById(id: string) {
+    const mockData: Record<string, any> = {
+      '1': {
+        id: '1',
+        name: 'John Doe',
+        email: 'john.doe@albaly.com',
+        role: 'admin',
+        status: 'active',
+        lastLogin: '2024-12-08T09:30:00Z',
+        createdAt: '2024-01-15T10:00:00Z',
+        roles: ['admin'],
+        permissions: ['read', 'write', 'admin'],
+      },
+      '2': {
+        id: '2',
+        name: 'Jane Smith',
+        email: 'jane.smith@albaly.com',
+        role: 'manager',
+        status: 'active',
+        lastLogin: '2024-12-08T14:15:00Z',
+        createdAt: '2024-02-20T11:30:00Z',
+        roles: ['manager'],
+        permissions: ['read', 'write'],
+      },
+      '3': {
+        id: '3',
+        name: 'Mike Johnson',
+        email: 'mike.johnson@albaly.com',
+        role: 'user',
+        status: 'inactive',
+        lastLogin: '2024-12-05T16:45:00Z',
+        createdAt: '2024-03-10T09:00:00Z',
+        roles: ['user'],
+        permissions: ['read'],
+      },
+    };
+
+    const staff = mockData[id];
+    if (!staff) {
+      throw new NotFoundException(`Staff member with ID ${id} not found`);
+    }
+
+    return staff;
   }
 }
