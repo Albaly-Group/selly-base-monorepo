@@ -37,7 +37,7 @@ export class ExportsService {
         const queryBuilder = this.exportJobRepository
           .createQueryBuilder('export_job')
           .leftJoinAndSelect('export_job.organization', 'organization')
-          .leftJoinAndSelect('export_job.requestedByUser', 'user');
+          .leftJoinAndSelect('export_job.requestedBy2', 'user');
 
         if (params?.status) {
           queryBuilder.andWhere('export_job.status = :status', {
@@ -130,7 +130,7 @@ export class ExportsService {
         const queryBuilder = this.exportJobRepository
           .createQueryBuilder('export_job')
           .leftJoinAndSelect('export_job.organization', 'organization')
-          .leftJoinAndSelect('export_job.requestedByUser', 'user')
+          .leftJoinAndSelect('export_job.requestedBy2', 'user')
           .where('export_job.id = :id', { id });
 
         if (organizationId) {

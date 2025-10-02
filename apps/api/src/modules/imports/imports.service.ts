@@ -37,7 +37,7 @@ export class ImportsService {
         const queryBuilder = this.importJobRepository
           .createQueryBuilder('import_job')
           .leftJoinAndSelect('import_job.organization', 'organization')
-          .leftJoinAndSelect('import_job.uploadedByUser', 'user');
+          .leftJoinAndSelect('import_job.uploadedBy2', 'user');
 
         if (params?.status) {
           queryBuilder.andWhere('import_job.status = :status', {
@@ -125,7 +125,7 @@ export class ImportsService {
         const queryBuilder = this.importJobRepository
           .createQueryBuilder('import_job')
           .leftJoinAndSelect('import_job.organization', 'organization')
-          .leftJoinAndSelect('import_job.uploadedByUser', 'user')
+          .leftJoinAndSelect('import_job.uploadedBy2', 'user')
           .where('import_job.id = :id', { id });
 
         if (organizationId) {
