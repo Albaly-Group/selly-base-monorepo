@@ -18,10 +18,10 @@ npm run test:e2e:cleanup
 
 ## 📊 Current Status
 
-- **Tests Passing:** 31 out of 39 (79.5%)
+- **Tests Passing:** 32 out of 39 (82.1%)
 - **Database:** PostgreSQL 16 with pgvector
 - **Test Time:** ~3 seconds
-- **Status:** ✅ Production Ready (read operations)
+- **Status:** ✅ Production Ready (read operations, JWT auth enabled)
 
 ## ✅ What's Working
 
@@ -68,10 +68,10 @@ Organization: Albaly Digital
 27-29. Admin (users, policies, integrations)
 30-31. Data integrity (isolation, pagination)
 
-### Failing Tests (8)
-- Create/update operations (need JWT auth)
-- Some endpoint implementations missing
-- Response format mismatches
+### Failing Tests (7)
+- **FIXED**: JWT auth now properly configured for protected endpoints
+- **REMAINING**: Some company/list create operations (audit log foreign key issues)
+- **REMAINING**: Staff GET by ID endpoint (404)
 
 ## 🎯 Use Cases
 
@@ -154,11 +154,11 @@ docker ps | grep postgres
 
 | Metric | Value |
 |--------|-------|
-| Pass Rate | 79.5% |
+| Pass Rate | 82.1% |
 | Test Time | ~3s |
 | Database | Real PostgreSQL |
 | Sample Data | ✅ Included |
-| Auth | ✅ Working |
+| Auth | ✅ JWT Working |
 | CRUD Ops | ✅ Most Working |
 
 ---

@@ -227,22 +227,20 @@ describe('Backend API with Docker Database (e2e)', () => {
 
     it('should create a new company', async () => {
       const newCompany = {
-        nameEn: 'Test Company E2E',
-        nameTh: 'บริษัททดสอบ',
-        industry: 'Technology',
-        website: 'https://test-company.example.com',
-        description: 'Test company created by E2E tests',
-        organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
+        companyNameEn: 'Test Company E2E',
+        companyNameTh: 'บริษัททดสอบ',
+        businessDescription: 'Test company created by E2E tests',
+        websiteUrl: 'https://test-company.example.com',
       };
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/companies')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newCompany)
         .expect(201);
 
       expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('nameEn', newCompany.nameEn);
-      expect(response.body).toHaveProperty('industry', newCompany.industry);
+      expect(response.body).toHaveProperty('companyNameEn', newCompany.companyNameEn);
       
       companyId = response.body.id;
       console.log(`✓ Created company with ID: ${companyId}`);
@@ -255,17 +253,18 @@ describe('Backend API with Docker Database (e2e)', () => {
       }
 
       const updates = {
-        description: 'Updated description from E2E test',
-        website: 'https://updated-test-company.example.com',
+        businessDescription: 'Updated description from E2E test',
+        websiteUrl: 'https://updated-test-company.example.com',
       };
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/companies/${companyId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send(updates)
         .expect(200);
 
       expect(response.body).toHaveProperty('id', companyId);
-      expect(response.body.description).toContain('Updated');
+      expect(response.body.businessDescription).toContain('Updated');
       
       console.log('✓ Company updated successfully');
     });
@@ -293,6 +292,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/company-lists')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newList)
         .expect(201);
 
@@ -311,8 +311,9 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       await request(app.getHttpServer())
         .post(`/api/v1/company-lists/${listId}/companies`)
-        .send({ companyId })
-        .expect(201);
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ companyIds: [companyId] })
+        .expect(200);
       
       console.log('✓ Added company to list');
     });
@@ -324,7 +325,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       }
 
       const response = await request(app.getHttpServer())
-        .get(`/api/v1/company-lists/${listId}/companies`)
+        .get(`/api/v1/company-lists/${listId}/items`)
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -647,12 +648,13 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       // Create a new company
       const newCompany = {
-        nameEn: 'Data Integrity Test Company',
-        industry: 'Testing',
+        companyNameEn: 'Data Integrity Test Company',
+        businessDescription: 'Testing data integrity',
       };
 
       await request(app.getHttpServer())
         .post('/api/v1/companies')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newCompany)
         .expect(201);
 

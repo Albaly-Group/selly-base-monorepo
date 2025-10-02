@@ -10,10 +10,12 @@ The Docker E2E test suite validates:
 - ✅ Business logic correctness
 - ✅ CRUD operations integrity
 - ✅ Multi-tenant isolation
-- ✅ Authentication and authorization
+- ✅ **Authentication and authorization with JWT tokens**
 - ✅ Pagination and filtering
 - ✅ Data relationships
 - ✅ Error handling
+
+**Latest Update (January 2025):** JWT authentication now properly configured for all protected endpoints. Tests use actual database-backed authentication with real JWT tokens.
 
 ## Prerequisites
 

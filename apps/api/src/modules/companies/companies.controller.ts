@@ -200,7 +200,13 @@ export class CompaniesController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    // Create a proper user object from JWT payload
+    const userWithOrg = {
+      ...createMockUser(organizationId),
+      id: user.sub, // Use actual user ID from JWT
+      email: user.email, // Use actual email from JWT
+      organizationId: organizationId, // Use actual organization ID from JWT
+    } as User;
     return this.companiesService.createCompany(createCompanyDto, userWithOrg);
   }
 
@@ -223,7 +229,13 @@ export class CompaniesController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    // Create a proper user object from JWT payload
+    const userWithOrg = {
+      ...createMockUser(organizationId),
+      id: user.sub, // Use actual user ID from JWT
+      email: user.email, // Use actual email from JWT
+      organizationId: organizationId, // Use actual organization ID from JWT
+    } as User;
     return this.companiesService.updateCompany(
       id,
       updateCompanyDto,
