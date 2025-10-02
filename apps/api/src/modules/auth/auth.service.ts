@@ -37,6 +37,13 @@ export interface LoginResponse {
       id: string;
       name: string;
       description?: string;
+      permissions?: Array<{
+        id: string;
+        key: string;
+        description?: string;
+        created_at: string;
+        updated_at: string;
+      }>;
     }>;
   };
 }
@@ -115,12 +122,19 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
-    // Map roles from the user entity
+    // Map roles from the user entity and transform permissions string[] to Permission[]
     const roles =
       user.userRoles2?.map((userRole: any) => ({
         id: userRole.role.id,
         name: userRole.role.name,
         description: userRole.role.description,
+        permissions: (userRole.role.permissions || []).map((permissionKey: string, index: number) => ({
+          id: `${userRole.role.id}-perm-${index}`,
+          key: permissionKey,
+          description: `Permission: ${permissionKey}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })),
       })) || [];
 
     return {

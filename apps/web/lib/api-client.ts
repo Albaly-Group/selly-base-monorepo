@@ -70,6 +70,13 @@ export interface LoginResponse {
       id: string;
       name: string;
       description?: string;
+      permissions?: Array<{
+        id: string;
+        key: string;
+        description?: string;
+        created_at: string;
+        updated_at: string;
+      }>;
     }>;
   };
 }
@@ -88,6 +95,13 @@ export interface User {
     id: string;
     name: string;
     description?: string;
+    permissions?: Array<{
+      id: string;
+      key: string;
+      description?: string;
+      created_at: string;
+      updated_at: string;
+    }>;
   }>;
 }
 
