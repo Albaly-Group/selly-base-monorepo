@@ -477,7 +477,7 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should create staff member', async () => {
       const staffMember = {
         name: 'E2E Test Staff',
-        email: 'e2e-staff@test.com',
+        email: `e2e-staff-${Date.now()}@test.com`,
         role: 'member',
         department: 'Testing',
         organizationId,

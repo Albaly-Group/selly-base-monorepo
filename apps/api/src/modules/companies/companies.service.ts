@@ -658,10 +658,7 @@ export class CompaniesService {
           updateDto.companyNameTh !== undefined
             ? updateDto.companyNameTh
             : existingCompany.nameTh,
-        displayName:
-          updateDto.companyNameEn ||
-          updateDto.companyNameTh ||
-          existingCompany.displayName,
+        // displayName is a GENERATED column - don't include it in updates
         primaryRegistrationNo:
           updateDto.primaryRegistrationNo !== undefined
             ? updateDto.primaryRegistrationNo
@@ -725,7 +722,9 @@ export class CompaniesService {
 
       // In a real implementation, save to database
       if (this.companyRepository) {
-        await this.companyRepository.update(id, updatedCompany);
+        // Remove GENERATED columns from update data (displayName, searchVector)
+        const { displayName, searchVector, ...updateData } = updatedCompany;
+        await this.companyRepository.update(id, updateData);
         const savedCompany = await this.companyRepository.findOne({
           where: { id },
         });
