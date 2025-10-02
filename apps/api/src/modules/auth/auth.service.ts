@@ -1,7 +1,6 @@
 import {
   Injectable,
   UnauthorizedException,
-  Optional,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -56,37 +55,7 @@ export interface JwtPayload {
   exp?: number;
 }
 
-// Mock users for development when database is not available
-const MOCK_USERS = [
-  {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    email: 'admin@albaly.com',
-    name: 'Admin User',
-    passwordHash:
-      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    organizationId: '123e4567-e89b-12d3-a456-426614174001',
-    organization: {
-      id: '123e4567-e89b-12d3-a456-426614174001',
-      name: 'Albaly Digital',
-      slug: 'albaly-digital',
-    },
-    status: 'active',
-  },
-  {
-    id: '123e4567-e89b-12d3-a456-426614174010',
-    email: 'test@example.com',
-    name: 'Test User',
-    passwordHash:
-      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    organizationId: '123e4567-e89b-12d3-a456-426614174002',
-    organization: {
-      id: '123e4567-e89b-12d3-a456-426614174002',
-      name: 'Example Corp',
-      slug: 'example-corp',
-    },
-    status: 'active',
-  },
-];
+
 
 @Injectable()
 export class AuthService {
@@ -94,21 +63,17 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    @Optional()
     @InjectRepository(Users)
-    private userRepository?: Repository<Users>,
-    @Optional()
+    private readonly userRepository: Repository<Users>,
     @InjectRepository(Organizations)
-    private organizationRepository?: Repository<Organizations>,
+    private readonly organizationRepository: Repository<Organizations>,
   ) {}
 
   async login(loginRequest: LoginRequest): Promise<LoginResponse> {
     const { email, password } = loginRequest;
 
-    // Use database if available, otherwise use mock data
-    const user = this.userRepository
-      ? await this.validateUserFromDatabase(email, password)
-      : await this.validateUserFromMockData(email, password);
+    // Always use database - no mock data fallback
+    const user = await this.validateUserFromDatabase(email, password);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -155,7 +120,7 @@ export class AuthService {
     password: string,
   ): Promise<any> {
     try {
-      const user = await this.userRepository!.createQueryBuilder('user')
+      const user = await this.userRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.organization', 'organization')
         .leftJoinAndSelect('user.userRoles2', 'userRole')
         .leftJoinAndSelect('userRole.role', 'role')
@@ -177,7 +142,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      // Handle database errors gracefully
+      // Handle database errors - no mock data fallback
       if (
         error.message?.includes('does not exist') &&
         error.message?.includes('relation')
@@ -185,11 +150,7 @@ export class AuthService {
         this.logger.error(
           '❌ Database tables not found. Please initialize schema: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
         );
-        this.logger.warn(
-          '💡 Falling back to mock authentication. This is not suitable for production!',
-        );
-        // Fall back to mock data instead of failing
-        return await this.validateUserFromMockData(email, password);
+        throw new Error('Database schema not initialized. Please run the SQL schema file.');
       }
       // For other database errors, log and rethrow
       this.logger.error('Database query failed:', error.message);
@@ -197,28 +158,7 @@ export class AuthService {
     }
   }
 
-  private async validateUserFromMockData(
-    email: string,
-    password: string,
-  ): Promise<any> {
-    const user = MOCK_USERS.find(
-      (u) => u.email === email && u.status === 'active',
-    );
 
-    if (!user) {
-      return null;
-    }
-
-    const isPasswordValid = await this.verifyPassword(
-      password,
-      user.passwordHash,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-
-    return user;
-  }
 
   async validateToken(token: string): Promise<JwtPayload | null> {
     try {
@@ -230,19 +170,14 @@ export class AuthService {
   }
 
   async getUserById(userId: string): Promise<any> {
-    if (this.userRepository) {
-      return await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.organization', 'organization')
-        .leftJoinAndSelect('user.userRoles2', 'userRole')
-        .leftJoinAndSelect('userRole.role', 'role')
-        .where('user.id = :userId', { userId })
-        .andWhere('user.status = :status', { status: 'active' })
-        .getOne();
-    }
-
-    // Use mock data
-    return MOCK_USERS.find((u) => u.id === userId && u.status === 'active');
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoinAndSelect('user.userRoles2', 'userRole')
+      .leftJoinAndSelect('userRole.role', 'role')
+      .where('user.id = :userId', { userId })
+      .andWhere('user.status = :status', { status: 'active' })
+      .getOne();
   }
 
   async hashPassword(password: string): Promise<string> {

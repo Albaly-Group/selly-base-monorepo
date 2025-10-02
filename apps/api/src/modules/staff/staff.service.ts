@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -15,18 +15,14 @@ import {
 @Injectable()
 export class StaffService {
   constructor(
-    @Optional()
     @InjectRepository(Users)
-    private userRepository?: Repository<Users>,
-    @Optional()
+    private readonly userRepository: Repository<Users>,
     @InjectRepository(Roles)
-    private roleRepository?: Repository<Roles>,
-    @Optional()
+    private readonly roleRepository: Repository<Roles>,
     @InjectRepository(UserRoles)
-    private userRoleRepository?: Repository<UserRoles>,
-    @Optional()
+    private readonly userRoleRepository: Repository<UserRoles>,
     @InjectRepository(Organizations)
-    private organizationRepository?: Repository<Organizations>,
+    private readonly organizationRepository: Repository<Organizations>,
   ) {}
 
   async getStaffMembers(params?: {
@@ -38,109 +34,86 @@ export class StaffService {
     const limit = Math.min(params?.limit || 50, 100);
     const skip = (page - 1) * limit;
 
-    try {
-      if (this.userRepository) {
-        // Database implementation
-        const queryBuilder = this.userRepository
-          .createQueryBuilder('user')
-          .leftJoinAndSelect('user.organization', 'organization')
-          .leftJoinAndSelect('user.userRoles2', 'userRole')
-          .leftJoinAndSelect('userRole.role', 'role');
+    // Database implementation only - no mock data fallback
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoinAndSelect('user.userRoles2', 'userRole')
+      .leftJoinAndSelect('userRole.role', 'role');
 
-        if (params?.organizationId) {
-          queryBuilder.andWhere('user.organizationId = :orgId', {
-            orgId: params.organizationId,
-          });
-        }
-
-        queryBuilder.orderBy('user.createdAt', 'DESC').skip(skip).take(limit);
-
-        const [users, total] = await queryBuilder.getManyAndCount();
-
-        // Transform users to include role information
-        const transformedUsers = users.map((user) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          status: user.status,
-          lastLogin: user.lastLoginAt,
-          createdAt: user.createdAt,
-          organization: user.organization?.name,
-          roles:
-            user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
-          permissions:
-            user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
-        }));
-
-        return {
-          data: transformedUsers,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-            hasNext: page * limit < total,
-            hasPrev: page > 1,
-          },
-        };
-      } else {
-        // Mock implementation fallback
-        return this.getMockStaffMembers(params);
-      }
-    } catch (error) {
-      console.error('Database query failed, falling back to mock data:', error);
-      return this.getMockStaffMembers(params);
+    if (params?.organizationId) {
+      queryBuilder.andWhere('user.organizationId = :orgId', {
+        orgId: params.organizationId,
+      });
     }
+
+    queryBuilder.orderBy('user.createdAt', 'DESC').skip(skip).take(limit);
+
+    const [users, total] = await queryBuilder.getManyAndCount();
+
+    // Transform users to include role information
+    const transformedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: user.status,
+      lastLogin: user.lastLoginAt,
+      createdAt: user.createdAt,
+      organization: user.organization?.name,
+      roles:
+        user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+      permissions:
+        user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
+    }));
+
+    return {
+      data: transformedUsers,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
+      },
+    };
   }
 
   async getStaffMemberById(id: string, organizationId?: string) {
-    try {
-      if (this.userRepository) {
-        // Database implementation
-        const queryBuilder = this.userRepository
-          .createQueryBuilder('user')
-          .leftJoinAndSelect('user.organization', 'organization')
-          .leftJoinAndSelect('user.userRoles2', 'userRole')
-          .leftJoinAndSelect('userRole.role', 'role')
-          .where('user.id = :id', { id });
+    // Database implementation only - no mock data fallback
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoinAndSelect('user.userRoles2', 'userRole')
+      .leftJoinAndSelect('userRole.role', 'role')
+      .where('user.id = :id', { id });
 
-        if (organizationId) {
-          queryBuilder.andWhere('user.organizationId = :orgId', {
-            orgId: organizationId,
-          });
-        }
-
-        const user = await queryBuilder.getOne();
-
-        if (!user) {
-          throw new NotFoundException(`Staff member with ID ${id} not found`);
-        }
-
-        // Transform user to include role information
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          status: user.status,
-          lastLogin: user.lastLoginAt,
-          createdAt: user.createdAt,
-          organization: user.organization?.name,
-          roles:
-            user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
-          permissions:
-            user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
-        };
-      } else {
-        // Mock implementation fallback
-        return this.getMockStaffMemberById(id);
-      }
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      console.error('Database query failed, falling back to mock data:', error);
-      return this.getMockStaffMemberById(id);
+    if (organizationId) {
+      queryBuilder.andWhere('user.organizationId = :orgId', {
+        orgId: organizationId,
+      });
     }
+
+    const user = await queryBuilder.getOne();
+
+    if (!user) {
+      throw new NotFoundException(`Staff member with ID ${id} not found`);
+    }
+
+    // Transform user to include role information
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: user.status,
+      lastLogin: user.lastLoginAt,
+      createdAt: user.createdAt,
+      organization: user.organization?.name,
+      roles:
+        user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+      permissions:
+        user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
+    };
   }
 
   async createStaffMember(staffData: {
@@ -150,62 +123,36 @@ export class StaffService {
     organizationId?: string;
     role?: string;
   }) {
-    try {
-      if (this.userRepository) {
-        // Database implementation
-        const user = this.userRepository.create({
-          name: staffData.name,
-          email: staffData.email,
-          passwordHash: staffData.password || 'temp_password_hash', // In real app, hash this
+    // Database implementation only - no mock data fallback
+    const user = this.userRepository.create({
+      name: staffData.name,
+      email: staffData.email,
+      passwordHash: staffData.password || 'temp_password_hash', // In real app, hash this
+      organizationId: staffData.organizationId,
+      status: 'active',
+    });
+
+    const savedUser = await this.userRepository.save(user);
+
+    // Assign role if provided
+    if (staffData.role) {
+      const role = await this.roleRepository.findOne({
+        where: { name: staffData.role },
+      });
+      if (role) {
+        const userRole = this.userRoleRepository.create({
+          userId: savedUser.id,
+          roleId: role.id,
           organizationId: staffData.organizationId,
-          status: 'active',
         });
-
-        const savedUser = await this.userRepository.save(user);
-
-        // Assign role if provided
-        if (staffData.role && this.roleRepository && this.userRoleRepository) {
-          const role = await this.roleRepository.findOne({
-            where: { name: staffData.role },
-          });
-          if (role) {
-            const userRole = this.userRoleRepository.create({
-              userId: savedUser.id,
-              roleId: role.id,
-              organizationId: staffData.organizationId,
-            });
-            await this.userRoleRepository.save(userRole);
-          }
-        }
-
-        return {
-          ...savedUser,
-          message: 'Staff member created successfully',
-        };
-      } else {
-        // Mock implementation fallback
-        return {
-          id: Date.now().toString(),
-          name: staffData.name,
-          email: staffData.email,
-          role: staffData.role || 'user',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          message: 'Staff member created successfully (mock mode)',
-        };
+        await this.userRoleRepository.save(userRole);
       }
-    } catch (error) {
-      console.error('Database operation failed, using mock response:', error);
-      return {
-        id: Date.now().toString(),
-        name: staffData.name,
-        email: staffData.email,
-        role: staffData.role || 'user',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        message: 'Staff member created successfully (mock mode - DB error)',
-      };
     }
+
+    return {
+      ...savedUser,
+      message: 'Staff member created successfully',
+    };
   }
 
   async updateStaffMember(
@@ -213,234 +160,85 @@ export class StaffService {
     updateData: any,
     organizationId?: string,
   ) {
-    try {
-      if (this.userRepository) {
-        // Database implementation
-        const queryBuilder = this.userRepository
-          .createQueryBuilder()
-          .update(User)
-          .set(updateData)
-          .where('id = :id', { id });
+    // Database implementation only - no mock data fallback
+    const queryBuilder = this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(updateData)
+      .where('id = :id', { id });
 
-        if (organizationId) {
-          queryBuilder.andWhere('organizationId = :orgId', {
-            orgId: organizationId,
-          });
-        }
-
-        const result = await queryBuilder.execute();
-
-        if (result.affected === 0) {
-          throw new NotFoundException('Staff member not found');
-        }
-
-        return {
-          id,
-          ...updateData,
-          updatedAt: new Date().toISOString(),
-          message: 'Staff member updated successfully',
-        };
-      } else {
-        // Mock implementation fallback
-        return {
-          id,
-          ...updateData,
-          updatedAt: new Date().toISOString(),
-          message: 'Staff member updated successfully (mock mode)',
-        };
-      }
-    } catch (error) {
-      console.error('Database operation failed, using mock response:', error);
-      return {
-        id,
-        ...updateData,
-        updatedAt: new Date().toISOString(),
-        message: 'Staff member updated successfully (mock mode - DB error)',
-      };
+    if (organizationId) {
+      queryBuilder.andWhere('organizationId = :orgId', {
+        orgId: organizationId,
+      });
     }
+
+    const result = await queryBuilder.execute();
+
+    if (result.affected === 0) {
+      throw new NotFoundException('Staff member not found');
+    }
+
+    return {
+      id,
+      ...updateData,
+      updatedAt: new Date().toISOString(),
+      message: 'Staff member updated successfully',
+    };
   }
 
   async deleteStaffMember(id: string, organizationId?: string) {
-    try {
-      if (this.userRepository) {
-        // Database implementation
-        const queryBuilder = this.userRepository
-          .createQueryBuilder()
-          .delete()
-          .where('id = :id', { id });
+    // Database implementation only - no mock data fallback
+    const queryBuilder = this.userRepository
+      .createQueryBuilder()
+      .delete()
+      .where('id = :id', { id });
 
-        if (organizationId) {
-          queryBuilder.andWhere('organizationId = :orgId', {
-            orgId: organizationId,
-          });
-        }
-
-        const result = await queryBuilder.execute();
-
-        if (result.affected === 0) {
-          throw new NotFoundException('Staff member not found');
-        }
-
-        return { message: `Staff member ${id} deleted successfully` };
-      } else {
-        // Mock implementation fallback
-        return {
-          message: `Staff member ${id} deleted successfully (mock mode)`,
-        };
-      }
-    } catch (error) {
-      console.error('Database operation failed, using mock response:', error);
-      return {
-        message: `Staff member ${id} deleted successfully (mock mode - DB error)`,
-      };
+    if (organizationId) {
+      queryBuilder.andWhere('organizationId = :orgId', {
+        orgId: organizationId,
+      });
     }
+
+    const result = await queryBuilder.execute();
+
+    if (result.affected === 0) {
+      throw new NotFoundException('Staff member not found');
+    }
+
+    return { message: `Staff member ${id} deleted successfully` };
   }
 
   async updateStaffRole(id: string, role: string, organizationId?: string) {
-    try {
-      if (this.roleRepository && this.userRoleRepository) {
-        // Database implementation
-        const roleEntity = await this.roleRepository.findOne({
-          where: { name: role },
-        });
-        if (!roleEntity) {
-          throw new NotFoundException('Role not found');
-        }
-
-        // Remove existing roles for this user in this organization
-        await this.userRoleRepository.delete({
-          userId: id,
-          organizationId: organizationId,
-        });
-
-        // Add new role
-        const userRole = this.userRoleRepository.create({
-          userId: id,
-          roleId: roleEntity.id,
-          organizationId: organizationId,
-        });
-
-        await this.userRoleRepository.save(userRole);
-
-        return {
-          id,
-          role,
-          updatedAt: new Date().toISOString(),
-          message: `Staff member role updated to ${role}`,
-        };
-      } else {
-        // Mock implementation fallback
-        return {
-          id,
-          role,
-          updatedAt: new Date().toISOString(),
-          message: `Staff member role updated to ${role} (mock mode)`,
-        };
-      }
-    } catch (error) {
-      console.error('Database operation failed, using mock response:', error);
-      return {
-        id,
-        role,
-        updatedAt: new Date().toISOString(),
-        message: `Staff member role updated to ${role} (mock mode - DB error)`,
-      };
+    // Database implementation only - no mock data fallback
+    const roleEntity = await this.roleRepository.findOne({
+      where: { name: role },
+    });
+    if (!roleEntity) {
+      throw new NotFoundException('Role not found');
     }
-  }
 
-  // Mock data implementation
-  private getMockStaffMembers(params?: any) {
-    const mockData = [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@albaly.com',
-        role: 'admin',
-        status: 'active',
-        lastLogin: '2024-12-08T09:30:00Z',
-        createdAt: '2024-01-15T10:00:00Z',
-        roles: ['admin'],
-        permissions: ['read', 'write', 'admin'],
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane.smith@albaly.com',
-        role: 'manager',
-        status: 'active',
-        lastLogin: '2024-12-08T14:15:00Z',
-        createdAt: '2024-02-20T11:30:00Z',
-        roles: ['manager'],
-        permissions: ['read', 'write'],
-      },
-      {
-        id: '3',
-        name: 'Mike Johnson',
-        email: 'mike.johnson@albaly.com',
-        role: 'user',
-        status: 'inactive',
-        lastLogin: '2024-12-05T16:45:00Z',
-        createdAt: '2024-03-10T09:00:00Z',
-        roles: ['user'],
-        permissions: ['read'],
-      },
-    ];
+    // Remove existing roles for this user in this organization
+    await this.userRoleRepository.delete({
+      userId: id,
+      organizationId: organizationId,
+    });
+
+    // Add new role
+    const userRole = this.userRoleRepository.create({
+      userId: id,
+      roleId: roleEntity.id,
+      organizationId: organizationId,
+    });
+
+    await this.userRoleRepository.save(userRole);
 
     return {
-      data: mockData,
-      pagination: {
-        page: params?.page || 1,
-        limit: params?.limit || 50,
-        total: mockData.length,
-        totalPages: 1,
-        hasNext: false,
-        hasPrev: false,
-      },
+      id,
+      role,
+      updatedAt: new Date().toISOString(),
+      message: `Staff member role updated to ${role}`,
     };
   }
 
-  private getMockStaffMemberById(id: string) {
-    const mockData: Record<string, any> = {
-      '1': {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@albaly.com',
-        role: 'admin',
-        status: 'active',
-        lastLogin: '2024-12-08T09:30:00Z',
-        createdAt: '2024-01-15T10:00:00Z',
-        roles: ['admin'],
-        permissions: ['read', 'write', 'admin'],
-      },
-      '2': {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane.smith@albaly.com',
-        role: 'manager',
-        status: 'active',
-        lastLogin: '2024-12-08T14:15:00Z',
-        createdAt: '2024-02-20T11:30:00Z',
-        roles: ['manager'],
-        permissions: ['read', 'write'],
-      },
-      '3': {
-        id: '3',
-        name: 'Mike Johnson',
-        email: 'mike.johnson@albaly.com',
-        role: 'user',
-        status: 'inactive',
-        lastLogin: '2024-12-05T16:45:00Z',
-        createdAt: '2024-03-10T09:00:00Z',
-        roles: ['user'],
-        permissions: ['read'],
-      },
-    };
-
-    const staff = mockData[id];
-    if (!staff) {
-      throw new NotFoundException(`Staff member with ID ${id} not found`);
-    }
-
-    return staff;
-  }
 }
