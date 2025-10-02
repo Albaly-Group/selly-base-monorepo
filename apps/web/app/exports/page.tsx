@@ -165,4 +165,4 @@ function ExportsPage() {
   )
 }
 
-export default requireAuth(["user", "staff", "admin"])(ExportsPage)
+export default requireAuth(["data:export", "*"])(ExportsPage)

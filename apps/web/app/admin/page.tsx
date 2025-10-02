@@ -96,4 +96,4 @@ function AdminPage() {
   )
 }
 
-export default requireAuth(["admin", "customer_admin"])(AdminPage)
+export default requireAuth(["org-users:manage", "*"])(AdminPage)

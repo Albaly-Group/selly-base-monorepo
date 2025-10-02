@@ -446,4 +446,4 @@ function CompanyLookupPage() {
   )
 }
 
-export default requireAuth(["user", "admin"])(CompanyLookupPage)
+export default requireAuth(["companies:read", "*"])(CompanyLookupPage)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth, isStaff, isCustomerAdmin, isLegacyAdmin, canManageDatabase } from "@/lib/auth"
+import { useAuth, canManageDatabase, canManageOrganizationUsers } from "@/lib/auth"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -120,8 +120,8 @@ export function CustomerDashboard() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.name}</h1>
           <p className="text-gray-600">
             {!canManageDatabase(user) && "Discover and manage your business prospects with powerful search and filtering tools."}
-            {isStaff(user) && "Manage the company database and moderate user submissions."}
-            {(isCustomerAdmin(user) || isLegacyAdmin(user)) && "Full access to all platform features and administrative controls."}
+            {canManageDatabase(user) && !canManageOrganizationUsers(user) && "Manage the company database and moderate user submissions."}
+            {canManageOrganizationUsers(user) && "Full access to all platform features and administrative controls."}
           </p>
         </div>
 

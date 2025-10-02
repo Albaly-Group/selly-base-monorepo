@@ -1,63 +1,85 @@
-# Permission-Based Access Control Migration
+# Full RBAC Permission System Migration
 
 ## Overview
 
-This document summarizes the migration from role-based checks to permission-based access control in the Selly Base frontend application. This change ensures consistency between frontend, backend, and database implementations of RBAC (Role-Based Access Control).
+This document summarizes the complete migration to a pure RBAC (Role-Based Access Control) permission system in the Selly Base frontend application. All legacy role checks have been removed in favor of granular permission-based access control, ensuring consistency between frontend, backend, and database implementations.
 
 ## Problem Statement
 
-The frontend application was using direct role checks (`user.role === "staff"`) which created inconsistencies with the backend RBAC system that uses a proper permissions model with `users`, `roles`, and `permissions` tables. This inconsistency could lead to:
+The frontend application was using mixed role-based and permission-based checks:
+- Direct role checks (`user.role === "staff"`)
+- Legacy role helper functions (`isLegacyAdmin()`, `isCustomerAdmin()`, etc.)
+- Inconsistent with the backend RBAC system using `users`, `roles`, and `permissions` tables
+
+This inconsistency created:
 
 1. **Access control bugs**: Different behavior between frontend and backend
 2. **Maintenance issues**: Role logic duplicated across components
 3. **Limited flexibility**: Couldn't support users with multiple roles
 4. **Future limitations**: Hard to implement granular permissions
+5. **Technical debt**: Legacy code mixed with new RBAC system
 
 ## Solution
 
-Migrated from direct role checks to permission-based helper functions that:
+Complete migration to a pure RBAC permission system:
 
-1. Check both the legacy `role` field and the new `roles` array
-2. Centralize permission logic in reusable functions
-3. Align with backend RBAC implementation
-4. Support future permission-based features
+1. **Removed all legacy role functions**: `isStaff()`, `isCustomerAdmin()`, `isLegacyAdmin()`, `isPlatformAdmin()`
+2. **Implemented `hasPermission()` function**: Standard RBAC permission checking with wildcard support
+3. **Updated all permission check functions**: Now use `hasPermission()` with specific permission keys
+4. **Updated all page-level guards**: `requireAuth()` now accepts permissions instead of roles
+5. **Aligned with RBAC standard**: Follows industry-standard permission patterns
 
 ## Changes Made
 
-### 1. New Helper Functions Added (`apps/web/lib/auth.tsx`)
+### 1. Core RBAC Function (`apps/web/lib/auth.tsx`)
 
-#### Role Check Functions
-- `isStaff(user: User): boolean` - Checks if user has staff role
+#### `hasPermission(user: User, permissionKey: string): boolean`
+The core permission checking function that:
+- Checks all roles assigned to the user
+- Supports wildcard permissions (`*` for full access)
+- Supports pattern matching (e.g., `tenants:*` matches `tenants:read`, `tenants:write`)
+- Returns true if user has the required permission
 
-#### Permission Check Functions
-- `canManageDatabase(user: User): boolean` - Staff, customer admin, or legacy admin can manage database
-- `canViewReports(user: User): boolean` - Staff, customer admin, or legacy admin can view reports
+### 2. Permission Check Functions (RBAC Standard)
 
-### 2. Updated Components
+All permission functions now use `hasPermission()` internally:
+
+**Platform Admin Permissions:**
+- `canManageTenants()` - Checks for `tenants:manage` or `*`
+- `canManagePlatformUsers()` - Checks for `users:manage` or `*`
+- `canViewPlatformAnalytics()` - Checks for `analytics:view` or `*`
+- `canManagePlatformSettings()` - Checks for `settings:manage` or `*`
+- `canManageSharedData()` - Checks for `shared-data:manage` or `*`
+
+**Organization Admin Permissions:**
+- `canManageOrganizationUsers()` - Checks for `org-users:manage` or `*`
+- `canManageOrganizationPolicies()` - Checks for `org-policies:manage` or `*`
+- `canManageOrganizationData()` - Checks for `org-data:manage` or `*`
+- `canManageOrganizationSettings()` - Checks for `org-settings:manage` or `*`
+
+**Staff Permissions:**
+- `canManageDatabase()` - Checks for `database:manage` or `*`
+- `canViewReports()` - Checks for `reports:view` or `*`
+
+### 3. Updated Components
 
 #### `apps/web/components/navigation.tsx`
-**Before:**
+**Before (Legacy Role Checks):**
 ```typescript
 {(user.role === "staff" || isCustomerAdmin(user) || isLegacyAdmin(user)) && !isPlatformAdmin(user) && (
-  <>
-    <NavigationMenuItem>Database Management</NavigationMenuItem>
-    <NavigationMenuItem>Reports</NavigationMenuItem>
-  </>
+  <NavigationMenuItem>Database Management</NavigationMenuItem>
 )}
 ```
 
-**After:**
+**After (Pure RBAC Permissions):**
 ```typescript
-{canManageDatabase(user) && !isPlatformAdmin(user) && (
-  <>
-    <NavigationMenuItem>Database Management</NavigationMenuItem>
-    <NavigationMenuItem>Reports</NavigationMenuItem>
-  </>
+{canManageDatabase(user) && !canManageTenants(user) && (
+  <NavigationMenuItem>Database Management</NavigationMenuItem>
 )}
 ```
 
 #### `apps/web/components/customer-dashboard.tsx`
-**Before:**
+**Before (Legacy Role Checks):**
 ```typescript
 const availableFeatures =
   user.role === "user"
@@ -105,25 +127,57 @@ This ensures existing users with the legacy role field continue to work while su
 - ✅ All permission checks are now centralized
 - ✅ No direct `user.role` checks in navigation or dashboard components
 
+## RBAC Permission Keys
+
+The following permission keys are used throughout the application:
+
+### Platform Admin Permissions
+- `*` - Wildcard permission (full access to everything)
+- `tenants:*` - All tenant management operations
+- `tenants:manage` - Manage customer organizations
+- `users:manage` - Manage platform users across all tenants
+- `analytics:view` - View platform-wide analytics
+- `settings:manage` - Manage platform settings
+- `shared-data:manage` - Manage shared data resources
+
+### Organization Admin Permissions
+- `org-users:manage` - Manage users within organization
+- `org-policies:manage` - Manage organization policies
+- `org-data:manage` - Manage organization-specific data
+- `org-settings:manage` - Manage organization settings
+
+### Staff Permissions
+- `database:manage` - Manage company database
+- `reports:view` - View reports and analytics
+
+### User Permissions
+- `companies:read` - Search and view companies
+- `lists:manage` - Manage personal company lists
+- `data:import` - Import data
+- `data:export` - Export data
+
 ## Migration Guide for Developers
 
-When adding new features that require role checks:
+When adding new features that require access control:
 
-### ❌ Don't do this:
+### ❌ Don't do this (Legacy):
 ```typescript
 {user.role === "staff" && <StaffFeature />}
-{user.role === "admin" && <AdminFeature />}
+{isCustomerAdmin(user) && <AdminFeature />}
 ```
 
-### ✅ Do this instead:
+### ✅ Do this (RBAC Standard):
 ```typescript
-// Use existing permission functions
+// Use hasPermission directly for granular control
+{hasPermission(user, 'feature:access') && <NewFeature />}
+
+// Or use/create permission helper functions
 {canManageDatabase(user) && <StaffFeature />}
 {canManageOrganizationUsers(user) && <AdminFeature />}
 
-// Or create new permission functions
+// Create new permission functions as needed
 export function canAccessNewFeature(user: User): boolean {
-  return isStaff(user) || isCustomerAdmin(user)
+  return hasPermission(user, 'new-feature:access') || hasPermission(user, '*')
 }
 ```
 

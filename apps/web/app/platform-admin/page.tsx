@@ -182,4 +182,4 @@ function PlatformAdminPage() {
   )
 }
 
-export default requireAuth(["platform_admin"])(PlatformAdminPage)
+export default requireAuth(["tenants:manage", "*"])(PlatformAdminPage)

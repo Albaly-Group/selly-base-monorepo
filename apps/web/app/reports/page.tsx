@@ -321,4 +321,4 @@ function ReportsPage() {
   )
 }
 
-export default requireAuth(["staff", "admin"])(ReportsPage)
+export default requireAuth(["reports:view", "*"])(ReportsPage)

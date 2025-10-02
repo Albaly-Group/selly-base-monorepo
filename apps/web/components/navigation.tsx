@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth, isPlatformAdmin, canManageTenants, canManageOrganizationUsers, canManageDatabase } from "@/lib/auth"
+import { useAuth, hasPermission, canManageTenants, canManageOrganizationUsers, canManageDatabase } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -34,8 +34,8 @@ export function Navigation() {
 
             <NavigationMenu>
               <NavigationMenuList>
-                {/* Basic user features - available to all roles except platform admin */}
-                {!isPlatformAdmin(user) && (
+                {/* Basic user features - available to users with company access permissions */}
+                {(hasPermission(user, 'companies:read') || hasPermission(user, '*')) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/lookup" legacyBehavior passHref>
@@ -54,8 +54,8 @@ export function Navigation() {
                   </>
                 )}
 
-                {/* Staff features - available to staff and admin roles */}
-                {canManageDatabase(user) && !isPlatformAdmin(user) && (
+                {/* Staff features - available to users with database management permissions */}
+                {canManageDatabase(user) && !canManageTenants(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/staff" legacyBehavior passHref>
@@ -74,8 +74,8 @@ export function Navigation() {
                   </>
                 )}
 
-                {/* Import/Export - available to non-platform admin users */}
-                {!isPlatformAdmin(user) && (
+                {/* Import/Export - available to users with data import/export permissions */}
+                {(hasPermission(user, 'data:import') || hasPermission(user, 'data:export') || hasPermission(user, '*')) && !canManageTenants(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/imports" legacyBehavior passHref>
