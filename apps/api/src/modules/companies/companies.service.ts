@@ -566,7 +566,12 @@ export class CompaniesService {
           );
         }
 
-        return savedCompany;
+        // Transform response to match DTO field names
+        return {
+          ...savedCompany,
+          companyNameEn: savedCompany.nameEn,
+          companyNameTh: savedCompany.nameTh,
+        };
       } else {
         // Mock implementation
         console.log('📝 Created company:', companyData);

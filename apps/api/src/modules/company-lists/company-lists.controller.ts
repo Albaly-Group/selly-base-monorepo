@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   ValidationPipe,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -254,10 +255,12 @@ export class CompanyListsController {
     @Query('organizationId') organizationId?: string,
   ) {
     const mockUser = createMockUser(organizationId);
-    return this.companyListsService.getListItems(id, mockUser);
+    const items = await this.companyListsService.getListItems(id, mockUser);
+    return { data: items };
   }
 
   @Post(':id/companies')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Add companies to a list' })
