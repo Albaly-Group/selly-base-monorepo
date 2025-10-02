@@ -4,6 +4,76 @@
 
 This document defines the comprehensive permission system for the Selly Base multi-tenant platform, detailing what each role can access and the user journey goals for each role.
 
+## Full RBAC Permission System
+
+### Core Permission Function
+
+The system now uses a pure RBAC approach with the core `hasPermission()` function:
+
+```typescript
+hasPermission(user: User, permissionKey: string): boolean
+```
+
+This function:
+- Checks all roles assigned to the user
+- Supports wildcard permissions (`*` for full access)
+- Supports pattern matching (e.g., `tenants:*` matches all tenant operations)
+- Provides consistent permission checking across the application
+
+### Permission Keys
+
+**Platform Admin Permissions:**
+- `*` - Wildcard (full access to everything)
+- `tenants:manage` - Manage customer organizations
+- `users:manage` - Manage platform users
+- `analytics:view` - View platform analytics
+- `settings:manage` - Manage platform settings
+- `shared-data:manage` - Manage shared data
+
+**Organization Admin Permissions:**
+- `org-users:manage` - Manage organization users
+- `org-policies:manage` - Manage organization policies
+- `org-data:manage` - Manage organization data
+- `org-settings:manage` - Manage organization settings
+
+**Staff Permissions:**
+- `database:manage` - Manage company database
+- `reports:view` - View reports
+
+**User Permissions:**
+- `companies:read` - Search companies
+- `lists:manage` - Manage lists
+- `data:import` - Import data
+- `data:export` - Export data
+
+### Permission Helper Functions
+
+All helper functions now use `hasPermission()` internally:
+
+```typescript
+// Platform Admin
+export function canManageTenants(user: User): boolean {
+  return hasPermission(user, 'tenants:manage') || hasPermission(user, '*')
+}
+
+// Organization Admin
+export function canManageOrganizationUsers(user: User): boolean {
+  return hasPermission(user, 'org-users:manage') || hasPermission(user, '*')
+}
+
+// Staff
+export function canManageDatabase(user: User): boolean {
+  return hasPermission(user, 'database:manage') || hasPermission(user, '*')
+}
+```
+
+**Example Usage:**
+```typescript
+// ✅ RBAC Standard approach
+{hasPermission(user, 'database:manage') && <DatabaseFeature />}
+{canManageDatabase(user) && <DatabaseFeature />}
+```
+
 ## Role Hierarchy
 
 ### 1. **Platform Admin** (`platform_admin`)
@@ -161,6 +231,10 @@ export function canManageOrganizationPolicies(user: User): boolean
 export function canManageOrganizationData(user: User): boolean
 export function canManageOrganizationSettings(user: User): boolean
 
+// Staff Permissions
+export function canManageDatabase(user: User): boolean
+export function canViewReports(user: User): boolean
+
 // Data Access Permissions
 export function canAccessSharedData(user: User): boolean
 export function canAccessOrganizationData(user: User, orgId: string): boolean
@@ -243,6 +317,8 @@ export function ProtectedComponent() {
 - [x] Component-level permission checks
 
 ### Phase 2: Feature Refinement (Current)
+- [x] Replace role-based checks with permission-based checks
+- [x] Add staff permission functions (canManageDatabase, canViewReports)
 - [ ] Remove/hide unauthorized features
 - [ ] Comprehensive permission validation
 - [ ] Improved error messages and user feedback

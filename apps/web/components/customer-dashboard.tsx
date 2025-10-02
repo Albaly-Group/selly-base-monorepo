@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth"
+import { useAuth, canManageDatabase, canManageOrganizationUsers } from "@/lib/auth"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -106,12 +106,9 @@ export function CustomerDashboard() {
     },
   ]
 
-  const availableFeatures =
-    user.role === "user"
-      ? userFeatures
-      : user.role === "staff" || user.role === "admin"
-        ? [...userFeatures, ...staffFeatures]
-        : userFeatures
+  const availableFeatures = canManageDatabase(user)
+    ? [...userFeatures, ...staffFeatures]
+    : userFeatures
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -122,10 +119,9 @@ export function CustomerDashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.name}</h1>
           <p className="text-gray-600">
-            {user.role === "user" &&
-              "Discover and manage your business prospects with powerful search and filtering tools."}
-            {user.role === "staff" && "Manage the company database and moderate user submissions."}
-            {user.role === "admin" && "Full access to all platform features and administrative controls."}
+            {!canManageDatabase(user) && "Discover and manage your business prospects with powerful search and filtering tools."}
+            {canManageDatabase(user) && !canManageOrganizationUsers(user) && "Manage the company database and moderate user submissions."}
+            {canManageOrganizationUsers(user) && "Full access to all platform features and administrative controls."}
           </p>
         </div>
 
@@ -156,7 +152,7 @@ export function CustomerDashboard() {
                 {isLoading ? "..." : stats?.totalLists || "0"}
               </div>
               <p className="text-xs text-muted-foreground">
-                {user.role === "user" ? "Your saved lists" : "Platform-wide"}
+                {!canManageDatabase(user) ? "Your saved lists" : "Platform-wide"}
               </p>
             </CardContent>
           </Card>
@@ -209,7 +205,7 @@ export function CustomerDashboard() {
               </Link>
             </Button>
 
-            {(user.role === "staff" || user.role === "admin") && (
+            {canManageDatabase(user) && (
               <Button variant="outline" asChild>
                 <Link href="/staff">
                   <Database className="h-4 w-4 mr-2" />

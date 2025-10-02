@@ -170,4 +170,4 @@ function ImportsPage() {
   )
 }
 
-export default requireAuth(["admin"])(ImportsPage)
+export default requireAuth(["data:import", "*"])(ImportsPage)

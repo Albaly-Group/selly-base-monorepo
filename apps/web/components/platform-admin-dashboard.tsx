@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth, isPlatformAdmin } from "@/lib/auth"
+import { useAuth, canManageTenants } from "@/lib/auth"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { getTotalUsers, getActiveTenants } from "@/lib/platform-admin-data"
 export function PlatformAdminDashboard() {
   const { user } = useAuth()
 
-  if (!user || !isPlatformAdmin(user)) {
+  if (!user || !canManageTenants(user)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />

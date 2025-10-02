@@ -334,4 +334,4 @@ function StaffDashboardPage() {
   )
 }
 
-export default requireAuth(["staff", "admin"])(StaffDashboardPage)
+export default requireAuth(["database:manage", "*"])(StaffDashboardPage)

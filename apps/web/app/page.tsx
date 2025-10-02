@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth, isPlatformAdmin, isCustomerAdmin, isLegacyAdmin } from "@/lib/auth"
+import { useAuth, canManageTenants, canManageOrganizationUsers } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 import { CustomerDashboard } from "@/components/customer-dashboard"
 import { PlatformAdminDashboard } from "@/components/platform-admin-dashboard"
@@ -11,14 +11,14 @@ export default function HomePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  // Redirect users based on their roles to their appropriate dashboards
+  // Redirect users based on their permissions to their appropriate dashboards
   useEffect(() => {
     if (!isLoading && user) {
-      if (isPlatformAdmin(user)) {
+      if (canManageTenants(user)) {
         router.replace("/platform-admin")
         return
       }
-      if (isCustomerAdmin(user) || isLegacyAdmin(user)) {
+      if (canManageOrganizationUsers(user)) {
         router.replace("/admin")
         return
       }
@@ -39,7 +39,7 @@ export default function HomePage() {
   }
 
   // Platform admins should be redirected to /platform-admin, but show their dashboard if they're here
-  if (isPlatformAdmin(user)) {
+  if (canManageTenants(user)) {
     return <PlatformAdminDashboard />
   }
 

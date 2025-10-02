@@ -248,7 +248,7 @@ export function useAuth() {
   return context
 }
 
-export function requireAuth(allowedRoles?: UserRoleName[]) {
+export function requireAuth(requiredPermissions?: string[]) {
   return (WrappedComponent: React.ComponentType<any>) =>
     function AuthenticatedComponent(props: any) {
       const { user, isLoading } = useAuth()
@@ -272,91 +272,102 @@ export function requireAuth(allowedRoles?: UserRoleName[]) {
         )
       }
 
-      if (allowedRoles && user.role && !allowedRoles.includes(user.role as UserRoleName)) {
-        return (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2 text-red-600">Access Denied</h2>
-              <p>You don't have permission to access this page.</p>
-              <p className="text-sm text-gray-600 mt-2">Required role: {allowedRoles.join(" or ")}</p>
-              <p className="text-sm text-gray-600">Your role: {user.role}</p>
+      if (requiredPermissions && requiredPermissions.length > 0) {
+        const hasRequiredPermission = requiredPermissions.some(permission => hasPermission(user, permission))
+        if (!hasRequiredPermission) {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2 text-red-600">Access Denied</h2>
+                <p>You don't have permission to access this page.</p>
+                <p className="text-sm text-gray-600 mt-2">Required permissions: {requiredPermissions.join(" or ")}</p>
+              </div>
             </div>
-          </div>
-        )
+          )
+        }
       }
 
       return <WrappedComponent {...props} />
     }
 }
 
-// Multi-tenant utility functions
-// Helper to check if user has a specific role by name
-export function hasRole(user: User, roleName: string): boolean {
-  // Check the primary role field (backward compatibility)
-  if (user.role === roleName) return true
+// Permission-based helper function using RBAC standard
+export function hasPermission(user: User, permissionKey: string): boolean {
+  if (!user.roles) return false
   
-  // Check the roles array (new RBAC system)
-  if (user.roles && user.roles.length > 0) {
-    return user.roles.some(r => r.name === roleName)
+  for (const role of user.roles) {
+    if (!role.permissions) continue
+    
+    for (const permission of role.permissions) {
+      // Admin wildcard permission
+      if (permission.key === '*') return true
+      
+      // Exact match
+      if (permission.key === permissionKey) return true
+      
+      // Pattern matching (e.g., 'tenants:*' matches 'tenants:read', 'tenants:write')
+      if (permission.key.endsWith(':*')) {
+        const prefix = permission.key.slice(0, -1) // Remove '*'
+        if (permissionKey.startsWith(prefix)) return true
+      }
+    }
   }
   
   return false
 }
 
-export function isPlatformAdmin(user: User): boolean {
-  return hasRole(user, 'platform_admin')
-}
-
-export function isCustomerAdmin(user: User): boolean {
-  return hasRole(user, 'customer_admin') || hasRole(user, 'admin') // backward compatibility
-}
-
-export function isLegacyAdmin(user: User): boolean {
-  return hasRole(user, 'admin')
-}
-
 export function hasOrganizationAccess(user: User, organizationId?: string): boolean {
-  if (isPlatformAdmin(user)) return true
+  // Platform admins with wildcard permission can access all organizations
+  if (hasPermission(user, '*') || hasPermission(user, 'tenants:*')) return true
   if (!organizationId) return false
   return user.organization_id === organizationId
 }
 
-// Platform Admin specific permissions
+// Platform Admin specific permissions - RBAC Standard
 export function canManageTenants(user: User): boolean {
-  return isPlatformAdmin(user)
+  return hasPermission(user, 'tenants:manage') || hasPermission(user, '*')
 }
 
 export function canManagePlatformUsers(user: User): boolean {
-  return isPlatformAdmin(user)
+  return hasPermission(user, 'users:manage') || hasPermission(user, '*')
 }
 
 export function canViewPlatformAnalytics(user: User): boolean {
-  return isPlatformAdmin(user)
+  return hasPermission(user, 'analytics:view') || hasPermission(user, '*')
 }
 
 export function canManagePlatformSettings(user: User): boolean {
-  return isPlatformAdmin(user)
+  return hasPermission(user, 'settings:manage') || hasPermission(user, '*')
 }
 
 export function canManageSharedData(user: User): boolean {
-  return isPlatformAdmin(user)
+  return hasPermission(user, 'shared-data:manage') || hasPermission(user, '*')
 }
 
-// Customer Admin specific permissions
+// Organization Admin permissions - RBAC Standard
 export function canManageOrganizationUsers(user: User): boolean {
-  return isCustomerAdmin(user) || isLegacyAdmin(user)
+  return hasPermission(user, 'org-users:manage') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationPolicies(user: User): boolean {
-  return isCustomerAdmin(user) || isLegacyAdmin(user)
+  return hasPermission(user, 'org-policies:manage') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationData(user: User): boolean {
-  return isCustomerAdmin(user) || isLegacyAdmin(user)
+  return hasPermission(user, 'org-data:manage') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationSettings(user: User): boolean {
-  return isCustomerAdmin(user) || isLegacyAdmin(user)
+  return hasPermission(user, 'org-settings:manage') || hasPermission(user, '*')
+}
+
+// Staff permissions - RBAC Standard
+export function canManageDatabase(user: User): boolean {
+  return hasPermission(user, 'database:manage') || hasPermission(user, '*')
+}
+
+export function canViewReports(user: User): boolean {
+  return hasPermission(user, 'reports:view') || hasPermission(user, '*')
 }
 
 // Data access permissions
