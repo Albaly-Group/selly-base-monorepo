@@ -315,6 +315,10 @@ export function isLegacyAdmin(user: User): boolean {
   return hasRole(user, 'admin')
 }
 
+export function isStaff(user: User): boolean {
+  return hasRole(user, 'staff')
+}
+
 export function hasOrganizationAccess(user: User, organizationId?: string): boolean {
   if (isPlatformAdmin(user)) return true
   if (!organizationId) return false
@@ -357,6 +361,15 @@ export function canManageOrganizationData(user: User): boolean {
 
 export function canManageOrganizationSettings(user: User): boolean {
   return isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+// Staff specific permissions
+export function canManageDatabase(user: User): boolean {
+  return isStaff(user) || isCustomerAdmin(user) || isLegacyAdmin(user)
+}
+
+export function canViewReports(user: User): boolean {
+  return isStaff(user) || isCustomerAdmin(user) || isLegacyAdmin(user)
 }
 
 // Data access permissions

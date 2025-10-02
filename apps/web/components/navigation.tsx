@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth, isPlatformAdmin, isCustomerAdmin, isLegacyAdmin, canManageTenants, canManageOrganizationUsers } from "@/lib/auth"
+import { useAuth, isPlatformAdmin, canManageTenants, canManageOrganizationUsers, canManageDatabase } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -55,7 +55,7 @@ export function Navigation() {
                 )}
 
                 {/* Staff features - available to staff and admin roles */}
-                {(user.role === "staff" || isCustomerAdmin(user) || isLegacyAdmin(user)) && !isPlatformAdmin(user) && (
+                {canManageDatabase(user) && !isPlatformAdmin(user) && (
                   <>
                     <NavigationMenuItem>
                       <Link href="/staff" legacyBehavior passHref>
