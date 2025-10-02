@@ -574,22 +574,26 @@ export class CompaniesService {
         };
       } else {
         // Mock implementation
-        console.log('📝 Created company:', companyData);
+        const mockCompanyWithId = {
+          id: `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          ...companyData,
+        };
+        console.log('📝 Created company:', mockCompanyWithId);
 
         // Log creation for mock
         if (this.auditService) {
           await this.auditService.logCompanyOperation(
             user,
             'CREATE',
-            companyData.id,
+            mockCompanyWithId.id,
             {
-              newValues: companyData,
+              newValues: mockCompanyWithId,
               metadata: { dataSource: 'customer_input', mock: true },
             },
           );
         }
 
-        return companyData;
+        return mockCompanyWithId;
       }
     } catch (error) {
       // Log error

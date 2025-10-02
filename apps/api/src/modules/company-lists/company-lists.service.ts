@@ -342,10 +342,10 @@ export class CompanyListsService {
   ): Promise<any> {
     if (this.companyListRepository) {
       // Database implementation
-      const listData = {
+      const listData: Partial<CompanyList> = {
         name: data.name,
-        description: data.description || null,
-        organizationId: user.organizationId,
+        description: data.description || undefined,
+        organizationId: user.organizationId!,
         ownerUserId: user.id,
         visibility: data.visibility || 'private',
         isShared: data.visibility === 'public',
@@ -353,7 +353,7 @@ export class CompanyListsService {
         lastActivityAt: new Date(),
         isSmartList: data.isSmartList || false,
         smartCriteria: data.smartCriteria || {},
-        lastRefreshedAt: null,
+        lastRefreshedAt: undefined,
       };
 
       const list = this.companyListRepository.create(listData);
