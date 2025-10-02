@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { createCompanyList } from "@/lib/mock-data"
+import { apiClient } from "@/lib/api-client"
 import type { UserList } from "@/lib/types"
 
 interface CreateCompanyListDialogProps {
@@ -35,14 +35,13 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
     setError(null)
 
     try {
-      // Use the actual createCompanyList function
-      const newList = createCompanyList(
-        formData.name.trim(),
-        formData.description?.trim() || undefined
-      )
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Use API client to create company list
+      const newList = await apiClient.createCompanyList({
+        name: formData.name.trim(),
+        description: formData.description?.trim() || undefined,
+        visibility: 'private',
+        isShared: false
+      })
       
       console.log('Created new list:', newList)
       
@@ -57,7 +56,7 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
 
     } catch (error: any) {
       console.error("Error creating list:", error)
-      setError(error.message || "Failed to create list. Please try again.")
+      setError(error.message || "Failed to create list. Please ensure the backend is running.")
     } finally {
       setIsLoading(false)
     }

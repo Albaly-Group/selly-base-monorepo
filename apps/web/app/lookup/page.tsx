@@ -9,7 +9,7 @@ import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { requireAuth } from "@/lib/auth"
 import { useCompaniesSearch } from "@/lib/hooks/api-hooks"
-import { mockCompanies, searchCompanies, searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
+import { searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data"
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -109,33 +109,12 @@ function CompanyLookupPage() {
       return { filteredCompanies: companies, leadScores: {}, isLoading: false };
     }
 
-    // Fallback to original mock-based logic if API fails or no search criteria
-    if (!shouldSearch || hasApiError) {
-      // Simple keyword search
-      if (isSimpleSearch && searchTerm.trim()) {
-        const companies = searchCompanies(mockCompanies, searchTerm);
-        return { filteredCompanies: companies, leadScores: {}, isLoading: false };
-      }
-      
-      // Smart filtering with scoring
-      if (hasAppliedFiltering) {
-        const scoredResults = searchAndScoreCompanies(mockCompanies, smartFiltering);
-        const companies = scoredResults.map(result => result.company);
-        const scores: { [key: string]: WeightedLeadScore } = {};
-        
-        scoredResults.forEach(result => {
-          scores[result.company.id] = result.score;
-        });
-
-        return { 
-          filteredCompanies: companies,
-          leadScores: scores,
-          isLoading: false
-        };
-      }
+    // If API failed or no results, show empty state
+    if (hasApiError) {
+      console.error('API search failed, no fallback data available');
     }
     
-    // No results when nothing is applied
+    // No results when nothing is applied or API failed
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
   }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, apiSearchResult, isApiLoading, hasApiError, shouldSearch]);
 
