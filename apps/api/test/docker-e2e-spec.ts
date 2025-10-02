@@ -237,6 +237,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/companies')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newCompany)
         .expect(201);
 
@@ -261,6 +262,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/companies/${companyId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send(updates)
         .expect(200);
 
@@ -293,6 +295,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/company-lists')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newList)
         .expect(201);
 
@@ -311,8 +314,9 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       await request(app.getHttpServer())
         .post(`/api/v1/company-lists/${listId}/companies`)
-        .send({ companyId })
-        .expect(201);
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ companyIds: [companyId] })
+        .expect(200);
       
       console.log('✓ Added company to list');
     });
@@ -649,10 +653,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       const newCompany = {
         nameEn: 'Data Integrity Test Company',
         industry: 'Testing',
+        organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
       };
 
       await request(app.getHttpServer())
         .post('/api/v1/companies')
+        .set('Authorization', `Bearer ${authToken}`)
         .send(newCompany)
         .expect(201);
 
