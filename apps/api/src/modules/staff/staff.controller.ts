@@ -34,6 +34,20 @@ export class StaffController {
     });
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get staff member by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff member retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Staff member not found' })
+  async getStaffMemberById(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId?: string,
+  ) {
+    return this.staffService.getStaffMemberById(id, organizationId);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create staff member' })
   @ApiResponse({
