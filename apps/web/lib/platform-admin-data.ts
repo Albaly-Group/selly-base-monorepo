@@ -30,10 +30,21 @@ export interface SharedCompany {
   tenantCount?: number
 }
 
+// Cache to prevent rapid API calls
+let analyticsCache: { data: any; timestamp: number } | null = null
+let usersCache: { data: any; timestamp: number } | null = null
+const CACHE_DURATION = 30000 // 30 seconds
+
 // Updated utility functions that use backend APIs where available
 export async function getTotalUsers(): Promise<number> {
   try {
+    // Check cache first
+    if (usersCache && Date.now() - usersCache.timestamp < CACHE_DURATION) {
+      return usersCache.data?.length || 0
+    }
+    
     const response = await apiClient.getOrganizationUsers()
+    usersCache = { data: response.data, timestamp: Date.now() }
     return response.data?.length || 0
   } catch (error) {
     console.error('Failed to fetch users from backend, using fallback:', error)
@@ -43,7 +54,13 @@ export async function getTotalUsers(): Promise<number> {
 
 export async function getTotalDataRecords(): Promise<number> {
   try {
+    // Check cache first
+    if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
+      return analyticsCache.data.totalCompanies || 0
+    }
+    
     const response = await apiClient.getDashboardAnalytics()
+    analyticsCache = { data: response, timestamp: Date.now() }
     return response.totalCompanies || 0
   } catch (error) {
     console.error('Failed to fetch analytics from backend, using fallback:', error)
@@ -53,7 +70,13 @@ export async function getTotalDataRecords(): Promise<number> {
 
 export async function getActiveTenants(): Promise<number> {
   try {
+    // Check cache first
+    if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
+      return analyticsCache.data.activeUsers || 0
+    }
+    
     const response = await apiClient.getDashboardAnalytics()
+    analyticsCache = { data: response, timestamp: Date.now() }
     return response.activeUsers || 0
   } catch (error) {
     console.error('Failed to fetch analytics from backend, using fallback:', error)
@@ -63,7 +86,14 @@ export async function getActiveTenants(): Promise<number> {
 
 export async function getPlatformAnalytics(): Promise<any> {
   try {
-    return await apiClient.getDashboardAnalytics()
+    // Check cache first
+    if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
+      return analyticsCache.data
+    }
+    
+    const response = await apiClient.getDashboardAnalytics()
+    analyticsCache = { data: response, timestamp: Date.now() }
+    return response
   } catch (error) {
     console.error('Failed to fetch platform analytics from backend, using fallback:', error)
     return {

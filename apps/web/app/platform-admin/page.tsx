@@ -23,11 +23,17 @@ function PlatformAdminPage() {
     analytics: null
   })
   const [loading, setLoading] = useState(true)
+  const [hasFetched, setHasFetched] = useState(false)
 
   useEffect(() => {
+    // Prevent infinite loop - only fetch once
+    if (hasFetched) return
+
     const fetchPlatformData = async () => {
       try {
         setLoading(true)
+        setHasFetched(true)
+        
         const [totalUsers, totalData, activeTenants, analytics] = await Promise.all([
           getTotalUsers(),
           getTotalDataRecords(), 
@@ -44,13 +50,14 @@ function PlatformAdminPage() {
         })
       } catch (error) {
         console.error('Failed to fetch platform data:', error)
+        // Even on error, mark as fetched to prevent infinite loop
       } finally {
         setLoading(false)
       }
     }
 
     fetchPlatformData()
-  }, [])
+  }, [hasFetched])
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
