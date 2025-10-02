@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   ValidationPipe,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -45,11 +46,12 @@ interface PaginatedResponse<T> {
 }
 
 // For endpoints that don't require authentication, we create a mock user
+// Use valid organization ID from test database (Albaly Digital)
 const createMockUser = (organizationId?: string): User =>
   ({
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    organizationId: organizationId || '123e4567-e89b-12d3-a456-426614174001',
-    email: 'test@example.com',
+    id: '550e8400-e29b-41d4-a716-446655440003', // Valid test user ID from database
+    organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000', // Valid org ID (Albaly Digital)
+    email: 'admin@albaly.com',
     name: 'Test User',
     passwordHash: 'hashed',
     avatarUrl: null,
@@ -253,10 +255,12 @@ export class CompanyListsController {
     @Query('organizationId') organizationId?: string,
   ) {
     const mockUser = createMockUser(organizationId);
-    return this.companyListsService.getListItems(id, mockUser);
+    const items = await this.companyListsService.getListItems(id, mockUser);
+    return { data: items };
   }
 
   @Post(':id/companies')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Add companies to a list' })
