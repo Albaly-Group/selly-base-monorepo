@@ -65,15 +65,30 @@ describe('StaffService', () => {
   });
 
   describe('getStaffMembers', () => {
-    it('should return paginated staff members from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new StaffService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should return paginated staff members from database', async () => {
+      const mockUsers = [
+        {
+          id: '1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          status: 'active',
+          lastLoginAt: new Date(),
+          createdAt: new Date(),
+          organization: { name: 'Test Org' },
+          userRoles2: [],
+        },
+      ];
 
-      const result = await serviceWithoutRepo.getStaffMembers({
+      mockUserRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockUsers, 1]),
+      });
+
+      const result = await service.getStaffMembers({
         page: 1,
         limit: 10,
       });
@@ -85,14 +100,16 @@ describe('StaffService', () => {
     });
 
     it('should handle pagination parameters', async () => {
-      const serviceWithoutRepo = new StaffService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      mockUserRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      });
 
-      const result = await serviceWithoutRepo.getStaffMembers({
+      const result = await service.getStaffMembers({
         page: 2,
         limit: 5,
       });
@@ -103,21 +120,22 @@ describe('StaffService', () => {
   });
 
   describe('createStaffMember', () => {
-    it('should create staff member with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new StaffService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
-
+    it('should create staff member with database', async () => {
       const staffData = {
         name: 'New Staff',
         email: 'newstaff@example.com',
         role: 'member',
       };
 
-      const result = await serviceWithoutRepo.createStaffMember(staffData);
+      const mockUser = {
+        id: '123',
+        ...staffData,
+      };
+
+      mockUserRepository.create.mockReturnValue(mockUser);
+      mockUserRepository.save.mockResolvedValue(mockUser);
+
+      const result = await service.createStaffMember(staffData);
 
       expect(result).toBeDefined();
       expect(result.name).toBe(staffData.name);
