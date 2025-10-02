@@ -20,7 +20,7 @@ export function PlatformAdminDashboard() {
           <div className="text-center text-red-600">
             <Shield className="h-12 w-12 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-            <p>You don't have platform admin privileges.</p>
+            <p>You don&apos;t have platform admin privileges.</p>
           </div>
         </main>
       </div>

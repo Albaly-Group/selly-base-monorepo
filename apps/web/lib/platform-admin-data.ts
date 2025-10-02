@@ -129,8 +129,8 @@ export const mockPlatformUsers: PlatformUser[] = [
     email: "platform@albaly.com",
     role: "platform_admin",
     status: "active",
-    organization_id: undefined,
-    organization: undefined,
+    organization_id: null as any, // Platform admins don't belong to an organization
+    organization: null,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-12-08T14:30:00Z",
     lastLogin: "2024-12-08T14:30:00Z",
