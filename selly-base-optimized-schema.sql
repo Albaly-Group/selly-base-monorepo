@@ -582,22 +582,24 @@ INSERT INTO organizations (id, name, slug, status, subscription_tier) VALUES
 ('550e8400-e29b-41d4-a716-446655440010', 'Sample Enterprise Ltd', 'sample-enterprise', 'active', 'enterprise');
 
 -- Comprehensive test users covering all role scenarios
+-- All test users have password: password123
+-- Password hash generated using argon2id with verified working credentials
 INSERT INTO users (id, organization_id, email, name, password_hash, status, email_verified_at) VALUES
 -- Platform users (no specific organization)
-('550e8400-e29b-41d4-a716-446655440001', NULL, 'platform@albaly.com', 'Platform Admin', '$argon2id$v=19$m=65536,t=3,p=4$clFYWADU2PbVhevZqNF2vw$YhuDguM0Mx2nrfD+nh+Fex2rb/dhtSz4ITG4jlFTelE', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440002', NULL, 'support@albaly.com', 'Platform Staff', '$argon2id$v=19$m=65536,t=3,p=4$bJK7WPLivowC4cBYYZDXTQ$1SMka+oPB08ZzrD1p/eN5sLRgINSfhJapWKkZk3o/cA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440001', NULL, 'platform@albaly.com', 'Platform Admin', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440002', NULL, 'support@albaly.com', 'Platform Staff', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
 -- Albaly Digital organization users
-('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Albaly Admin', '$argon2id$v=19$m=65536,t=3,p=4$K0k8WdQZ3HeHuLc6dvNhGg$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440000', 'staff@albaly.com', 'Albaly Staff', '$argon2id$v=19$m=65536,t=3,p=4$vTWZ9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440000', 'user@albaly.com', 'Albaly User', '$argon2id$v=19$m=65536,t=3,p=4$9p3dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'admin@albaly.com', 'Albaly Admin', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440000', 'staff@albaly.com', 'Albaly Staff', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440000', 'user@albaly.com', 'Albaly User', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
 -- Demo Customer Corp users  
-('550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440001', 'admin@democustomer.com', 'Customer Admin', '$argon2id$v=19$m=65536,t=3,p=4$dbhLh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440001', 'staff@democustomer.com', 'Customer Staff', '$argon2id$v=19$m=65536,t=3,p=4$Lh8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3d$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$8a39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3db$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440001', 'admin@democustomer.com', 'Customer Admin', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440001', 'staff@democustomer.com', 'Customer Staff', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440001', 'user@democustomer.com', 'Customer User', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
 -- Sample Enterprise users with legacy roles
-('550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440010', 'admin@sampleenterprise.com', 'Legacy Admin', '$argon2id$v=19$m=65536,t=3,p=4$39Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbh$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440010', 'staff@sampleenterprise.com', 'Legacy Staff', '$argon2id$v=19$m=65536,t=3,p=4$9Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbhL$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP),
-('550e8400-e29b-41d4-a716-446655440021', '550e8400-e29b-41d4-a716-446655440010', 'user@sampleenterprise.com', 'Legacy User', '$argon2id$v=19$m=65536,t=3,p=4$Bar9nRx5d07GdqnA0bdJaucVcPM$vTWZ9p3dbhLh$K0k8WdQZ3HeHuLc6dvNhGg', 'active', CURRENT_TIMESTAMP);
+('550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440010', 'admin@sampleenterprise.com', 'Legacy Admin', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440010', 'staff@sampleenterprise.com', 'Legacy Staff', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP),
+('550e8400-e29b-41d4-a716-446655440021', '550e8400-e29b-41d4-a716-446655440010', 'user@sampleenterprise.com', 'Legacy User', '$argon2id$v=19$m=65536,t=3,p=4$wBnQnuoyzqCdY6hsiB/j8Q$G/uEcoh8ys3r6PjGDh/sqISWOm1ThmnylSGLn4TmeaA', 'active', CURRENT_TIMESTAMP);
 
 INSERT INTO ref_industry_codes (code, title_en, title_th, classification_system, level) VALUES
 ('46', 'Wholesale trade', 'ขายส่ง', 'TSIC_2009', 2),
