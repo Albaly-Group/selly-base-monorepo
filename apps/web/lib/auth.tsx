@@ -377,7 +377,8 @@ export function canAccessSharedData(user: User): boolean {
 }
 
 export function canAccessOrganizationData(user: User, orgId?: string): boolean {
-  if (isPlatformAdmin(user)) return true // Platform admins can access all org data
+  // Platform admins with wildcard permission can access all org data
+  if (hasPermission(user, '*') || hasPermission(user, 'tenants:*')) return true
   if (!orgId || !user.organization_id) return false
   return user.organization_id === orgId
 }
