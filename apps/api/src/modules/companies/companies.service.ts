@@ -35,14 +35,14 @@ interface PaginatedResponse<T> {
   };
 }
 
-// Mock data for demonstration - will be replaced with real database queries
+// Mock data for demonstration - using valid test database IDs
 const MOCK_COMPANIES = [
   {
     id: '123e4567-e89b-12d3-a456-426614174001',
     nameEn: 'Albaly Digital',
     nameTh: 'อัลบาลี ดิจิทัล',
     displayName: 'Albaly Digital',
-    organizationId: '123e4567-e89b-12d3-a456-426614174001',
+    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital org
     businessDescription:
       'Digital transformation and software development company',
     websiteUrl: 'https://albaly.com',
@@ -64,7 +64,7 @@ const MOCK_COMPANIES = [
     nameEn: 'Sample Tech Corp',
     nameTh: 'บริษัท ตัวอย่าง เทค จำกัด',
     displayName: 'Sample Tech Corp',
-    organizationId: null,
+    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital org
     businessDescription: 'Sample technology company for demonstration',
     websiteUrl: 'https://sample-tech.com',
     primaryEmail: 'contact@sample-tech.com',
@@ -498,13 +498,10 @@ export class CompaniesService {
 
     try {
       const companyData = {
-        id: `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        // Don't set id - let database auto-generate UUID
         nameEn: createDto.companyNameEn,
         nameTh: createDto.companyNameTh || null,
-        displayName:
-          createDto.companyNameEn ||
-          createDto.companyNameTh ||
-          'Unnamed Company',
+        // Don't set displayName - it's a GENERATED column in the database
         primaryRegistrationNo: createDto.primaryRegistrationNo || null,
         organizationId: user.organizationId,
         businessDescription: createDto.businessDescription || null,

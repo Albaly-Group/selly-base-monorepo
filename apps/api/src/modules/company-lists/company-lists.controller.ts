@@ -45,11 +45,12 @@ interface PaginatedResponse<T> {
 }
 
 // For endpoints that don't require authentication, we create a mock user
+// Use valid organization ID from test database (Albaly Digital)
 const createMockUser = (organizationId?: string): User =>
   ({
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    organizationId: organizationId || '123e4567-e89b-12d3-a456-426614174001',
-    email: 'test@example.com',
+    id: '550e8400-e29b-41d4-a716-446655440003', // Valid test user ID from database
+    organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000', // Valid org ID (Albaly Digital)
+    email: 'admin@albaly.com',
     name: 'Test User',
     passwordHash: 'hashed',
     avatarUrl: null,

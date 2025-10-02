@@ -48,14 +48,14 @@ interface CompanyListCreateRequest {
 
 interface CompanyListUpdateRequest extends Partial<CompanyListCreateRequest> {}
 
-// Mock data for demonstration
+// Mock data for demonstration - using valid test database IDs
 const MOCK_COMPANY_LISTS = [
   {
     id: '123e4567-e89b-12d3-a456-426614174003',
     name: 'Technology Companies',
     description: 'List of technology companies in Thailand',
-    organizationId: '123e4567-e89b-12d3-a456-426614174001',
-    ownerUserId: '123e4567-e89b-12d3-a456-426614174000',
+    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital
+    ownerUserId: '550e8400-e29b-41d4-a716-446655440003', // admin@albaly.com
     visibility: 'private',
     isShared: false,
     totalCompanies: 2,
@@ -71,8 +71,8 @@ const MOCK_COMPANY_LISTS = [
     id: '123e4567-e89b-12d3-a456-426614174004',
     name: 'Sample Prospects',
     description: 'Public list of sample companies for demonstration',
-    organizationId: null,
-    ownerUserId: '123e4567-e89b-12d3-a456-426614174000',
+    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital
+    ownerUserId: '550e8400-e29b-41d4-a716-446655440003', // admin@albaly.com
     visibility: 'public',
     isShared: true,
     totalCompanies: 1,
@@ -188,7 +188,7 @@ export class CompanyListsService {
     const query = this.companyListRepository!.createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
-      .leftJoinAndSelect('list.items', 'items')
+      .leftJoinAndSelect('list.companyListItems', 'items')
       .leftJoinAndSelect('items.company', 'company');
 
     // Scope-based filtering with access control
@@ -296,7 +296,7 @@ export class CompanyListsService {
     const query = this.companyListRepository!.createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
-      .leftJoinAndSelect('list.items', 'items')
+      .leftJoinAndSelect('list.companyListItems', 'items')
       .leftJoinAndSelect('items.company', 'company')
       .leftJoinAndSelect('items.addedByUser', 'addedByUser')
       .where('list.id = :id', { id });
@@ -340,26 +340,49 @@ export class CompanyListsService {
     data: CompanyListCreateRequest,
     user: User,
   ): Promise<any> {
-    const list = {
-      id: `list-${Date.now()}`,
-      name: data.name,
-      description: data.description,
-      organizationId: user.organizationId,
-      ownerUserId: user.id,
-      visibility: data.visibility || 'private',
-      isShared: data.visibility === 'public',
-      totalCompanies: 0,
-      lastActivityAt: new Date(),
-      isSmartList: data.isSmartList || false,
-      smartCriteria: data.smartCriteria || {},
-      lastRefreshedAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      items: [],
-    };
+    if (this.companyListRepository) {
+      // Database implementation
+      const listData = {
+        name: data.name,
+        description: data.description || null,
+        organizationId: user.organizationId,
+        ownerUserId: user.id,
+        visibility: data.visibility || 'private',
+        isShared: data.visibility === 'public',
+        totalCompanies: 0,
+        lastActivityAt: new Date(),
+        isSmartList: data.isSmartList || false,
+        smartCriteria: data.smartCriteria || {},
+        lastRefreshedAt: null,
+      };
 
-    console.log('Created company list:', list);
-    return list;
+      const list = this.companyListRepository.create(listData);
+      const savedList = await this.companyListRepository.save(list);
+      console.log('Created company list in database:', savedList.id);
+      return savedList;
+    } else {
+      // Mock implementation fallback
+      const list = {
+        id: `list-${Date.now()}`,
+        name: data.name,
+        description: data.description,
+        organizationId: user.organizationId,
+        ownerUserId: user.id,
+        visibility: data.visibility || 'private',
+        isShared: data.visibility === 'public',
+        totalCompanies: 0,
+        lastActivityAt: new Date(),
+        isSmartList: data.isSmartList || false,
+        smartCriteria: data.smartCriteria || {},
+        lastRefreshedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: [],
+      };
+
+      console.log('Created company list (mock):', list);
+      return list;
+    }
   }
 
   async updateCompanyList(
