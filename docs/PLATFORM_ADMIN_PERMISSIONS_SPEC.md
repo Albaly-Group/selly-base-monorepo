@@ -4,6 +4,43 @@
 
 This document defines the comprehensive permission system for the Selly Base multi-tenant platform, detailing what each role can access and the user journey goals for each role.
 
+## Permission-Based Access Control
+
+### Migration from Role-Based to Permission-Based Checks
+
+The frontend has been migrated from direct role checks (`user.role === "staff"`) to permission-based checks using helper functions. This ensures:
+
+1. **Consistency**: Frontend checks align with backend RBAC system and database schema
+2. **Flexibility**: Users can have multiple roles through the `roles` array
+3. **Maintainability**: Permission logic is centralized in helper functions
+4. **Future-proof**: Easy to extend with granular permissions
+
+### Permission Helper Functions
+
+Instead of checking `user.role` directly, use these helper functions:
+
+**Role Checks:**
+- `isPlatformAdmin(user)` - Check if user has platform admin role
+- `isCustomerAdmin(user)` - Check if user has customer admin role
+- `isLegacyAdmin(user)` - Check if user has legacy admin role
+- `isStaff(user)` - Check if user has staff role
+- `hasRole(user, roleName)` - Generic role check (checks both `role` field and `roles` array)
+
+**Permission Checks:**
+- Platform Admin: `canManageTenants()`, `canManagePlatformUsers()`, `canManageSharedData()`, etc.
+- Customer Admin: `canManageOrganizationUsers()`, `canManageOrganizationPolicies()`, etc.
+- Staff: `canManageDatabase()`, `canViewReports()`
+- Data Access: `canAccessSharedData()`, `canAccessOrganizationData()`
+
+**Example Migration:**
+```typescript
+// ❌ Old approach (inconsistent with backend)
+{user.role === "staff" && <StaffFeature />}
+
+// ✅ New approach (permission-based)
+{canManageDatabase(user) && <StaffFeature />}
+```
+
 ## Role Hierarchy
 
 ### 1. **Platform Admin** (`platform_admin`)
@@ -161,6 +198,10 @@ export function canManageOrganizationPolicies(user: User): boolean
 export function canManageOrganizationData(user: User): boolean
 export function canManageOrganizationSettings(user: User): boolean
 
+// Staff Permissions
+export function canManageDatabase(user: User): boolean
+export function canViewReports(user: User): boolean
+
 // Data Access Permissions
 export function canAccessSharedData(user: User): boolean
 export function canAccessOrganizationData(user: User, orgId: string): boolean
@@ -243,6 +284,8 @@ export function ProtectedComponent() {
 - [x] Component-level permission checks
 
 ### Phase 2: Feature Refinement (Current)
+- [x] Replace role-based checks with permission-based checks
+- [x] Add staff permission functions (canManageDatabase, canViewReports)
 - [ ] Remove/hide unauthorized features
 - [ ] Comprehensive permission validation
 - [ ] Improved error messages and user feedback
