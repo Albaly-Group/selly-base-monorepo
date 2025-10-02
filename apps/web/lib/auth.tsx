@@ -119,6 +119,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser)
+        
+        // Ensure user has roles array for RBAC (for backward compatibility)
+        if (!userData.roles && userData.role) {
+          const mockRoles = [];
+          if (userData.role === 'platform_admin') {
+            mockRoles.push({
+              id: 'role_platform_admin',
+              name: 'platform_admin',
+              description: 'Platform Administrator',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              permissions: [
+                {
+                  id: 'perm_wildcard',
+                  key: '*',
+                  description: 'Full platform access',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+              ]
+            });
+          } else if (userData.role === 'customer_admin') {
+            mockRoles.push({
+              id: 'role_customer_admin',
+              name: 'customer_admin',
+              description: 'Customer Administrator',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              permissions: [
+                { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+              ]
+            });
+          }
+          userData.roles = mockRoles;
+          
+          // Update localStorage with the fixed user data
+          localStorage.setItem("selly-user", JSON.stringify(userData))
+        }
+        
         setUser(userData)
         if (!document.cookie.includes("selly-user=")) {
           document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
@@ -204,7 +246,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (foundUser) {
           const { password: _, role, ...userWithoutPassword } = foundUser;
-          const userWithRole = { ...userWithoutPassword, role };
+          
+          // Create mock roles array with permissions based on user role
+          const mockRoles = [];
+          if (role === 'platform_admin') {
+            mockRoles.push({
+              id: 'role_platform_admin',
+              name: 'platform_admin',
+              description: 'Platform Administrator',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              permissions: [
+                {
+                  id: 'perm_wildcard',
+                  key: '*',
+                  description: 'Full platform access',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+              ]
+            });
+          } else if (role === 'customer_admin') {
+            mockRoles.push({
+              id: 'role_customer_admin',
+              name: 'customer_admin',
+              description: 'Customer Administrator',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              permissions: [
+                { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+              ]
+            });
+          }
+          
+          const userWithRole = { ...userWithoutPassword, role, roles: mockRoles };
           
           setUser(userWithRole);
           localStorage.setItem("selly-user", JSON.stringify(userWithRole));

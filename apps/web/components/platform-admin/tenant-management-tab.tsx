@@ -41,7 +41,7 @@ export function TenantManagementTab() {
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-            <p>You don't have permission to manage tenants. This feature requires platform admin privileges.</p>
+            <p>You don&apos;t have permission to manage tenants. This feature requires platform admin privileges.</p>
           </div>
         </CardContent>
       </Card>
@@ -192,13 +192,17 @@ export function TenantManagementTab() {
                       {tenant.subscription_tier}
                     </Badge>
                   </TableCell>
-                  <TableCell className="flex items-center gap-1">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                    {tenant.user_count}
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-muted-foreground" />
+                      {tenant.user_count}
+                    </div>
                   </TableCell>
-                  <TableCell className="flex items-center gap-1">
-                    <Database className="h-3 w-3 text-muted-foreground" />
-                    {tenant.data_count.toLocaleString()}
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Database className="h-3 w-3 text-muted-foreground" />
+                      {tenant.data_count.toLocaleString()}
+                    </div>
                   </TableCell>
                   <TableCell>{formatDate(tenant.last_activity)}</TableCell>
                   <TableCell>
