@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -48,129 +47,26 @@ interface CompanyListCreateRequest {
 
 interface CompanyListUpdateRequest extends Partial<CompanyListCreateRequest> {}
 
-// Mock data for demonstration - using valid test database IDs
-const MOCK_COMPANY_LISTS = [
-  {
-    id: '123e4567-e89b-12d3-a456-426614174003',
-    name: 'Technology Companies',
-    description: 'List of technology companies in Thailand',
-    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital
-    ownerUserId: '550e8400-e29b-41d4-a716-446655440003', // admin@albaly.com
-    visibility: 'private',
-    isShared: false,
-    totalCompanies: 2,
-    lastActivityAt: new Date(),
-    isSmartList: false,
-    smartCriteria: {},
-    lastRefreshedAt: null,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
-    items: [],
-  },
-  {
-    id: '123e4567-e89b-12d3-a456-426614174004',
-    name: 'Sample Prospects',
-    description: 'Public list of sample companies for demonstration',
-    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital
-    ownerUserId: '550e8400-e29b-41d4-a716-446655440003', // admin@albaly.com
-    visibility: 'public',
-    isShared: true,
-    totalCompanies: 1,
-    lastActivityAt: new Date(),
-    isSmartList: false,
-    smartCriteria: {},
-    lastRefreshedAt: null,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date(),
-    items: [],
-  },
-];
-
 @Injectable()
 export class CompanyListsService {
   constructor(
-    @Optional()
     @InjectRepository(CompanyLists)
-    private companyListRepository?: Repository<CompanyLists>,
-    @Optional()
+    private readonly companyListRepository: Repository<CompanyLists>,
     @InjectRepository(CompanyListItems)
-    private companyListItemRepository?: Repository<CompanyListItems>,
-    @Optional()
+    private readonly companyListItemRepository: Repository<CompanyListItems>,
     @InjectRepository(Companies)
-    private companyRepository?: Repository<Companies>,
+    private readonly companyRepository: Repository<Companies>,
   ) {}
 
   async searchCompanyLists(
     params: CompanyListSearchParams,
     user?: User,
   ): Promise<PaginatedResponse<any>> {
-    if (this.companyListRepository) {
-      return this.searchListsFromDatabase(params, user);
-    }
-    return this.searchListsFromMockData(params, user);
+    // Database implementation only - no mock data fallback
+    return this.searchListsFromDatabase(params, user);
   }
 
-  private async searchListsFromMockData(
-    params: CompanyListSearchParams,
-    user?: User,
-  ): Promise<PaginatedResponse<any>> {
-    const {
-      searchTerm,
-      organizationId,
-      visibility,
-      page = 1,
-      limit = 50,
-      scope = 'mine',
-    } = params;
 
-    let lists = [...MOCK_COMPANY_LISTS];
-
-    // Scope filtering
-    if (scope === 'mine' && user) {
-      lists = lists.filter((list) => list.ownerUserId === user.id);
-    } else if (scope === 'organization' && organizationId) {
-      lists = lists.filter(
-        (list) =>
-          list.organizationId === organizationId ||
-          (list.visibility === 'public' && list.isShared),
-      );
-    } else if (scope === 'public') {
-      lists = lists.filter((list) => list.visibility === 'public');
-    }
-
-    // Text search
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      lists = lists.filter(
-        (list) =>
-          list.name.toLowerCase().includes(term) ||
-          list.description?.toLowerCase().includes(term),
-      );
-    }
-
-    // Visibility filter
-    if (visibility) {
-      lists = lists.filter((list) => list.visibility === visibility);
-    }
-
-    // Pagination
-    const total = lists.length;
-    const totalPages = Math.ceil(total / limit);
-    const offset = (page - 1) * limit;
-    const paginatedLists = lists.slice(offset, offset + limit);
-
-    return {
-      data: paginatedLists,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
-  }
 
   private async searchListsFromDatabase(
     params: CompanyListSearchParams,
@@ -266,27 +162,8 @@ export class CompanyListsService {
   }
 
   async getCompanyListById(id: string, user?: User): Promise<any> {
-    if (this.companyListRepository) {
-      return this.getListByIdFromDatabase(id, user);
-    }
-    return this.getListByIdFromMockData(id, user);
-  }
-
-  private async getListByIdFromMockData(id: string, user?: User): Promise<any> {
-    const list = MOCK_COMPANY_LISTS.find((l) => l.id === id);
-
-    if (!list) {
-      throw new NotFoundException('Company list not found');
-    }
-
-    // Access control
-    if (list.visibility === 'private' && user && list.ownerUserId !== user.id) {
-      if (list.organizationId !== user.organizationId) {
-        throw new NotFoundException('Company list not found');
-      }
-    }
-
-    return list;
+    // Database implementation only - no mock data fallback
+    return this.getListByIdFromDatabase(id, user);
   }
 
   private async getListByIdFromDatabase(

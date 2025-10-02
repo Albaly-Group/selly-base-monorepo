@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  Optional,
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,63 +34,14 @@ interface PaginatedResponse<T> {
   };
 }
 
-// Mock data for demonstration - using valid test database IDs
-const MOCK_COMPANIES = [
-  {
-    id: '123e4567-e89b-12d3-a456-426614174001',
-    nameEn: 'Albaly Digital',
-    nameTh: 'อัลบาลี ดิจิทัล',
-    displayName: 'Albaly Digital',
-    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital org
-    businessDescription:
-      'Digital transformation and software development company',
-    websiteUrl: 'https://albaly.com',
-    primaryEmail: 'info@albaly.com',
-    province: 'Bangkok',
-    countryCode: 'TH',
-    dataSource: 'customer_input',
-    isSharedData: false,
-    verificationStatus: 'verified',
-    companySize: 'medium',
-    dataQualityScore: 0.95,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
-    tags: ['technology', 'software'],
-    contacts: [],
-  },
-  {
-    id: '123e4567-e89b-12d3-a456-426614174002',
-    nameEn: 'Sample Tech Corp',
-    nameTh: 'บริษัท ตัวอย่าง เทค จำกัด',
-    displayName: 'Sample Tech Corp',
-    organizationId: '550e8400-e29b-41d4-a716-446655440000', // Albaly Digital org
-    businessDescription: 'Sample technology company for demonstration',
-    websiteUrl: 'https://sample-tech.com',
-    primaryEmail: 'contact@sample-tech.com',
-    province: 'Bangkok',
-    countryCode: 'TH',
-    dataSource: 'albaly_list',
-    isSharedData: true,
-    verificationStatus: 'verified',
-    companySize: 'large',
-    dataQualityScore: 0.89,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date(),
-    tags: ['technology', 'enterprise'],
-    contacts: [],
-  },
-];
-
 @Injectable()
 export class CompaniesService {
   constructor(
-    @Optional()
     @InjectRepository(Companies)
-    private companyRepository?: Repository<Companies>,
-    @Optional()
+    private readonly companyRepository: Repository<Companies>,
     @InjectRepository(Organizations)
-    private organizationRepository?: Repository<Organizations>,
-    private auditService?: AuditService,
+    private readonly organizationRepository: Repository<Organizations>,
+    private readonly auditService: AuditService,
   ) {}
 
   async searchCompanies(
@@ -101,13 +51,11 @@ export class CompaniesService {
     const startTime = Date.now();
 
     try {
-      // If database is available, use real implementation
-      const result = this.companyRepository
-        ? await this.searchCompaniesFromDatabase(searchDto, user)
-        : await this.searchCompaniesFromMockData(searchDto, user);
+      // Database implementation only - no mock data fallback
+      const result = await this.searchCompaniesFromDatabase(searchDto, user);
 
       // Log search operation
-      if (this.auditService && user && searchDto.searchTerm) {
+      if (user && searchDto.searchTerm) {
         await this.auditService.logSearchOperation(
           user,
           searchDto.searchTerm,
@@ -282,118 +230,7 @@ export class CompaniesService {
     };
   }
 
-  private async searchCompaniesFromMockData(
-    searchDto: CompanySearchDto,
-    user?: User,
-  ): Promise<PaginatedResponse<any>> {
-    const {
-      searchTerm,
-      organizationId,
-      includeSharedData = true,
-      page = 1,
-      limit = 50,
-      dataSensitivity,
-      dataSource,
-      verificationStatus,
-      companySize,
-      province,
-      countryCode,
-      tags,
-    } = searchDto;
 
-    let companies = [...MOCK_COMPANIES];
-
-    // Multi-tenant filtering
-    if (organizationId) {
-      // Security check for mock data
-      if (user && user.organizationId !== organizationId) {
-        throw new ForbiddenException('Access denied to organization data');
-      }
-
-      companies = companies.filter(
-        (company) =>
-          company.organizationId === organizationId ||
-          (includeSharedData && company.isSharedData),
-      );
-    } else if (includeSharedData) {
-      companies = companies.filter((company) => company.isSharedData);
-    } else {
-      throw new ForbiddenException(
-        'Organization ID is required for non-shared data access',
-      );
-    }
-
-    // Enhanced text search
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      companies = companies.filter(
-        (company) =>
-          company.nameEn.toLowerCase().includes(term) ||
-          company.nameTh?.toLowerCase().includes(term) ||
-          company.displayName.toLowerCase().includes(term) ||
-          company.businessDescription?.toLowerCase().includes(term) ||
-          company.primaryEmail?.toLowerCase().includes(term) ||
-          company.tags.some((tag) => tag.toLowerCase().includes(term)),
-      );
-    }
-
-    // Apply all filters
-    if (dataSource) {
-      companies = companies.filter(
-        (company) => company.dataSource === dataSource,
-      );
-    }
-
-    if (verificationStatus) {
-      companies = companies.filter(
-        (company) => company.verificationStatus === verificationStatus,
-      );
-    }
-
-    if (companySize) {
-      companies = companies.filter(
-        (company) => company.companySize === companySize,
-      );
-    }
-
-    if (province) {
-      companies = companies.filter((company) =>
-        company.province?.toLowerCase().includes(province.toLowerCase()),
-      );
-    }
-
-    if (countryCode) {
-      companies = companies.filter(
-        (company) => company.countryCode === countryCode,
-      );
-    }
-
-    if (tags && tags.length > 0) {
-      companies = companies.filter((company) =>
-        tags.some((tag) => company.tags.includes(tag.toLowerCase())),
-      );
-    }
-
-    // Pagination
-    const validatedPage = Math.max(1, page);
-    const validatedLimit = Math.min(Math.max(1, limit), 100);
-    const total = companies.length;
-    const totalPages = Math.ceil(total / validatedLimit);
-    const offset = (validatedPage - 1) * validatedLimit;
-    const paginatedCompanies = companies.slice(offset, offset + validatedLimit);
-
-    return {
-      data: paginatedCompanies,
-      pagination: {
-        page: validatedPage,
-        limit: validatedLimit,
-        total,
-        totalPages,
-        hasNext: validatedPage < totalPages,
-        hasPrev: validatedPage > 1,
-      },
-    };
-  }
 
   async getCompanyById(
     id: string,
@@ -405,12 +242,11 @@ export class CompaniesService {
     }
 
     try {
-      const company = this.companyRepository
-        ? await this.getCompanyByIdFromDatabase(id, organizationId, user)
-        : await this.getCompanyByIdFromMockData(id, organizationId);
+      // Database implementation only - no mock data fallback
+      const company = await this.getCompanyByIdFromDatabase(id, organizationId, user);
 
       // Log read operation
-      if (this.auditService && user) {
+      if (user) {
         await this.auditService.logCompanyOperation(user, 'READ', id, {
           metadata: { organizationId },
         });
@@ -419,7 +255,7 @@ export class CompaniesService {
       return company;
     } catch (error) {
       // Log error
-      if (this.auditService && user) {
+      if (user) {
         await this.auditService.logCompanyOperation(user, 'READ', id, {
           statusCode: error.status || 500,
           errorMessage: error.message,
@@ -465,29 +301,7 @@ export class CompaniesService {
     return company;
   }
 
-  private async getCompanyByIdFromMockData(
-    id: string,
-    organizationId?: string,
-  ): Promise<any> {
-    const company = MOCK_COMPANIES.find((c) => c.id === id);
 
-    if (!company) {
-      throw new NotFoundException('Company not found');
-    }
-
-    // Multi-tenant access control for mock data
-    if (
-      organizationId &&
-      company.organizationId !== organizationId &&
-      !company.isSharedData
-    ) {
-      throw new NotFoundException('Company not found or access denied');
-    } else if (!organizationId && !company.isSharedData) {
-      throw new NotFoundException('Company not found or access denied');
-    }
-
-    return company;
-  }
 
   async createCompany(createDto: CreateCompanyDto, user: User): Promise<any> {
     if (!user || !user.organizationId) {
@@ -845,42 +659,33 @@ export class CompaniesService {
     }
 
     try {
-      let companies;
-      if (this.companyRepository) {
-        const query = this.companyRepository
-          .createQueryBuilder('company')
-          // Note: contacts relation not yet defined in entity
-          // .leftJoinAndSelect('company.contacts', 'contacts')
-          .leftJoinAndSelect('company.organization', 'organization')
-          .where('company.id IN (:...ids)', { ids });
+      // Database implementation only - no mock data fallback
+      const query = this.companyRepository
+        .createQueryBuilder('company')
+        // Note: contacts relation not yet defined in entity
+        // .leftJoinAndSelect('company.contacts', 'contacts')
+        .leftJoinAndSelect('company.organization', 'organization')
+        .where('company.id IN (:...ids)', { ids });
 
-        // Apply multi-tenant filtering
-        if (organizationId) {
-          if (user && user.organizationId !== organizationId) {
-            throw new ForbiddenException('Access denied to organization data');
-          }
-          query.andWhere(
-            '(company.organizationId = :organizationId OR company.isSharedData = true)',
-            {
-              organizationId,
-            },
-          );
-        } else {
-          query.andWhere('company.isSharedData = true');
+      // Apply multi-tenant filtering
+      if (organizationId) {
+        if (user && user.organizationId !== organizationId) {
+          throw new ForbiddenException('Access denied to organization data');
         }
-
-        companies = await query.getMany();
-      } else {
-        // Mock implementation
-        companies = MOCK_COMPANIES.filter(
-          (company) =>
-            ids.includes(company.id) &&
-            (company.organizationId === organizationId || company.isSharedData),
+        query.andWhere(
+          '(company.organizationId = :organizationId OR company.isSharedData = true)',
+          {
+            organizationId,
+          },
         );
+      } else {
+        query.andWhere('company.isSharedData = true');
       }
 
+      const companies = await query.getMany();
+
       // Log bulk read operation
-      if (this.auditService && user) {
+      if (user) {
         await this.auditService.logUserAction(
           user,
           'READ',
@@ -901,7 +706,7 @@ export class CompaniesService {
       return companies;
     } catch (error) {
       // Log error
-      if (this.auditService && user) {
+      if (user) {
         await this.auditService.logUserAction(
           user,
           'READ',

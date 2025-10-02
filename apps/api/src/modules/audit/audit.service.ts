@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -40,30 +40,20 @@ export interface AuditLogData {
 @Injectable()
 export class AuditService {
   constructor(
-    @Optional()
     @InjectRepository(AuditLogs)
-    private auditLogRepository?: Repository<AuditLogs>,
-    @Optional()
+    private readonly auditLogRepository: Repository<AuditLogs>,
     @InjectRepository(Users)
-    private userRepository?: Repository<Users>,
+    private readonly userRepository: Repository<Users>,
   ) {}
 
   async log(data: AuditLogData): Promise<void> {
     try {
-      // If database is available, save to database
-      if (this.auditLogRepository) {
-        const auditLog = this.auditLogRepository.create({
-          ...data,
-          createdAt: new Date(),
-        });
-        await this.auditLogRepository.save(auditLog);
-      } else {
-        // Otherwise, log to console for development
-        console.log('🔍 AUDIT LOG:', {
-          timestamp: new Date().toISOString(),
-          ...data,
-        });
-      }
+      // Database implementation only - no mock data fallback
+      const auditLog = this.auditLogRepository.create({
+        ...data,
+        createdAt: new Date(),
+      });
+      await this.auditLogRepository.save(auditLog);
     } catch (error) {
       // Never throw errors from audit logging to avoid breaking business logic
       console.error('Failed to write audit log:', error);
