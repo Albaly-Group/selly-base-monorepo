@@ -46,27 +46,6 @@ interface PaginatedResponse<T> {
 }
 
 // For endpoints that don't require authentication, we create a mock user
-// Use valid organization ID from test database (Albaly Digital)
-const createMockUser = (organizationId?: string): User =>
-  ({
-    id: '550e8400-e29b-41d4-a716-446655440003', // Valid test user ID from database
-    organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000', // Valid org ID (Albaly Digital)
-    email: 'admin@albaly.com',
-    name: 'Test User',
-    passwordHash: 'hashed',
-    avatarUrl: null,
-    status: 'active',
-    lastLoginAt: null,
-    emailVerifiedAt: new Date(),
-    settings: {},
-    metadata: {},
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    organization: {} as any,
-    companyLists: [],
-    userRoles2: [],
-  }) as unknown as User;
-
 @ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
@@ -145,8 +124,8 @@ export class CompaniesController {
     @Query() searchDto: CompanySearchDto,
   ): Promise<PaginatedResponse<any>> {
     // For public search, use mock user with provided organizationId
-    const mockUser = createMockUser(searchDto.organizationId);
-    return this.companiesService.searchCompanies(searchDto, mockUser);
+    // const mockUser = createMockUser(searchDto.organizationId);
+    return this.companiesService.searchCompanies(searchDto);
   }
 
   @Get()
@@ -166,8 +145,8 @@ export class CompaniesController {
       limit: limit ? parseInt(limit, 10) : 10,
     };
 
-    const mockUser = createMockUser(organizationId);
-    return this.companiesService.searchCompanies(searchDto as any, mockUser);
+    // const mockUser = createMockUser(organizationId);
+    return this.companiesService.searchCompanies(searchDto as any, undefined);
   }
 
   @Get(':id')
@@ -184,96 +163,96 @@ export class CompaniesController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    const mockUser = createMockUser(organizationId);
-    return this.companiesService.getCompanyById(id, organizationId, mockUser);
+    // const mockUser = createMockUser(organizationId);
+    return this.companiesService.getCompanyById(id, organizationId, undefined);
   }
 
-  @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Create a new company' })
-  @ApiResponse({ status: 201, description: 'Company created successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 400, description: 'Validation error' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async createCompany(
-    @Body() createCompanyDto: CreateCompanyDto,
-    @CurrentUser() user: any,
-    @CurrentOrganization() organizationId: string,
-  ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
-    } as User;
-    return this.companiesService.createCompany(createCompanyDto, userWithOrg);
-  }
+//   @Post()
+//   @UseGuards(JwtAuthGuard)
+//   @ApiBearerAuth('access-token')
+//   @ApiOperation({ summary: 'Create a new company' })
+//   @ApiResponse({ status: 201, description: 'Company created successfully' })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @ApiResponse({ status: 400, description: 'Validation error' })
+//   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+//   async createCompany(
+//     @Body() createCompanyDto: CreateCompanyDto,
+//     @CurrentUser() user: any,
+//     @CurrentOrganization() organizationId: string,
+//   ) {
+//     // Create a proper user object from JWT payload
+//     const userWithOrg = {
+//       ...createMockUser(organizationId),
+//       id: user.sub, // Use actual user ID from JWT
+//       email: user.email, // Use actual email from JWT
+//       organizationId: organizationId, // Use actual organization ID from JWT
+//     } as User;
+//     return this.companiesService.createCompany(createCompanyDto, userWithOrg);
+//   }
 
-  @Put(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Update company by ID' })
-  @ApiParam({ name: 'id', description: 'Company ID' })
-  @ApiResponse({ status: 200, description: 'Company updated successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Company not found' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - cannot update this company',
-  })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async updateCompany(
-    @Param('id') id: string,
-    @Body() updateCompanyDto: UpdateCompanyDto,
-    @CurrentUser() user: any,
-    @CurrentOrganization() organizationId: string,
-  ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
-    } as User;
-    return this.companiesService.updateCompany(
-      id,
-      updateCompanyDto,
-      userWithOrg,
-    );
-  }
+//   @Put(':id')
+//   @UseGuards(JwtAuthGuard)
+//   @ApiBearerAuth('access-token')
+//   @ApiOperation({ summary: 'Update company by ID' })
+//   @ApiParam({ name: 'id', description: 'Company ID' })
+//   @ApiResponse({ status: 200, description: 'Company updated successfully' })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @ApiResponse({ status: 404, description: 'Company not found' })
+//   @ApiResponse({
+//     status: 403,
+//     description: 'Forbidden - cannot update this company',
+//   })
+//   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+//   async updateCompany(
+//     @Param('id') id: string,
+//     @Body() updateCompanyDto: UpdateCompanyDto,
+//     @CurrentUser() user: any,
+//     @CurrentOrganization() organizationId: string,
+//   ) {
+//     // Create a proper user object from JWT payload
+//     const userWithOrg = {
+//       ...createMockUser(organizationId),
+//       id: user.sub, // Use actual user ID from JWT
+//       email: user.email, // Use actual email from JWT
+//       organizationId: organizationId, // Use actual organization ID from JWT
+//     } as User;
+//     return this.companiesService.updateCompany(
+//       id,
+//       updateCompanyDto,
+//       userWithOrg,
+//     );
+//   }
 
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Delete company by ID' })
-  @ApiParam({ name: 'id', description: 'Company ID' })
-  @ApiResponse({ status: 200, description: 'Company deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Company not found' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - cannot delete this company',
-  })
-  async deleteCompany(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
-    @CurrentOrganization() organizationId: string,
-  ) {
-    const userWithOrg = createMockUser(organizationId);
-    await this.companiesService.deleteCompany(id, userWithOrg);
-    return { message: 'Company deleted successfully' };
-  }
+//   @Delete(':id')
+//   @UseGuards(JwtAuthGuard)
+//   @ApiBearerAuth('access-token')
+//   @ApiOperation({ summary: 'Delete company by ID' })
+//   @ApiParam({ name: 'id', description: 'Company ID' })
+//   @ApiResponse({ status: 200, description: 'Company deleted successfully' })
+//   @ApiResponse({ status: 401, description: 'Unauthorized' })
+//   @ApiResponse({ status: 404, description: 'Company not found' })
+//   @ApiResponse({
+//     status: 403,
+//     description: 'Forbidden - cannot delete this company',
+//   })
+//   async deleteCompany(
+//     @Param('id') id: string,
+//     @CurrentUser() user: any,
+//     @CurrentOrganization() organizationId: string,
+//   ) {
+//     const userWithOrg = createMockUser(organizationId);
+//     await this.companiesService.deleteCompany(id, userWithOrg);
+//     return { message: 'Company deleted successfully' };
+//   }
 
-  @Post('bulk')
-  @ApiOperation({ summary: 'Get multiple companies by IDs' })
-  @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid request data' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async getCompaniesByIds(@Body() bulkDto: BulkCompanyIdsDto) {
-    // For public bulk access, use mock user
-    const mockUser = createMockUser(bulkDto.organizationId);
-    return this.companiesService.getCompaniesByIds(bulkDto, mockUser);
-  }
+//   @Post('bulk')
+//   @ApiOperation({ summary: 'Get multiple companies by IDs' })
+//   @ApiResponse({ status: 200, description: 'Companies retrieved successfully' })
+//   @ApiResponse({ status: 400, description: 'Invalid request data' })
+//   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+//   async getCompaniesByIds(@Body() bulkDto: BulkCompanyIdsDto) {
+//     // For public bulk access, use mock user
+//     const mockUser = createMockUser(bulkDto.organizationId);
+//     return this.companiesService.getCompaniesByIds(bulkDto, mockUser);
+//   }
 }

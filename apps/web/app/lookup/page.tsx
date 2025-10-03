@@ -35,8 +35,12 @@ function CompanyLookupPage() {
       limit: 25,
     };
 
-    if (isSimpleSearch && searchTerm.trim()) {
-      filters.q = searchTerm.trim();
+    if (isSimpleSearch) {
+
+      if(searchTerm.trim()){
+        filters.q = searchTerm.trim() || "";
+        filters.includeSharedData = false;
+      }
     }
 
     if (hasAppliedFiltering) {
@@ -180,7 +184,6 @@ function CompanyLookupPage() {
 
   const handleSearchSubmit = () => {
     if (searchTerm.trim()) {
-      // Perform simple search immediately
       setIsSimpleSearch(true)
       setHasAppliedFiltering(false)
       setSelectedCompanies([])
@@ -232,10 +235,10 @@ function CompanyLookupPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
+          {/* <TabsList>
             <TabsTrigger value="all">All Companies</TabsTrigger>
-            <TabsTrigger value="lists">My Lists</TabsTrigger>
-          </TabsList>
+          </TabsList> */}
+          <h3 className="font-medium mb-2 mt-2">All Companies</h3>
 
           <TabsContent value="all" className="space-y-6">
             {/* Search Section */}
@@ -256,7 +259,7 @@ function CompanyLookupPage() {
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <div className="text-center space-y-4">
                     <Search className="h-16 w-16 text-gray-300 mx-auto" />
-                    <div>
+                    <div className="flex flex-col items-center">
                       <h3 className="text-xl font-semibold text-gray-700 mb-2">
                         Ready to Find Companies?
                       </h3>
@@ -325,14 +328,14 @@ function CompanyLookupPage() {
                     <button
                       onClick={handleAddToList}
                       disabled={selectedCompanies.length === 0 || isLoading}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+                      className="px-3 py-2 bg-primary text-sm text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
                     >
                       Add to List ({selectedCompanies.length})
                     </button>
                     <button
                       onClick={handleExport}
                       disabled={selectedCompanies.length === 0}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Export ({selectedCompanies.length})
                     </button>
@@ -373,11 +376,11 @@ function CompanyLookupPage() {
                         Sorted by: Highest weighted score first
                       </span>
                     )}
-                    {apiSearchResult && (
+                    {/* {apiSearchResult && (
                       <span className="text-green-600">
                         API Results: Page {apiSearchResult.page} of {Math.ceil(apiSearchResult.total / apiSearchResult.limit)}
                       </span>
-                    )}
+                    )} */}
                   </div>
                 )}
               </>
