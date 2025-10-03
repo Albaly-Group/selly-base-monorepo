@@ -4,6 +4,8 @@ import type React from "react"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { User, UserRole, UserRoleName } from "./types"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
 
 interface AuthContextType {
   user: User | null
@@ -27,6 +29,7 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
       name: "Customer Company 1",
       domain: "customer1.com",
       status: "active",
+      slug: "customer-company-1",
       subscription_tier: "professional",
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z"
@@ -47,6 +50,7 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
       name: "Customer Company 1",
       domain: "customer1.com",
       status: "active",
+      slug: "customer-company-2",
       subscription_tier: "professional",
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z"
@@ -67,6 +71,7 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
       name: "Customer Company 1", 
       domain: "customer1.com",
       status: "active",
+      slug: "customer-company-3",
       subscription_tier: "professional",
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z"
@@ -87,6 +92,7 @@ const mockUsers: (User & { password: string; role: UserRoleName })[] = [
       name: "Customer Company 1",
       domain: "customer1.com",
       status: "active",
+      slug: "customer-company-4",
       subscription_tier: "professional", 
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z"
@@ -212,6 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: apiUser.organization.name,
               domain: '', // Not provided by API
               status: 'active' as const,
+              slug: apiUser.organization.slug || '',
               subscription_tier: 'professional' as const,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
@@ -330,7 +337,7 @@ export function useAuth() {
 export function requireAuth(requiredPermissions?: string[]) {
   return (WrappedComponent: React.ComponentType<any>) =>
     function AuthenticatedComponent(props: any) {
-      const { user, isLoading } = useAuth()
+      const { user, logout, isLoading } = useAuth()
 
       if (isLoading) {
         return (
@@ -360,6 +367,12 @@ export function requireAuth(requiredPermissions?: string[]) {
                 <h2 className="text-2xl font-semibold mb-2 text-red-600">Access Denied</h2>
                 <p>You don't have permission to access this page.</p>
                 <p className="text-sm text-gray-600 mt-2">Required permissions: {requiredPermissions.join(" or ")}</p>
+                <div className="pt-4">
+                  <Button variant="ghost" onClick={logout}>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Go Back
+                  </Button>
+                </div>
               </div>
             </div>
           )

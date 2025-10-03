@@ -132,18 +132,19 @@ export function SmartFilteringPanel({
 
         <div className="space-y-6">
           {/* Keyword Search Section */}
-          <Card>
-            <CardHeader className="pb-3">
+          <Card className="mt-4">
+            <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Search className="h-4 w-4" />
                 Keyword Search
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="keyword">Search Keyword</Label>
+            <CardContent>
+              <div className="mb-4">
+                <Label className="mb-2" htmlFor="keyword">Search Keyword</Label>
                 <Input
                   id="keyword"
+                  className="shadow-sm "
                   placeholder="Company name, registration number, or keywords..."
                   value={tempCriteria.keyword || ""}
                   onChange={(e) => updateCriteria("keyword", e.target.value)}
@@ -152,7 +153,7 @@ export function SmartFilteringPanel({
               <div>
                 <Label>Keyword Weight: {tempCriteria.keywordWeight}%</Label>
                 <Slider
-                  value={[tempCriteria.keywordWeight || 25]}
+                  value={[tempCriteria.keywordWeight ?? 25]}
                   onValueChange={(value) => updateCriteria("keywordWeight", value[0])}
                   max={50}
                   step={5}
@@ -164,7 +165,7 @@ export function SmartFilteringPanel({
 
           {/* Attribute Filtering Section */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 Attribute Filters & Weights
@@ -194,7 +195,7 @@ export function SmartFilteringPanel({
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.industrialWeight}%</Label>
                     <Slider
-                      value={[tempCriteria.industrialWeight || 25]}
+                      value={[tempCriteria.industrialWeight ?? 25]}
                       onValueChange={(value) => updateCriteria("industrialWeight", value[0])}
                       max={50}
                       step={5}
@@ -225,7 +226,7 @@ export function SmartFilteringPanel({
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.provinceWeight}%</Label>
                     <Slider
-                      value={[tempCriteria.provinceWeight || 20]}
+                      value={[tempCriteria.provinceWeight ?? 20]}
                       onValueChange={(value) => updateCriteria("provinceWeight", value[0])}
                       max={50}
                       step={5}
@@ -256,7 +257,7 @@ export function SmartFilteringPanel({
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.companySizeWeight}%</Label>
                     <Slider
-                      value={[tempCriteria.companySizeWeight || 15]}
+                      value={[tempCriteria.companySizeWeight ?? 15]}
                       onValueChange={(value) => updateCriteria("companySizeWeight", value[0])}
                       max={50}
                       step={5}
@@ -287,7 +288,7 @@ export function SmartFilteringPanel({
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.contactStatusWeight}%</Label>
                     <Slider
-                      value={[tempCriteria.contactStatusWeight || 15]}
+                      value={[tempCriteria.contactStatusWeight ?? 15]}
                       onValueChange={(value) => updateCriteria("contactStatusWeight", value[0])}
                       max={50}
                       step={5}
@@ -304,7 +305,7 @@ export function SmartFilteringPanel({
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Total Weight</span>
                   <Badge variant={totalWeight === 100 ? "default" : "secondary"}>
-                    {totalWeight}%
+                    {totalWeight}% 
                   </Badge>
                 </div>
                 {totalWeight !== 100 && (
@@ -318,20 +319,20 @@ export function SmartFilteringPanel({
 
           {/* Minimum Score Threshold */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader>
               <CardTitle className="text-base">Score Threshold</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <Label>Minimum Weighted Score: {tempCriteria.minimumScore}%</Label>
                 <Slider
-                  value={[tempCriteria.minimumScore || 0]}
+                  value={[tempCriteria.minimumScore ?? 0]}
                   onValueChange={(value) => updateCriteria("minimumScore", value[0])}
                   max={100}
                   step={5}
                   className="mt-2"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Only show companies with a weighted score above this threshold
                 </p>
               </div>
@@ -340,7 +341,7 @@ export function SmartFilteringPanel({
 
           {/* Scoring Profile */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Save className="h-4 w-4" />
                 Scoring Profile

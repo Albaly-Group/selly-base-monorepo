@@ -185,7 +185,7 @@ export function CustomerDashboard() {
                   <CardDescription>{feature.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button asChild className="w-full">
+                  <Button asChild className="w-full transition transform active:scale-95">
                     <Link href={feature.href}>Get Started</Link>
                   </Button>
                 </CardContent>
