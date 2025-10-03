@@ -7,12 +7,19 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AdminService } from './admin.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('admin')
 @Controller('admin')
+@UseGuards(JwtAuthGuard)
 export class AdminController {
+  constructor(private readonly adminService: AdminService) {}
+
   @Get('users')
   @ApiOperation({ summary: 'Get organization users' })
   @ApiResponse({
@@ -20,52 +27,17 @@ export class AdminController {
     description: 'Organization users retrieved successfully',
   })
   async getOrganizationUsers(
+    @Request() req: any,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    // Mock implementation
-    return {
-      data: [
-        {
-          id: '1',
-          name: 'Admin User',
-          email: 'admin@albaly.com',
-          role: 'admin',
-          status: 'active',
-          lastLogin: '2024-12-08T09:30:00Z',
-          createdAt: '2024-01-15T10:00:00Z',
-          permissions: ['read', 'write', 'admin'],
-        },
-        {
-          id: '2',
-          name: 'Manager User',
-          email: 'manager@albaly.com',
-          role: 'manager',
-          status: 'active',
-          lastLogin: '2024-12-08T14:15:00Z',
-          createdAt: '2024-02-20T11:30:00Z',
-          permissions: ['read', 'write'],
-        },
-        {
-          id: '3',
-          name: 'Regular User',
-          email: 'user@albaly.com',
-          role: 'user',
-          status: 'inactive',
-          lastLogin: '2024-12-05T16:45:00Z',
-          createdAt: '2024-03-10T09:00:00Z',
-          permissions: ['read'],
-        },
-      ],
-      pagination: {
-        page: parseInt(page || '1', 10),
-        limit: parseInt(limit || '50', 10),
-        total: 3,
-        totalPages: 1,
-        hasNext: false,
-        hasPrev: false,
-      },
-    };
+    // Get organizationId from authenticated user
+    const organizationId = req.user?.organizationId;
+    return this.adminService.getOrganizationUsers(
+      organizationId,
+      parseInt(page || '1', 10),
+      parseInt(limit || '50', 10),
+    );
   }
 
   @Post('users')
@@ -74,18 +46,12 @@ export class AdminController {
     status: 201,
     description: 'Organization user created successfully',
   })
-  async createOrganizationUser(@Body() userData: any) {
-    // Mock implementation
-    return {
-      id: Date.now().toString(),
-      name: userData.name,
-      email: userData.email,
-      role: userData.role || 'user',
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      permissions: userData.permissions || ['read'],
-      message: 'Organization user created successfully',
-    };
+  async createOrganizationUser(@Request() req: any, @Body() userData: any) {
+    const organizationId = req.user?.organizationId;
+    return this.adminService.createOrganizationUser({
+      ...userData,
+      organizationId,
+    });
   }
 
   @Put('users/:id')
@@ -98,13 +64,7 @@ export class AdminController {
     @Param('id') id: string,
     @Body() updateData: any,
   ) {
-    // Mock implementation
-    return {
-      id,
-      ...updateData,
-      updatedAt: new Date().toISOString(),
-      message: 'Organization user updated successfully',
-    };
+    return this.adminService.updateOrganizationUser(id, updateData);
   }
 
   @Delete('users/:id')
@@ -114,7 +74,7 @@ export class AdminController {
     description: 'Organization user deleted successfully',
   })
   async deleteOrganizationUser(@Param('id') id: string) {
-    return { message: `Organization user ${id} deleted successfully` };
+    return this.adminService.deleteOrganizationUser(id);
   }
 
   @Get('policies')
@@ -123,34 +83,9 @@ export class AdminController {
     status: 200,
     description: 'Organization policies retrieved successfully',
   })
-  async getOrganizationPolicies() {
-    // Mock implementation
-    return {
-      dataRetention: {
-        enabled: true,
-        retentionPeriod: 365,
-        autoCleanup: true,
-      },
-      accessControl: {
-        requireMFA: false,
-        sessionTimeout: 480,
-        passwordPolicy: {
-          minLength: 8,
-          requireSpecialChars: true,
-          requireNumbers: true,
-        },
-      },
-      dataSharing: {
-        allowPublicLists: true,
-        allowExternalSharing: false,
-        requireApproval: true,
-      },
-      apiAccess: {
-        enabled: true,
-        rateLimit: 1000,
-        requireApiKey: true,
-      },
-    };
+  async getOrganizationPolicies(@Request() req: any) {
+    const organizationId = req.user?.organizationId;
+    return this.adminService.getOrganizationPolicies(organizationId);
   }
 
   @Put('policies')
@@ -159,13 +94,9 @@ export class AdminController {
     status: 200,
     description: 'Organization policies updated successfully',
   })
-  async updateOrganizationPolicies(@Body() policies: any) {
-    // Mock implementation
-    return {
-      ...policies,
-      updatedAt: new Date().toISOString(),
-      message: 'Organization policies updated successfully',
-    };
+  async updateOrganizationPolicies(@Request() req: any, @Body() policies: any) {
+    const organizationId = req.user?.organizationId;
+    return this.adminService.updateOrganizationPolicies(organizationId, policies);
   }
 
   @Get('integrations')
@@ -175,7 +106,7 @@ export class AdminController {
     description: 'Integration settings retrieved successfully',
   })
   async getIntegrationSettings() {
-    // Mock implementation
+    // Integration settings - keeping as mock for now as it's configuration data
     return {
       databases: {
         enabled: true,
@@ -183,27 +114,19 @@ export class AdminController {
           {
             name: 'PostgreSQL Main',
             status: 'connected',
-            lastSync: '2024-12-08T14:30:00Z',
-          },
-          {
-            name: 'MySQL Archive',
-            status: 'disconnected',
-            lastSync: '2024-12-07T10:15:00Z',
+            lastSync: new Date().toISOString(),
           },
         ],
       },
       apis: {
         enabled: true,
-        endpoints: [
-          { name: 'Data Enrichment API', status: 'active', calls: 1250 },
-          { name: 'Email Verification API', status: 'active', calls: 890 },
-        ],
+        endpoints: [],
       },
       exports: {
         cloudStorage: {
-          enabled: true,
-          provider: 'AWS S3',
-          bucket: 'selly-exports',
+          enabled: false,
+          provider: null,
+          bucket: null,
         },
         email: {
           enabled: false,
@@ -220,7 +143,7 @@ export class AdminController {
     description: 'Integration settings updated successfully',
   })
   async updateIntegrationSettings(@Body() settings: any) {
-    // Mock implementation
+    // Integration settings - keeping as mock for now as it's configuration data
     return {
       ...settings,
       updatedAt: new Date().toISOString(),
@@ -235,58 +158,19 @@ export class AdminController {
     description: 'Activity logs retrieved successfully',
   })
   async getActivityLogs(
+    @Request() req: any,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    // Mock implementation
-    const mockLogs = [
-      {
-        id: '1',
-        timestamp: '2024-12-08T14:30:00Z',
-        user: 'admin@albaly.com',
-        action: 'company.created',
-        resource: 'Company',
-        resourceId: 'c1',
-        description: 'Created new company: Bangkok Logistics Ltd.',
-        ipAddress: '192.168.1.100',
-        userAgent: 'Mozilla/5.0...',
-      },
-      {
-        id: '2',
-        timestamp: '2024-12-08T14:25:00Z',
-        user: 'manager@albaly.com',
-        action: 'export.completed',
-        resource: 'Export',
-        resourceId: 'e123',
-        description: 'Export job completed: 234 records',
-        ipAddress: '192.168.1.101',
-        userAgent: 'Mozilla/5.0...',
-      },
-      {
-        id: '3',
-        timestamp: '2024-12-08T14:20:00Z',
-        user: 'user@albaly.com',
-        action: 'list.updated',
-        resource: 'CompanyList',
-        resourceId: 'l456',
-        description: 'Updated list: Target Prospects',
-        ipAddress: '192.168.1.102',
-        userAgent: 'Mozilla/5.0...',
-      },
-    ];
-
-    return {
-      data: mockLogs,
-      pagination: {
-        page: parseInt(page || '1', 10),
-        limit: parseInt(limit || '50', 10),
-        total: mockLogs.length,
-        totalPages: 1,
-        hasNext: false,
-        hasPrev: false,
-      },
-    };
+    const organizationId = req.user?.organizationId;
+    return this.adminService.getActivityLogs(
+      organizationId,
+      parseInt(page || '1', 10),
+      parseInt(limit || '50', 10),
+      startDate,
+      endDate,
+    );
   }
 }

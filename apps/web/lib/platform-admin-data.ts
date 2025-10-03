@@ -35,7 +35,7 @@ let analyticsCache: { data: any; timestamp: number } | null = null
 let usersCache: { data: any; timestamp: number } | null = null
 const CACHE_DURATION = 30000 // 30 seconds
 
-// Updated utility functions that use backend APIs where available
+// Utility functions that use backend APIs
 export async function getTotalUsers(): Promise<number> {
   try {
     // Check cache first
@@ -47,8 +47,8 @@ export async function getTotalUsers(): Promise<number> {
     usersCache = { data: response.data, timestamp: Date.now() }
     return response.data?.length || 0
   } catch (error) {
-    console.error('Failed to fetch users from backend, using fallback:', error)
-    return mockTenantData.reduce((sum, tenant) => sum + tenant.user_count, 0)
+    console.error('Failed to fetch users from backend:', error)
+    throw new Error('Unable to fetch users. Please ensure the backend is running.')
   }
 }
 
@@ -63,8 +63,8 @@ export async function getTotalDataRecords(): Promise<number> {
     analyticsCache = { data: response, timestamp: Date.now() }
     return response.totalCompanies || 0
   } catch (error) {
-    console.error('Failed to fetch analytics from backend, using fallback:', error)
-    return mockTenantData.reduce((sum, tenant) => sum + tenant.data_count, 0)
+    console.error('Failed to fetch analytics from backend:', error)
+    throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
   }
 }
 
@@ -79,8 +79,8 @@ export async function getActiveTenants(): Promise<number> {
     analyticsCache = { data: response, timestamp: Date.now() }
     return response.activeUsers || 0
   } catch (error) {
-    console.error('Failed to fetch analytics from backend, using fallback:', error)
-    return mockTenantData.filter(tenant => tenant.status === "active").length
+    console.error('Failed to fetch analytics from backend:', error)
+    throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
   }
 }
 
@@ -95,24 +95,14 @@ export async function getPlatformAnalytics(): Promise<any> {
     analyticsCache = { data: response, timestamp: Date.now() }
     return response
   } catch (error) {
-    console.error('Failed to fetch platform analytics from backend, using fallback:', error)
-    return {
-      totalCompanies: 1250,
-      totalLists: 45,
-      totalExports: 128,
-      totalImports: 67,
-      activeUsers: 23,
-      dataQualityScore: 0.89,
-      monthlyGrowth: {
-        companies: 12.5,
-        exports: 8.3,
-        users: 5.2
-      }
-    }
+    console.error('Failed to fetch platform analytics from backend:', error)
+    throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
   }
 }
 
-// Mock data for consistent usage across platform admin components
+// NOTE: Temporary mock data for platform admin components that haven't been migrated to API yet
+// These will be removed once all platform admin components use real API endpoints
+
 export const mockTenantData: TenantData[] = [
   {
     id: "org_customer1",
@@ -159,7 +149,7 @@ export const mockPlatformUsers: PlatformUser[] = [
     email: "platform@albaly.com",
     role: "platform_admin",
     status: "active",
-    organization_id: null as any, // Platform admins don't belong to an organization
+    organization_id: null as any,
     organization: null,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-12-08T14:30:00Z",
@@ -207,48 +197,6 @@ export const mockPlatformUsers: PlatformUser[] = [
     updated_at: "2024-12-08T11:45:00Z",
     lastLogin: "2024-12-08T11:45:00Z",
     loginCount: 89
-  },
-  {
-    id: "4",
-    name: "Sarah Manager",
-    email: "sarah@globalmanuf.com",
-    role: "customer_admin",
-    status: "active",
-    organization_id: "org_customer2",
-    organization: {
-      id: "org_customer2",
-      name: "Global Manufacturing Inc",
-      domain: "globalmanuf.com",
-      status: "active",
-      subscription_tier: "enterprise",
-      created_at: "2024-02-20T09:30:00Z",
-      updated_at: "2024-12-08T13:15:00Z"
-    },
-    created_at: "2024-01-20T09:15:00Z",
-    updated_at: "2024-12-07T16:30:00Z",
-    lastLogin: "2024-12-07T16:30:00Z",
-    loginCount: 203
-  },
-  {
-    id: "5",
-    name: "Mike Staff",
-    email: "mike@techsolutions.co.th",
-    role: "staff",
-    status: "inactive",
-    organization_id: "org_customer3",
-    organization: {
-      id: "org_customer3",
-      name: "Tech Solutions Ltd",
-      domain: "techsolutions.co.th",
-      status: "inactive",
-      subscription_tier: "basic",
-      created_at: "2024-05-10T14:20:00Z",
-      updated_at: "2024-11-20T16:45:00Z"
-    },
-    created_at: "2024-05-10T11:30:00Z",
-    updated_at: "2024-11-15T10:20:00Z",
-    lastLogin: "2024-11-15T10:20:00Z",
-    loginCount: 42
   }
 ]
 

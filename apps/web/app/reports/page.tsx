@@ -1,8 +1,9 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { requireAuth } from "@/lib/auth"
-import { mockCompanies } from "@/lib/mock-data"
+import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
@@ -17,71 +18,94 @@ import {
   Pie,
   Cell
 } from "recharts"
-import { TrendingUp, Users, CheckCircle, AlertTriangle } from "lucide-react"
+import { TrendingUp, Users, CheckCircle, AlertTriangle, Loader2 } from "lucide-react"
 
 function ReportsPage() {
-  // Calculate actual data from mock companies for customer admin scope
-  const totalCompanies = mockCompanies.length
-  const activeCompanies = mockCompanies.filter((c) => c.verificationStatus === "Active").length
-  const needsVerificationCompanies = mockCompanies.filter((c) => c.verificationStatus === "Needs Verification").length
-  const invalidCompanies = mockCompanies.filter((c) => c.verificationStatus === "Invalid").length
-  const avgCompleteness = Math.round(mockCompanies.reduce((sum, c) => sum + c.dataCompleteness, 0) / totalCompanies)
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Data quality distribution based on actual company data
+  // Fetch analytics data from backend
+  useEffect(() => {
+    async function fetchAnalytics() {
+      try {
+        setIsLoading(true);
+        const data = await apiClient.getDashboardAnalytics();
+        setAnalytics(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch analytics:', err);
+        setError('Failed to load analytics data. Please ensure the backend is running.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAnalytics();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">Loading analytics...</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !analytics) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="container mx-auto px-4 py-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">{error || 'Failed to load analytics data'}</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Use data from backend
+  const totalCompanies = analytics.totalCompanies || 0;
+  const totalLists = analytics.totalLists || 0;
+  const activeUsers = analytics.activeUsers || 0;
+  const dataQualityScore = analytics.dataQualityScore || 0;
+  const avgCompleteness = Math.round(dataQualityScore * 100);
+
+  // Mock data for charts (will be replaced with backend data when available)
   const dataQualityData = [
-    { name: "Active", value: Math.round((activeCompanies / totalCompanies) * 100), color: "#10b981" },
-    { name: "Needs Verification", value: Math.round((needsVerificationCompanies / totalCompanies) * 100), color: "#f59e0b" },
-    { name: "Invalid", value: Math.round((invalidCompanies / totalCompanies) * 100), color: "#ef4444" }
+    { name: "High Quality", value: 65, color: "#10b981" },
+    { name: "Medium Quality", value: 25, color: "#f59e0b" },
+    { name: "Low Quality", value: 10, color: "#ef4444" }
   ]
 
-  // Industry distribution based on actual data
-  const industryData = mockCompanies.reduce((acc, company) => {
-    const industry = company.industrialName
-    acc[industry] = (acc[industry] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-  
-  const industryChartData = Object.entries(industryData).map(([name, count]) => ({
-    name,
-    count
-  }))
+  const industryChartData = [
+    { name: "Manufacturing", count: 150 },
+    { name: "Services", count: 120 },
+    { name: "Technology", count: 90 },
+    { name: "Retail", count: 75 },
+  ]
 
-  // Province distribution based on actual data
-  const provinceData = mockCompanies.reduce((acc, company) => {
-    const province = company.province
-    acc[province] = (acc[province] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-  
-  const provinceChartData = Object.entries(provinceData).map(([name, count]) => ({
-    name,
-    count
-  }))
+  const provinceChartData = [
+    { name: "Bangkok", count: 200 },
+    { name: "Chiang Mai", count: 80 },
+    { name: "Phuket", count: 60 },
+    { name: "Others", count: 95 },
+  ]
 
-  // Data completeness distribution based on actual scores
-  const completenessRanges = {
-    "90-100%": 0,
-    "80-89%": 0,
-    "70-79%": 0,
-    "60-69%": 0,
-    "50-59%": 0,
-    "Below 50%": 0
-  }
-  
-  mockCompanies.forEach((company) => {
-    const completeness = company.dataCompleteness
-    if (completeness >= 90) completenessRanges["90-100%"]++
-    else if (completeness >= 80) completenessRanges["80-89%"]++
-    else if (completeness >= 70) completenessRanges["70-79%"]++
-    else if (completeness >= 60) completenessRanges["60-69%"]++
-    else if (completeness >= 50) completenessRanges["50-59%"]++
-    else completenessRanges["Below 50%"]++
-  })
-
-  const completenessData = Object.entries(completenessRanges).map(([range, count]) => ({
-    range,
-    count
-  }))
+  const completenessData = [
+    { range: "90-100%", count: 180 },
+    { range: "80-89%", count: 120 },
+    { range: "70-79%", count: 80 },
+    { range: "60-69%", count: 40 },
+    { range: "50-59%", count: 15 },
+    { range: "Below 50%", count: 10 },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
