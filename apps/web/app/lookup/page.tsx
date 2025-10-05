@@ -78,14 +78,8 @@ function CompanyLookupPage() {
     return filters;
   }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, currentPage]);
 
-  // Use API search when we have search criteria, otherwise don't query
   const shouldSearch = isSimpleSearch && searchTerm.trim() || hasAppliedFiltering;
-  const { 
-    data: apiSearchResult, 
-    isLoading: isApiLoading, 
-    error: apiError,
-    isError: hasApiError 
-  } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
+  const { data: apiSearchResult, isLoading: isApiLoading, isError: hasApiError } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
 
   const { filteredCompanies, leadScores, isLoading } = useMemo(() => {
     if (shouldSearch && isApiLoading) {
@@ -95,29 +89,33 @@ function CompanyLookupPage() {
     if (shouldSearch && apiSearchResult && !hasApiError) {
       const companies = apiSearchResult.items.map((item: any) => ({
         id: item.id,
-        companyNameEn: item.displayName || item.companyNameEn,
-        companyNameTh: item.companyNameTh || '',
-        registrationId: item.registrationId || '',
-        registrationDate: item.establishedDate || '',
+        organizationId: item.organizationId,
+        companyNameEn: item.displayName || item.nameEn,
+        companyNameTh: item.nameTh,
+        companyNameLocal: item.nameLocal,
+        primaryRegistrationNo: item.primaryRegistrationNo,
+        registrationId: item.registrationId,
+        registrationDate: item.establishedDate,
         industrialName: item.industryClassification[0],
-        province: item.province || '',
-        websiteUrl: item.websiteUrl || '',
-        primaryEmail: item.primaryEmail || '',
-        primaryPhone: item.primaryPhone || '',
-        address: item.addressLine_1 || '',
-        district: item.district || '', 
+        province: item.province,
+        websiteUrl: item.websiteUrl,
+        primaryEmail: item.primaryEmail,
+        primaryPhone: item.primaryPhone,
+        address1: item.addressLine_1,
+        address2: item.addressLine_2,
+        district: item.district, 
         employeeCountEstimate: item.employeeCountEstimate || 0,
-        dataSource: item.dataSource || 'api',
+        dataSource: item.dataSource,
         verificationStatus: item.verificationStatus,
-        qualityScore: item.qualityScore || 0,
+        qualityScore: item.dataQualityScore || 0,
         contactPersons: item.contactPersons || [],
-        companySize: item.companySize || 'unknown',
-        businessDescription: item.businessDescription || '',
-        dataSensitivity: item.dataSensitivity || 'standard',
+        companySize: item.companySize,
+        businessDescription: item.businessDescription,
+        dataSensitivity: item.dataSensitivity,
         dataCompleteness: item.dataQualityScore,
-        isSharedData: item.isSharedData || false,
-        createdAt: item.createdAt || new Date().toISOString(),
-        updatedAt: item.updatedAt || new Date().toISOString(),
+        isSharedData: item.isSharedData,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       }));
 
       return { filteredCompanies: companies, leadScores: {}, isLoading: false };
@@ -146,36 +144,29 @@ function CompanyLookupPage() {
     }
   }
 
-  const handleAddToList = () => {
+  const onAddToList = () => {
     if (selectedCompanies.length > 0) {
       setShowAddToListDialog(true)
     }
   }
 
-  const handleExport = () => {
+  const onExportExcel = () => {
     const selectedData = filteredCompanies.filter((c) => selectedCompanies.includes(c.id))
+    console.log("selectedData", selectedData)
     const csvContent = [
       [
-        "Company Name",
-        "Industry",
-        "Province",
-        "Contact Person",
-        "Phone",
-        "Email",
-        "Status",
-        "Data Completeness",
-        "Last Updated",
+        "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Last Updated",
       ],
       ...selectedData.map((company) => [
         company.companyNameEn,
         company.industrialName,
         company.province,
-        company.contactPersons[0]?.name || "",
-        company.contactPersons[0]?.phone || "",
-        company.contactPersons[0]?.email || "",
+        company.contactPersons,
+        company.primaryPhone,
+        company.primaryEmail,
         company.verificationStatus,
         `${company.dataCompleteness}%`,
-        // company.lastUpdated,
+        new Date(company.updatedAt).toLocaleDateString(),
       ]),
     ]
       .map((row) => row.join(","))
@@ -190,7 +181,7 @@ function CompanyLookupPage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleSearchSubmit = () => {
+  const onSearch = () => {
     if (searchTerm.trim()) {
       setIsSimpleSearch(true)
       setHasAppliedFiltering(false)
@@ -198,9 +189,9 @@ function CompanyLookupPage() {
     }
   }
 
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term)
-    if (!term.trim()) {
+  const onSearchChangeVal = (text: string) => {
+    setSearchTerm(text)
+    if (!text.trim()) {
       setIsSimpleSearch(false)
     }
   }
@@ -251,12 +242,12 @@ function CompanyLookupPage() {
             {/* Search Section */}
             <CompanySearch
               searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
+              onSearchChange={onSearchChangeVal}
               onClearSearch={() => {
                 setSearchTerm("")
                 setIsSimpleSearch(false)
               }}
-              onSearchSubmit={handleSearchSubmit}
+              onSearchSubmit={onSearch}
               onOpenSmartFiltering={() => setShowSmartFilteringDialog(true)}
             />
 
@@ -321,7 +312,6 @@ function CompanyLookupPage() {
                         </button>
                       </div>
                     )}
-                    {/* API Status Indicator */}
                     {hasApiError && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center gap-2">
                         <span className="text-sm text-yellow-800">
@@ -333,14 +323,14 @@ function CompanyLookupPage() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={handleAddToList}
+                      onClick={onAddToList}
                       disabled={selectedCompanies.length === 0 || isLoading}
                       className="px-3 py-2 bg-primary text-sm text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
                     >
                       Add to List ({selectedCompanies.length})
                     </button>
                     <button
-                      onClick={handleExport}
+                      onClick={onExportExcel}
                       disabled={selectedCompanies.length === 0}
                       className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

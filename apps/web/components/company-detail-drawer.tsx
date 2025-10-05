@@ -336,7 +336,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Address</Label>
-                      <div className="mt-1">{companyDetails.address}</div>
+                      <div className="mt-1">{companyDetails.address1}</div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">District</Label>
