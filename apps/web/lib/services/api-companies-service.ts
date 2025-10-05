@@ -68,7 +68,6 @@ export class ApiCompaniesService {
         limit: filters.limit || 25,
         province: filters.province,
         verificationStatus: filters.verificationStatus,
-        // Handle array filters - API expects comma-separated strings
         dataSource: filters.dataSource?.join(','),
         dataSensitivity: filters.dataSensitivity?.join(','),
         companySize: filters.companySize?.join(','),
@@ -80,7 +79,8 @@ export class ApiCompaniesService {
       );
 
       const response = await apiClient.searchCompanies(cleanParams);
-      
+      console.log("Res From API", response.data);
+
       // Convert API response to our expected format
       return {
         items: response.data,
@@ -91,20 +91,7 @@ export class ApiCompaniesService {
       };
     } catch (error) {
       console.error('API search failed, using fallback mock data:', error);
-      // Fall back to mock data search instead of the service
-      if (filters.q && filters.q.trim()) {
-        const { searchCompanies } = await import('@/lib/mock-data');
-        const companies = searchCompanies(await import('@/lib/mock-data').then(m => m.mockCompanies), filters.q);
-        return {
-          items: companies,
-          total: companies.length,
-          page: 1,
-          limit: companies.length,
-          hasNextPage: false,
-        };
-      }
       
-      // Return empty result for non-search operations
       return {
         items: [],
         total: 0,

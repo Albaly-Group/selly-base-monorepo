@@ -28,7 +28,6 @@ function CompanyLookupPage() {
   const [isSimpleSearch, setIsSimpleSearch] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Convert smartFiltering criteria to API search filters
   const apiSearchFilters = useMemo(() => {
     const filters: any = {
       page: currentPage,
@@ -39,31 +38,41 @@ function CompanyLookupPage() {
 
       if(searchTerm.trim()){
         filters.q = searchTerm.trim() || "";
-        filters.includeSharedData = false;
+        filters.includeSharedData = true;
       }
     }
 
     if (hasAppliedFiltering) {
-      // Convert smart filtering criteria to API filters
+
+      // if (searchTerm.trim()) {
+      //   filters.q = searchTerm.trim();
+      // }
+
+      if (smartFiltering.keywordWeight) {
+        filters.keywordWeight = smartFiltering.keywordWeight; 
+      }
+      if (smartFiltering.industrial){
+        filters.industrial = smartFiltering.industrial;
+      }
       if (smartFiltering.province) {
         filters.province = smartFiltering.province;
       }
       if (smartFiltering.companySize && smartFiltering.companySize.length > 0) {
         filters.companySize = smartFiltering.companySize;
       }
-      if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
-        filters.dataSource = smartFiltering.dataSource;
+      if (smartFiltering.contactStatus){
+        filters.contactStatus = smartFiltering.contactStatus;
       }
-      if (smartFiltering.verificationStatus) {
-        filters.verificationStatus = smartFiltering.verificationStatus;
-      }
-      if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
-        filters.dataSensitivity = smartFiltering.dataSensitivity;
-      }
-      // Include search term even with smart filtering
-      if (searchTerm.trim()) {
-        filters.q = searchTerm.trim();
-      }
+
+      // if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
+      //   filters.dataSource = smartFiltering.dataSource;
+      // }
+      // if (smartFiltering.verificationStatus) {
+      //   filters.verificationStatus = smartFiltering.verificationStatus;
+      // }
+      // if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
+      //   filters.dataSensitivity = smartFiltering.dataSensitivity;
+      // }
     }
 
     return filters;
@@ -78,33 +87,34 @@ function CompanyLookupPage() {
     isError: hasApiError 
   } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
 
-  // Process companies with either API results or fallback to mock data
   const { filteredCompanies, leadScores, isLoading } = useMemo(() => {
-    // If API is loading, show loading state
     if (shouldSearch && isApiLoading) {
       return { filteredCompanies: [], leadScores: {}, isLoading: true };
     }
 
-    // If API has results, use them
     if (shouldSearch && apiSearchResult && !hasApiError) {
-      // Convert API results to expected format
       const companies = apiSearchResult.items.map((item: any) => ({
         id: item.id,
         companyNameEn: item.displayName || item.companyNameEn,
         companyNameTh: item.companyNameTh || '',
         registrationId: item.registrationId || '',
-        industrialName: item.industry || 'Unknown',
+        registrationDate: item.establishedDate || '',
+        industrialName: item.industryClassification[0],
         province: item.province || '',
         websiteUrl: item.websiteUrl || '',
         primaryEmail: item.primaryEmail || '',
         primaryPhone: item.primaryPhone || '',
+        address: item.addressLine_1 || '',
+        district: item.district || '', 
+        employeeCountEstimate: item.employeeCountEstimate || 0,
         dataSource: item.dataSource || 'api',
-        verificationStatus: item.verificationStatus || 'unverified',
+        verificationStatus: item.verificationStatus,
         qualityScore: item.qualityScore || 0,
         contactPersons: item.contactPersons || [],
         companySize: item.companySize || 'unknown',
         businessDescription: item.businessDescription || '',
         dataSensitivity: item.dataSensitivity || 'standard',
+        dataCompleteness: item.dataQualityScore,
         isSharedData: item.isSharedData || false,
         createdAt: item.createdAt || new Date().toISOString(),
         updatedAt: item.updatedAt || new Date().toISOString(),
@@ -113,12 +123,10 @@ function CompanyLookupPage() {
       return { filteredCompanies: companies, leadScores: {}, isLoading: false };
     }
 
-    // If API failed or no results, show empty state
     if (hasApiError) {
       console.error('API search failed, no fallback data available');
     }
     
-    // No results when nothing is applied or API failed
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
   }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, apiSearchResult, isApiLoading, hasApiError, shouldSearch]);
 
@@ -167,7 +175,7 @@ function CompanyLookupPage() {
         company.contactPersons[0]?.email || "",
         company.verificationStatus,
         `${company.dataCompleteness}%`,
-        company.lastUpdated,
+        // company.lastUpdated,
       ]),
     ]
       .map((row) => row.join(","))
@@ -192,7 +200,6 @@ function CompanyLookupPage() {
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term)
-    // Clear simple search when search term is cleared
     if (!term.trim()) {
       setIsSimpleSearch(false)
     }
@@ -201,7 +208,7 @@ function CompanyLookupPage() {
   const handleApplySmartFiltering = (criteria: SmartFilteringCriteria) => {
     setSmartFiltering(criteria)
     setHasAppliedFiltering(true)
-    setIsSimpleSearch(false) // Switch to smart filtering mode
+    setIsSimpleSearch(false)
     setSelectedCompanies([])
   }
 
