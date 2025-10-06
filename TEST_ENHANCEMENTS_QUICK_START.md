@@ -23,7 +23,7 @@ This guide provides quick commands to run all the enhanced test suites.
 npm install
 
 # Install enhanced testing dependencies
-npm install --save-dev @axe-core/playwright @lhci/cli @pact-foundation/pact chromatic
+npm install --save-dev @axe-core/playwright @lhci/cli @pact-foundation/pact lost-pixel
 ```
 
 ## Quick Commands

@@ -282,7 +282,7 @@ jobs:
         if: always()
         with:
           name: visual-test-results
-          path: test-results
+          path: .lostpixel
 
   performance-tests:
     name: Performance Tests

@@ -18,14 +18,15 @@ The test suite now includes seven additional testing categories beyond the core 
 
 ## 1. Visual Regression Testing
 
-**Tool**: Playwright Screenshots + Chromatic (optional)  
-**Location**: `/e2e/visual-regression.spec.ts`  
+**Tool**: lost-pixel (Open-source visual regression testing)  
+**Location**: `lost-pixel.config.ts`  
 **Purpose**: Detect unintended visual changes in the UI
 
 ### Configuration
 
-- **Chromatic**: `.chromatic.config.json`
-- **Playwright**: Built-in screenshot comparison
+- **lost-pixel**: `lost-pixel.config.ts`
+- Automatic baseline management
+- Pixel-perfect comparison with configurable thresholds
 
 ### Running Visual Tests
 
@@ -36,8 +37,8 @@ npm run test:visual
 # Update baseline images
 npm run test:visual:update
 
-# Run with Chromatic (requires setup)
-npx chromatic --project-token=<token>
+# Run with Docker (isolated environment)
+npm run test:visual:docker
 ```
 
 ### Features
@@ -51,12 +52,12 @@ npx chromatic --project-token=<token>
 
 ### Configuration Details
 
-The `.chromatic.config.json` file configures:
-- Project identification
-- Build script reference
-- Auto-acceptance rules
-- External file exclusions
-- Branch-specific behavior
+The `lost-pixel.config.ts` file configures:
+- Page shots with specific paths
+- Comparison threshold settings
+- Screenshot storage locations
+- Browser and viewport configuration
+- Wait times and network idle detection
 
 ---
 
@@ -472,7 +473,7 @@ open apps/api/coverage/index.html
 npm install
 
 # Visual regression
-npm install --save-dev chromatic
+npm install --save-dev lost-pixel
 
 # Performance testing
 npm install -g @lhci/cli
@@ -533,11 +534,16 @@ Add to `.github/workflows/test.yml`:
         with:
           fetch-depth: 0
       
-      - name: Run Chromatic
-        uses: chromaui/action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          exitOnceUploaded: true
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run lost-pixel
+        run: npm run test:visual
 
   performance-tests:
     name: Performance Tests
@@ -674,7 +680,7 @@ Add to `.github/workflows/test.yml`:
 ## Resources
 
 - [Playwright Visual Comparisons](https://playwright.dev/docs/test-snapshots)
-- [Chromatic Documentation](https://www.chromatic.com/docs/)
+- [lost-pixel Documentation](https://docs.lost-pixel.com/)
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 - [axe-core](https://github.com/dequelabs/axe-core)
 - [k6 Documentation](https://k6.io/docs/)

@@ -280,7 +280,7 @@ All requirements from the problem statement have been met:
 
 While the test suite is complete and production-ready, the following enhancements have been implemented:
 
-- [x] Visual regression testing with Percy or Chromatic ✅
+- [x] Visual regression testing with lost-pixel ✅
 - [x] Performance testing with Lighthouse CI ✅
 - [x] Accessibility testing with axe-core ✅
 - [x] Load testing with k6 or Artillery ✅

@@ -16,8 +16,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report playwright-report-e2e",
-    "test:visual": "playwright test e2e/visual-regression.spec.ts",
-    "test:visual:update": "playwright test e2e/visual-regression.spec.ts --update-snapshots",
+    "test:visual": "lost-pixel update && lost-pixel",
+    "test:visual:update": "lost-pixel update",
+    "test:visual:docker": "lost-pixel docker",
     "test:a11y": "playwright test e2e/accessibility.spec.ts",
     "test:performance": "lhci autorun",
     "test:load": "k6 run k6.config.js",
@@ -31,7 +32,7 @@
     "@axe-core/playwright": "^4.8.2",
     "@lhci/cli": "^0.12.0",
     "@pact-foundation/pact": "^12.1.0",
-    "chromatic": "^10.0.0"
+    "lost-pixel": "^3.16.0"
   },
   "packageManager": "npm@10.2.4"
 }

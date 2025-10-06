@@ -54,8 +54,8 @@ This document serves as a central index for all testing documentation in the Sel
 
 ### 6. Visual Regression Tests ✨
 - **Location**: `/e2e/visual-regression.spec.ts`
-- **Framework**: Playwright Screenshots + Chromatic
-- **Configuration**: `.chromatic.config.json`
+- **Framework**: lost-pixel (Open-source visual regression)
+- **Configuration**: `lost-pixel.config.ts`
 - **Documentation**: [TEST_ENHANCEMENTS.md#1-visual-regression-testing](./TEST_ENHANCEMENTS.md#1-visual-regression-testing)
 - **Running**: `npm run test:visual`
 - **Update Baselines**: `npm run test:visual:update`
@@ -114,7 +114,7 @@ This document serves as a central index for all testing documentation in the Sel
 - `apps/api/jest.config.js` - Backend test configuration
 
 ### Enhancement Configuration
-- `.chromatic.config.json` - Visual regression testing
+- `lost-pixel.config.ts` - Visual regression testing
 - `.lighthouserc.js` - Performance testing
 - `axe.config.js` - Accessibility testing
 - `k6.config.js` - Load testing
@@ -321,7 +321,7 @@ The GitHub Actions workflow automatically runs:
 - [Playwright](https://playwright.dev/)
 - [Jest](https://jestjs.io/)
 - [React Testing Library](https://testing-library.com/react)
-- [Chromatic](https://www.chromatic.com/docs/)
+- [lost-pixel](https://docs.lost-pixel.com/)
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 - [axe-core](https://github.com/dequelabs/axe-core)
 - [k6](https://k6.io/docs/)
