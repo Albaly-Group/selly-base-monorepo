@@ -40,6 +40,7 @@ interface CompanyListCreateRequest {
   name: string;
   description?: string;
   visibility?: 'private' | 'team' | 'organization' | 'public';
+  isShared?: boolean;
   isSmartList?: boolean;
   smartCriteria?: Record<string, any>;
 }

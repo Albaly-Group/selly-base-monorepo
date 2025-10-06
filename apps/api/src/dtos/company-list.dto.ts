@@ -43,6 +43,10 @@ export class CreateCompanyListDto {
   @IsBoolean()
   isSmartList?: boolean;
 
+  @IsOptional()
+  @IsBoolean()
+  isShared?: boolean;
+
   @ApiProperty({
     description: 'Smart list criteria (for smart lists only)',
     example: { industry: 'technology', size: 'medium', location: 'Bangkok' },

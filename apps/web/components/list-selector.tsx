@@ -71,7 +71,7 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {list.itemCount}
+                    {list.totalCompanies || 0}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {list.companyIds}
+                    {list.companyIds.length}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
