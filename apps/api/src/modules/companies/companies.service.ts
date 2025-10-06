@@ -144,12 +144,15 @@ export class CompaniesService {
           organizationId,
         });
       }
-    } else if (includeSharedData) {
-      query.where('company.isSharedData = true');
     } else {
-      throw new ForbiddenException(
-        'Organization ID is required for non-shared data access',
-      );
+      // When no organizationId is provided, only allow shared data access
+      if (includeSharedData) {
+        query.where('company.isSharedData = true');
+      } else {
+        throw new ForbiddenException(
+          'Organization ID is required for non-shared data access',
+        );
+      }
     }
 
     // Enhanced text search with full-text capabilities
@@ -342,51 +345,47 @@ export class CompaniesService {
         contacts: [],
       };
 
-      // In a real implementation, this would save to database
-      if (this.companyRepository) {
-        // Clean the data for TypeORM by converting null to undefined
-        const cleanedData = {
-          ...companyData,
-          nameTh: companyData.nameTh || undefined,
-          primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
-          businessDescription: companyData.businessDescription || undefined,
-          websiteUrl: companyData.websiteUrl || undefined,
-          primaryEmail: companyData.primaryEmail || undefined,
-          primaryPhone: companyData.primaryPhone || undefined,
-          addressLine1: companyData.addressLine1 || undefined,
-          addressLine2: companyData.addressLine2 || undefined,
-          district: companyData.district || undefined,
-          subdistrict: companyData.subdistrict || undefined,
-          province: companyData.province || undefined,
-          postalCode: companyData.postalCode || undefined,
-          employeeCountEstimate: companyData.employeeCountEstimate || undefined,
-        };
+      // Save to database
+      // Clean the data for TypeORM by converting null to undefined
+      const cleanedData = {
+        ...companyData,
+        nameTh: companyData.nameTh || undefined,
+        primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
+        businessDescription: companyData.businessDescription || undefined,
+        websiteUrl: companyData.websiteUrl || undefined,
+        primaryEmail: companyData.primaryEmail || undefined,
+        primaryPhone: companyData.primaryPhone || undefined,
+        addressLine1: companyData.addressLine1 || undefined,
+        addressLine2: companyData.addressLine2 || undefined,
+        district: companyData.district || undefined,
+        subdistrict: companyData.subdistrict || undefined,
+        province: companyData.province || undefined,
+        postalCode: companyData.postalCode || undefined,
+        employeeCountEstimate: companyData.employeeCountEstimate || undefined,
+      };
 
-        const company = this.companyRepository.create(cleanedData);
-        const savedCompany = await this.companyRepository.save(company);
+      const company = this.companyRepository.create(cleanedData);
+      const savedCompany = await this.companyRepository.save(company);
 
-        // Log creation
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(
-            user,
-            'CREATE',
-            savedCompany.id,
-            {
-              newValues: companyData,
-              metadata: { dataSource: 'customer_input' },
-            },
-          );
-        }
-
-        // Transform response to match DTO field names
-        return {
-          ...savedCompany,
-          companyNameEn: savedCompany.nameEn,
-          companyNameTh: savedCompany.nameTh,
-        };
-      } else {
-        throw new Error('Database repository is not available');
+      // Log creation
+      if (this.auditService) {
+        await this.auditService.logCompanyOperation(
+          user,
+          'CREATE',
+          savedCompany.id,
+          {
+            newValues: companyData,
+            metadata: { dataSource: 'customer_input' },
+          },
+        );
       }
+
+      // Transform response to match DTO field names
+      return {
+        ...savedCompany,
+        companyNameEn: savedCompany.nameEn,
+        companyNameTh: savedCompany.nameTh,
+      };
     } catch (error) {
       // Log error
       if (this.auditService && user) {
@@ -512,28 +511,24 @@ export class CompaniesService {
       // Calculate changes for audit log
       const changes = this.calculateChanges(oldValues, updatedCompany);
 
-      // In a real implementation, save to database
-      if (this.companyRepository) {
-        // Remove GENERATED columns from update data (displayName, searchVector)
-        const { displayName, searchVector, ...updateData } = updatedCompany;
-        await this.companyRepository.update(id, updateData);
-        const savedCompany = await this.companyRepository.findOne({
-          where: { id },
+      // Save to database
+      // Remove GENERATED columns from update data (displayName, searchVector)
+      const { displayName, searchVector, ...updateData } = updatedCompany;
+      await this.companyRepository.update(id, updateData);
+      const savedCompany = await this.companyRepository.findOne({
+        where: { id },
+      });
+
+      // Log update
+      if (this.auditService) {
+        await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
+          oldValues,
+          newValues: updatedCompany,
+          changes,
         });
-
-        // Log update
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
-            oldValues,
-            newValues: updatedCompany,
-            changes,
-          });
-        }
-
-        return savedCompany;
-      } else {
-        throw new Error('Database repository is not available');
       }
+
+      return savedCompany;
     } catch (error) {
       // Log error
       if (this.auditService && user) {
@@ -574,11 +569,7 @@ export class CompaniesService {
       // Check for dependencies (lists, etc.)
       // In a real implementation, check if company is referenced in lists
 
-      if (this.companyRepository) {
-        await this.companyRepository.delete(id);
-      } else {
-        throw new Error('Database repository is not available');
-      }
+      await this.companyRepository.delete(id);
 
       // Log deletion
       if (this.auditService) {
