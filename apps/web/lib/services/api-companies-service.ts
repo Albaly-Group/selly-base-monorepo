@@ -30,7 +30,7 @@ interface CompanyCreateRequest {
   websiteUrl?: string | null;
   primaryEmail?: string | null;
   primaryPhone?: string | null;
-  dataSource: 'customer_input';  // Only allow customer input for new companies
+  dataSource: 'customer_input';
   sourceReference?: string | null;
   dataSensitivity?: 'standard' | 'confidential' | 'restricted';
 }
@@ -59,7 +59,7 @@ export class ApiCompaniesService {
    */
   async searchCompanies(filters: SearchFilters = {}): Promise<SearchResult<CompanySummary>> {
     try {
-      // Convert filters to API format
+
       const apiParams = {
         searchTerm: filters.q,
         organizationId: this.user.organization_id,
@@ -68,20 +68,18 @@ export class ApiCompaniesService {
         limit: filters.limit || 25,
         province: filters.province,
         verificationStatus: filters.verificationStatus,
-        // Handle array filters - API expects comma-separated strings
         dataSource: filters.dataSource?.join(','),
         dataSensitivity: filters.dataSensitivity?.join(','),
         companySize: filters.companySize?.join(','),
       };
 
-      // Remove undefined values
       const cleanParams = Object.fromEntries(
         Object.entries(apiParams).filter(([_, value]) => value !== undefined)
       );
 
       const response = await apiClient.searchCompanies(cleanParams);
-      
-      // Convert API response to our expected format
+      console.log("Res From API", response.data);
+
       return {
         items: response.data,
         total: response.pagination.total,
@@ -91,20 +89,7 @@ export class ApiCompaniesService {
       };
     } catch (error) {
       console.error('API search failed, using fallback mock data:', error);
-      // Fall back to mock data search instead of the service
-      if (filters.q && filters.q.trim()) {
-        const { searchCompanies } = await import('@/lib/mock-data');
-        const companies = searchCompanies(await import('@/lib/mock-data').then(m => m.mockCompanies), filters.q);
-        return {
-          items: companies,
-          total: companies.length,
-          page: 1,
-          limit: companies.length,
-          hasNextPage: false,
-        };
-      }
       
-      // Return empty result for non-search operations
       return {
         items: [],
         total: 0,
@@ -124,7 +109,6 @@ export class ApiCompaniesService {
       return company;
     } catch (error) {
       console.error('API getCompanyById failed, using fallback mock data:', error);
-      // Return null if API fails and we don't have the company in mock data
       return null;
     }
   }
@@ -134,7 +118,7 @@ export class ApiCompaniesService {
    */
   async createCompany(companyData: CompanyCreateRequest): Promise<CompanyDetail> {
     try {
-      // Add organization context to the company data
+
       const apiData = {
         ...companyData,
         organizationId: this.user.organization_id,
@@ -145,7 +129,7 @@ export class ApiCompaniesService {
       return company;
     } catch (error) {
       console.error('API createCompany failed, falling back to mock creation:', error);
-      // For now, just return a mock company object
+
       return {
         id: `mock-${Date.now()}`,
         ...companyData,
@@ -186,7 +170,6 @@ export class ApiCompaniesService {
    */
   async bulkCreateCompanies(companies: CompanyCreateRequest[]): Promise<CompanyDetail[]> {
     try {
-      // Add organization context to all companies
       const apiData = companies.map(company => ({
         ...company,
         organizationId: this.user.organization_id,

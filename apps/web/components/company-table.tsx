@@ -88,21 +88,17 @@ export function CompanyTable({
 
   const getSortIcon = (field: SortField) => {
     if (!sortable || sortField !== field) return <ArrowUpDown className="h-4 w-4 ml-1 text-gray-300" />
-    return sortDirection === 'asc' 
-      ? <ArrowUp className="h-4 w-4 ml-1" />
-      : <ArrowDown className="h-4 w-4 ml-1" />
+    return sortDirection === 'asc' ? <ArrowUp className="h-4 w-4 ml-1" /> : <ArrowDown className="h-4 w-4 ml-1" />
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800"
-      case "Needs Verification":
-        return "bg-yellow-100 text-yellow-800"
-      case "Invalid":
-        return "bg-red-100 text-red-800"
+      case "verified":
+        return "font-bold bg-green-100 text-green-800"
+      case "unverified":
+        return "font-bold bg-red-100 text-red-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "font-bold bg-gray-100 text-gray-800"
     }
   }
 
@@ -214,7 +210,13 @@ export function CompanyTable({
                     {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
                   </button>
                 </TableCell>
-                <TableCell>{company.industrialName}</TableCell>
+                <TableCell>
+                  {Array.isArray(company.industrialName) ? (
+                    company.industrialName.join(', ')
+                  ) : (
+                    company.industrialName
+                  )}
+                </TableCell>
                 <TableCell>{company.province}</TableCell>
                 <TableCell>
                   {company.contactPersons.length > 0 ? (
@@ -232,7 +234,9 @@ export function CompanyTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(company.verificationStatus)}>{company.verificationStatus}</Badge>
+                  <Badge className={getStatusColor(company.verificationStatus)}>
+                    {company.verificationStatus}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <span className={`font-medium ${getCompletenessColor(company.dataCompleteness)}`}>

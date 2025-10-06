@@ -16,106 +16,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users for authentication - Updated for multi-tenant
-const mockUsers: (User & { password: string; role: UserRoleName })[] = [
-  {
-    id: "1",
-    email: "user@selly.com",
-    name: "John User",
-    role: "user", // Legacy role for backward compatibility 
-    organization_id: "org_customer1",
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      slug: "customer-company-1",
-      subscription_tier: "professional",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    password: "password123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "2",
-    email: "staff@selly.com", 
-    name: "Jane Staff",
-    role: "staff",
-    organization_id: "org_customer1",
-    organization: {
-      id: "org_customer1", 
-      name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      slug: "customer-company-2",
-      subscription_tier: "professional",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    password: "staff123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "3",
-    email: "admin@selly.com",
-    name: "Legacy Admin",
-    role: "admin", // Legacy role for backward compatibility
-    organization_id: "org_customer1", 
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1", 
-      domain: "customer1.com",
-      status: "active",
-      slug: "customer-company-3",
-      subscription_tier: "professional",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    password: "admin123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "4",
-    email: "admin@customer1.com",
-    name: "Customer Admin",
-    role: "customer_admin",
-    organization_id: "org_customer1",
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      slug: "customer-company-4",
-      subscription_tier: "professional", 
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    password: "admin123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "5",
-    email: "platform@albaly.com",
-    name: "Platform Admin",
-    role: "platform_admin",
-    organization_id: null, // Platform admins don't belong to a specific tenant
-    organization: null,
-    password: "platform123",
-    status: "active",
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-  }
-]
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -126,46 +26,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = JSON.parse(storedUser)
         
-        // Ensure user has roles array for RBAC (for backward compatibility)
-        if (!userData.roles && userData.role) {
-          const mockRoles = [];
-          if (userData.role === 'platform_admin') {
-            mockRoles.push({
-              id: 'role_platform_admin',
-              name: 'platform_admin',
-              description: 'Platform Administrator',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              permissions: [
-                {
-                  id: 'perm_wildcard',
-                  key: '*',
-                  description: 'Full platform access',
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                }
-              ]
-            });
-          } else if (userData.role === 'customer_admin') {
-            mockRoles.push({
-              id: 'role_customer_admin',
-              name: 'customer_admin',
-              description: 'Customer Administrator',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              permissions: [
-                { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-              ]
-            });
-          }
-          userData.roles = mockRoles;
+        // if (!userData.roles && userData.role) {
+        //   const mockRoles = [];
+        //   if (userData.role === 'platform_admin') {
+        //     mockRoles.push({
+        //       id: 'role_platform_admin',
+        //       name: 'platform_admin',
+        //       description: 'Platform Administrator',
+        //       created_at: new Date().toISOString(),
+        //       updated_at: new Date().toISOString(),
+        //       permissions: [
+        //         {
+        //           id: 'perm_wildcard',
+        //           key: '*',
+        //           description: 'Full platform access',
+        //           created_at: new Date().toISOString(),
+        //           updated_at: new Date().toISOString(),
+        //         }
+        //       ]
+        //     });
+        //   } else if (userData.role === 'customer_admin') {
+        //     mockRoles.push({
+        //       id: 'role_customer_admin',
+        //       name: 'customer_admin',
+        //       description: 'Customer Administrator',
+        //       created_at: new Date().toISOString(),
+        //       updated_at: new Date().toISOString(),
+        //       permissions: [
+        //         { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        //         { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        //         { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        //         { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        //       ]
+        //     });
+        //   }
+        //   userData.roles = mockRoles;
           
-          // Update localStorage with the fixed user data
-          localStorage.setItem("selly-user", JSON.stringify(userData))
-        }
+        //   localStorage.setItem("selly-user", JSON.stringify(userData))
+        // }
         
         setUser(userData)
         if (!document.cookie.includes("selly-user=")) {
@@ -182,29 +80,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      // Try to use the real API first
       try {
         const { apiClient } = await import('./api-client');
         const response = await apiClient.login(email, password);
         
         if (response.accessToken && response.user) {
-          // Convert API user format to our app's user format
+
           const apiUser = response.user;
-          
-          // Determine role from API roles array or fall back to mock data
-          let userRole: UserRoleName = 'user'; // default
+          let userRole: UserRoleName = 'user';
           
           if (apiUser.roles && apiUser.roles.length > 0) {
-            // Use the first role from the API response
+
             const primaryRole = apiUser.roles[0].name;
-            // Map database role names to our UserRoleName type
             if (['user', 'staff', 'admin', 'customer_admin', 'platform_admin', 'customer_staff', 'customer_user'].includes(primaryRole)) {
               userRole = primaryRole as UserRoleName;
             }
-          } else {
-            // If no roles from API, check mock data as fallback
-            const mockUser = mockUsers.find((u) => u.email === email);
-            userRole = mockUser?.role || 'user' as UserRoleName;
           }
           
           const appUser: User = {
@@ -216,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             organization: apiUser.organization ? {
               id: apiUser.organization.id,
               name: apiUser.organization.name,
-              domain: '', // Not provided by API
+              domain: '',
               status: 'active' as const,
               slug: apiUser.organization.slug || '',
               subscription_tier: 'professional' as const,
@@ -245,59 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (apiError) {
         console.log('API login failed, falling back to mock auth:', apiError);
-        
-        // Fall back to mock authentication
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const foundUser = mockUsers.find((u) => u.email === email && u.password === password);
-
-        if (foundUser) {
-          const { password: _, role, ...userWithoutPassword } = foundUser;
-          
-          // Create mock roles array with permissions based on user role
-          const mockRoles = [];
-          if (role === 'platform_admin') {
-            mockRoles.push({
-              id: 'role_platform_admin',
-              name: 'platform_admin',
-              description: 'Platform Administrator',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              permissions: [
-                {
-                  id: 'perm_wildcard',
-                  key: '*',
-                  description: 'Full platform access',
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                }
-              ]
-            });
-          } else if (role === 'customer_admin') {
-            mockRoles.push({
-              id: 'role_customer_admin',
-              name: 'customer_admin',
-              description: 'Customer Administrator',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              permissions: [
-                { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-                { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-              ]
-            });
-          }
-          
-          const userWithRole = { ...userWithoutPassword, role, roles: mockRoles };
-          
-          setUser(userWithRole);
-          localStorage.setItem("selly-user", JSON.stringify(userWithRole));
-          document.cookie = `selly-user=${JSON.stringify(userWithRole)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-
-          setIsLoading(false);
-          return true;
-        }
+        return false;
       }
 
       setIsLoading(false);
@@ -310,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
-    // Clear API client token if it exists
+
     try {
       const { apiClient } = require('./api-client');
       apiClient.logout();

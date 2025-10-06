@@ -57,7 +57,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [companyLists, setCompanyLists] = useState<any[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
 
-  // Fetch lists that contain this company
+  const companyDetails = company
+
+  if (!company) return null
+
   useEffect(() => {
     if (company && open) {
       const fetchCompanyLists = async () => {
@@ -65,13 +68,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
           setIsLoadingLists(true)
           const response = await apiClient.getCompanyLists()
           if (response.data) {
-            // Filter lists that contain this company (simplified approach)
-            // In a real implementation, you'd have a specific API endpoint for this
             const filteredLists = response.data.map(list => ({
               id: list.id,
               name: list.name,
-              status: list.status || 'Active',
-              owner: list.ownerUser?.name || 'Unknown',
+              status: list.status,
+              owner: list.ownerUser?.name,
               addedDate: list.createdAt ? list.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
             }))
             setCompanyLists(filteredLists)
@@ -87,100 +88,79 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   }, [company, open])
 
-  if (!company) return null
+  // Mock data
+  // const contactPersons = [
+  //   {
+  //     id: "1",
+  //     name: "Somchai Prasert",
+  //     title: "Chief Technology Officer",
+  //     department: "Technology",
+  //     phone: "+66-2-123-4567",
+  //     email: "somchai@example.co.th",
+  //     linkedin: "https://linkedin.com/in/somchai-prasert",
+  //     isDecisionMaker: true,
+  //     status: "Active",
+  //     lastVerified: "2024-12-05"
+  //   },
+  //   {
+  //     id: "2", 
+  //     name: "Sarah Johnson",
+  //     title: "Business Development Manager",
+  //     department: "Sales",
+  //     phone: "+66-2-123-4568",
+  //     email: "sarah@example.co.th",
+  //     isDecisionMaker: false,
+  //     status: "Active",
+  //     lastVerified: "2024-12-01"
+  //   }
+  // ]
 
-  // Mock additional data that would come from the API
-  const companyDetails = {
-    ...company,
-    address: "101 Rama IX Rd., Huai Khwang District",
-    district: "Huai Khwang",
-    amphoe: "Huai Khwang", 
-    website: "https://example.co.th",
-    description: "Leading technology solutions provider specializing in B2B software development and digital transformation services.",
-    businessType: "Private Limited Company",
-    registrationDate: "2019-03-15",
-    employeeCount: "50-100",
-    registrationDetails: {
-      authority: "Department of Business Development",
-      type: "Private Limited Company",
-      status: "Active",
-      registeredDate: "2019-03-15",
-      country: "Thailand"
-    }
-  }
+  // const activities = [
+  //   {
+  //     id: "1",
+  //     type: "call",
+  //     outcome: "Interested",
+  //     content: "Discussed B2B software requirements. Interested in CRM solution.",
+  //     contactPerson: "Somchai Prasert",
+  //     createdBy: "John Sales Rep",
+  //     createdAt: "2024-12-08T14:30:00Z"
+  //   },
+  //   {
+  //     id: "2",
+  //     type: "note", 
+  //     content: "Company is expanding their digital transformation initiatives. Good prospect for Q1 2025.",
+  //     createdBy: "Sarah Staff",
+  //     createdAt: "2024-12-07T11:15:00Z"
+  //   },
+  //   {
+  //     id: "3",
+  //     type: "meeting",
+  //     outcome: "Follow-up Required",
+  //     content: "Initial product demo completed. Need to prepare custom proposal.",
+  //     contactPerson: "Sarah Johnson",
+  //     createdBy: "Mike Manager",
+  //     createdAt: "2024-12-06T16:00:00Z"
+  //   }
+  // ]
 
-  const contactPersons = [
-    {
-      id: "1",
-      name: "Somchai Prasert",
-      title: "Chief Technology Officer",
-      department: "Technology",
-      phone: "+66-2-123-4567",
-      email: "somchai@example.co.th",
-      linkedin: "https://linkedin.com/in/somchai-prasert",
-      isDecisionMaker: true,
-      status: "Active",
-      lastVerified: "2024-12-05"
-    },
-    {
-      id: "2", 
-      name: "Sarah Johnson",
-      title: "Business Development Manager",
-      department: "Sales",
-      phone: "+66-2-123-4568",
-      email: "sarah@example.co.th",
-      isDecisionMaker: false,
-      status: "Active",
-      lastVerified: "2024-12-01"
-    }
-  ]
-
-  const activities = [
-    {
-      id: "1",
-      type: "call",
-      outcome: "Interested",
-      content: "Discussed B2B software requirements. Interested in CRM solution.",
-      contactPerson: "Somchai Prasert",
-      createdBy: "John Sales Rep",
-      createdAt: "2024-12-08T14:30:00Z"
-    },
-    {
-      id: "2",
-      type: "note", 
-      content: "Company is expanding their digital transformation initiatives. Good prospect for Q1 2025.",
-      createdBy: "Sarah Staff",
-      createdAt: "2024-12-07T11:15:00Z"
-    },
-    {
-      id: "3",
-      type: "meeting",
-      outcome: "Follow-up Required",
-      content: "Initial product demo completed. Need to prepare custom proposal.",
-      contactPerson: "Sarah Johnson",
-      createdBy: "Mike Manager",
-      createdAt: "2024-12-06T16:00:00Z"
-    }
-  ]
-
-  const auditHistory = [
-    {
-      id: "1",
-      field: "Phone",
-      oldValue: "+66-2-123-4566",
-      newValue: "+66-2-123-4567",
-      changedBy: "Admin User",
-      changedAt: "2024-12-05T10:30:00Z"
-    },
-    {
-      id: "2",
-      field: "Email", 
-      oldValue: "info@oldexample.com",
-      newValue: "info@example.co.th",
-      changedBy: "System Import",
-      changedAt: "2024-12-01T14:20:00Z"
-    }
-  ]
+  // const auditHistory = [
+  //   {
+  //     id: "1",
+  //     field: "Phone",
+  //     oldValue: "+66-2-123-4566",
+  //     newValue: "+66-2-123-4567",
+  //     changedBy: "Admin User",
+  //     changedAt: "2024-12-05T10:30:00Z"
+  //   },
+  //   {
+  //     id: "2",
+  //     field: "Email", 
+  //     oldValue: "info@oldexample.com",
+  //     newValue: "info@example.co.th",
+  //     changedBy: "System Import",
+  //     changedAt: "2024-12-01T14:20:00Z"
+  //   }
+  // ]
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -197,14 +177,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800"
-      case "Needs Verification":
-        return "bg-yellow-100 text-yellow-800"
-      case "Invalid":
-        return "bg-red-100 text-red-800"
+      case "verified":
+        return "font-bold bg-green-100 text-green-800"
+      case "unverified":
+        return "font-bold bg-red-100 text-red-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "font-bold bg-gray-100 text-gray-800"
     }
   }
 
@@ -232,20 +210,23 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[1000px] w-[95vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b mt-8">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <DialogTitle className="text-xl">{company.companyNameEn}</DialogTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className={getStatusColor(company.verificationStatus)}>
-                  {getStatusIcon(company.verificationStatus)}
                   {company.verificationStatus}
                 </Badge>
-                <Badge variant="outline">{company.industrialName}</Badge>
+                <Badge variant="outline">
+                  {company.industrialName}
+                </Badge>
                 <Badge variant="outline">{company.province}</Badge>
               </div>
               <DialogDescription>
-                Registration ID: {company.registeredNo} • Data Completeness: {company.dataCompleteness}%
+                <span>Registration ID: {company.registrationId}</span>
+                <span>•</span>
+                <span>Data Completeness: {company.dataCompleteness}%</span>
               </DialogDescription>
             </div>
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
@@ -293,7 +274,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Company Name</Label>
@@ -303,13 +284,13 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <Label className="text-sm font-medium text-gray-600">Industry</Label>
                       <div className="mt-1">{companyDetails.industrialName}</div>
                     </div>
-                    <div>
+                    {/* <div>
                       <Label className="text-sm font-medium text-gray-600">Business Type</Label>
                       <div className="mt-1">{companyDetails.businessType}</div>
-                    </div>
+                    </div> */}
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Employee Count</Label>
-                      <div className="mt-1">{companyDetails.employeeCount}</div>
+                      <div className="mt-1">{companyDetails.employeeCountEstimate}</div>
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -327,7 +308,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Last Updated</Label>
-                      <div className="mt-1">{formatDate(companyDetails.lastUpdated)}</div>
+                      <div className="mt-1">{formatDate(companyDetails.updatedAt)}</div>
                     </div>
                   </div>
                 </div>
@@ -354,7 +335,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Address</Label>
-                      <div className="mt-1">{companyDetails.address}</div>
+                      <div className="mt-1">{companyDetails.address1}</div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">District</Label>
@@ -388,11 +369,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                         </div>
                       </div>
                     )}
-                    {companyDetails.website && (
+                    {companyDetails.primaryEmail && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Website</Label>
                         <div className="mt-1 flex items-center gap-2">
-                          <span>{companyDetails.website}</span>
+                          <span>{companyDetails.primaryEmail}</span>
                           <Button variant="ghost" size="sm" className="p-1 h-6">
                             <ExternalLink className="h-3 w-3" />
                           </Button>
@@ -439,7 +420,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {contactPersons.map((contact) => (
+              {/* {contactPersons.map((contact) => (
                 <Card key={contact.id}>
                   <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -487,10 +468,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ))} */}
             </div>
           </TabsContent>
 
+          {/* Activity */}
           <TabsContent value="activity" className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <h3 className="text-lg font-medium">Activity Timeline</h3>
@@ -502,11 +484,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {activities.map((activity) => (
+              {/* {activities.map((activity) => (
                 <Card key={activity.id}>
-                  <CardContent className="pt-6">
+                  <CardContent>
                     <div className="flex gap-3">
-                      <div className="p-2 bg-gray-100 rounded-full">
+                      <div className="p-2rounded-full">
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 space-y-1">
@@ -532,10 +514,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ))} */}
             </div>
           </TabsContent>
 
+          {/* Lists */}
           <TabsContent value="lists" className="space-y-6">
             <h3 className="text-lg font-medium">Lists Containing This Company</h3>
             
@@ -571,6 +554,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </Table>
           </TabsContent>
 
+          {/* History */}
           <TabsContent value="history" className="space-y-6">
             <h3 className="text-lg font-medium">Audit Trail</h3>
             
@@ -585,7 +569,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {auditHistory.map((change) => (
+                {/* {auditHistory.map((change) => (
                   <TableRow key={change.id}>
                     <TableCell className="font-medium">{change.field}</TableCell>
                     <TableCell className="text-red-600">{change.oldValue}</TableCell>
@@ -593,7 +577,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     <TableCell>{change.changedBy}</TableCell>
                     <TableCell>{formatDateTime(change.changedAt)}</TableCell>
                   </TableRow>
-                ))}
+                ))} */}
               </TableBody>
             </Table>
           </TabsContent>

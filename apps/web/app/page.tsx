@@ -11,7 +11,6 @@ export default function HomePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  // Redirect users based on their permissions to their appropriate dashboards
   useEffect(() => {
     if (!isLoading && user) {
       if (canManageTenants(user)) {
@@ -22,7 +21,6 @@ export default function HomePage() {
         router.replace("/admin")
         return
       }
-      // Regular users and staff stay on the home page with customer dashboard
     }
   }, [user, isLoading, router])
 

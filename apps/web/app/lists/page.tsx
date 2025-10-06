@@ -59,7 +59,6 @@ function ListManagementPage() {
     fetchLists()
   }, [refreshKey])
 
-  // Fetch companies for selected list
   useEffect(() => {
     const fetchListCompanies = async () => {
       if (!selectedListId) {
@@ -79,10 +78,8 @@ function ListManagementPage() {
     fetchListCompanies()
   }, [selectedListId, refreshKey])
 
-  // Get selected list details
   const selectedList = userLists.find((list) => list.id === selectedListId)
 
-  // Apply smart filtering if active
   const { displayCompanies, leadScores } = useMemo(() => {
     if (!showSmartFiltering || Object.keys(smartFiltering).length === 0) {
       return { 
@@ -91,7 +88,6 @@ function ListManagementPage() {
       }
     }
 
-    // Calculate weighted scores for companies in the list
     const scoredResults = searchAndScoreCompanies(listCompanies, smartFiltering)
     const companies = scoredResults.map(result => result.company)
     const scores: { [key: string]: WeightedLeadScore } = {}
@@ -127,7 +123,6 @@ function ListManagementPage() {
       try {
         await apiClient.removeCompaniesFromList(selectedList.id, selectedCompanies)
         
-        // Refresh the data
         setRefreshKey(prev => prev + 1)
         setSelectedCompanies([])
         
@@ -139,19 +134,11 @@ function ListManagementPage() {
     }
   }
 
-  const handleExportList = () => {
+  const onExportExcelList = () => {
     const exportData = displayCompanies.filter((c) => selectedCompanies.includes(c.id))
     const csvContent = [
       [
-        "Company Name",
-        "Industry",
-        "Province",
-        "Contact Person",
-        "Phone",
-        "Email",
-        "Status",
-        "Data Completeness",
-        "Lead Score",
+        "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Lead Score",
       ],
       ...exportData.map((company) => {
         const score = leadScores.find((s) => s.companyId === company.id)?.score || 0
@@ -159,9 +146,9 @@ function ListManagementPage() {
           company.companyNameEn,
           company.industrialName,
           company.province,
-          company.contactPersons[0]?.name || "",
-          company.contactPersons[0]?.phone || "",
-          company.contactPersons[0]?.email || "",
+          company.contactPersons,
+          company.primaryPhone,
+          company.primaryEmail,
           company.verificationStatus,
           `${company.dataCompleteness}%`,
           showLeadScoring ? score.toString() : "N/A",
@@ -287,7 +274,7 @@ function ListManagementPage() {
                     >
                       Remove from List ({selectedCompanies.length})
                     </Button>
-                    <Button variant="outline" onClick={handleExportList} disabled={selectedCompanies.length === 0}>
+                    <Button variant="outline" onClick={onExportExcelList} disabled={selectedCompanies.length === 0}>
                       Export ({selectedCompanies.length})
                     </Button>
                   </div>

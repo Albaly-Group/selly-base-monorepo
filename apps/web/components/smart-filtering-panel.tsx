@@ -33,29 +33,9 @@ interface SmartFilteringPanelProps {
   criteria: SmartFilteringCriteria
   onApplyFiltering: (criteria: SmartFilteringCriteria) => void
   onClearFiltering: () => void
-  triggerType?: "button" | "search" // To handle different trigger types
-  initialKeyword?: string // For when triggered from search
+  triggerType?: "button" | "search"
+  initialKeyword?: string
 }
-
-const industrialOptions = [
-  "Manufacturing",
-  "Logistics", 
-  "Automotive",
-  "Tourism",
-  "Agriculture",
-  "Technology",
-  "Healthcare",
-]
-
-const provinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
-
-const companySizeOptions = [
-  { value: "S", label: "Small (S)" },
-  { value: "M", label: "Medium (M)" },
-  { value: "L", label: "Large (L)" },
-]
-
-const contactStatusOptions = ["Active", "Needs Verification", "Invalid"]
 
 export function SmartFilteringPanel({
   isOpen,
@@ -63,7 +43,6 @@ export function SmartFilteringPanel({
   criteria,
   onApplyFiltering,
   onClearFiltering,
-  triggerType = "button",
   initialKeyword = "",
 }: SmartFilteringPanelProps) {
   const [tempCriteria, setTempCriteria] = useState<SmartFilteringCriteria>({
@@ -110,7 +89,7 @@ export function SmartFilteringPanel({
   const hasActiveCriteria = Object.values(tempCriteria).some((value, index) => {
     const keys = Object.keys(tempCriteria)
     const key = keys[index]
-    // Skip weight fields and minimumScore for active criteria check
+    
     if (key.includes('Weight') || key === 'minimumScore' || key === 'profileName') return false
     return value !== undefined && value !== ""
   })
@@ -185,11 +164,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Industry</SelectItem>
-                      {industrialOptions.map((option) => (
+                      {/* {industrialOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))}
+                      ))} */}
                     </SelectContent>
                   </Select>
                   <div>
@@ -216,11 +195,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Province</SelectItem>
-                      {provinceOptions.map((option) => (
+                      {/* {provinceOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))}
+                      ))} */}
                     </SelectContent>
                   </Select>
                   <div>
@@ -247,11 +226,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Size</SelectItem>
-                      {companySizeOptions.map((option) => (
+                      {/* {companySizeOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
-                      ))}
+                      ))} */}
                     </SelectContent>
                   </Select>
                   <div>
@@ -278,11 +257,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Status</SelectItem>
-                      {contactStatusOptions.map((option) => (
+                      {/* {contactStatusOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))}
+                      ))} */}
                     </SelectContent>
                   </Select>
                   <div>

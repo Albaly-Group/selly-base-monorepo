@@ -28,7 +28,6 @@ function CompanyLookupPage() {
   const [isSimpleSearch, setIsSimpleSearch] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Convert smartFiltering criteria to API search filters
   const apiSearchFilters = useMemo(() => {
     const filters: any = {
       page: currentPage,
@@ -39,86 +38,95 @@ function CompanyLookupPage() {
 
       if(searchTerm.trim()){
         filters.q = searchTerm.trim() || "";
-        filters.includeSharedData = false;
+        filters.includeSharedData = true;
       }
     }
 
     if (hasAppliedFiltering) {
-      // Convert smart filtering criteria to API filters
+
+      // if (searchTerm.trim()) {
+      //   filters.q = searchTerm.trim();
+      // }
+
+      if (smartFiltering.keywordWeight) {
+        filters.keywordWeight = smartFiltering.keywordWeight; 
+      }
+      if (smartFiltering.industrial){
+        filters.industrial = smartFiltering.industrial;
+      }
       if (smartFiltering.province) {
         filters.province = smartFiltering.province;
       }
       if (smartFiltering.companySize && smartFiltering.companySize.length > 0) {
         filters.companySize = smartFiltering.companySize;
       }
-      if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
-        filters.dataSource = smartFiltering.dataSource;
+      if (smartFiltering.contactStatus){
+        filters.contactStatus = smartFiltering.contactStatus;
       }
-      if (smartFiltering.verificationStatus) {
-        filters.verificationStatus = smartFiltering.verificationStatus;
-      }
-      if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
-        filters.dataSensitivity = smartFiltering.dataSensitivity;
-      }
-      // Include search term even with smart filtering
-      if (searchTerm.trim()) {
-        filters.q = searchTerm.trim();
-      }
+
+      // if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
+      //   filters.dataSource = smartFiltering.dataSource;
+      // }
+      // if (smartFiltering.verificationStatus) {
+      //   filters.verificationStatus = smartFiltering.verificationStatus;
+      // }
+      // if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
+      //   filters.dataSensitivity = smartFiltering.dataSensitivity;
+      // }
     }
 
     return filters;
   }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, currentPage]);
 
-  // Use API search when we have search criteria, otherwise don't query
   const shouldSearch = isSimpleSearch && searchTerm.trim() || hasAppliedFiltering;
-  const { 
-    data: apiSearchResult, 
-    isLoading: isApiLoading, 
-    error: apiError,
-    isError: hasApiError 
-  } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
+  const { data: apiSearchResult, isLoading: isApiLoading, isError: hasApiError } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
 
-  // Process companies with either API results or fallback to mock data
   const { filteredCompanies, leadScores, isLoading } = useMemo(() => {
-    // If API is loading, show loading state
     if (shouldSearch && isApiLoading) {
       return { filteredCompanies: [], leadScores: {}, isLoading: true };
     }
 
-    // If API has results, use them
     if (shouldSearch && apiSearchResult && !hasApiError) {
-      // Convert API results to expected format
       const companies = apiSearchResult.items.map((item: any) => ({
         id: item.id,
-        companyNameEn: item.displayName || item.companyNameEn,
-        companyNameTh: item.companyNameTh || '',
-        registrationId: item.registrationId || '',
-        industrialName: item.industry || 'Unknown',
-        province: item.province || '',
-        websiteUrl: item.websiteUrl || '',
-        primaryEmail: item.primaryEmail || '',
-        primaryPhone: item.primaryPhone || '',
-        dataSource: item.dataSource || 'api',
-        verificationStatus: item.verificationStatus || 'unverified',
-        qualityScore: item.qualityScore || 0,
+        organizationId: item.organizationId,
+        companyNameEn: item.nameEn,
+        companyNameTh: item.nameTh,
+        companyNameLocal: item.nameLocal,
+        displayName: item.displayName,
+        primaryRegistrationNo: item.primaryRegistrationNo,
+        registrationId: item.registrationId,
+        registrationDate: item.establishedDate,
+        industrialName: item.industryClassification[0],
+        province: item.province,
+        websiteUrl: item.websiteUrl,
+        primaryEmail: item.primaryEmail,
+        primaryPhone: item.primaryPhone,
+        address1: item.addressLine_1,
+        address2: item.addressLine_2,
+        district: item.district, 
+        employeeCountEstimate: item.employeeCountEstimate || 0,
+        dataSource: item.dataSource,
+        verificationStatus: item.verificationStatus,
+        qualityScore: item.dataQualityScore || 0,
         contactPersons: item.contactPersons || [],
-        companySize: item.companySize || 'unknown',
-        businessDescription: item.businessDescription || '',
-        dataSensitivity: item.dataSensitivity || 'standard',
-        isSharedData: item.isSharedData || false,
-        createdAt: item.createdAt || new Date().toISOString(),
-        updatedAt: item.updatedAt || new Date().toISOString(),
+        companySize: item.companySize,
+        businessDescription: item.businessDescription,
+        dataQualityScore: item.data_quality_score || 0,
+        dataSensitivity: item.dataSensitivity,
+        dataCompleteness: item.dataQualityScore,
+        isSharedData: item.isSharedData,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       }));
 
       return { filteredCompanies: companies, leadScores: {}, isLoading: false };
     }
 
-    // If API failed or no results, show empty state
     if (hasApiError) {
       console.error('API search failed, no fallback data available');
     }
     
-    // No results when nothing is applied or API failed
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
   }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, apiSearchResult, isApiLoading, hasApiError, shouldSearch]);
 
@@ -138,36 +146,28 @@ function CompanyLookupPage() {
     }
   }
 
-  const handleAddToList = () => {
+  const onAddToList = () => {
     if (selectedCompanies.length > 0) {
       setShowAddToListDialog(true)
     }
   }
 
-  const handleExport = () => {
+  const onExportExcel = () => {
     const selectedData = filteredCompanies.filter((c) => selectedCompanies.includes(c.id))
     const csvContent = [
       [
-        "Company Name",
-        "Industry",
-        "Province",
-        "Contact Person",
-        "Phone",
-        "Email",
-        "Status",
-        "Data Completeness",
-        "Last Updated",
+        "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Last Updated",
       ],
       ...selectedData.map((company) => [
-        company.companyNameEn,
+        company.companyNameEn, 
         company.industrialName,
         company.province,
-        company.contactPersons[0]?.name || "",
-        company.contactPersons[0]?.phone || "",
-        company.contactPersons[0]?.email || "",
+        company.contactPersons,
+        company.primaryPhone,
+        company.primaryEmail,
         company.verificationStatus,
         `${company.dataCompleteness}%`,
-        company.lastUpdated,
+        new Date(company.updatedAt).toLocaleDateString(),
       ]),
     ]
       .map((row) => row.join(","))
@@ -182,7 +182,7 @@ function CompanyLookupPage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleSearchSubmit = () => {
+  const onSearch = () => {
     if (searchTerm.trim()) {
       setIsSimpleSearch(true)
       setHasAppliedFiltering(false)
@@ -190,10 +190,9 @@ function CompanyLookupPage() {
     }
   }
 
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term)
-    // Clear simple search when search term is cleared
-    if (!term.trim()) {
+  const onSearchChangeVal = (text: string) => {
+    setSearchTerm(text)
+    if (!text.trim()) {
       setIsSimpleSearch(false)
     }
   }
@@ -201,11 +200,11 @@ function CompanyLookupPage() {
   const handleApplySmartFiltering = (criteria: SmartFilteringCriteria) => {
     setSmartFiltering(criteria)
     setHasAppliedFiltering(true)
-    setIsSimpleSearch(false) // Switch to smart filtering mode
+    setIsSimpleSearch(false)
     setSelectedCompanies([])
   }
 
-  const handleClearSmartFiltering = () => {
+  const clearFilters = () => {
     setSmartFiltering({})
     setHasAppliedFiltering(false)
     setIsSimpleSearch(false)
@@ -213,16 +212,12 @@ function CompanyLookupPage() {
     setSelectedCompanies([])
   }
 
-  const clearFilters = () => {
-    handleClearSmartFiltering()
-  }
-
-  const hasResults = isSimpleSearch || hasAppliedFiltering
-
-  const handleViewCompany = (company: Company) => {
+  const ViewCompany = (company: Company) => {
     setSelectedCompany(company)
     setShowCompanyDetail(true)
   }
+
+  const hasResults = isSimpleSearch || hasAppliedFiltering
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -235,25 +230,21 @@ function CompanyLookupPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* <TabsList>
-            <TabsTrigger value="all">All Companies</TabsTrigger>
-          </TabsList> */}
           <h3 className="font-medium mb-2 mt-2">All Companies</h3>
 
           <TabsContent value="all" className="space-y-6">
             {/* Search Section */}
             <CompanySearch
               searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
+              onSearchChange={onSearchChangeVal}
               onClearSearch={() => {
                 setSearchTerm("")
                 setIsSimpleSearch(false)
               }}
-              onSearchSubmit={handleSearchSubmit}
+              onSearchSubmit={onSearch}
               onOpenSmartFiltering={() => setShowSmartFilteringDialog(true)}
             />
 
-            {/* Show default message or results */}
             {!hasResults ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16">
@@ -314,7 +305,6 @@ function CompanyLookupPage() {
                         </button>
                       </div>
                     )}
-                    {/* API Status Indicator */}
                     {hasApiError && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center gap-2">
                         <span className="text-sm text-yellow-800">
@@ -326,14 +316,14 @@ function CompanyLookupPage() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={handleAddToList}
+                      onClick={onAddToList}
                       disabled={selectedCompanies.length === 0 || isLoading}
                       className="px-3 py-2 bg-primary text-sm text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
                     >
                       Add to List ({selectedCompanies.length})
                     </button>
                     <button
-                      onClick={handleExport}
+                      onClick={onExportExcel}
                       disabled={selectedCompanies.length === 0}
                       className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -343,46 +333,28 @@ function CompanyLookupPage() {
                 </div>
 
                 {/* Results Table */}
-                {isLoading ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-16">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                      <p className="text-gray-600">Searching companies...</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <CompanyTable
+                <CompanyTable
                     companies={filteredCompanies}
                     selectedCompanies={selectedCompanies}
                     onSelectCompany={handleSelectCompany}
                     onSelectAll={handleSelectAll}
-                    onViewCompany={handleViewCompany}
+                    onViewCompany={ViewCompany}
                     showLeadScores={hasAppliedFiltering}
                     leadScores={leadScores}
                     sortable={true}
-                  />
-                )}
+                />
 
-                {/* Results Summary */}
                 {!isLoading && (
                   <div className="text-sm text-gray-600 flex justify-between">
-                    {isSimpleSearch ? (
-                      <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
-                    ) : (
-                      <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
-                    )}
-                    {filteredCompanies.length > 0 && leadScores[filteredCompanies[0]?.id] && (
+                    <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
+                    {filteredCompanies.length > 0 && (
                       <span className="text-blue-600">
                         Sorted by: Highest weighted score first
                       </span>
                     )}
-                    {/* {apiSearchResult && (
-                      <span className="text-green-600">
-                        API Results: Page {apiSearchResult.page} of {Math.ceil(apiSearchResult.total / apiSearchResult.limit)}
-                      </span>
-                    )} */}
                   </div>
                 )}
+
               </>
             )}
           </TabsContent>
@@ -402,8 +374,6 @@ function CompanyLookupPage() {
           onSuccess={() => {
             setSelectedCompanies([])
             setShowAddToListDialog(false)
-            // Trigger refresh of any related data
-            console.log("Companies successfully added to list")
           }}
         />
 
@@ -413,7 +383,7 @@ function CompanyLookupPage() {
           onOpenChange={setShowSmartFilteringDialog}
           criteria={smartFiltering}
           onApplyFiltering={handleApplySmartFiltering}
-          onClearFiltering={handleClearSmartFiltering}
+          onClearFiltering={clearFilters}
           initialKeyword={searchTerm}
         />
 

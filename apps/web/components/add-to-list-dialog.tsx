@@ -38,7 +38,6 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
   const [lists, setLists] = useState<CompanyList[]>([])
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Fetch user lists when dialog opens
   useEffect(() => {
     if (open) {
       const fetchLists = async () => {
@@ -84,7 +83,6 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
         return
       }
 
-      // Add companies to the list
       await apiClient.addCompaniesToList(targetListId, selectedCompanyIds)
       
       setMessage({ 
@@ -92,12 +90,10 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
         text: `Successfully added ${selectedCompanyIds.length} companies to the list.` 
       })
       
-      // Close dialog and trigger refresh after a short delay
       setTimeout(() => {
         onSuccess()
         onOpenChange(false)
         setMessage(null)
-        // Reset form
         setListOption("existing")
         setSelectedListId("")
         setNewListName("")

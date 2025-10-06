@@ -6,7 +6,7 @@
 // Core entity types matching DB schema v2.0
 export interface CompanyCore {
   id: string
-  organization_id?: string | null  // NULL for shared data, UUID for customer-specific
+  organization_id?: string | null
   companyNameEn: string
   companyNameTh?: string | null
   companyNameLocal?: string | null
