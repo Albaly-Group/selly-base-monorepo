@@ -12,7 +12,10 @@
     "lint": "turbo lint", 
     "start": "turbo start",
     "test": "turbo test",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report playwright-report-e2e"
   },
   "devDependencies": {
     "turbo": "latest"

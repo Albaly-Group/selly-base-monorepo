@@ -1,13 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for API Testing
+ * Playwright Configuration for Backend API Testing
  * 
- * This configuration is specifically for API endpoint testing using Playwright's
- * APIRequestContext instead of traditional supertest approach.
+ * This configuration is specifically for backend API endpoint testing using Playwright's
+ * APIRequestContext. These are NOT true E2E tests - they only test the backend API layer.
+ * 
+ * Test Architecture:
+ * - API Tests (this config): Backend API endpoints only
+ * - Integration Tests: Backend with database (Jest/Supertest)
+ * - E2E Tests: Frontend -> Backend -> Database (separate config)
  */
 export default defineConfig({
-  testDir: './test',
+  testDir: './test/api',
   testMatch: '**/*.playwright.spec.ts',
   fullyParallel: false, // Run tests sequentially to maintain data consistency
   forbidOnly: !!process.env.CI,
@@ -28,7 +33,7 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'API Tests',
+      name: 'Backend API Tests',
       use: { ...devices['Desktop Chrome'] },
     },
   ],

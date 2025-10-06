@@ -1,21 +1,36 @@
-# E2E Tests Directory
+# Backend API Tests Directory
 
-This directory contains both **original Jest/Supertest tests** and **new Playwright tests** for API endpoint testing.
+This directory contains **backend API tests** and **integration tests** following software testing best practices.
 
-## 🎭 Playwright Tests (NEW - Recommended)
+## Test Architecture
 
-**Why Playwright?**
-- ✅ Standardized testing patterns
-- ✅ Modern async/await support
-- ✅ Better error messages and debugging
-- ✅ Interactive UI mode
-- ✅ HTML reports with traces
+This project follows proper test separation:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. E2E Tests (/e2e/)                                        │
+│     Frontend UI -> Backend API -> Database                   │
+│                                                              │
+│  2. Backend API Tests (test/api/) ⬅ THIS DIRECTORY         │
+│     Backend API endpoints only (Playwright)                  │
+│                                                              │
+│  3. Integration Tests (test/integration/) ⬅ THIS DIRECTORY │
+│     Backend + Database (Jest/Supertest)                      │
+│                                                              │
+│  4. Frontend Tests (apps/web/)                              │
+│     UI components in isolation                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🎭 Backend API Tests (api/)
+
+**Playwright-based API endpoint tests** - Tests backend API layer only (no UI, no database).
 
 ### Test Files
 
 | File | Tests | Description |
 |------|-------|-------------|
-| `docker-e2e.playwright.spec.ts` | 40+ | Full e2e suite with Docker database |
+| `docker-api.playwright.spec.ts` | 40+ | API tests with Docker database |
 | `api-endpoints.playwright.spec.ts` | 16 | Basic API endpoint tests |
 | `platform-admin.playwright.spec.ts` | 9 | Platform admin API tests |
 
@@ -26,58 +41,66 @@ This directory contains both **original Jest/Supertest tests** and **new Playwri
   - `AuthHelper` - Token management
   - `TestDataHelper` - Test state management
 
-### Running Playwright Tests
+### Running API Tests
 
 ```bash
-# All Playwright tests
-npm run test:playwright
+# All API tests
+npm run test:api
 
 # Specific file
-npm run test:playwright:docker
+npm run test:api:docker
 
 # Interactive UI mode (best for debugging)
-npm run test:playwright:ui
+npm run test:api:ui
 
 # View HTML report
-npm run test:playwright:report
+npm run test:api:report
 ```
 
-## 🧪 Original Jest Tests (Legacy)
+## 🧪 Integration Tests (integration/)
 
-**Preserved for backward compatibility**
+**Jest/Supertest-based integration tests** - Tests backend with real database (no UI).
 
 ### Test Files
 
 | File | Description |
 |------|-------------|
-| `docker-e2e-spec.ts` | Original Docker e2e tests |
-| `api-endpoints.e2e-spec.ts` | Original API endpoint tests |
-| `platform-admin.e2e-spec.ts` | Original platform admin tests |
+| `docker-e2e-spec.ts` | Backend integration tests with Docker |
+| `api-endpoints.e2e-spec.ts` | Basic backend integration tests |
+| `platform-admin.e2e-spec.ts` | Platform admin integration tests |
 
-### Running Jest Tests
+### Running Integration Tests
 
 ```bash
-# All Jest e2e tests
-npm run test:e2e
+# Setup test database
+npm run test:integration:setup
 
-# Docker e2e tests
-npm run test:e2e:docker
+# All integration tests
+npm run test:integration
+
+# Docker integration tests
+npm run test:integration:docker
+
+# Cleanup test database
+npm run test:integration:cleanup
 ```
 
-## 📊 Comparison
+## 📊 Test Type Comparison
 
-### Code Statistics
+### API Tests vs Integration Tests vs E2E Tests
 
-| Metric | Jest/Supertest | Playwright | Change |
-|--------|---------------|------------|---------|
-| Total lines | 1,344 | 1,165 | -13% (more concise) |
-| Test files | 3 | 3 | Same |
-| Total tests | 65+ | 65+ | Same coverage |
-| Helper code | Inline | 184 lines | Reusable |
+| Aspect | API Tests (Playwright) | Integration Tests (Jest) | E2E Tests (Playwright) |
+|--------|----------------------|------------------------|----------------------|
+| **Location** | `test/api/` | `test/integration/` | `/e2e/` |
+| **Scope** | Backend API only | Backend + Database | Frontend + Backend + Database |
+| **Browser** | No | No | Yes |
+| **Database** | Optional | Yes | Yes |
+| **Speed** | Fast | Medium | Slow |
+| **Use Case** | API contracts | Business logic | User journeys |
 
 ### Pattern Comparison
 
-**Jest/Supertest Pattern:**
+**Integration Test (Jest/Supertest):**
 ```typescript
 it('should get companies', () => {
   return request(app.getHttpServer())
@@ -90,7 +113,7 @@ it('should get companies', () => {
 });
 ```
 
-**Playwright Pattern:**
+**API Test (Playwright):**
 ```typescript
 test('should get companies', async () => {
   const response = await apiHelper.get('/api/v1/companies', {
@@ -102,6 +125,15 @@ test('should get companies', async () => {
 });
 ```
 
+**E2E Test (Playwright):**
+```typescript
+test('user can view companies', async ({ page }) => {
+  await page.goto('/companies');
+  await page.click('[data-testid="search"]');
+  await expect(page.locator('text=Test Company')).toBeVisible();
+});
+```
+
 ## 🚀 Quick Start
 
 ### 1. Setup Test Environment
@@ -110,25 +142,28 @@ test('should get companies', async () => {
 # Install dependencies
 npm install
 
-# Setup test database (required for both)
-npm run test:e2e:setup
+# Setup test database (required for integration tests)
+npm run test:integration:setup
 ```
 
 ### 2. Run Tests
 
 ```bash
-# Recommended: Use Playwright
-npm run test:playwright
+# Backend API tests (fast, no database required)
+npm run test:api
 
-# Or: Use original Jest tests
-npm run test:e2e
+# Integration tests (medium speed, with database)
+npm run test:integration
+
+# E2E tests (slow, full stack - see /e2e/README.md)
+cd ../../../ && npm run test:e2e
 ```
 
 ### 3. Cleanup
 
 ```bash
 # Stop test database
-npm run test:e2e:cleanup
+npm run test:integration:cleanup
 ```
 
 ## 📖 Documentation
@@ -137,9 +172,9 @@ npm run test:e2e:cleanup
 - **[E2E_PLAYWRIGHT_TRANSFORMATION.md](../../../E2E_PLAYWRIGHT_TRANSFORMATION.md)** - Executive summary
 - **[playwright.config.ts](../playwright.config.ts)** - Playwright configuration
 
-## 🎯 Test Coverage
+## 🎯 Module Coverage
 
-Both test suites cover the same modules:
+Both API and Integration tests cover these backend modules:
 
 - ✅ Health Check
 - ✅ Authentication & Authorization
@@ -152,6 +187,8 @@ Both test suites cover the same modules:
 - ✅ Admin API
 - ✅ Platform Admin API
 - ✅ Data Integrity Tests
+
+**Note**: For full application flow testing (UI to DB), see E2E tests in `/e2e/`
 
 ## 🐛 Debugging
 

@@ -1,8 +1,18 @@
-# E2E Tests Playwright Transformation - Complete Summary
+# Backend API Tests Playwright Transformation - Complete Summary
+
+## Important Clarification
+
+**These are Backend API Tests, NOT End-to-End Tests**
+
+Following software testing best practices, the tests have been properly categorized:
+- **E2E Tests** (`/e2e/`) - Frontend UI → Backend API → Database (to be implemented)
+- **Backend API Tests** (`apps/api/test/api/`) - Backend API endpoints only (this transformation)
+- **Integration Tests** (`apps/api/test/integration/`) - Backend + Database (Jest/Supertest)
+- **Component Tests** - Frontend components in isolation (to be implemented)
 
 ## Overview
 
-All e2e tests in the repository have been successfully transformed to use **Playwright's standardized API testing framework**. This migration provides modern, maintainable, and extensible test infrastructure.
+All **backend API tests** in the repository have been successfully transformed to use **Playwright's standardized API testing framework**. This migration provides modern, maintainable, and extensible test infrastructure for testing backend API endpoints.
 
 ## What Was Done
 
