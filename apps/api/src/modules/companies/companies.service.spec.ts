@@ -19,6 +19,7 @@ describe('CompaniesService', () => {
     create: jest.fn(),
     delete: jest.fn(),
     findAndCount: jest.fn(),
+    update: jest.fn(),
   };
 
   const mockOrganizationRepository = {
@@ -27,6 +28,9 @@ describe('CompaniesService', () => {
 
   const mockAuditService = {
     logCompanyAction: jest.fn(),
+    logUserAction: jest.fn(),
+    logCompanyOperation: jest.fn(),
+    logSearchOperation: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -67,15 +71,29 @@ describe('CompaniesService', () => {
   });
 
   describe('searchCompanies', () => {
-    it('should return paginated companies from mock data when repository is not available', async () => {
-      // Create service without repository to test mock data fallback
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should return paginated companies from database', async () => {
+      const mockCompanies = [
+        {
+          id: '1',
+          nameEn: 'Test Company',
+          nameTh: 'บริษัททดสอบ',
+          province: 'Bangkok',
+          organization: { id: 'org1', name: 'Test Org' },
+        },
+      ];
 
-      const result = await serviceWithoutRepo.searchCompanies({
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockCompanies, 1]),
+      });
+
+      const result = await service.searchCompanies({
         page: 1,
         limit: 10,
       });
@@ -87,36 +105,51 @@ describe('CompaniesService', () => {
       expect(result.pagination.limit).toBe(10);
     });
 
-    it('should filter companies by keyword in mock data', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should filter companies by keyword from database', async () => {
+      const mockCompanies = [
+        {
+          id: '1',
+          nameEn: 'Tech Company',
+          nameTh: 'บริษัทเทค',
+          province: 'Bangkok',
+          organization: { id: 'org1', name: 'Test Org' },
+        },
+      ];
 
-      const result = await serviceWithoutRepo.searchCompanies({
-        keyword: 'Tech',
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockCompanies, 1]),
+      });
+
+      const result = await service.searchCompanies({
+        searchTerm: 'Tech',
         page: 1,
         limit: 10,
       });
 
       expect(result.data.length).toBeGreaterThan(0);
-      // All results should contain 'Tech' in some field
-      result.data.forEach((company) => {
-        const searchableText =
-          `${company.nameEn} ${company.nameTh} ${company.businessDescription}`.toLowerCase();
-        expect(searchableText).toContain('tech'.toLowerCase());
-      });
+      expect(mockCompanyRepository.createQueryBuilder).toHaveBeenCalled();
     });
 
     it('should handle pagination correctly', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      });
 
-      const result = await serviceWithoutRepo.searchCompanies({
+      const result = await service.searchCompanies({
         page: 1,
         limit: 1,
       });
@@ -128,15 +161,22 @@ describe('CompaniesService', () => {
   });
 
   describe('getCompanyById', () => {
-    it('should return shared company data without user', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should return company data from database', async () => {
+      const mockCompany = {
+        id: '123e4567-e89b-12d3-a456-426614174002',
+        nameEn: 'Test Company',
+        isSharedData: true,
+        organization: { id: 'org1', name: 'Test Org' },
+      };
 
-      // Company with id '123e4567-e89b-12d3-a456-426614174002' is shared (isSharedData: true)
-      const result = await serviceWithoutRepo.getCompanyById(
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockCompany),
+      });
+
+      const result = await service.getCompanyById(
         '123e4567-e89b-12d3-a456-426614174002',
       );
 
@@ -146,26 +186,21 @@ describe('CompaniesService', () => {
     });
 
     it('should throw NotFoundException for non-existent company', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      });
 
       await expect(
-        serviceWithoutRepo.getCompanyById('non-existent-id'),
+        service.getCompanyById('non-existent-id'),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('createCompany', () => {
-    it('should create company with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
+    it('should create company using database', async () => {
       const mockUser: any = {
         id: 'user1',
         organizationId: 'org1',
@@ -178,24 +213,25 @@ describe('CompaniesService', () => {
         province: 'Bangkok',
       };
 
-      const result = await serviceWithoutRepo.createCompany(
-        createDto,
-        mockUser,
-      );
+      const mockCompany = {
+        id: '123',
+        ...createDto,
+        organizationId: mockUser.organizationId,
+        createdBy: mockUser.id,
+      };
+
+      mockCompanyRepository.create.mockReturnValue(mockCompany);
+      mockCompanyRepository.save.mockResolvedValue(mockCompany);
+
+      const result = await service.createCompany(createDto, mockUser);
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
-      // Mock implementation returns a company object
-      expect(result).toHaveProperty('id');
+      expect(mockCompanyRepository.create).toHaveBeenCalled();
+      expect(mockCompanyRepository.save).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when user is missing', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
       const createDto = {
         nameEn: 'Test Company',
         nameTh: 'บริษัททดสอบ',
@@ -203,19 +239,13 @@ describe('CompaniesService', () => {
       };
 
       await expect(
-        serviceWithoutRepo.createCompany(createDto, null as any),
+        service.createCompany(createDto, null as any),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('updateCompany', () => {
-    it('should update company with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
+    it('should update company using database', async () => {
       const mockUser: any = {
         id: 'user1',
         organizationId: '123e4567-e89b-12d3-a456-426614174001',
@@ -226,27 +256,40 @@ describe('CompaniesService', () => {
         nameEn: 'Updated Company Name',
       };
 
-      const result = await serviceWithoutRepo.updateCompany(
+      const existingCompany = {
+        id: '123e4567-e89b-12d3-a456-426614174001',
+        nameEn: 'Old Name',
+        organizationId: mockUser.organizationId,
+      };
+
+      const updatedCompany = {
+        ...existingCompany,
+        ...updateDto,
+      };
+
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(existingCompany),
+      });
+      mockCompanyRepository.update.mockResolvedValue({ affected: 1 });
+      mockCompanyRepository.findOne.mockResolvedValue(updatedCompany);
+
+      const result = await service.updateCompany(
         '123e4567-e89b-12d3-a456-426614174001',
         updateDto,
         mockUser,
       );
 
       expect(result).toBeDefined();
-      // Mock implementation returns a company object
-      expect(result).toHaveProperty('id');
       expect(result.id).toBe('123e4567-e89b-12d3-a456-426614174001');
+      expect(mockCompanyRepository.update).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when user is missing', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
       await expect(
-        serviceWithoutRepo.updateCompany(
+        service.updateCompany(
           '123e4567-e89b-12d3-a456-426614174001',
           { nameEn: 'Test' },
           null as any,
@@ -256,37 +299,40 @@ describe('CompaniesService', () => {
   });
 
   describe('deleteCompany', () => {
-    it('should delete company with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
+    it('should delete company using database', async () => {
       const mockUser: any = {
         id: 'user1',
         organizationId: '123e4567-e89b-12d3-a456-426614174001',
         email: 'test@example.com',
       };
 
-      await serviceWithoutRepo.deleteCompany(
+      const existingCompany = {
+        id: '123e4567-e89b-12d3-a456-426614174001',
+        nameEn: 'Test Company',
+        organizationId: mockUser.organizationId,
+      };
+
+      mockCompanyRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(existingCompany),
+      });
+      mockCompanyRepository.delete.mockResolvedValue({ affected: 1 });
+
+      await service.deleteCompany(
         '123e4567-e89b-12d3-a456-426614174001',
         mockUser,
       );
 
-      // If no error is thrown, test passes
-      expect(true).toBe(true);
+      expect(mockCompanyRepository.delete).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174001',
+      );
     });
 
     it('should throw BadRequestException when user is missing', async () => {
-      const serviceWithoutRepo = new CompaniesService(
-        undefined,
-        undefined,
-        undefined,
-      );
-
       await expect(
-        serviceWithoutRepo.deleteCompany(
+        service.deleteCompany(
           '123e4567-e89b-12d3-a456-426614174001',
           null as any,
         ),

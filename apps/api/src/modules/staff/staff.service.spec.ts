@@ -27,6 +27,7 @@ describe('StaffService', () => {
 
   const mockRolesRepository = {
     find: jest.fn(),
+    findOne: jest.fn(),
   };
 
   beforeEach(async () => {
