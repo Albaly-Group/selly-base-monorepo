@@ -172,12 +172,17 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
+
+    const userId = user.id ?? user.sub;
+    const userName = user.name;
+
     const userContext: UserContext = {
-      id: user.id,
+      id: userId,
       email: user.email,
-      organizationId: organizationId ?? '',
-      name: user.name || 'User',
+      organizationId: organizationId,
+      name: userName,
     };
+    
     return this.companyListsService.createCompanyList(
       createListDto,
       userContext,

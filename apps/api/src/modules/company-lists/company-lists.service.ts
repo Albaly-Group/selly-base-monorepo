@@ -40,6 +40,7 @@ interface CompanyListCreateRequest {
   name: string;
   description?: string;
   visibility?: 'private' | 'team' | 'organization' | 'public';
+  isShared?: boolean;
   isSmartList?: boolean;
   smartCriteria?: Record<string, any>;
 }
@@ -201,15 +202,16 @@ export class CompanyListsService {
     data: CompanyListCreateRequest,
     user: UserContext,
   ): Promise<any> {
+
     if (this.companyListRepository) {
-      // Database implementation
+
       const listData: Partial<CompanyList> = {
-        name: data.name,
-        description: data.description || undefined,
         organizationId: user.organizationId,
         ownerUserId: user.id,
+        name: data.name,
+        description: data.description || null,
         visibility: data.visibility || 'private',
-        isShared: data.visibility === 'public',
+        isShared: data.isShared || false,
         totalCompanies: 0,
         lastActivityAt: new Date(),
         isSmartList: data.isSmartList || false,
