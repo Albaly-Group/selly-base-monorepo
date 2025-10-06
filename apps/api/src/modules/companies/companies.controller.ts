@@ -166,6 +166,46 @@ export class CompaniesController {
     return this.companiesService.getCompanyById(id, organizationId, undefined);
   }
 
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Create a new company' })
+  @ApiResponse({
+    status: 201,
+    description: 'Company created successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async createCompany(
+    @Body() createDto: CreateCompanyDto,
+    @CurrentUser() user: Users,
+  ) {
+    return this.companiesService.createCompany(createDto, user);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update a company' })
+  @ApiParam({ name: 'id', description: 'Company ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Company updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Company not found' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async updateCompany(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateCompanyDto,
+    @CurrentUser() user: Users,
+  ) {
+    return this.companiesService.updateCompany(id, updateDto, user);
+  }
+
   @Post(':id/calculate-score')
   @ApiOperation({ summary: 'Calculate lead score for a company' })
   @ApiParam({ name: 'id', description: 'Company ID' })
