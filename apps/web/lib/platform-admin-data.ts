@@ -106,6 +106,7 @@ export function validateOrganizationData(org: TenantData): boolean {
   return !!(
     org.id &&
     org.name &&
+    org.slug &&
     org.status &&
     org.subscription_tier &&
     typeof org.user_count === "number" &&
@@ -135,6 +136,7 @@ export const mockTenantData: TenantData[] = [
   {
     id: "org-1",
     name: "Acme Corporation",
+    slug: "acme-corporation",
     domain: "acme.com",
     status: "active",
     subscription_tier: "enterprise",
@@ -147,6 +149,7 @@ export const mockTenantData: TenantData[] = [
   {
     id: "org-2",
     name: "TechStart Inc",
+    slug: "techstart-inc",
     domain: "techstart.io",
     status: "active",
     subscription_tier: "professional",
@@ -159,6 +162,7 @@ export const mockTenantData: TenantData[] = [
   {
     id: "org-3",
     name: "Global Trade Co",
+    slug: "global-trade-co",
     domain: "globaltrade.com",
     status: "active",
     subscription_tier: "enterprise",
@@ -171,6 +175,7 @@ export const mockTenantData: TenantData[] = [
   {
     id: "org-4",
     name: "SmallBiz Solutions",
+    slug: "smallbiz-solutions",
     domain: "smallbiz.co",
     status: "active",
     subscription_tier: "basic",
@@ -183,6 +188,7 @@ export const mockTenantData: TenantData[] = [
   {
     id: "org-5",
     name: "Enterprise Systems",
+    slug: "enterprise-systems",
     domain: "entsys.com",
     status: "inactive",
     subscription_tier: "professional",
