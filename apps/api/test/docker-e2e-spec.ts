@@ -303,6 +303,22 @@ describe('Backend API with Docker Database (e2e)', () => {
       console.log(`✓ Created list with ID: ${listId}`);
     });
 
+    it('should get company list by ID', async () => {
+      if (!listId) {
+        console.log('⊘ Skipping - no list ID available');
+        return;
+      }
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/company-lists/${listId}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('id', listId);
+      expect(response.body).toHaveProperty('name', 'E2E Test List');
+      
+      console.log('✓ Retrieved company list by ID successfully');
+    });
+
     it('should add company to list', async () => {
       if (!listId || !companyId) {
         console.log('⊘ Skipping - no list or company ID available');
