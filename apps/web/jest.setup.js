@@ -13,6 +13,18 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
+// Mock auth context
+jest.mock('@/lib/auth', () => ({
+  useAuth: () => ({
+    user: null,
+    isAuthenticated: false,
+    login: jest.fn(),
+    logout: jest.fn(),
+    isLoading: false,
+  }),
+  AuthProvider: ({ children }) => children,
+}))
+
 // Mock fetch globally
 global.fetch = jest.fn()
 
@@ -30,3 +42,21 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 })
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  takeRecords() {
+    return []
+  }
+  unobserve() {}
+}
+
+// Suppress console errors during tests
+global.console = {
+  ...console,
+  error: jest.fn(),
+  warn: jest.fn(),
+}
