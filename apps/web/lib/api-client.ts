@@ -591,6 +591,47 @@ class ApiClient {
   }): Promise<{ data: any[]; total: number }> {
     return this.get<{ data: any[]; total: number }>('/api/v1/audit/logs', params);
   }
+
+  // Lead Scoring endpoints
+  async calculateCompanyScore(
+    companyId: string,
+    weights?: {
+      dataQuality?: number;
+      companySize?: number;
+      industry?: number;
+      location?: number;
+      engagement?: number;
+      verification?: number;
+    }
+  ): Promise<{
+    companyId: string;
+    score: number;
+    breakdown: {
+      dataQuality: number;
+      companySize: number;
+      industry: number;
+      location: number;
+      engagement: number;
+      verification: number;
+      total: number;
+    };
+    recommendations: string[];
+  }> {
+    return this.post<any>(`/api/v1/companies/${companyId}/calculate-score`, weights);
+  }
+
+  async calculateBulkScores(
+    companyIds: string[],
+    weights?: any
+  ): Promise<{
+    results: Array<{
+      companyId: string;
+      score: number;
+      breakdown: any;
+    }>;
+  }> {
+    return this.post<any>('/api/v1/companies/calculate-scores', { companyIds, weights });
+  }
 }
 
 // Export singleton instance
