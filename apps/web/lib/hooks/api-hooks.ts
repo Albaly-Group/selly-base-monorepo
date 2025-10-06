@@ -44,7 +44,6 @@ export function useCreateCompany() {
       return service.createCompany(companyData);
     },
     onSuccess: () => {
-      // Invalidate and refetch companies queries
       queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
@@ -61,7 +60,6 @@ export function useUpdateCompany() {
       return service.updateCompany(id, data);
     },
     onSuccess: (_, { id }) => {
-      // Invalidate and refetch companies queries
       queryClient.invalidateQueries({ queryKey: ['companies'] });
       queryClient.invalidateQueries({ queryKey: ['companies', id] });
     },
@@ -79,7 +77,6 @@ export function useDeleteCompany() {
       return service.deleteCompany(id);
     },
     onSuccess: () => {
-      // Invalidate and refetch companies queries
       queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
@@ -96,7 +93,6 @@ export function useBulkCreateCompanies() {
       return service.bulkCreateCompanies(companies);
     },
     onSuccess: () => {
-      // Invalidate and refetch companies queries
       queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
@@ -156,7 +152,6 @@ export function useCreateCompanyList() {
       return service.createCompanyList(data);
     },
     onSuccess: () => {
-      // Invalidate and refetch company lists queries
       queryClient.invalidateQueries({ queryKey: ['company-lists'] });
     },
   });
@@ -173,7 +168,6 @@ export function useUpdateCompanyList() {
       return service.updateCompanyList(id, data);
     },
     onSuccess: (_, { id }) => {
-      // Invalidate and refetch company lists queries
       queryClient.invalidateQueries({ queryKey: ['company-lists'] });
       queryClient.invalidateQueries({ queryKey: ['company-lists', id] });
     },
@@ -191,7 +185,6 @@ export function useDeleteCompanyList() {
       return service.deleteCompanyList(id);
     },
     onSuccess: () => {
-      // Invalidate and refetch company lists queries
       queryClient.invalidateQueries({ queryKey: ['company-lists'] });
     },
   });
@@ -208,7 +201,6 @@ export function useAddCompaniesToList() {
       return service.addCompaniesToList(listId, data);
     },
     onSuccess: (_, { listId }) => {
-      // Invalidate and refetch specific list items and list details
       queryClient.invalidateQueries({ queryKey: ['company-lists', listId, 'items'] });
       queryClient.invalidateQueries({ queryKey: ['company-lists', listId] });
       queryClient.invalidateQueries({ queryKey: ['company-lists'] });
@@ -227,7 +219,6 @@ export function useRemoveCompaniesFromList() {
       return service.removeCompaniesFromList(listId, data);
     },
     onSuccess: (_, { listId }) => {
-      // Invalidate and refetch specific list items and list details
       queryClient.invalidateQueries({ queryKey: ['company-lists', listId, 'items'] });
       queryClient.invalidateQueries({ queryKey: ['company-lists', listId] });
       queryClient.invalidateQueries({ queryKey: ['company-lists'] });

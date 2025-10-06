@@ -123,7 +123,6 @@ function ListManagementPage() {
       try {
         await apiClient.removeCompaniesFromList(selectedList.id, selectedCompanies)
         
-        // Refresh the data
         setRefreshKey(prev => prev + 1)
         setSelectedCompanies([])
         

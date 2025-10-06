@@ -30,7 +30,6 @@ export class ApiCompanyListsService {
     try {
       const lists = await apiClient.getCompanyLists(this.user.organization_id || undefined);
       
-      // Convert API response to expected format
       const companyLists: CompanyList[] = lists.map((list: any) => ({
         id: list.id,
         name: list.name,
@@ -43,7 +42,6 @@ export class ApiCompanyListsService {
         updatedAt: list.updatedAt,
       }));
 
-      // Apply client-side filtering for scope (API might not support this yet)
       let filteredLists = companyLists;
       if (filters.scope === 'mine') {
         filteredLists = companyLists.filter(list => list.ownerUserId === this.user.id);
@@ -51,7 +49,6 @@ export class ApiCompanyListsService {
         filteredLists = companyLists.filter(list => list.isShared);
       }
 
-      // Apply search filter
       if (filters.q) {
         const searchLower = filters.q.toLowerCase();
         filteredLists = filteredLists.filter(list =>
@@ -60,7 +57,6 @@ export class ApiCompanyListsService {
         );
       }
 
-      // Apply pagination
       const page = filters.page || 1;
       const limit = filters.limit || 10;
       const offset = (page - 1) * limit;
@@ -76,55 +72,8 @@ export class ApiCompanyListsService {
         hasPrev: page > 1,
       };
     } catch (error) {
-      console.error('API listCompanyLists failed, using fallback mock data:', error);
-      // Fall back to mock data instead of the service
-      const { mockUserLists } = await import('@/lib/mock-data');
-      const lists: CompanyList[] = mockUserLists.map(list => ({
-        id: list.id,
-        name: list.name,
-        description: `Mock list created on ${list.createdAt}`,
-        ownerUserId: list.owner === 'user@example.com' ? 'user-1' : 'admin-1',
-        visibility: 'private' as const,
-        isShared: false,
-        itemCount: list.companyIds.length,
-        createdAt: new Date(list.createdAt).toISOString(),
-        updatedAt: new Date(list.createdAt).toISOString(),
-        organizationId: this.user.organization_id || '',
-        totalCompanies: list.companyIds.length,
-        lastActivityAt: new Date(list.createdAt).toISOString(),
-        isSmartList: false,
-      }));
-
-      // Apply client-side filtering for scope
-      let filteredLists = lists;
-      if (filters.scope === 'mine') {
-        filteredLists = lists.filter(list => list.ownerUserId === this.user.id);
-      }
-
-      // Apply search filter
-      if (filters.q) {
-        const searchLower = filters.q.toLowerCase();
-        filteredLists = filteredLists.filter(list =>
-          list.name.toLowerCase().includes(searchLower) ||
-          list.description.toLowerCase().includes(searchLower)
-        );
-      }
-
-      // Apply pagination
-      const page = filters.page || 1;
-      const limit = filters.limit || 10;
-      const offset = (page - 1) * limit;
-      const paginatedLists = filteredLists.slice(offset, offset + limit);
-
-      return {
-        items: paginatedLists,
-        total: filteredLists.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredLists.length / limit),
-        hasNext: offset + limit < filteredLists.length,
-        hasPrev: page > 1,
-      };
+      console.error('API listCompanyLists failed, returning null:', error);
+      return null;
     }
   }
 

@@ -30,15 +30,12 @@ export interface SharedCompany {
   tenantCount?: number
 }
 
-// Cache to prevent rapid API calls
 let analyticsCache: { data: any; timestamp: number } | null = null
 let usersCache: { data: any; timestamp: number } | null = null
-const CACHE_DURATION = 30000 // 30 seconds
+const CACHE_DURATION = 30000
 
-// Utility functions that use backend APIs
 export async function getTotalUsers(): Promise<number> {
   try {
-    // Check cache first
     if (usersCache && Date.now() - usersCache.timestamp < CACHE_DURATION) {
       return usersCache.data?.length || 0
     }
@@ -54,7 +51,6 @@ export async function getTotalUsers(): Promise<number> {
 
 export async function getTotalDataRecords(): Promise<number> {
   try {
-    // Check cache first
     if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
       return analyticsCache.data.totalCompanies || 0
     }
@@ -70,7 +66,6 @@ export async function getTotalDataRecords(): Promise<number> {
 
 export async function getActiveTenants(): Promise<number> {
   try {
-    // Check cache first
     if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
       return analyticsCache.data.activeUsers || 0
     }
@@ -86,7 +81,6 @@ export async function getActiveTenants(): Promise<number> {
 
 export async function getPlatformAnalytics(): Promise<any> {
   try {
-    // Check cache first
     if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
       return analyticsCache.data
     }
@@ -99,148 +93,6 @@ export async function getPlatformAnalytics(): Promise<any> {
     throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
   }
 }
-
-// NOTE: Temporary mock data for platform admin components that haven't been migrated to API yet
-// These will be removed once all platform admin components use real API endpoints
-
-export const mockTenantData: TenantData[] = [
-  {
-    id: "org_customer1",
-    name: "Customer Company 1",
-    domain: "customer1.com",
-    status: "active",
-    subscription_tier: "professional",
-    user_count: 15,
-    data_count: 2847,
-    last_activity: "2024-12-08T14:30:00Z",
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-12-08T14:30:00Z",
-  },
-  {
-    id: "org_customer2",
-    name: "Global Manufacturing Inc",
-    domain: "globalmanuf.com",
-    status: "active",
-    subscription_tier: "enterprise",
-    user_count: 45,
-    data_count: 8934,
-    last_activity: "2024-12-08T13:15:00Z",
-    created_at: "2024-02-20T09:30:00Z",
-    updated_at: "2024-12-08T13:15:00Z",
-  },
-  {
-    id: "org_customer3",
-    name: "Tech Solutions Ltd",
-    domain: "techsolutions.co.th",
-    status: "inactive",
-    subscription_tier: "basic",
-    user_count: 3,
-    data_count: 456,
-    last_activity: "2024-11-20T16:45:00Z",
-    created_at: "2024-05-10T14:20:00Z",
-    updated_at: "2024-11-20T16:45:00Z",
-  }
-]
-
-export const mockPlatformUsers: PlatformUser[] = [
-  {
-    id: "1",
-    name: "Platform Admin",
-    email: "platform@albaly.com",
-    role: "platform_admin",
-    status: "active",
-    organization_id: null as any,
-    organization: null,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-12-08T14:30:00Z",
-    lastLogin: "2024-12-08T14:30:00Z",
-    loginCount: 245
-  },
-  {
-    id: "2",
-    name: "Jane Customer Admin",
-    email: "admin@customer1.com",
-    role: "customer_admin",
-    status: "active",
-    organization_id: "org_customer1",
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      subscription_tier: "professional",
-      created_at: "2024-01-15T10:00:00Z",
-      updated_at: "2024-12-08T14:30:00Z"
-    },
-    created_at: "2024-02-15T10:00:00Z",
-    updated_at: "2024-12-08T13:15:00Z",
-    lastLogin: "2024-12-08T13:15:00Z",
-    loginCount: 156
-  },
-  {
-    id: "3",
-    name: "John User",
-    email: "john@customer1.com",
-    role: "user",
-    status: "active",
-    organization_id: "org_customer1",
-    organization: {
-      id: "org_customer1",
-      name: "Customer Company 1",
-      domain: "customer1.com",
-      status: "active",
-      subscription_tier: "professional",
-      created_at: "2024-01-15T10:00:00Z",
-      updated_at: "2024-12-08T14:30:00Z"
-    },
-    created_at: "2024-03-01T14:20:00Z",
-    updated_at: "2024-12-08T11:45:00Z",
-    lastLogin: "2024-12-08T11:45:00Z",
-    loginCount: 89
-  }
-]
-
-export const mockSharedCompanies: SharedCompany[] = [
-  {
-    id: "shared_1",
-    companyNameEn: "Thai Airways International PCL",
-    industrialName: "Transportation",
-    province: "Bangkok",
-    registeredNo: "0107537000004",
-    verificationStatus: "Active",
-    dataCompleteness: 98,
-    lastUpdated: "2024-12-08T14:30:00Z",
-    createdBy: "platform_admin",
-    isShared: true,
-    tenantCount: 12
-  },
-  {
-    id: "shared_2",
-    companyNameEn: "CP Group (Charoen Pokphand)",
-    industrialName: "Agriculture/Food",
-    province: "Bangkok",
-    registeredNo: "0107536000321",
-    verificationStatus: "Active",
-    dataCompleteness: 95,
-    lastUpdated: "2024-12-07T16:20:00Z",
-    createdBy: "platform_admin",
-    isShared: true,
-    tenantCount: 12
-  },
-  {
-    id: "shared_3",
-    companyNameEn: "PTT Public Company Limited",
-    industrialName: "Energy/Oil & Gas",
-    province: "Bangkok",
-    registeredNo: "0107536000121",
-    verificationStatus: "Active",
-    dataCompleteness: 97,
-    lastUpdated: "2024-12-06T09:15:00Z",
-    createdBy: "platform_admin",
-    isShared: true,
-    tenantCount: 11
-  }
-]
 
 // Utility functions for data consistency
 export function getTenantUsageLevel(dataCount: number): "high" | "medium" | "low" {

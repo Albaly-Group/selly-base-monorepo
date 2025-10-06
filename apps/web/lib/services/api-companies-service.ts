@@ -30,7 +30,7 @@ interface CompanyCreateRequest {
   websiteUrl?: string | null;
   primaryEmail?: string | null;
   primaryPhone?: string | null;
-  dataSource: 'customer_input';  // Only allow customer input for new companies
+  dataSource: 'customer_input';
   sourceReference?: string | null;
   dataSensitivity?: 'standard' | 'confidential' | 'restricted';
 }
@@ -73,7 +73,6 @@ export class ApiCompaniesService {
         companySize: filters.companySize?.join(','),
       };
 
-      // Remove undefined values
       const cleanParams = Object.fromEntries(
         Object.entries(apiParams).filter(([_, value]) => value !== undefined)
       );
@@ -110,7 +109,6 @@ export class ApiCompaniesService {
       return company;
     } catch (error) {
       console.error('API getCompanyById failed, using fallback mock data:', error);
-      // Return null if API fails and we don't have the company in mock data
       return null;
     }
   }
@@ -120,7 +118,7 @@ export class ApiCompaniesService {
    */
   async createCompany(companyData: CompanyCreateRequest): Promise<CompanyDetail> {
     try {
-      // Add organization context to the company data
+
       const apiData = {
         ...companyData,
         organizationId: this.user.organization_id,
@@ -131,7 +129,7 @@ export class ApiCompaniesService {
       return company;
     } catch (error) {
       console.error('API createCompany failed, falling back to mock creation:', error);
-      // For now, just return a mock company object
+
       return {
         id: `mock-${Date.now()}`,
         ...companyData,
@@ -172,7 +170,6 @@ export class ApiCompaniesService {
    */
   async bulkCreateCompanies(companies: CompanyCreateRequest[]): Promise<CompanyDetail[]> {
     try {
-      // Add organization context to all companies
       const apiData = companies.map(company => ({
         ...company,
         organizationId: this.user.organization_id,

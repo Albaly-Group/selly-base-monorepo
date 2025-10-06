@@ -55,16 +55,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string; // Backend returns accessToken, not access_token
+  accessToken: string;
   user: {
     id: string;
     email: string;
-    name: string; // Backend returns name, not firstName/lastName
-    organizationId: string; // Backend includes organizationId
+    name: string;
+    organizationId: string;
     organization?: {
       id: string;
       name: string;
-      slug: string; // Backend includes slug
+      slug: string;
     };
     roles?: Array<{
       id: string;
@@ -84,12 +84,12 @@ export interface LoginResponse {
 export interface User {
   id: string;
   email: string;
-  name: string; // Backend returns name, not firstName/lastName
-  organizationId?: string; // Backend includes organizationId
+  name: string;
+  organizationId?: string;
   organization?: {
     id: string;
     name: string;
-    slug?: string; // Backend includes slug
+    slug?: string;
   };
   roles?: Array<{
     id: string;
@@ -111,18 +111,16 @@ class ApiClient {
 
   constructor() {
     this.baseUrl = API_BASE_URL;
-    // Load token from localStorage if available
+
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('auth_token');
     }
   }
 
-  // Check if API is available (has a valid base URL)
   isApiAvailable(): boolean {
     return !!this.baseUrl && this.baseUrl !== '';
   }
 
-  // Token management
   setToken(token: string) {
     this.token = token;
     if (typeof window !== 'undefined') {
@@ -291,7 +289,6 @@ class ApiClient {
     throw new Error('Max retries exceeded');
   }
 
-  // Health check
   async healthCheck(): Promise<string> {
     if (!this.isApiAvailable()) {
       throw new Error('API not available - no backend URL configured');
@@ -307,7 +304,6 @@ class ApiClient {
       throw new Error(`Health check failed: ${response.status} ${response.statusText}`);
     }
 
-    // Health endpoint returns plain text, not JSON
     return response.text();
   }
 
@@ -334,7 +330,6 @@ class ApiClient {
 
   async logout(): Promise<void> {
     this.clearToken();
-    // Note: Server-side logout not implemented yet in the backend
   }
 
   // Companies endpoints

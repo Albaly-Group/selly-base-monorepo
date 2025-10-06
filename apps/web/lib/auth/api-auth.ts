@@ -14,7 +14,6 @@ export async function validateAuthHeader(authHeader: string | null): Promise<Use
   // In a real implementation, this would validate JWT and extract user info
   // Then load user with roles and permissions from database
   try {
-    // Mock JWT validation - in production this would use proper JWT library
     if (token === 'demo-user-token') {
       return {
         id: 'user-1',
@@ -79,13 +78,10 @@ export function hasPermission(user: User, permissionKey: string): boolean {
     if (!role.permissions) continue
     
     for (const permission of role.permissions) {
-      // Admin wildcard permission
       if (permission.key === '*') return true
       
-      // Exact match
       if (permission.key === permissionKey) return true
       
-      // Pattern matching (e.g., 'company-lists:*' matches 'company-lists:read')
       if (permission.key.endsWith(':*')) {
         const prefix = permission.key.slice(0, -1) // Remove '*'
         if (permissionKey.startsWith(prefix)) return true
@@ -97,22 +93,19 @@ export function hasPermission(user: User, permissionKey: string): boolean {
 }
 
 export function canAccessList(user: User, list: { ownerUserId: string, visibility: string }): boolean {
-  // Owner can always access
+
   if (list.ownerUserId === user.id) {
     return true
   }
   
-  // Check admin permissions
   if (hasPermission(user, '*') || hasPermission(user, 'company-lists:*')) {
     return true
   }
   
-  // Public lists are accessible by all authenticated users
   if (list.visibility === 'public' && hasPermission(user, 'company-lists:read-public')) {
     return true
   }
-  
-  // Org lists are accessible by users with org read permission
+
   if (list.visibility === 'org' && hasPermission(user, 'company-lists:read-org')) {
     return true
   }
@@ -120,11 +113,9 @@ export function canAccessList(user: User, list: { ownerUserId: string, visibilit
   return false
 }
 
-// Helper function for backward compatibility with old role-based logic
 export function getUserRoleName(user: User): string | null {
   if (!user.roles || user.roles.length === 0) return null
-  
-  // Return the first role name for backward compatibility
+
   const roleNames = user.roles.map(r => r.name.toLowerCase())
   
   if (roleNames.includes('admin')) return 'admin'

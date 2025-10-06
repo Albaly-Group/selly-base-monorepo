@@ -22,22 +22,6 @@ function ExportsPage() {
       } catch (err) {
         console.error('Failed to fetch export jobs:', err)
         setError('Failed to load export jobs. Using demo data.')
-        // Fallback to mock data if backend fails
-        setExportJobs([
-          {
-            id: "1",
-            filename: "bangkok-logistics-leads.csv",
-            status: "completed",
-            scope: "List: Bangkok Logistics Leads",
-            format: "CSV",
-            totalRecords: 234,
-            fileSize: "45.2 KB",
-            requestedBy: "user@example.com",
-            createdAt: "2024-12-08T14:30:00Z",
-            completedAt: "2024-12-08T14:30:15Z",
-            downloadUrl: "#"
-          }
-        ])
       } finally {
         setLoading(false)
       }
