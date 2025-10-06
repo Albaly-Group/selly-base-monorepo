@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Public routes that don't require authentication
-    const publicRoutes = ["/", "/login", "/logout"]
+    const publicRoutes = ["/", "/login", "/logout", "/access-denied"]
     
     // API routes should be handled separately
     if (pathname.startsWith("/api/")) {
@@ -42,21 +42,21 @@ export function middleware(request: NextRequest) {
     // Platform admin route protection
     if (pathname.startsWith("/platform-admin") && isAuthenticated) {
       if (userRole !== "platform_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
     }
 
     // Customer admin route protection
     if (pathname.startsWith("/admin") && isAuthenticated) {
       if (userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
     }
 
     // Staff route protection
     if (pathname.startsWith("/staff") && isAuthenticated) {
       if (userRole !== "staff" && userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
     }
 
