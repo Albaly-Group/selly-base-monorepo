@@ -161,7 +161,6 @@ export class CompanyListsService {
   }
 
   async getCompanyListById(id: string, user?: UserContext): Promise<any> {
-    // Database implementation only - no mock data fallback
     return this.getListByIdFromDatabase(id, user);
   }
 
@@ -202,14 +201,14 @@ export class CompanyListsService {
     data: CompanyListCreateRequest,
     user: UserContext,
   ): Promise<any> {
-    // Database implementation
+
     const listData: Partial<CompanyList> = {
       name: data.name,
       description: data.description || undefined,
       organizationId: user.organizationId,
       ownerUserId: user.id,
       visibility: data.visibility || 'private',
-      isShared: data.visibility === 'public',
+      isShared: data.isShared,
       totalCompanies: 0,
       lastActivityAt: new Date(),
       isSmartList: data.isSmartList || false,
@@ -228,31 +227,45 @@ export class CompanyListsService {
     data: CompanyListUpdateRequest,
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(id);
+    // Load the entity directly so we can enforce update permissions here
+    const list = await this.companyListRepository.findOne({
+      where: { id },
+      relations: ['organization', 'ownerUser', 'companyListItems'],
+    });
 
-    // Only allow updates by owner or organization admin
-    if (
-      list.ownerUserId !== user.id &&
-      list.organizationId !== user.organizationId
-    ) {
+    if (!list) {
+      throw new NotFoundException('Company list not found');
+    }
+
+    console.log('Id', id);
+    console.log('Data', data);
+    console.log('User', user);
+    console.log('Existing list before update:', list);
+
+    // Only allow owner or same-organization updates
+    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
       throw new ForbiddenException('Cannot update this company list');
     }
 
-    const updatedList = {
-      ...list,
-      name: data.name || list.name,
-      description:
-        data.description !== undefined ? data.description : list.description,
-      visibility: data.visibility || list.visibility,
-      isShared: data.visibility === 'public',
-      isSmartList:
-        data.isSmartList !== undefined ? data.isSmartList : list.isSmartList,
-      smartCriteria: data.smartCriteria || list.smartCriteria,
+    // Prepare only the fields that were provided. Handle boolean fields explicitly
+    const fieldsToUpdate: Partial<CompanyList> = {
+      organizationId: user.organizationId,
+      ownerUserId: user.id,
       updatedAt: new Date(),
     };
 
-    console.log('Updated company list:', updatedList);
-    return updatedList;
+    if (data.name !== undefined) fieldsToUpdate.name = data.name;
+    if (data.description !== undefined) fieldsToUpdate.description = data.description;
+    if (data.visibility !== undefined) fieldsToUpdate.visibility = data.visibility;
+    if (Object.prototype.hasOwnProperty.call(data, 'isShared')) fieldsToUpdate.isShared = data.isShared;
+    if (Object.prototype.hasOwnProperty.call(data, 'isSmartList')) fieldsToUpdate.isSmartList = data.isSmartList;
+    if (data.smartCriteria !== undefined) fieldsToUpdate.smartCriteria = data.smartCriteria;
+
+    // Merge and persist
+    this.companyListRepository.merge(list as any, fieldsToUpdate);
+    const updateList = await this.companyListRepository.save(list);
+    console.log('Update company list in database:', updateList);
+    return updateList;
   }
 
   async deleteCompanyList(id: string, user: UserContext): Promise<void> {
@@ -323,7 +336,6 @@ export class CompanyListsService {
   async getListItems(listId: string, user?: UserContext): Promise<any[]> {
     const list = await this.getCompanyListById(listId);
 
-    // Return mock items for demonstration
     return [
       {
         id: `item-${listId}-1`,

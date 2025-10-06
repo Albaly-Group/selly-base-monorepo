@@ -182,7 +182,7 @@ export class CompanyListsController {
       organizationId: organizationId,
       name: userName,
     };
-    
+
     return this.companyListsService.createCompanyList(
       createListDto,
       userContext,
@@ -207,18 +207,24 @@ export class CompanyListsController {
   async updateCompanyList(
     @Param('id') id: string,
     @Body() updateListDto: UpdateCompanyListDto,
-    @CurrentUser() user: Users,
+    @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
+
+    const userId = user.id ?? user.sub;
+    const userName = user.name;
+
     const userWithOrg: UserContext = {
-      id: user.id,
+      id: userId,
       email: user.email,
-      name: user.name || 'User',
+      name: userName,
       organizationId: organizationId ?? '',
     };
+
     if (!userWithOrg.organizationId) {
       throw new Error('organizationId is required for UserContext');
     }
+
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,

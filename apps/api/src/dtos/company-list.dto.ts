@@ -95,6 +95,10 @@ export class UpdateCompanyListDto {
   @IsBoolean()
   isSmartList?: boolean;
 
+  @IsOptional()
+  @IsBoolean()
+  isShared?: boolean;
+
   @ApiProperty({
     description: 'Smart list criteria (for smart lists only, optional)',
     example: { industry: 'technology', size: 'medium', location: 'Bangkok' },
