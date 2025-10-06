@@ -59,6 +59,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
 
   const companyDetails = company
 
+  if (!company) return null
+
   useEffect(() => {
     if (company && open) {
       const fetchCompanyLists = async () => {
@@ -69,8 +71,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             const filteredLists = response.data.map(list => ({
               id: list.id,
               name: list.name,
-              status: list.status || 'Active',
-              owner: list.ownerUser?.name || 'Unknown',
+              status: list.status,
+              owner: list.ownerUser?.name,
               addedDate: list.createdAt ? list.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
             }))
             setCompanyLists(filteredLists)
@@ -86,82 +88,79 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   }, [company, open])
 
-  if (!company) return null
+  // Mock data
+  // const contactPersons = [
+  //   {
+  //     id: "1",
+  //     name: "Somchai Prasert",
+  //     title: "Chief Technology Officer",
+  //     department: "Technology",
+  //     phone: "+66-2-123-4567",
+  //     email: "somchai@example.co.th",
+  //     linkedin: "https://linkedin.com/in/somchai-prasert",
+  //     isDecisionMaker: true,
+  //     status: "Active",
+  //     lastVerified: "2024-12-05"
+  //   },
+  //   {
+  //     id: "2", 
+  //     name: "Sarah Johnson",
+  //     title: "Business Development Manager",
+  //     department: "Sales",
+  //     phone: "+66-2-123-4568",
+  //     email: "sarah@example.co.th",
+  //     isDecisionMaker: false,
+  //     status: "Active",
+  //     lastVerified: "2024-12-01"
+  //   }
+  // ]
 
-  // Mock additional data that would come from the API
+  // const activities = [
+  //   {
+  //     id: "1",
+  //     type: "call",
+  //     outcome: "Interested",
+  //     content: "Discussed B2B software requirements. Interested in CRM solution.",
+  //     contactPerson: "Somchai Prasert",
+  //     createdBy: "John Sales Rep",
+  //     createdAt: "2024-12-08T14:30:00Z"
+  //   },
+  //   {
+  //     id: "2",
+  //     type: "note", 
+  //     content: "Company is expanding their digital transformation initiatives. Good prospect for Q1 2025.",
+  //     createdBy: "Sarah Staff",
+  //     createdAt: "2024-12-07T11:15:00Z"
+  //   },
+  //   {
+  //     id: "3",
+  //     type: "meeting",
+  //     outcome: "Follow-up Required",
+  //     content: "Initial product demo completed. Need to prepare custom proposal.",
+  //     contactPerson: "Sarah Johnson",
+  //     createdBy: "Mike Manager",
+  //     createdAt: "2024-12-06T16:00:00Z"
+  //   }
+  // ]
 
-  const contactPersons = [
-    {
-      id: "1",
-      name: "Somchai Prasert",
-      title: "Chief Technology Officer",
-      department: "Technology",
-      phone: "+66-2-123-4567",
-      email: "somchai@example.co.th",
-      linkedin: "https://linkedin.com/in/somchai-prasert",
-      isDecisionMaker: true,
-      status: "Active",
-      lastVerified: "2024-12-05"
-    },
-    {
-      id: "2", 
-      name: "Sarah Johnson",
-      title: "Business Development Manager",
-      department: "Sales",
-      phone: "+66-2-123-4568",
-      email: "sarah@example.co.th",
-      isDecisionMaker: false,
-      status: "Active",
-      lastVerified: "2024-12-01"
-    }
-  ]
-
-  const activities = [
-    {
-      id: "1",
-      type: "call",
-      outcome: "Interested",
-      content: "Discussed B2B software requirements. Interested in CRM solution.",
-      contactPerson: "Somchai Prasert",
-      createdBy: "John Sales Rep",
-      createdAt: "2024-12-08T14:30:00Z"
-    },
-    {
-      id: "2",
-      type: "note", 
-      content: "Company is expanding their digital transformation initiatives. Good prospect for Q1 2025.",
-      createdBy: "Sarah Staff",
-      createdAt: "2024-12-07T11:15:00Z"
-    },
-    {
-      id: "3",
-      type: "meeting",
-      outcome: "Follow-up Required",
-      content: "Initial product demo completed. Need to prepare custom proposal.",
-      contactPerson: "Sarah Johnson",
-      createdBy: "Mike Manager",
-      createdAt: "2024-12-06T16:00:00Z"
-    }
-  ]
-
-  const auditHistory = [
-    {
-      id: "1",
-      field: "Phone",
-      oldValue: "+66-2-123-4566",
-      newValue: "+66-2-123-4567",
-      changedBy: "Admin User",
-      changedAt: "2024-12-05T10:30:00Z"
-    },
-    {
-      id: "2",
-      field: "Email", 
-      oldValue: "info@oldexample.com",
-      newValue: "info@example.co.th",
-      changedBy: "System Import",
-      changedAt: "2024-12-01T14:20:00Z"
-    }
-  ]
+  // const auditHistory = [
+  //   {
+  //     id: "1",
+  //     field: "Phone",
+  //     oldValue: "+66-2-123-4566",
+  //     newValue: "+66-2-123-4567",
+  //     changedBy: "Admin User",
+  //     changedAt: "2024-12-05T10:30:00Z"
+  //   },
+  //   {
+  //     id: "2",
+  //     field: "Email", 
+  //     oldValue: "info@oldexample.com",
+  //     newValue: "info@example.co.th",
+  //     changedBy: "System Import",
+  //     changedAt: "2024-12-01T14:20:00Z"
+  //   }
+  // ]
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -258,9 +257,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             <TabsList className="grid w-full grid-cols-5 mb-4 text-xs sm:text-sm">
               <TabsTrigger value="overview" className="px-2">Overview</TabsTrigger>
               <TabsTrigger value="contacts" className="px-2">Contacts</TabsTrigger>
-              {/* <TabsTrigger value="activity" className="px-2">Activity</TabsTrigger> */}
-              {/* <TabsTrigger value="lists" className="px-2">Lists</TabsTrigger> */}
-              {/* <TabsTrigger value="history" className="px-2">History</TabsTrigger> */}
+              <TabsTrigger value="activity" className="px-2">Activity</TabsTrigger>
+              <TabsTrigger value="lists" className="px-2">Lists</TabsTrigger>
+              <TabsTrigger value="history" className="px-2">History</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-y-auto pb-6">
@@ -421,7 +420,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {contactPersons.map((contact) => (
+              {/* {contactPersons.map((contact) => (
                 <Card key={contact.id}>
                   <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -469,7 +468,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ))} */}
             </div>
           </TabsContent>
 
@@ -485,7 +484,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {activities.map((activity) => (
+              {/* {activities.map((activity) => (
                 <Card key={activity.id}>
                   <CardContent>
                     <div className="flex gap-3">
@@ -515,7 +514,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ))} */}
             </div>
           </TabsContent>
 
@@ -570,7 +569,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {auditHistory.map((change) => (
+                {/* {auditHistory.map((change) => (
                   <TableRow key={change.id}>
                     <TableCell className="font-medium">{change.field}</TableCell>
                     <TableCell className="text-red-600">{change.oldValue}</TableCell>
@@ -578,7 +577,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     <TableCell>{change.changedBy}</TableCell>
                     <TableCell>{formatDateTime(change.changedAt)}</TableCell>
                   </TableRow>
-                ))}
+                ))} */}
               </TableBody>
             </Table>
           </TabsContent>

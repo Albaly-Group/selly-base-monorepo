@@ -59,7 +59,7 @@ export class ApiCompaniesService {
    */
   async searchCompanies(filters: SearchFilters = {}): Promise<SearchResult<CompanySummary>> {
     try {
-      // Convert filters to API format
+
       const apiParams = {
         searchTerm: filters.q,
         organizationId: this.user.organization_id,
@@ -81,7 +81,6 @@ export class ApiCompaniesService {
       const response = await apiClient.searchCompanies(cleanParams);
       console.log("Res From API", response.data);
 
-      // Convert API response to our expected format
       return {
         items: response.data,
         total: response.pagination.total,

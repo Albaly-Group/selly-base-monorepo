@@ -90,9 +90,10 @@ function CompanyLookupPage() {
       const companies = apiSearchResult.items.map((item: any) => ({
         id: item.id,
         organizationId: item.organizationId,
-        companyNameEn: item.displayName || item.nameEn,
+        companyNameEn: item.nameEn,
         companyNameTh: item.nameTh,
         companyNameLocal: item.nameLocal,
+        displayName: item.displayName,
         primaryRegistrationNo: item.primaryRegistrationNo,
         registrationId: item.registrationId,
         registrationDate: item.establishedDate,
@@ -111,6 +112,7 @@ function CompanyLookupPage() {
         contactPersons: item.contactPersons || [],
         companySize: item.companySize,
         businessDescription: item.businessDescription,
+        dataQualityScore: item.data_quality_score || 0,
         dataSensitivity: item.dataSensitivity,
         dataCompleteness: item.dataQualityScore,
         isSharedData: item.isSharedData,
@@ -152,13 +154,12 @@ function CompanyLookupPage() {
 
   const onExportExcel = () => {
     const selectedData = filteredCompanies.filter((c) => selectedCompanies.includes(c.id))
-    console.log("selectedData", selectedData)
     const csvContent = [
       [
         "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Last Updated",
       ],
       ...selectedData.map((company) => [
-        company.companyNameEn,
+        company.companyNameEn, 
         company.industrialName,
         company.province,
         company.contactPersons,
@@ -203,7 +204,7 @@ function CompanyLookupPage() {
     setSelectedCompanies([])
   }
 
-  const handleClearSmartFiltering = () => {
+  const clearFilters = () => {
     setSmartFiltering({})
     setHasAppliedFiltering(false)
     setIsSimpleSearch(false)
@@ -211,16 +212,12 @@ function CompanyLookupPage() {
     setSelectedCompanies([])
   }
 
-  const clearFilters = () => {
-    handleClearSmartFiltering()
-  }
-
-  const hasResults = isSimpleSearch || hasAppliedFiltering
-
-  const handleViewCompany = (company: Company) => {
+  const ViewCompany = (company: Company) => {
     setSelectedCompany(company)
     setShowCompanyDetail(true)
   }
+
+  const hasResults = isSimpleSearch || hasAppliedFiltering
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -233,9 +230,6 @@ function CompanyLookupPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* <TabsList>
-            <TabsTrigger value="all">All Companies</TabsTrigger>
-          </TabsList> */}
           <h3 className="font-medium mb-2 mt-2">All Companies</h3>
 
           <TabsContent value="all" className="space-y-6">
@@ -251,7 +245,6 @@ function CompanyLookupPage() {
               onOpenSmartFiltering={() => setShowSmartFilteringDialog(true)}
             />
 
-            {/* Show default message or results */}
             {!hasResults ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16">
@@ -340,46 +333,28 @@ function CompanyLookupPage() {
                 </div>
 
                 {/* Results Table */}
-                {isLoading ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-16">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                      <p className="text-gray-600">Searching companies...</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <CompanyTable
+                <CompanyTable
                     companies={filteredCompanies}
                     selectedCompanies={selectedCompanies}
                     onSelectCompany={handleSelectCompany}
                     onSelectAll={handleSelectAll}
-                    onViewCompany={handleViewCompany}
+                    onViewCompany={ViewCompany}
                     showLeadScores={hasAppliedFiltering}
                     leadScores={leadScores}
                     sortable={true}
-                  />
-                )}
+                />
 
-                {/* Results Summary */}
                 {!isLoading && (
                   <div className="text-sm text-gray-600 flex justify-between">
-                    {isSimpleSearch ? (
-                      <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
-                    ) : (
-                      <span>Showing {filteredCompanies.length} companies with weighted lead scores</span>
-                    )}
-                    {filteredCompanies.length > 0 && leadScores[filteredCompanies[0]?.id] && (
+                    <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
+                    {filteredCompanies.length > 0 && (
                       <span className="text-blue-600">
                         Sorted by: Highest weighted score first
                       </span>
                     )}
-                    {/* {apiSearchResult && (
-                      <span className="text-green-600">
-                        API Results: Page {apiSearchResult.page} of {Math.ceil(apiSearchResult.total / apiSearchResult.limit)}
-                      </span>
-                    )} */}
                   </div>
                 )}
+
               </>
             )}
           </TabsContent>
@@ -399,8 +374,6 @@ function CompanyLookupPage() {
           onSuccess={() => {
             setSelectedCompanies([])
             setShowAddToListDialog(false)
-            // Trigger refresh of any related data
-            console.log("Companies successfully added to list")
           }}
         />
 
@@ -410,7 +383,7 @@ function CompanyLookupPage() {
           onOpenChange={setShowSmartFilteringDialog}
           criteria={smartFiltering}
           onApplyFiltering={handleApplySmartFiltering}
-          onClearFiltering={handleClearSmartFiltering}
+          onClearFiltering={clearFilters}
           initialKeyword={searchTerm}
         />
 
