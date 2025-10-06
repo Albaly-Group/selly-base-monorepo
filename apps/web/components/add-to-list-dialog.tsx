@@ -27,6 +27,8 @@ interface CompanyList {
   id: string
   name: string
   description?: string
+  totalCompanies?: number
+  companyListItems?: Array<{ id: string }>
 }
 
 export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSuccess }: AddToListDialogProps) {
@@ -150,7 +152,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
                 <SelectContent>
                   {lists.map((list) => (
                     <SelectItem key={list.id} value={list.id}>
-                      {list.name} ({list.companyIds.length} companies)
+                      {list.name} ({list.companyListItems?.length || 0} companies)
                     </SelectItem>
                   ))}
                 </SelectContent>
