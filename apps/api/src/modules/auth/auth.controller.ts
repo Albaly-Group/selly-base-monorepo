@@ -133,4 +133,22 @@ export class AuthController {
     const accessToken = this.authService['jwtService'].sign(payload);
     return { accessToken };
   }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'User logout' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  async logout(): Promise<{ message: string }> {
+    // For JWT-based auth, logout is handled client-side by removing the token
+    // This endpoint can be used for logging or future session management
+    return { message: 'Logout successful' };
+  }
 }

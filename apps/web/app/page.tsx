@@ -1,7 +1,6 @@
 "use client"
 
 import { useAuth, canManageTenants, canManageOrganizationUsers } from "@/lib/auth"
-import { LoginForm } from "@/components/login-form"
 import { CustomerDashboard } from "@/components/customer-dashboard"
 import { PlatformAdminDashboard } from "@/components/platform-admin-dashboard"
 import { useRouter } from "next/navigation"
@@ -12,7 +11,12 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading) {
+      if (!user) {
+        // Redirect unauthenticated users to login
+        router.replace("/login")
+        return
+      }
       if (canManageTenants(user)) {
         router.replace("/platform-admin")
         return
@@ -33,7 +37,8 @@ export default function HomePage() {
   }
 
   if (!user) {
-    return <LoginForm />
+    // Return null while redirecting to login
+    return null
   }
 
   // Platform admins should be redirected to /platform-admin, but show their dashboard if they're here

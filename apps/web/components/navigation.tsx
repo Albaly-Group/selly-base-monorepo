@@ -20,8 +20,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export function Navigation() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
+
+  const handleLogout = () => {
+    router.push("/logout")
+  }
 
   if (!user) return null
 
@@ -144,7 +148,7 @@ export function Navigation() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
