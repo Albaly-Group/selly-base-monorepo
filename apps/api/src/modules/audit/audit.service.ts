@@ -152,10 +152,6 @@ export class AuditService {
       dateTo?: Date;
     } = {},
   ): Promise<{ data: AuditLog[]; total: number }> {
-    if (!this.auditLogRepository) {
-      return { data: [], total: 0 };
-    }
-
     const {
       entityType,
       entityId,
