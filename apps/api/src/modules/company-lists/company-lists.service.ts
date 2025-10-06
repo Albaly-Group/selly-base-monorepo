@@ -237,17 +237,10 @@ export class CompanyListsService {
       throw new NotFoundException('Company list not found');
     }
 
-    console.log('Id', id);
-    console.log('Data', data);
-    console.log('User', user);
-    console.log('Existing list before update:', list);
-
-    // Only allow owner or same-organization updates
     if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
       throw new ForbiddenException('Cannot update this company list');
     }
 
-    // Prepare only the fields that were provided. Handle boolean fields explicitly
     const fieldsToUpdate: Partial<CompanyList> = {
       organizationId: user.organizationId,
       ownerUserId: user.id,
@@ -269,13 +262,20 @@ export class CompanyListsService {
   }
 
   async deleteCompanyList(id: string, user: UserContext): Promise<void> {
-    const list = await this.getCompanyListById(id);
+    const list = await this.companyListRepository.findOne({
+      where: { id },
+      relations: ['organization', 'ownerUser', 'companyListItems'],
+    });
 
-    // Only allow deletion by owner
+    if (!list) {
+      throw new NotFoundException('Company list not found');
+    }
+
     if (list.ownerUserId !== user.id) {
       throw new ForbiddenException('Cannot delete this company list');
     }
 
+    await this.companyListRepository.delete(id);
     console.log('Deleted company list:', id);
   }
 
