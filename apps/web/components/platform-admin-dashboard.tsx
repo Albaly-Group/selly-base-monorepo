@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useAuth, canManageTenants } from "@/lib/auth"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +12,32 @@ import { getTotalUsers, getActiveTenants } from "@/lib/platform-admin-data"
 
 export function PlatformAdminDashboard() {
   const { user } = useAuth()
+  const [totalUsers, setTotalUsers] = useState(0)
+  const [activeTenants, setActiveTenants] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const [usersCount, tenantsCount] = await Promise.all([
+          getTotalUsers(),
+          getActiveTenants()
+        ])
+        setTotalUsers(usersCount)
+        setActiveTenants(tenantsCount)
+      } catch (error) {
+        console.error('Failed to fetch platform data:', error)
+        // Keep default values of 0 on error
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user && canManageTenants(user)) {
+      fetchData()
+    }
+  }, [user])
 
   if (!user || !canManageTenants(user)) {
     return (
@@ -27,9 +54,6 @@ export function PlatformAdminDashboard() {
     )
   }
 
-  const totalUsers = getTotalUsers()
-  const activeTenants = getActiveTenants()
-
   const platformFeatures = [
     {
       title: "Tenant Management",
@@ -38,7 +62,7 @@ export function PlatformAdminDashboard() {
       href: "/platform-admin",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      stats: `${activeTenants} Active Tenants`
+      stats: loading ? "Loading..." : `${activeTenants} Active Tenants`
     },
     {
       title: "Platform Users",
@@ -47,7 +71,7 @@ export function PlatformAdminDashboard() {
       href: "/platform-admin",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      stats: `${totalUsers} Total Users`
+      stats: loading ? "Loading..." : `${totalUsers} Total Users`
     },
     {
       title: "Shared Data",
@@ -121,7 +145,9 @@ export function PlatformAdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Active Tenants</p>
-                  <p className="text-2xl font-bold text-purple-600">{activeTenants}</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {loading ? "..." : activeTenants}
+                  </p>
                 </div>
                 <Building2 className="h-8 w-8 text-purple-400" />
               </div>
@@ -132,7 +158,9 @@ export function PlatformAdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-purple-600">{totalUsers}</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {loading ? "..." : totalUsers}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-purple-400" />
               </div>
