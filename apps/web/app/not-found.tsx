@@ -19,7 +19,7 @@ export default function NotFound() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Button asChild className="w-full">
-              <Link href="/">
+              <Link href="/dashboard">
                 <Home className="h-4 w-4 mr-2" />
                 Go to Dashboard
               </Link>
