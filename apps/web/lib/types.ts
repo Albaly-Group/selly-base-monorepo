@@ -45,6 +45,5 @@ export type {
   ExportData
 };
 
-// Mock data imports for backward compatibility (these will be replaced by API calls)
 import type { UserList } from "./mock-data"
 export type { UserList }

@@ -238,27 +238,7 @@ export class CompanyListsService {
       console.log('Created company list in database:', savedList.id);
       return savedList;
     } else {
-
-      const list = {
-        id: `list-${Date.now()}`,
-        name: data.name,
-        description: data.description,
-        organizationId: user.organizationId,
-        ownerUserId: user.id,
-        visibility: data.visibility || 'private',
-        isShared: data.visibility === 'public',
-        totalCompanies: 0,
-        lastActivityAt: new Date(),
-        isSmartList: data.isSmartList || false,
-        smartCriteria: data.smartCriteria || {},
-        lastRefreshedAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        items: [],
-      };
-
-      console.log('Created company list (mock):', list);
-      return list;
+      throw new Error('Database repository is not available');
     }
   }
 

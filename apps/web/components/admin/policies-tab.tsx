@@ -67,7 +67,6 @@ export function PoliciesTab() {
   }
 
   const savePolicies = () => {
-    // Mock save functionality
     console.log("Saving policies:", policies)
     alert("Policies saved successfully!")
   }
