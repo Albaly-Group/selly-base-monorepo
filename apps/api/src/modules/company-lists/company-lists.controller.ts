@@ -20,7 +20,6 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CompanyListsService } from './company-lists.service';
-import { Users, Users as User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   CurrentUser,
@@ -32,6 +31,7 @@ import {
   AddCompaniesToListDto,
   RemoveCompaniesFromListDto,
 } from '../../dtos/company-list.dto';
+import { UserContext } from '../../dtos/user-context.dto';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -146,28 +146,15 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg = {
+    const userContext: UserContext = {
       id: user.sub,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      companyLists: [],
-      userRoles2: [],
-    } as User;
+      organizationId: organizationId,
+    };
     return this.companyListsService.createCompanyList(
       createListDto,
-      userWithOrg,
+      userContext,
     );
   }
 
@@ -192,28 +179,16 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userContext: UserContext = {
       id: user.sub,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      companyLists: [],
-      userRoles2: [],
-    } as User;
+      organizationId: organizationId,
+    };
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
-      userWithOrg,
+      userContext,
     );
   }
 
@@ -237,25 +212,13 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userContext: UserContext = {
       id: user.sub,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      companyLists: [],
-      userRoles2: [],
-    } as User;
-    await this.companyListsService.deleteCompanyList(id, userWithOrg);
+      organizationId: organizationId,
+    };
+    await this.companyListsService.deleteCompanyList(id, userContext);
     return { message: 'Company list deleted successfully' };
   }
 
@@ -302,29 +265,16 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg = {
+    const userContext: UserContext = {
       id: user.sub,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      companyLists: [],
-      userRoles2: [],
-    } as User;
+      organizationId: organizationId,
+    };
     return this.companyListsService.addCompaniesToList(
       listId,
       body.companyIds,
-      userWithOrg,
+      userContext,
     );
   }
 
@@ -349,28 +299,16 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userContext: UserContext = {
       id: user.sub,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      companyLists: [],
-      userRoles2: [],
-    } as User;
+      organizationId: organizationId,
+    };
     return this.companyListsService.removeCompaniesFromList(
       listId,
       body.companyIds,
-      userWithOrg,
+      userContext,
     );
   }
 }
