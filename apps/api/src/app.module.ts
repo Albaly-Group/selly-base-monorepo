@@ -12,6 +12,7 @@ import { ImportsModule } from './modules/imports/imports.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { PlatformAdminModule } from './modules/platform-admin/platform-admin.module';
 import { ReferenceDataModule } from './modules/reference-data/reference-data.module';
 import { CompanyContactsModule } from './modules/company-contacts/company-contacts.module';
 import { CompanyActivitiesModule } from './modules/company-activities/company-activities.module';
@@ -35,6 +36,7 @@ const getImports = () => {
     StaffModule,
     ReportsModule,
     AdminModule,
+    PlatformAdminModule,
     ReferenceDataModule,
     CompanyContactsModule,
     CompanyActivitiesModule,

@@ -128,7 +128,7 @@ function CompanyLookupPage() {
     }
     
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
-  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, apiSearchResult, isApiLoading, hasApiError, shouldSearch]);
+  }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError]);
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -281,7 +281,7 @@ function CompanyLookupPage() {
                       <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
                         <Search className="h-4 w-4 text-green-600" />
                         <span className="text-sm text-green-800 font-medium">
-                          Search: "{searchTerm}"
+                          Search: &quot;{searchTerm}&quot;
                         </span>
                         <button
                           onClick={clearFilters}
@@ -346,7 +346,7 @@ function CompanyLookupPage() {
 
                 {!isLoading && (
                   <div className="text-sm text-gray-600 flex justify-between">
-                    <span>Showing {filteredCompanies.length} companies matching "{searchTerm}"</span>
+                    <span>Showing {filteredCompanies.length} companies matching &quot;{searchTerm}&quot;</span>
                     {filteredCompanies.length > 0 && (
                       <span className="text-blue-600">
                         Sorted by: Highest weighted score first

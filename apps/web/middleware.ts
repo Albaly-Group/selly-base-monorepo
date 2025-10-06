@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Protected routes that require authentication
-    const protectedRoutes = ["/lookup", "/lists", "/staff", "/admin", "/platform-admin", "/reports", "/imports", "/exports"]
+    const protectedRoutes = ["/dashboard", "/lookup", "/lists", "/staff", "/admin", "/platform-admin", "/reports", "/imports", "/exports"]
 
     // If accessing a protected route without authentication, redirect to login
     if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
@@ -65,15 +65,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url))
     }
 
-    // Role-based homepage redirects for authenticated users accessing "/"
+    // Redirect authenticated users on homepage to dashboard
     if (pathname === "/" && isAuthenticated) {
-      if (userRole === "platform_admin") {
-        return NextResponse.redirect(new URL("/platform-admin", request.url))
-      }
-      if (userRole === "admin" || userRole === "customer_admin") {
-        return NextResponse.redirect(new URL("/admin", request.url))
-      }
-      // Regular users and staff stay on homepage
+      return NextResponse.redirect(new URL("/dashboard", request.url))
     }
 
     return NextResponse.next()

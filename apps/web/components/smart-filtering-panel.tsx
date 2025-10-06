@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Search, Target, Save, Plus, Trash2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { apiClient } from "@/lib/api-client"
 
 export interface SmartFilteringCriteria {
   keyword?: string
@@ -37,6 +38,27 @@ interface SmartFilteringPanelProps {
   initialKeyword?: string
 }
 
+// Fallback options in case API fails
+const fallbackIndustrialOptions = [
+  "Manufacturing",
+  "Logistics",
+  "Automotive",
+  "Tourism",
+  "Agriculture",
+  "Technology",
+  "Healthcare",
+]
+
+const fallbackProvinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
+
+const fallbackCompanySizeOptions = [
+  { value: "S", label: "Small (S)" },
+  { value: "M", label: "Medium (M)" },
+  { value: "L", label: "Large (L)" },
+]
+
+const fallbackContactStatusOptions = ["Active", "Needs Verification", "Invalid"]
+
 export function SmartFilteringPanel({
   isOpen,
   onOpenChange,
@@ -55,6 +77,64 @@ export function SmartFilteringPanel({
     contactStatusWeight: criteria.contactStatusWeight || 15,
     minimumScore: criteria.minimumScore || 0,
   })
+
+  const [industrialOptions, setIndustrialOptions] = useState<string[]>(fallbackIndustrialOptions)
+  const [provinceOptions, setProvinceOptions] = useState<string[]>(fallbackProvinceOptions)
+  const [companySizeOptions, setCompanySizeOptions] = useState<any[]>(fallbackCompanySizeOptions)
+  const [contactStatusOptions, setContactStatusOptions] = useState<string[]>(fallbackContactStatusOptions)
+
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        // Fetch industries
+        const industriesResponse = await apiClient.getIndustries()
+        if (industriesResponse.data && industriesResponse.data.length > 0) {
+          setIndustrialOptions(industriesResponse.data.map((item: any) => item.name || item.nameEn))
+        }
+      } catch (error) {
+        console.error('Failed to fetch industries, using fallback:', error)
+      }
+
+      try {
+        // Fetch provinces
+        const provincesResponse = await apiClient.getProvinces()
+        if (provincesResponse.data && provincesResponse.data.length > 0) {
+          setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
+        }
+      } catch (error) {
+        console.error('Failed to fetch provinces, using fallback:', error)
+      }
+
+      try {
+        // Fetch company sizes
+        const sizesResponse = await apiClient.getCompanySizes()
+        if (sizesResponse.data && sizesResponse.data.length > 0) {
+          setCompanySizeOptions(
+            sizesResponse.data.map((item: any) => ({
+              value: item.code || item.value,
+              label: item.displayName || item.label,
+            }))
+          )
+        }
+      } catch (error) {
+        console.error('Failed to fetch company sizes, using fallback:', error)
+      }
+
+      try {
+        // Fetch contact statuses
+        const statusesResponse = await apiClient.getContactStatuses()
+        if (statusesResponse.data && statusesResponse.data.length > 0) {
+          setContactStatusOptions(statusesResponse.data.map((item: any) => item.label))
+        }
+      } catch (error) {
+        console.error('Failed to fetch contact statuses, using fallback:', error)
+      }
+    }
+
+    if (isOpen) {
+      fetchReferenceData()
+    }
+  }, [isOpen])
 
   const updateCriteria = (key: keyof SmartFilteringCriteria, value: any) => {
     setTempCriteria((prev) => ({
@@ -164,11 +244,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Industry</SelectItem>
-                      {/* {industrialOptions.map((option) => (
+                      {industrialOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))} */}
+                      ))}
                     </SelectContent>
                   </Select>
                   <div>
@@ -195,11 +275,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Province</SelectItem>
-                      {/* {provinceOptions.map((option) => (
+                      {provinceOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))} */}
+                      ))}
                     </SelectContent>
                   </Select>
                   <div>
@@ -226,11 +306,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Size</SelectItem>
-                      {/* {companySizeOptions.map((option) => (
+                      {companySizeOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
-                      ))} */}
+                      ))}
                     </SelectContent>
                   </Select>
                   <div>
@@ -257,11 +337,11 @@ export function SmartFilteringPanel({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Status</SelectItem>
-                      {/* {contactStatusOptions.map((option) => (
+                      {contactStatusOptions.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
-                      ))} */}
+                      ))}
                     </SelectContent>
                   </Select>
                   <div>
@@ -289,7 +369,7 @@ export function SmartFilteringPanel({
                 </div>
                 {totalWeight !== 100 && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    Weights don't need to total 100%. Results will be normalized.
+                    Weights don&apos;t need to total 100%. Results will be normalized.
                   </p>
                 )}
               </div>

@@ -26,15 +26,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Users, Plus, MoreHorizontal, Shield, Building, Search, Filter, Eye, Edit, UserX } from "lucide-react"
-import { mockPlatformUsers, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
+import { getPlatformUsers, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
+import { useEffect } from "react"
 
 export function PlatformUsersTab() {
   const { user } = useAuth()
-  const [users] = useState<PlatformUser[]>(mockPlatformUsers.filter(validateUserData))
+  const [users, setUsers] = useState<PlatformUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
   const [showAddUser, setShowAddUser] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch platform users from backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true)
+      try {
+        const data = await getPlatformUsers()
+        setUsers(data.filter(validateUserData))
+      } catch (error) {
+        console.error('Error fetching platform users:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchUsers()
+  }, [])
 
   // Check permissions
   if (!user || !canManagePlatformUsers(user)) {
@@ -257,6 +276,15 @@ export function PlatformUsersTab() {
             </Select>
           </div>
 
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading users...
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No users found
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -330,6 +358,7 @@ export function PlatformUsersTab() {
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>

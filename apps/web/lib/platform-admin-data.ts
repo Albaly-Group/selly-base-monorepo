@@ -128,3 +128,69 @@ export function validateUserData(user: PlatformUser): boolean {
     typeof user.loginCount === "number"
   )
 }
+
+// Backend API functions for platform admin
+
+let tenantsCache: { data: TenantData[]; timestamp: number } | null = null
+let platformUsersCache: { data: PlatformUser[]; timestamp: number } | null = null
+let sharedCompaniesCache: { data: SharedCompany[]; timestamp: number } | null = null
+
+/**
+ * Fetch all tenant organizations from the backend
+ */
+export async function getTenants(): Promise<TenantData[]> {
+  try {
+    if (tenantsCache && Date.now() - tenantsCache.timestamp < CACHE_DURATION) {
+      return tenantsCache.data
+    }
+    
+    const response = await apiClient.getPlatformTenants()
+    const tenants = response.data || []
+    tenantsCache = { data: tenants, timestamp: Date.now() }
+    return tenants
+  } catch (error) {
+    console.error('Failed to fetch tenants from backend:', error)
+    // Return empty array on error to prevent component crashes
+    return []
+  }
+}
+
+/**
+ * Fetch all platform users from the backend
+ */
+export async function getPlatformUsers(): Promise<PlatformUser[]> {
+  try {
+    if (platformUsersCache && Date.now() - platformUsersCache.timestamp < CACHE_DURATION) {
+      return platformUsersCache.data
+    }
+    
+    const response = await apiClient.getPlatformUsers()
+    const users = response.data || []
+    platformUsersCache = { data: users, timestamp: Date.now() }
+    return users
+  } catch (error) {
+    console.error('Failed to fetch platform users from backend:', error)
+    // Return empty array on error to prevent component crashes
+    return []
+  }
+}
+
+/**
+ * Fetch shared companies from the backend
+ */
+export async function getSharedCompanies(): Promise<SharedCompany[]> {
+  try {
+    if (sharedCompaniesCache && Date.now() - sharedCompaniesCache.timestamp < CACHE_DURATION) {
+      return sharedCompaniesCache.data
+    }
+    
+    const response = await apiClient.getSharedCompanies()
+    const companies = response.data || []
+    sharedCompaniesCache = { data: companies, timestamp: Date.now() }
+    return companies
+  } catch (error) {
+    console.error('Failed to fetch shared companies from backend:', error)
+    // Return empty array on error to prevent component crashes
+    return []
+  }
+}

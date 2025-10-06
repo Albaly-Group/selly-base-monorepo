@@ -538,6 +538,19 @@ class ApiClient {
     return this.put<any>('/api/v1/admin/integrations', settings);
   }
 
+  // Platform Admin endpoints
+  async getPlatformTenants(params?: { page?: number; limit?: number }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/platform-admin/tenants', params);
+  }
+
+  async getPlatformUsers(params?: { page?: number; limit?: number }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/platform-admin/users', params);
+  }
+
+  async getSharedCompanies(params?: { page?: number; limit?: number }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/platform-admin/shared-companies', params);
+  }
+
   // Reference Data endpoints
   async getIndustries(params?: { active?: boolean }): Promise<{ data: any[] }> {
     return this.get<{ data: any[] }>('/api/v1/reference-data/industries', params);

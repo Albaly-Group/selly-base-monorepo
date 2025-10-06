@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth, canViewPlatformAnalytics } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -20,8 +20,8 @@ import {
   ArrowDownRight
 } from "lucide-react"
 import { 
-  mockTenantData, 
-  mockPlatformUsers, 
+  getTenants,
+  getPlatformUsers,
   getTotalUsers, 
   getTotalDataRecords, 
   getActiveTenants,
@@ -32,6 +32,30 @@ import {
 export function PlatformAnalyticsTab() {
   const { user } = useAuth()
   const [timeRange, setTimeRange] = useState("30d")
+  const [tenantData, setTenantData] = useState<TenantData[]>([])
+  const [users, setUsers] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchAnalyticsData = async () => {
+      setIsLoading(true)
+      try {
+        const [tenantsData, usersData] = await Promise.all([
+          getTenants(),
+          getPlatformUsers()
+        ])
+        setTenantData(tenantsData)
+        setUsers(usersData)
+      } catch (error) {
+        console.error('Error fetching analytics data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchAnalyticsData()
+  }, [])
   
   // Check permissions
   if (!user || !canViewPlatformAnalytics(user)) {
@@ -46,9 +70,19 @@ export function PlatformAnalyticsTab() {
       </Card>
     )
   }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8 text-muted-foreground">
+          Loading analytics data...
+        </div>
+      </div>
+    )
+  }
   
-  // Generate analytics data using consistent platform data
-  const tenantUsageData = mockTenantData.map(tenant => ({
+  // Generate analytics data using backend data
+  const tenantUsageData = tenantData.map(tenant => ({
     organizationId: tenant.id,
     organizationName: tenant.name,
     userCount: tenant.user_count,
@@ -58,7 +92,7 @@ export function PlatformAnalyticsTab() {
   }))
 
   const systemMetrics = {
-    totalLogins: mockPlatformUsers.reduce((sum, user) => sum + user.loginCount, 0),
+    totalLogins: users.reduce((sum, user) => sum + (user.loginCount || 0), 0),
     averageSessionDuration: "24m 15s",
     dataQuality: 94.2,
     systemUptime: 99.9,
