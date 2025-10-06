@@ -25,14 +25,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Database, Plus, MoreHorizontal, Upload, Download, Eye, Edit, Globe, Building } from "lucide-react"
-import { mockSharedCompanies, type SharedCompany } from "@/lib/platform-admin-data"
+import { getSharedCompanies, type SharedCompany } from "@/lib/platform-admin-data"
+import { useEffect } from "react"
 
 export function PlatformDataTab() {
   const { user } = useAuth()
-  const [sharedCompanies] = useState<SharedCompany[]>(mockSharedCompanies)
+  const [sharedCompanies, setSharedCompanies] = useState<SharedCompany[]>([])
   const [showAddCompany, setShowAddCompany] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch shared companies from backend
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true)
+      try {
+        const data = await getSharedCompanies()
+        setSharedCompanies(data)
+      } catch (error) {
+        console.error('Error fetching shared companies:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchCompanies()
+  }, [])
 
   // Check permissions
   if (!user || !canManageSharedData(user)) {
@@ -232,6 +251,15 @@ export function PlatformDataTab() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Loading shared companies...
+                </div>
+              ) : filteredCompanies.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No shared companies found
+                </div>
+              ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -308,6 +336,7 @@ export function PlatformDataTab() {
                   ))}
                 </TableBody>
               </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
