@@ -39,3 +39,7 @@ next-env.d.ts
 
 # turbo
 .turbo
+
+# lost-pixel visual regression
+.lostpixel/current
+.lostpixel/difference
