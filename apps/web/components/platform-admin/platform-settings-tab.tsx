@@ -109,7 +109,6 @@ export function PlatformSettingsTab() {
   }
 
   const handleSave = () => {
-    // Mock save functionality
     setHasUnsavedChanges(false)
     console.log("Settings saved:", settings)
   }

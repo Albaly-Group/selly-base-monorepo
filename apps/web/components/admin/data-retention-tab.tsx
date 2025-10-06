@@ -53,7 +53,6 @@ export function DataRetentionTab() {
     }
   }
 
-  // Mock data for current retention status
   const retentionStats = {
     totalRecords: 1250,
     archivedRecords: 85,

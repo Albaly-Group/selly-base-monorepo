@@ -82,7 +82,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
           const response = await apiClient.getCompanyLists()
           console.log("Respones", response)
           if (response.data) {
-            const filteredLists = response.data.map(list => ({
+            const filteredLists = response.data.map((list: any) => ({
               id: list.id,
               name: list.name,
               status: list.status,
@@ -166,80 +166,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   }
   if (!company) return null
-
-  // Mock data
-  // const contactPersons = [
-  //   {
-  //     id: "1",
-  //     name: "Somchai Prasert",
-  //     title: "Chief Technology Officer",
-  //     department: "Technology",
-  //     phone: "+66-2-123-4567",
-  //     email: "somchai@example.co.th",
-  //     linkedin: "https://linkedin.com/in/somchai-prasert",
-  //     isDecisionMaker: true,
-  //     status: "Active",
-  //     lastVerified: "2024-12-05"
-  //   },
-  //   {
-  //     id: "2", 
-  //     name: "Sarah Johnson",
-  //     title: "Business Development Manager",
-  //     department: "Sales",
-  //     phone: "+66-2-123-4568",
-  //     email: "sarah@example.co.th",
-  //     isDecisionMaker: false,
-  //     status: "Active",
-  //     lastVerified: "2024-12-01"
-  //   }
-  // ]
-
-  // const activities = [
-  //   {
-  //     id: "1",
-  //     type: "call",
-  //     outcome: "Interested",
-  //     content: "Discussed B2B software requirements. Interested in CRM solution.",
-  //     contactPerson: "Somchai Prasert",
-  //     createdBy: "John Sales Rep",
-  //     createdAt: "2024-12-08T14:30:00Z"
-  //   },
-  //   {
-  //     id: "2",
-  //     type: "note", 
-  //     content: "Company is expanding their digital transformation initiatives. Good prospect for Q1 2025.",
-  //     createdBy: "Sarah Staff",
-  //     createdAt: "2024-12-07T11:15:00Z"
-  //   },
-  //   {
-  //     id: "3",
-  //     type: "meeting",
-  //     outcome: "Follow-up Required",
-  //     content: "Initial product demo completed. Need to prepare custom proposal.",
-  //     contactPerson: "Sarah Johnson",
-  //     createdBy: "Mike Manager",
-  //     createdAt: "2024-12-06T16:00:00Z"
-  //   }
-  // ]
-
-  // const auditHistory = [
-  //   {
-  //     id: "1",
-  //     field: "Phone",
-  //     oldValue: "+66-2-123-4566",
-  //     newValue: "+66-2-123-4567",
-  //     changedBy: "Admin User",
-  //     changedAt: "2024-12-05T10:30:00Z"
-  //   },
-  //   {
-  //     id: "2",
-  //     field: "Email", 
-  //     oldValue: "info@oldexample.com",
-  //     newValue: "info@example.co.th",
-  //     changedBy: "System Import",
-  //     changedAt: "2024-12-01T14:20:00Z"
-  //   }
-  // ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -709,8 +635,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </Button>
               <Button onClick={handleSaveContact} disabled={isSavingContact}>
                 {isSavingContact ? 'Saving...' : 'Add Contact'}
-              <Button onClick={onAddContact}>
-                Add Contact
               </Button>
             </DialogFooter>
           </DialogContent>
