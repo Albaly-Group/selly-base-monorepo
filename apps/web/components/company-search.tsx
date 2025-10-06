@@ -90,9 +90,9 @@ export function CompanySearch({
       <div className="mt-4 text-sm text-gray-600">
         <p className="font-medium mb-1">Search supports:</p>
         <ul className="list-disc list-inside space-y-1">
-          <li>Company Name (EN) - e.g., "ABC Manufacturing Co., Ltd."</li>
-          <li>Registered No. - e.g., "0105564111698"</li>
-          <li>Keywords - e.g., "Shoe", "Logistics"</li>
+          <li>Company Name (EN) - e.g., &quot;ABC Manufacturing Co., Ltd.&quot;</li>
+          <li>Registered No. - e.g., &quot;0105564111698&quot;</li>
+          <li>Keywords - e.g., &quot;Shoe&quot;, &quot;Logistics&quot;</li>
         </ul>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManageOrganizationSettings } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -9,9 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { Plug, Globe, Mail, FileText, CheckCircle, AlertCircle } from "lucide-react"
+import { Plug, Globe, Mail, FileText, CheckCircle, AlertCircle, AlertTriangle } from "lucide-react"
 
 export function IntegrationsTab() {
+  const { user: currentUser } = useAuth()
+  
+  // Initialize all hooks first (must be called unconditionally)
   const [webhooks, setWebhooks] = useState([
     {
       id: "1",
@@ -69,6 +73,22 @@ export function IntegrationsTab() {
   const saveIntegrations = () => {
     console.log("Saving integrations:", { webhooks, ssoSettings, emailSettings })
     alert("Integration settings saved successfully!")
+  }
+
+  // Check permissions after all hooks
+  if (!currentUser || !canManageOrganizationSettings(currentUser)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don&apos;t have permission to manage integrations.</p>
+            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

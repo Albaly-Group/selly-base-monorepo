@@ -57,7 +57,7 @@ function ListManagementPage() {
     }
 
     fetchLists()
-  }, [refreshKey])
+  }, [refreshKey, selectedListId])
 
   useEffect(() => {
     const fetchListCompanies = async () => {

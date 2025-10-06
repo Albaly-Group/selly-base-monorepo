@@ -126,7 +126,7 @@ export function LeadScoringPanel({ isActive, criteria, onApplyScoring, onClearSc
           )}
         </CardTitle>
         <CardDescription>
-          Apply intelligent filtering to rank companies by matching conditions. Companies don't need to match all
+          Apply intelligent filtering to rank companies by matching conditions. Companies don&apos;t need to match all
           criteria to appear in results.
         </CardDescription>
       </CardHeader>
