@@ -128,14 +128,14 @@ export function ListTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companies.map((company) => {
-            const leadScore = getLeadScore(company.id)
+          {/* {companies.map((companys) => {
+            const leadScore = getLeadScore(companys.id)
             return (
-              <TableRow key={company.id}>
+              <TableRow key={companys.id}>
                 <TableCell>
                   <Checkbox
-                    checked={selectedCompanies.includes(company.id)}
-                    onCheckedChange={(checked) => onSelectCompany(company.id, checked as boolean)}
+                    checked={selectedCompanies.includes(companys.id)}
+                    onCheckedChange={(checked) => onSelectCompany(companys.id, checked as boolean)}
                   />
                 </TableCell>
                 {showLeadScores && (
@@ -147,30 +147,30 @@ export function ListTable({
                       <div className="text-xs text-gray-500">
                         {leadScore ? `${leadScore.score}/${leadScore.maxPossibleScore}` : '0/0'}
                       </div>
-                      {getMatchingSummary(company.id)}
+                      {getMatchingSummary(companys.id)}
                     </div>
                   </TableCell>
                 )}
                 <TableCell className="font-medium">
                   <button 
                     className="text-left hover:text-blue-600 transition-colors"
-                    onClick={() => onViewCompany?.(company)}
+                    onClick={() => onViewCompany?.(companys)}
                   >
                     <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
-                    {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
+                    {companys.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
                   </button>
                 </TableCell>
-                <TableCell>{company.industrialName}</TableCell>
-                <TableCell>{company.province}</TableCell>
+                <TableCell>{companys.industrialName}</TableCell>
+                <TableCell>{companys.province}</TableCell>
                 <TableCell>
-                  {company.contactPersons.length > 0 ? (
+                  {companys.contactPersons.length > 0 ? (
                     <div>
-                      <div className="font-medium">{company.contactPersons[0].name}</div>
-                      {company.contactPersons[0].phone && (
-                        <div className="text-sm text-gray-500">{company.contactPersons[0].phone}</div>
+                      <div className="font-medium">{companys.contactPersons}</div>
+                      {companys.contactPersons[0].phone && (
+                        <div className="text-sm text-gray-500">{companys.contactPersons[0].phone}</div>
                       )}
-                      {company.contactPersons[0].email && (
-                        <div className="text-sm text-gray-500">{company.contactPersons[0].email}</div>
+                      {companys.contactPersons[0].email && (
+                        <div className="text-sm text-gray-500">{companys.contactPersons[0].email}</div>
                       )}
                     </div>
                   ) : (
@@ -178,20 +178,20 @@ export function ListTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(company.verificationStatus)}>{company.verificationStatus}</Badge>
+                  <Badge className={getStatusColor(companys.verificationStatus)}>{companys.verificationStatus}</Badge>
                 </TableCell>
                 <TableCell>
-                  <span className={`font-medium ${getCompletenessColor(company.dataCompleteness)}`}>
-                    {company.dataCompleteness}%
+                  <span className={`font-medium ${getCompletenessColor(companys.dataCompleteness)}`}>
+                    {companys.dataCompleteness}%
                   </span>
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">{company.lastUpdated}</TableCell>
-                <TableCell className="text-sm text-gray-500">{company.createdBy}</TableCell>
+                <TableCell className="text-sm text-gray-500">{companys.updatedAt}</TableCell>
+                <TableCell className="text-sm text-gray-500">{companys.createdBy}</TableCell>
                 <TableCell>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onViewCompany?.(company)}
+                    onClick={() => onViewCompany?.(companys)}
                     className="h-8 w-8 p-0"
                   >
                     <Eye className="h-4 w-4" />
@@ -199,7 +199,7 @@ export function ListTable({
                 </TableCell>
               </TableRow>
             )
-          })}
+          })} */}
         </TableBody>
       </Table>
 

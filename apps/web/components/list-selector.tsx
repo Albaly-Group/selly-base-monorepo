@@ -155,7 +155,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {list.companyIds.length}
+                    {list.companyIds}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -170,7 +170,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
           {lists.length === 0 && (
             <div className="text-center py-6 text-gray-500">
               <p className="text-sm">No lists created yet</p>
-              <p className="text-xs mt-1">Create lists from Company Lookup</p>
+              <p className="text-sm mt-1">Create lists from Company Lookup</p>
             </div>
           )}
 
