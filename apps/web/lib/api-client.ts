@@ -528,6 +528,69 @@ class ApiClient {
   async updateIntegrationSettings(settings: any): Promise<any> {
     return this.put<any>('/api/v1/admin/integrations', settings);
   }
+
+  // Reference Data endpoints
+  async getIndustries(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/industries', params);
+  }
+
+  async getProvinces(params?: { active?: boolean; countryCode?: string }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/provinces', params);
+  }
+
+  async getCompanySizes(): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/company-sizes');
+  }
+
+  async getContactStatuses(): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/contact-statuses');
+  }
+
+  // Company Contacts endpoints
+  async getCompanyContacts(companyId?: string): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/company-contacts', companyId ? { companyId } : undefined);
+  }
+
+  async getCompanyContactById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/company-contacts/${id}`);
+  }
+
+  async createCompanyContact(contactData: any): Promise<any> {
+    return this.post<any>('/api/v1/company-contacts', contactData);
+  }
+
+  async updateCompanyContact(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/company-contacts/${id}`, updateData);
+  }
+
+  async deleteCompanyContact(id: string): Promise<{ message: string }> {
+    return this.delete<{ message: string }>(`/api/v1/company-contacts/${id}`);
+  }
+
+  // Company Activities endpoints
+  async getCompanyActivities(params?: { companyId?: string; activityType?: string; limit?: number }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/company-activities', params);
+  }
+
+  async getCompanyActivityById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/company-activities/${id}`);
+  }
+
+  async createCompanyActivity(activityData: any): Promise<any> {
+    return this.post<any>('/api/v1/company-activities', activityData);
+  }
+
+  // Audit Logs endpoints
+  async getAuditLogs(params?: { 
+    entityType?: string; 
+    entityId?: string; 
+    userId?: string; 
+    actionType?: string; 
+    limit?: number; 
+    offset?: number 
+  }): Promise<{ data: any[]; total: number }> {
+    return this.get<{ data: any[]; total: number }>('/api/v1/audit/logs', params);
+  }
 }
 
 // Export singleton instance
