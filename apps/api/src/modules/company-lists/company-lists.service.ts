@@ -45,6 +45,7 @@ interface CompanyListCreateRequest {
   smartCriteria?: Record<string, any>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CompanyListUpdateRequest extends Partial<CompanyListCreateRequest> {}
 
 @Injectable()
