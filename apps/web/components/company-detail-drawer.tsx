@@ -709,6 +709,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </Button>
               <Button onClick={handleSaveContact} disabled={isSavingContact}>
                 {isSavingContact ? 'Saving...' : 'Add Contact'}
+              </Button>
               <Button onClick={onAddContact}>
                 Add Contact
               </Button>

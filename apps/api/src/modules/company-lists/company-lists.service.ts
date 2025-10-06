@@ -238,7 +238,7 @@ export class CompanyListsService {
       console.log('Created company list in database:', savedList.id);
       return savedList;
     } else {
-      // Mock implementation fallback
+
       const list = {
         id: `list-${Date.now()}`,
         name: data.name,
