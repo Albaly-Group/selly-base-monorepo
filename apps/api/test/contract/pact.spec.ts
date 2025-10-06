@@ -4,10 +4,10 @@ import { expect } from '@playwright/test';
 
 /**
  * Contract Testing with Pact
- * 
+ *
  * These tests verify that the API contract between consumer (frontend) and provider (backend)
  * is maintained. This ensures that changes to the API don't break the frontend.
- * 
+ *
  * Consumer: Frontend (web app)
  * Provider: Backend API
  */
@@ -80,11 +80,14 @@ describe('Pact Contract Tests', () => {
       });
 
       // Make the actual request
-      const response = await fetch('http://localhost:9000/api/v1/companies?page=1&limit=10', {
-        headers: {
-          Accept: 'application/json',
+      const response = await fetch(
+        'http://localhost:9000/api/v1/companies?page=1&limit=10',
+        {
+          headers: {
+            Accept: 'application/json',
+          },
         },
-      });
+      );
 
       const data = await response.json();
 
@@ -218,11 +221,14 @@ describe('Pact Contract Tests', () => {
         },
       });
 
-      const response = await fetch('http://localhost:9000/api/v1/companies/999', {
-        headers: {
-          Accept: 'application/json',
+      const response = await fetch(
+        'http://localhost:9000/api/v1/companies/999',
+        {
+          headers: {
+            Accept: 'application/json',
+          },
         },
-      });
+      );
 
       expect(response.status).toBe(404);
     });

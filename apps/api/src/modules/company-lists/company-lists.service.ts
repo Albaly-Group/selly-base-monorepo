@@ -201,7 +201,6 @@ export class CompanyListsService {
     data: CompanyListCreateRequest,
     user: UserContext,
   ): Promise<any> {
-
     const listData: Partial<CompanyList> = {
       name: data.name,
       description: data.description || undefined,
@@ -237,7 +236,10 @@ export class CompanyListsService {
       throw new NotFoundException('Company list not found');
     }
 
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot update this company list');
     }
 
@@ -248,11 +250,16 @@ export class CompanyListsService {
     };
 
     if (data.name !== undefined) fieldsToUpdate.name = data.name;
-    if (data.description !== undefined) fieldsToUpdate.description = data.description;
-    if (data.visibility !== undefined) fieldsToUpdate.visibility = data.visibility;
-    if (Object.prototype.hasOwnProperty.call(data, 'isShared')) fieldsToUpdate.isShared = data.isShared;
-    if (Object.prototype.hasOwnProperty.call(data, 'isSmartList')) fieldsToUpdate.isSmartList = data.isSmartList;
-    if (data.smartCriteria !== undefined) fieldsToUpdate.smartCriteria = data.smartCriteria;
+    if (data.description !== undefined)
+      fieldsToUpdate.description = data.description;
+    if (data.visibility !== undefined)
+      fieldsToUpdate.visibility = data.visibility;
+    if (Object.prototype.hasOwnProperty.call(data, 'isShared'))
+      fieldsToUpdate.isShared = data.isShared;
+    if (Object.prototype.hasOwnProperty.call(data, 'isSmartList'))
+      fieldsToUpdate.isSmartList = data.isSmartList;
+    if (data.smartCriteria !== undefined)
+      fieldsToUpdate.smartCriteria = data.smartCriteria;
 
     // Merge and persist
     this.companyListRepository.merge(list as any, fieldsToUpdate);

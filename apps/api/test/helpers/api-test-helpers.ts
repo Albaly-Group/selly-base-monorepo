@@ -19,10 +19,13 @@ export class ApiTestHelper {
   /**
    * Make a GET request
    */
-  async get<T = any>(url: string, options: {
-    query?: Record<string, any>;
-    headers?: Record<string, string>;
-  } = {}): Promise<ApiResponse<T>> {
+  async get<T = any>(
+    url: string,
+    options: {
+      query?: Record<string, any>;
+      headers?: Record<string, string>;
+    } = {},
+  ): Promise<ApiResponse<T>> {
     const response = await this.request.get(url, {
       params: options.query,
       headers: options.headers,
@@ -41,10 +44,13 @@ export class ApiTestHelper {
   /**
    * Make a POST request
    */
-  async post<T = any>(url: string, options: {
-    data?: any;
-    headers?: Record<string, string>;
-  } = {}): Promise<ApiResponse<T>> {
+  async post<T = any>(
+    url: string,
+    options: {
+      data?: any;
+      headers?: Record<string, string>;
+    } = {},
+  ): Promise<ApiResponse<T>> {
     const response = await this.request.post(url, {
       data: options.data,
       headers: options.headers,
@@ -63,10 +69,13 @@ export class ApiTestHelper {
   /**
    * Make a PUT request
    */
-  async put<T = any>(url: string, options: {
-    data?: any;
-    headers?: Record<string, string>;
-  } = {}): Promise<ApiResponse<T>> {
+  async put<T = any>(
+    url: string,
+    options: {
+      data?: any;
+      headers?: Record<string, string>;
+    } = {},
+  ): Promise<ApiResponse<T>> {
     const response = await this.request.put(url, {
       data: options.data,
       headers: options.headers,
@@ -85,9 +94,12 @@ export class ApiTestHelper {
   /**
    * Make a DELETE request
    */
-  async delete<T = any>(url: string, options: {
-    headers?: Record<string, string>;
-  } = {}): Promise<ApiResponse<T>> {
+  async delete<T = any>(
+    url: string,
+    options: {
+      headers?: Record<string, string>;
+    } = {},
+  ): Promise<ApiResponse<T>> {
     const response = await this.request.delete(url, {
       headers: options.headers,
     });
@@ -119,7 +131,11 @@ export class ApiTestHelper {
   /**
    * Assert response property value
    */
-  assertPropertyValue(response: ApiResponse, property: string, value: any): void {
+  assertPropertyValue(
+    response: ApiResponse,
+    property: string,
+    value: any,
+  ): void {
     expect(response.body).toHaveProperty(property, value);
   }
 
@@ -151,7 +167,7 @@ export class AuthHelper {
       return {};
     }
     return {
-      'Authorization': `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.token}`,
     };
   }
 
