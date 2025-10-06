@@ -1,44 +1,61 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * True End-to-End Test - Company Management
+ * E2E Test - Company Management (UX-Focused)
  * 
- * Tests complete company management workflow from frontend UI through backend API to database
+ * These tests validate the user experience of managing companies.
+ * Focus areas: search, filtering, viewing, creating, and editing companies.
  * 
- * Prerequisites:
- * 1. Frontend server running on http://localhost:3000
- * 2. Backend server running on http://localhost:3001
- * 3. Database accessible with test data
- * 4. User must be authenticated
- * 
- * Test Flow:
- * Frontend UI → Backend API → Database → Response → UI Update
+ * UX Principles Tested:
+ * - Easy navigation to company features
+ * - Clear data presentation
+ * - Intuitive search and filtering
+ * - Responsive feedback on actions
+ * - Data persistence and accuracy
  */
 
 test.describe('Company Management E2E Flow', () => {
-  // Login before each test
+  // Helper to login before each test
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     
     // Login with test credentials
-    await page.fill('input[type="email"]', 'admin@selly.com');
-    await page.fill('input[type="password"]', 'Admin@123');
-    await page.click('button[type="submit"]');
+    await page.getByLabel(/email/i).fill('admin@selly.com');
+    await page.getByLabel(/password/i).fill('Admin@123');
+    await page.getByRole('button', { name: /sign in|login/i }).click();
     
-    // Wait for dashboard to load
+    // Wait for successful login
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
     
     // Navigate to companies page
-    await page.click('text=Companies').catch(() => {
-      return page.goto('/lookup');
-    });
+    // Try navigation link first, then direct URL
+    const companiesLink = page.getByRole('link', { name: /companies/i });
+    if (await companiesLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await companiesLink.click();
+    } else {
+      await page.goto('/lookup');
+    }
+    
+    // Wait for companies page to load
+    await page.waitForLoadState('networkidle');
   });
 
-  test('should display companies list page', async ({ page }) => {
-    await page.goto('/lookup');
+  test('should display companies in a clear, organized layout', async ({ page }) => {
+    // UX Test: Users should immediately understand they're viewing companies
+    // and see the data in an organized, scannable format
     
-    await expect(page.getByText(/companies|company list/i)).toBeVisible();
-    await expect(page.locator('table, [role="table"]')).toBeVisible({ timeout: 10000 });
+    // Verify page heading/title is clear
+    const pageTitle = page.getByRole('heading', { name: /companies|company/i });
+    await expect(pageTitle).toBeVisible({ timeout: 5000 });
+    
+    // Verify data is displayed in a structured way (table or grid)
+    const dataContainer = page.locator('table, [role="table"], [role="grid"]');
+    await expect(dataContainer).toBeVisible({ timeout: 10000 });
+    
+    // Verify there's at least some content (rows or cards)
+    const contentItems = page.locator('tbody tr, [role="row"], [class*="card"], [class*="item"]');
+    const itemCount = await contentItems.count();
+    expect(itemCount).toBeGreaterThan(0);
   });
 
   test('should search for companies', async ({ page }) => {
