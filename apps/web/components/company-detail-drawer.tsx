@@ -82,7 +82,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
           const response = await apiClient.getCompanyLists()
           console.log("Respones", response)
           if (response.data) {
-            const filteredLists = response.data.map(list => ({
+            const filteredLists = response.data.map((list: any) => ({
               id: list.id,
               name: list.name,
               status: list.status,
@@ -635,8 +635,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </Button>
               <Button onClick={handleSaveContact} disabled={isSavingContact}>
                 {isSavingContact ? 'Saving...' : 'Add Contact'}
-              <Button onClick={onAddContact}>
-                Add Contact
               </Button>
             </DialogFooter>
           </DialogContent>

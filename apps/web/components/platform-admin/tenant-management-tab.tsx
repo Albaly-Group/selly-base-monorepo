@@ -71,7 +71,6 @@ export function TenantManagementTab() {
   }
 
   const handleAddTenant = () => {
-    // Mock add tenant functionality
     setShowAddTenant(false)
   }
 

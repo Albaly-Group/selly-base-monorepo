@@ -12,10 +12,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Users, Database, BarChart3, Settings, Shield } from "lucide-react"
-import { getTotalUsers, getTotalDataRecords, getActiveTenants, getPlatformAnalytics, mockSharedCompanies } from "@/lib/platform-admin-data"
+import { getTotalUsers, getTotalDataRecords, getActiveTenants, getPlatformAnalytics } from "@/lib/platform-admin-data"
 
 function PlatformAdminPage() {
-  const [platformData, setPlatformData] = useState({
+  const [platformData, setPlatformData] = useState<{
+    totalUsers: number;
+    totalData: number;
+    activeTenants: number;
+    systemHealth: number;
+    analytics: any;
+  }>({
     totalUsers: 0,
     totalData: 0,
     activeTenants: 0,
@@ -116,7 +122,7 @@ function PlatformAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {loading ? "..." : (platformData.analytics?.totalCompanies || mockSharedCompanies.length).toLocaleString()}
+                {loading ? "..." : (platformData.analytics?.totalCompanies || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Available to all tenants
