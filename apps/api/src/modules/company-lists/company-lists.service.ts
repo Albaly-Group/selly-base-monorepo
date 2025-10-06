@@ -201,29 +201,25 @@ export class CompanyListsService {
     data: CompanyListCreateRequest,
     user: UserContext,
   ): Promise<any> {
-    if (this.companyListRepository) {
-      // Database implementation
-      const listData: Partial<CompanyList> = {
-        name: data.name,
-        description: data.description || undefined,
-        organizationId: user.organizationId,
-        ownerUserId: user.id,
-        visibility: data.visibility || 'private',
-        isShared: data.visibility === 'public',
-        totalCompanies: 0,
-        lastActivityAt: new Date(),
-        isSmartList: data.isSmartList || false,
-        smartCriteria: data.smartCriteria || {},
-        lastRefreshedAt: undefined,
-      };
+    // Database implementation
+    const listData: Partial<CompanyList> = {
+      name: data.name,
+      description: data.description || undefined,
+      organizationId: user.organizationId,
+      ownerUserId: user.id,
+      visibility: data.visibility || 'private',
+      isShared: data.visibility === 'public',
+      totalCompanies: 0,
+      lastActivityAt: new Date(),
+      isSmartList: data.isSmartList || false,
+      smartCriteria: data.smartCriteria || {},
+      lastRefreshedAt: undefined,
+    };
 
-      const list = this.companyListRepository.create(listData);
-      const savedList = await this.companyListRepository.save(list);
-      console.log('Created company list in database:', savedList.id);
-      return savedList;
-    } else {
-      throw new Error('Database repository is not available');
-    }
+    const list = this.companyListRepository.create(listData);
+    const savedList = await this.companyListRepository.save(list);
+    console.log('Created company list in database:', savedList.id);
+    return savedList;
   }
 
   async updateCompanyList(
