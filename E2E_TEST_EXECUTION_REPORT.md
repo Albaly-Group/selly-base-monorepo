@@ -261,18 +261,30 @@ Error: Unable to fetch Alpine Linux package repositories
 
 ### 3.4 Alternative Execution Options
 
-Given the network restrictions, E2E tests can be run via:
+E2E tests can be run in multiple ways:
 
-1. **Local Development Environment** (Recommended)
+1. **DB in Docker Only** (Recommended - Fastest)
+   ```bash
+   npm run test:e2e:docker:db-only
+   ```
+   - Only PostgreSQL runs in Docker
+   - API and Web run locally
+   - Faster startup, easier debugging
+   - No Docker image builds required
+   
+2. **Full Docker Stack** (Complete Isolation)
    ```bash
    npm run test:e2e:docker
    ```
+   - All services in Docker
+   - Complete isolation
+   - Requires network access for image builds
    
-2. **CI/CD Pipeline** (Production)
+3. **CI/CD Pipeline** (Production)
    - GitHub Actions with Docker support
    - Self-hosted runners with proper network access
    
-3. **Standalone Mode** (Without Docker)
+4. **Standalone Mode** (Manual)
    ```bash
    # Start services manually
    npm run dev (in both apps/api and apps/web)

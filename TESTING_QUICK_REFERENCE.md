@@ -132,10 +132,41 @@ npm run lint
 
 **Location**: `e2e/*.e2e.spec.ts`
 
-#### Option 1: With Docker (Recommended)
+#### Option 1: DB in Docker Only (Recommended)
+
+Run only PostgreSQL in Docker, with API and Web running locally. This is faster and uses fewer resources.
 
 ```bash
-# Complete automated test with Docker
+# Complete automated test with DB in Docker only
+npm run test:e2e:docker:db-only
+
+# Or manually
+docker compose -f docker-compose.db-only.yml up -d
+# Start API and Web locally (script does this automatically)
+npm run test:e2e
+docker compose -f docker-compose.db-only.yml down -v
+```
+
+**What It Does**:
+1. Starts PostgreSQL database in Docker
+2. Starts backend API locally
+3. Starts frontend web app locally
+4. Runs all E2E tests
+5. Generates HTML report
+6. Cleans up all processes and containers
+
+**Benefits**:
+- Faster startup (no Docker image builds)
+- Live reload during development
+- Easier debugging
+- Less resource intensive
+
+#### Option 2: Full Docker Stack
+
+Run all services (DB, API, Web) in Docker containers.
+
+```bash
+# Complete automated test with full Docker
 npm run test:e2e:docker
 
 # Or manually
@@ -146,13 +177,13 @@ docker compose -f docker-compose.e2e.yml down -v
 
 **What It Does**:
 1. Starts PostgreSQL database
-2. Starts backend API
-3. Starts frontend web app
+2. Starts backend API in Docker
+3. Starts frontend web app in Docker
 4. Runs all E2E tests
 5. Generates HTML report
 6. Cleans up containers
 
-#### Option 2: Local Development
+#### Option 3: Local Development
 
 ```bash
 # Terminal 1: Start backend
@@ -167,7 +198,7 @@ npm run dev
 npm run test:e2e
 ```
 
-#### Option 3: UI Mode (Interactive)
+#### Option 4: UI Mode (Interactive)
 
 ```bash
 npm run test:e2e:ui
@@ -205,6 +236,21 @@ npm run test:e2e:docker:logs
 
 ### Start E2E Environment
 
+#### DB Only (Recommended)
+
+```bash
+# Start database only
+npm run test:e2e:db-only:setup
+
+# Check status
+docker compose -f docker-compose.db-only.yml ps
+
+# View logs
+docker compose -f docker-compose.db-only.yml logs postgres-e2e
+```
+
+#### Full Docker Stack
+
 ```bash
 # Start all services
 npm run test:e2e:docker:setup
@@ -219,8 +265,20 @@ docker compose -f docker-compose.e2e.yml logs [service-name]
 
 ### Stop E2E Environment
 
+#### DB Only
+
 ```bash
-# Stop and remove containers + volumes
+# Stop and remove database container + volumes
+npm run test:e2e:db-only:cleanup
+
+# Or manually
+docker compose -f docker-compose.db-only.yml down -v
+```
+
+#### Full Docker Stack
+
+```bash
+# Stop and remove all containers + volumes
 npm run test:e2e:docker:cleanup
 
 # Or manually

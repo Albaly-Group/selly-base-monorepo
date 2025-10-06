@@ -330,7 +330,10 @@ npm run test:all
 
 ### E2E Tests (Full Stack)
 ```bash
-# With Docker (recommended)
+# With DB in Docker only (recommended - faster)
+npm run test:e2e:docker:db-only
+
+# With full Docker stack
 npm run test:e2e:docker
 
 # Without Docker (requires services running)
