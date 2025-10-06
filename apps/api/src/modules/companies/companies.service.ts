@@ -242,7 +242,6 @@ export class CompaniesService {
     }
 
     try {
-      // Database implementation only - no mock data fallback
       const company = await this.getCompanyByIdFromDatabase(id, organizationId, user);
 
       // Log read operation
@@ -271,12 +270,9 @@ export class CompaniesService {
     user?: User,
   ): Promise<Company> {
     const query = this.companyRepository!.createQueryBuilder('company')
-      // Note: contacts relation not yet defined in entity
-      // .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization')
       .where('company.id = :id', { id });
 
-    // Enhanced multi-tenant access control
     if (organizationId) {
       if (user && user.organizationId !== organizationId) {
         throw new ForbiddenException('Access denied to organization data');

@@ -66,13 +66,14 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         try {
           setIsLoadingLists(true)
           const response = await apiClient.getCompanyLists()
+          console.log("Respones", response)
           if (response.data) {
             const filteredLists = response.data.map(list => ({
               id: list.id,
               name: list.name,
               status: list.status,
               owner: list.ownerUser?.name,
-              addedDate: list.createdAt ? list.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
+              addedDate: list.createdAt
             }))
             setCompanyLists(filteredLists)
           }
