@@ -18,7 +18,10 @@ import {
 } from '@nestjs/swagger';
 import { CompanyActivitiesService } from './company-activities.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser, CurrentOrganization } from '../auth/current-user.decorator';
+import {
+  CurrentUser,
+  CurrentOrganization,
+} from '../auth/current-user.decorator';
 import { CreateCompanyActivityDto } from '../../dtos/company-activity.dto';
 
 @ApiTags('company-activities')

@@ -119,7 +119,8 @@ export class CompaniesService {
       tags,
     } = searchDto;
 
-    const query = this.companyRepository!.createQueryBuilder('company')
+    const query = this.companyRepository
+      .createQueryBuilder('company')
       // Note: contacts relation not yet defined in entity
       // .leftJoinAndSelect('company.contacts', 'contacts')
       .leftJoinAndSelect('company.organization', 'organization');
@@ -230,8 +231,6 @@ export class CompaniesService {
     };
   }
 
-
-
   async getCompanyById(
     id: string,
     organizationId?: string,
@@ -242,7 +241,11 @@ export class CompaniesService {
     }
 
     try {
-      const company = await this.getCompanyByIdFromDatabase(id, organizationId, user);
+      const company = await this.getCompanyByIdFromDatabase(
+        id,
+        organizationId,
+        user,
+      );
 
       // Log read operation
       if (user) {
@@ -269,7 +272,8 @@ export class CompaniesService {
     organizationId?: string,
     user?: User,
   ): Promise<Company> {
-    const query = this.companyRepository!.createQueryBuilder('company')
+    const query = this.companyRepository
+      .createQueryBuilder('company')
       .leftJoinAndSelect('company.organization', 'organization')
       .where('company.id = :id', { id });
 
@@ -296,8 +300,6 @@ export class CompaniesService {
 
     return company;
   }
-
-
 
   async createCompany(createDto: CreateCompanyDto, user: User): Promise<any> {
     if (!user || !user.organizationId) {

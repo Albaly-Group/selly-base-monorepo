@@ -52,7 +52,10 @@ export class ReportsService {
       const avgQualityResult = await this.companiesRepo
         .createQueryBuilder('company')
         .select('AVG(company.dataQualityScore)', 'avgScore')
-        .where(organizationId ? 'company.organizationId = :organizationId' : '1=1', { organizationId })
+        .where(
+          organizationId ? 'company.organizationId = :organizationId' : '1=1',
+          { organizationId },
+        )
         .getRawOne();
 
       const dataQualityScore = avgQualityResult?.avgScore
@@ -134,9 +137,7 @@ export class ReportsService {
 
       const calculateGrowth = (recent: number, previous: number) => {
         if (previous === 0) return recent > 0 ? 100 : 0;
-        return parseFloat(
-          (((recent - previous) / previous) * 100).toFixed(1),
-        );
+        return parseFloat((((recent - previous) / previous) * 100).toFixed(1));
       };
 
       return {
@@ -188,7 +189,10 @@ export class ReportsService {
       const avgQualityResult = await this.companiesRepo
         .createQueryBuilder('company')
         .select('AVG(company.dataQualityScore)', 'avgScore')
-        .where(organizationId ? 'company.organizationId = :organizationId' : '1=1', { organizationId })
+        .where(
+          organizationId ? 'company.organizationId = :organizationId' : '1=1',
+          { organizationId },
+        )
         .getRawOne();
 
       const overallScore = avgQualityResult?.avgScore
@@ -200,9 +204,18 @@ export class ReportsService {
         overallScore: parseFloat(overallScore.toFixed(2)),
         metrics: [
           { name: 'completeness', score: parseFloat(overallScore.toFixed(2)) },
-          { name: 'accuracy', score: parseFloat((overallScore * 0.95).toFixed(2)) },
-          { name: 'consistency', score: parseFloat((overallScore * 0.9).toFixed(2)) },
-          { name: 'timeliness', score: parseFloat((overallScore * 0.98).toFixed(2)) },
+          {
+            name: 'accuracy',
+            score: parseFloat((overallScore * 0.95).toFixed(2)),
+          },
+          {
+            name: 'consistency',
+            score: parseFloat((overallScore * 0.9).toFixed(2)),
+          },
+          {
+            name: 'timeliness',
+            score: parseFloat((overallScore * 0.98).toFixed(2)),
+          },
         ],
         issues: [],
         trends: {
@@ -246,7 +259,12 @@ export class ReportsService {
         .createQueryBuilder('audit')
         .select('audit.actionType', 'action')
         .addSelect('COUNT(*)', 'count')
-        .where(organizationId ? 'audit.metadata->>\'organizationId\' = :organizationId' : '1=1', { organizationId })
+        .where(
+          organizationId
+            ? "audit.metadata->>'organizationId' = :organizationId"
+            : '1=1',
+          { organizationId },
+        )
         .groupBy('audit.actionType')
         .orderBy('count', 'DESC')
         .limit(5)
@@ -254,7 +272,11 @@ export class ReportsService {
 
       return {
         period: {
-          startDate: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          startDate:
+            startDate ||
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split('T')[0],
           endDate: endDate || new Date().toISOString().split('T')[0],
         },
         totalSessions,
@@ -324,7 +346,11 @@ export class ReportsService {
 
       return {
         period: {
-          startDate: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          startDate:
+            startDate ||
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split('T')[0],
           endDate: endDate || new Date().toISOString().split('T')[0],
         },
         totalExports,

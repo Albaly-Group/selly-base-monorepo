@@ -71,15 +71,13 @@ export class AdminService {
     }
   }
 
-  async createOrganizationUser(
-    userData: {
-      name: string;
-      email: string;
-      password: string;
-      organizationId: string;
-      role?: string;
-    },
-  ) {
+  async createOrganizationUser(userData: {
+    name: string;
+    email: string;
+    password: string;
+    organizationId: string;
+    role?: string;
+  }) {
     try {
       // Hash the password
       const passwordHash = await bcrypt.hash(userData.password, 10);
@@ -176,7 +174,7 @@ export class AdminService {
       }
 
       // Return policies from organization settings or defaults
-      const settings = org.settings as any || {};
+      const settings = (org.settings as any) || {};
 
       return {
         dataRetention: settings.dataRetention || {
@@ -224,7 +222,7 @@ export class AdminService {
 
       // Update organization settings
       org.settings = {
-        ...(org.settings as any || {}),
+        ...((org.settings as any) || {}),
         ...policies,
       };
 
@@ -274,9 +272,10 @@ export class AdminService {
         action: log.actionType,
         resource: log.resourceType,
         resourceId: log.entityId,
-        description: typeof log.metadata === 'string'
-          ? log.metadata
-          : JSON.stringify(log.metadata),
+        description:
+          typeof log.metadata === 'string'
+            ? log.metadata
+            : JSON.stringify(log.metadata),
         ipAddress: log.ipAddress || 'N/A',
         userAgent: log.userAgent || 'N/A',
       }));

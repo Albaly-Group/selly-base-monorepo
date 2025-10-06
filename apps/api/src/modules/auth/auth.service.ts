@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -55,8 +51,6 @@ export interface JwtPayload {
   exp?: number;
 }
 
-
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -93,13 +87,15 @@ export class AuthService {
         id: userRole.role.id,
         name: userRole.role.name,
         description: userRole.role.description,
-        permissions: (userRole.role.permissions || []).map((permissionKey: string, index: number) => ({
-          id: `${userRole.role.id}-perm-${index}`,
-          key: permissionKey,
-          description: `Permission: ${permissionKey}`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })),
+        permissions: (userRole.role.permissions || []).map(
+          (permissionKey: string, index: number) => ({
+            id: `${userRole.role.id}-perm-${index}`,
+            key: permissionKey,
+            description: `Permission: ${permissionKey}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }),
+        ),
       })) || [];
 
     return {
@@ -120,7 +116,8 @@ export class AuthService {
     password: string,
   ): Promise<any> {
     try {
-      const user = await this.userRepository.createQueryBuilder('user')
+      const user = await this.userRepository
+        .createQueryBuilder('user')
         .leftJoinAndSelect('user.organization', 'organization')
         .leftJoinAndSelect('user.userRoles2', 'userRole')
         .leftJoinAndSelect('userRole.role', 'role')
@@ -150,15 +147,15 @@ export class AuthService {
         this.logger.error(
           '❌ Database tables not found. Please initialize schema: psql -U postgres -d selly_base -f selly-base-optimized-schema.sql',
         );
-        throw new Error('Database schema not initialized. Please run the SQL schema file.');
+        throw new Error(
+          'Database schema not initialized. Please run the SQL schema file.',
+        );
       }
       // For other database errors, log and rethrow
       this.logger.error('Database query failed:', error.message);
       throw error;
     }
   }
-
-
 
   async validateToken(token: string): Promise<JwtPayload | null> {
     try {

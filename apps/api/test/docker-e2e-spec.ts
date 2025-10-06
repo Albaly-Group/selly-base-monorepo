@@ -5,14 +5,14 @@ import { AppModule } from './../src/app.module';
 
 /**
  * E2E Tests with Real Docker Database
- * 
+ *
  * These tests verify all backend endpoints work correctly with a real PostgreSQL database.
- * 
+ *
  * Prerequisites:
  * 1. Docker must be running
  * 2. Run: npm run test:e2e:setup (to start test database)
  * 3. Run: npm run test:e2e:docker (to run these tests)
- * 
+ *
  * After tests:
  * - Run: npm run test:e2e:cleanup (to stop test database)
  */
@@ -33,37 +33,37 @@ describe('Backend API with Docker Database (e2e)', () => {
     if (process.env.SKIP_DATABASE === 'true') {
       throw new Error(
         'SKIP_DATABASE is true. These tests require a real database. ' +
-        'Run: npm run test:e2e:setup first'
+          'Run: npm run test:e2e:setup first',
       );
     }
 
     console.log('🔧 Initializing test application...');
-    
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Set global prefix for API routes (must match main.ts)
     app.setGlobalPrefix('api/v1', {
       exclude: ['/', 'health', 'docs', 'docs/(.*)'],
     });
-    
+
     // Add validation pipe like in production
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
-      })
+      }),
     );
-    
+
     // Enable CORS
     app.enableCors();
-    
+
     await app.init();
-    
+
     console.log('✅ Test application initialized');
   });
 
@@ -81,7 +81,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('database', 'connected');
       expect(response.body).toHaveProperty('timestamp');
-      
+
       console.log('✓ Health check passed:', response.body);
     });
   });
@@ -115,7 +115,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       authToken = response.body.accessToken;
       userId = response.body.user.id;
       organizationId = response.body.user.organizationId;
-      
+
       console.log('✓ Login successful, token obtained');
       console.log('  User ID:', userId);
       console.log('  Organization ID:', organizationId);
@@ -131,14 +131,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('email');
       expect(response.body).toHaveProperty('name');
       expect(response.body).toHaveProperty('organizationId', organizationId);
-      
+
       console.log('✓ User profile retrieved');
     });
 
     it('should reject requests without token', async () => {
-      await request(app.getHttpServer())
-        .get('/api/v1/auth/me')
-        .expect(401);
+      await request(app.getHttpServer()).get('/api/v1/auth/me').expect(401);
     });
 
     it('should reject requests with invalid token', async () => {
@@ -153,11 +151,12 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should get companies list with pagination', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 1, 
+        .query({
+          page: 1,
           limit: 10,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
@@ -167,9 +166,9 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body.pagination).toHaveProperty('page', 1);
       expect(response.body.pagination).toHaveProperty('limit', 10);
       expect(response.body.pagination).toHaveProperty('total');
-      
+
       console.log(`✓ Found ${response.body.data.length} companies`);
-      
+
       if (response.body.data.length > 0) {
         companyId = response.body.data[0].id;
       }
@@ -178,30 +177,34 @@ describe('Backend API with Docker Database (e2e)', () => {
     it('should search companies by keyword', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          keyword: 'tech', 
-          page: 1, 
+        .query({
+          keyword: 'tech',
+          page: 1,
           limit: 10,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
-      console.log(`✓ Search found ${response.body.data.length} companies with keyword "tech"`);
+
+      console.log(
+        `✓ Search found ${response.body.data.length} companies with keyword "tech"`,
+      );
     });
 
     it('should filter companies by industry', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          industry: 'Technology', 
-          page: 1, 
+        .query({
+          industry: 'Technology',
+          page: 1,
           limit: 10,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
@@ -221,7 +224,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id', companyId);
       expect(response.body).toHaveProperty('nameEn');
-      
+
       console.log(`✓ Retrieved company: ${response.body.nameEn}`);
     });
 
@@ -240,8 +243,11 @@ describe('Backend API with Docker Database (e2e)', () => {
         .expect(201);
 
       expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('companyNameEn', newCompany.companyNameEn);
-      
+      expect(response.body).toHaveProperty(
+        'companyNameEn',
+        newCompany.companyNameEn,
+      );
+
       companyId = response.body.id;
       console.log(`✓ Created company with ID: ${companyId}`);
     });
@@ -265,7 +271,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id', companyId);
       expect(response.body.businessDescription).toContain('Updated');
-      
+
       console.log('✓ Company updated successfully');
     });
   });
@@ -280,7 +286,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pagination');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Found ${response.body.data.length} company lists`);
     });
 
@@ -298,9 +304,25 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('name', newList.name);
-      
+
       listId = response.body.id;
       console.log(`✓ Created list with ID: ${listId}`);
+    });
+
+    it('should get company list by ID', async () => {
+      if (!listId) {
+        console.log('⊘ Skipping - no list ID available');
+        return;
+      }
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/company-lists/${listId}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('id', listId);
+      expect(response.body).toHaveProperty('name', 'E2E Test List');
+
+      console.log('✓ Retrieved company list by ID successfully');
     });
 
     it('should add company to list', async () => {
@@ -314,7 +336,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({ companyIds: [companyId] })
         .expect(200);
-      
+
       console.log('✓ Added company to list');
     });
 
@@ -330,7 +352,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ List contains ${response.body.data.length} companies`);
     });
   });
@@ -345,7 +367,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pagination');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Found ${response.body.data.length} export jobs`);
     });
 
@@ -365,7 +387,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('status');
-      
+
       exportJobId = response.body.id;
       console.log(`✓ Created export job with ID: ${exportJobId}`);
     });
@@ -381,7 +403,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('id', exportJobId);
-      
+
       console.log('✓ Retrieved export job details');
     });
 
@@ -406,7 +428,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pagination');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Found ${response.body.data.length} import jobs`);
     });
 
@@ -424,7 +446,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('status');
-      
+
       importJobId = response.body.id;
       console.log(`✓ Created import job with ID: ${importJobId}`);
     });
@@ -440,7 +462,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('id', importJobId);
-      
+
       console.log('✓ Retrieved import job details');
     });
 
@@ -455,7 +477,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .expect(201);
 
       expect(response.body).toHaveProperty('status');
-      
+
       console.log('✓ Import validation completed');
     });
   });
@@ -470,7 +492,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pagination');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Found ${response.body.data.length} staff members`);
     });
 
@@ -490,7 +512,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('name', staffMember.name);
-      
+
       staffId = response.body.id;
       console.log(`✓ Created staff member with ID: ${staffId}`);
     });
@@ -506,7 +528,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('id', staffId);
-      
+
       console.log('✓ Retrieved staff member details');
     });
 
@@ -524,7 +546,7 @@ describe('Backend API with Docker Database (e2e)', () => {
         .put(`/api/v1/staff/${staffId}`)
         .send(updates)
         .expect(200);
-      
+
       console.log('✓ Staff member updated');
     });
   });
@@ -539,7 +561,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('totalLists');
       expect(response.body).toHaveProperty('dataQualityScore');
       expect(typeof response.body.totalCompanies).toBe('number');
-      
+
       console.log('✓ Dashboard analytics:', {
         companies: response.body.totalCompanies,
         lists: response.body.totalLists,
@@ -555,7 +577,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('overallScore');
       expect(response.body).toHaveProperty('metrics');
       expect(Array.isArray(response.body.metrics)).toBe(true);
-      
+
       console.log(`✓ Data quality score: ${response.body.overallScore}`);
     });
 
@@ -566,7 +588,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('totalSessions');
       expect(response.body).toHaveProperty('uniqueUsers');
-      
+
       console.log('✓ User activity tracked');
     });
 
@@ -577,8 +599,10 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('totalExports');
       expect(response.body).toHaveProperty('formatBreakdown');
-      
-      console.log(`✓ Export history: ${response.body.totalExports} total exports`);
+
+      console.log(
+        `✓ Export history: ${response.body.totalExports} total exports`,
+      );
     });
   });
 
@@ -592,7 +616,7 @@ describe('Backend API with Docker Database (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pagination');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Found ${response.body.data.length} users in organization`);
     });
 
@@ -603,7 +627,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('dataRetention');
       expect(response.body).toHaveProperty('accessControl');
-      
+
       console.log('✓ Organization policies retrieved');
     });
 
@@ -614,7 +638,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('databases');
       expect(response.body).toHaveProperty('apis');
-      
+
       console.log('✓ Integration settings retrieved');
     });
 
@@ -626,7 +650,7 @@ describe('Backend API with Docker Database (e2e)', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       console.log(`✓ Retrieved ${response.body.data.length} activity logs`);
     });
   });
@@ -636,11 +660,12 @@ describe('Backend API with Docker Database (e2e)', () => {
       // Get initial company count
       const initialResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 1, 
+        .query({
+          page: 1,
           limit: 1,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
@@ -661,64 +686,70 @@ describe('Backend API with Docker Database (e2e)', () => {
       // Verify count increased
       const afterResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 1, 
+        .query({
+          page: 1,
           limit: 1,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
       const afterTotal = afterResponse.body.pagination.total;
 
       expect(afterTotal).toBe(initialTotal + 1);
-      
-      console.log(`✓ Data consistency maintained (${initialTotal} -> ${afterTotal})`);
+
+      console.log(
+        `✓ Data consistency maintained (${initialTotal} -> ${afterTotal})`,
+      );
     });
 
     it('should enforce organization isolation', async () => {
       // All data should be scoped to the logged-in user's organization
       const companiesResponse = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 1, 
+        .query({
+          page: 1,
           limit: 100,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
       const companies = companiesResponse.body.data;
-      
+
       // Check that companies with organizationId all match the user's org
       const companiesWithOrg = companies.filter((c: any) => c.organizationId);
       const matchingOrg = companiesWithOrg.every(
-        (c: any) => c.organizationId === organizationId
+        (c: any) => c.organizationId === organizationId,
       );
 
       expect(matchingOrg).toBe(true);
-      
+
       console.log('✓ Organization isolation enforced');
     });
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 1, 
+        .query({
+          page: 1,
           limit: 5,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/companies')
-        .query({ 
-          page: 2, 
+        .query({
+          page: 2,
           limit: 5,
-          organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000',
-          includeSharedData: 'true'
+          organizationId:
+            organizationId || '550e8400-e29b-41d4-a716-446655440000',
+          includeSharedData: 'true',
         })
         .expect(200);
 
@@ -726,11 +757,11 @@ describe('Backend API with Docker Database (e2e)', () => {
       if (page1.body.pagination.total > 5) {
         const page1Ids = page1.body.data.map((c: any) => c.id);
         const page2Ids = page2.body.data.map((c: any) => c.id);
-        
+
         const hasOverlap = page1Ids.some((id: string) => page2Ids.includes(id));
         expect(hasOverlap).toBe(false);
       }
-      
+
       console.log('✓ Pagination works correctly');
     });
   });

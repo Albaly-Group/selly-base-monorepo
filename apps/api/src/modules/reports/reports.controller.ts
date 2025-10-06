@@ -13,7 +13,9 @@ export class ReportsController {
     status: 200,
     description: 'Dashboard analytics retrieved successfully',
   })
-  async getDashboardAnalytics(@Query('organizationId') organizationId?: string) {
+  async getDashboardAnalytics(
+    @Query('organizationId') organizationId?: string,
+  ) {
     return this.reportsService.getDashboardAnalytics(organizationId);
   }
 
@@ -23,7 +25,9 @@ export class ReportsController {
     status: 200,
     description: 'Data quality metrics retrieved successfully',
   })
-  async getDataQualityMetrics(@Query('organizationId') organizationId?: string) {
+  async getDataQualityMetrics(
+    @Query('organizationId') organizationId?: string,
+  ) {
     return this.reportsService.getDataQualityMetrics(organizationId);
   }
 
@@ -38,7 +42,11 @@ export class ReportsController {
     @Query('endDate') endDate?: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.reportsService.getUserActivityReports(startDate, endDate, organizationId);
+    return this.reportsService.getUserActivityReports(
+      startDate,
+      endDate,
+      organizationId,
+    );
   }
 
   @Get('export-history')
@@ -52,6 +60,10 @@ export class ReportsController {
     @Query('endDate') endDate?: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.reportsService.getExportHistoryReports(startDate, endDate, organizationId);
+    return this.reportsService.getExportHistoryReports(
+      startDate,
+      endDate,
+      organizationId,
+    );
   }
 }

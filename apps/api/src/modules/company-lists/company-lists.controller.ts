@@ -98,26 +98,6 @@ export class CompanyListsController {
     status: 200,
     description: 'Company lists retrieved successfully',
   })
-  @Get(':id')
-  @ApiOperation({ summary: 'Get company list by ID' })
-  @ApiParam({ name: 'id', description: 'Company list ID' })
-  @ApiQuery({
-    name: 'organizationId',
-    required: false,
-    description: 'Organization ID for access control',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Company list retrieved successfully',
-  })
-  @ApiResponse({ status: 404, description: 'Company list not found' })
-  async getCompanyListById(
-    @Param('id') id: string,
-    @Query('organizationId') organizationId?: string,
-  ) {
-    return this.companyListsService.getCompanyListById(id);
-  }
-
   async getCompanyLists(
     @Query() query: CompanyListSearchQuery,
     @CurrentUser() user: any,
@@ -155,6 +135,26 @@ export class CompanyListsController {
       searchParams,
       userWithOrg,
     );
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get company list by ID' })
+  @ApiParam({ name: 'id', description: 'Company list ID' })
+  @ApiQuery({
+    name: 'organizationId',
+    required: false,
+    description: 'Organization ID for access control',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Company list retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Company list not found' })
+  async getCompanyListById(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId?: string,
+  ) {
+    return this.companyListsService.getCompanyListById(id);
   }
 
   @Post()
