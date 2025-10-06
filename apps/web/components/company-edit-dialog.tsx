@@ -14,7 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
 
 interface CompanyEditDialogProps {
   company: Company | null
@@ -26,10 +27,14 @@ interface CompanyEditDialogProps {
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
   const [formData, setFormData] = useState<Partial<Company>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     if (company) {
       setFormData({ ...company })
+      setError(null)
+      setSuccess(false)
     }
   }, [company])
 
@@ -37,12 +42,40 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     if (!formData.id) return
 
     setIsLoading(true)
+    setError(null)
+    setSuccess(false)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Call the actual API to update company
+      const updateData = {
+        companyNameEn: formData.companyNameEn,
+        companyNameTh: formData.companyNameTh,
+        businessDescription: formData.businessDescription,
+        province: formData.province,
+        websiteUrl: formData.websiteUrl,
+        primaryEmail: formData.primaryEmail,
+        primaryPhone: formData.primaryPhone,
+        tags: formData.tags,
+      }
 
-    onSave(formData as Company)
-    setIsLoading(false)
+      const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
+      
+      if (updatedCompany) {
+        setSuccess(true)
+        // Wait a moment to show success message
+        setTimeout(() => {
+          onSave(updatedCompany as Company)
+          onOpenChange(false)
+        }, 1000)
+      } else {
+        throw new Error("Failed to update company")
+      }
+    } catch (error: any) {
+      console.error("Error updating company:", error)
+      setError(error.message || "Failed to update company. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const updateField = (field: keyof Company, value: any) => {
@@ -206,12 +239,26 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           </div>
         </div>
 
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-800">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-800">
+            <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm">Company updated successfully!</span>
+          </div>
+        )}
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Changes"}
+          <Button onClick={handleSubmit} disabled={isLoading || success}>
+            {isLoading ? "Saving..." : success ? "Saved!" : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
