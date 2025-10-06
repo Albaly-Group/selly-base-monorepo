@@ -267,14 +267,17 @@ export function Component() {
 
 ### Critical Issues Fixed
 ✅ **2 components** that would crash at runtime  
+✅ **2 components** missing permission checks (security issue)  
 ✅ **Affects**: Organization Admin role features
 - Policies Tab
 - User Management Tab
+- Data Retention Tab
+- Integrations Tab
 
 ### Quality Improvements
 ✅ **23 JSX warnings** resolved  
 ✅ **2 hook dependency** issues fixed  
-✅ **10 files** updated with best practices
+✅ **12 files** updated with best practices
 
 ### Roles Affected
 All fixes improve code quality across:
