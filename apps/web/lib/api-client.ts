@@ -329,6 +329,13 @@ class ApiClient {
   }
 
   async logout(): Promise<void> {
+    try {
+      // Call backend logout endpoint
+      await this.post<{ message: string }>('/api/v1/auth/logout');
+    } catch (error) {
+      // Continue with client-side logout even if backend call fails
+      console.log('Backend logout failed, continuing with client-side logout:', error);
+    }
     this.clearToken();
   }
 
