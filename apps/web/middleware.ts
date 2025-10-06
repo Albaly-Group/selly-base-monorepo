@@ -16,15 +16,15 @@ export function middleware(request: NextRequest) {
         isAuthenticated = !!(userData && userData.id && userData.email)
         userRole = userData.role
       } catch (error) {
-        // Clear invalid cookie and redirect to home
-        const response = NextResponse.redirect(new URL("/", request.url))
+        // Clear invalid cookie and redirect to login
+        const response = NextResponse.redirect(new URL("/login", request.url))
         response.cookies.delete("selly-user")
         return response
       }
     }
 
     // Public routes that don't require authentication
-    const publicRoutes = ["/"]
+    const publicRoutes = ["/", "/login", "/logout", "/access-denied"]
     
     // API routes should be handled separately
     if (pathname.startsWith("/api/")) {
@@ -34,30 +34,35 @@ export function middleware(request: NextRequest) {
     // Protected routes that require authentication
     const protectedRoutes = ["/lookup", "/lists", "/staff", "/admin", "/platform-admin", "/reports", "/imports", "/exports"]
 
-    // If accessing a protected route without authentication, redirect to home
+    // If accessing a protected route without authentication, redirect to login
     if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
-      return NextResponse.redirect(new URL("/", request.url))
+      return NextResponse.redirect(new URL("/login", request.url))
     }
 
     // Platform admin route protection
     if (pathname.startsWith("/platform-admin") && isAuthenticated) {
       if (userRole !== "platform_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
     }
 
     // Customer admin route protection
     if (pathname.startsWith("/admin") && isAuthenticated) {
       if (userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
     }
 
     // Staff route protection
     if (pathname.startsWith("/staff") && isAuthenticated) {
       if (userRole !== "staff" && userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/", request.url))
+        return NextResponse.redirect(new URL("/access-denied", request.url))
       }
+    }
+
+    // Redirect unauthenticated users on homepage to login
+    if (pathname === "/" && !isAuthenticated) {
+      return NextResponse.redirect(new URL("/login", request.url))
     }
 
     // Role-based homepage redirects for authenticated users accessing "/"
@@ -73,9 +78,9 @@ export function middleware(request: NextRequest) {
 
     return NextResponse.next()
   } catch (error) {
-    // If any error occurs in middleware, redirect to home safely
+    // If any error occurs in middleware, redirect to login safely
     console.error("Middleware error:", error)
-    return NextResponse.redirect(new URL("/", request.url))
+    return NextResponse.redirect(new URL("/login", request.url))
   }
 }
 
