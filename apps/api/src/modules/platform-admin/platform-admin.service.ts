@@ -191,7 +191,7 @@ export class PlatformAdminService {
         if (company.websiteUrl) filledFields++;
         if (company.primaryPhone) filledFields++;
         if (company.primaryEmail) filledFields++;
-        if (company.addressLine1) filledFields++;
+        if (company.addressLine_1) filledFields++;
         if (company.companySize) filledFields++;
         if (company.verificationStatus) filledFields++;
 
