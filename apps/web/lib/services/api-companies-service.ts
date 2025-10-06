@@ -88,7 +88,7 @@ export class ApiCompaniesService {
         hasNextPage: response.pagination.hasNext,
       };
     } catch (error) {
-      console.error('API search failed, using fallback mock data:', error);
+      console.error('API search failed:', error);
       
       return {
         items: [],
@@ -108,7 +108,7 @@ export class ApiCompaniesService {
       const company = await apiClient.getCompanyById(id, this.user.organization_id || undefined);
       return company;
     } catch (error) {
-      console.error('API getCompanyById failed, using fallback mock data:', error);
+      console.error('API getCompanyById failed:', error);
       return null;
     }
   }
@@ -128,14 +128,8 @@ export class ApiCompaniesService {
       const company = await apiClient.createCompany(apiData);
       return company;
     } catch (error) {
-      console.error('API createCompany failed, falling back to mock creation:', error);
-
-      return {
-        id: `mock-${Date.now()}`,
-        ...companyData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as any;
+      console.error('API createCompany failed:', error);
+      throw error;
     }
   }
 

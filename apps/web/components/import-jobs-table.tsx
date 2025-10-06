@@ -63,15 +63,7 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
   }
 
   const handleDownloadErrors = (jobId: string) => {
-    // Mock error file download
-    const csvContent = `Row,Field,Error\n15,registration_id,"Invalid format: must be 13 digits"\n23,email,"Invalid email format"\n45,registration_id,"Duplicate registration ID found"`
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `import-errors-${jobId}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    alert('Error file download functionality will be implemented with backend API')
   }
 
   return (

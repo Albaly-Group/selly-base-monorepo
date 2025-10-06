@@ -45,28 +45,6 @@ interface PaginatedResponse<T> {
   };
 }
 
-// For endpoints that don't require authentication, we create a mock user
-// Use valid organization ID from test database (Albaly Digital)
-const createMockUser = (organizationId?: string): User =>
-  ({
-    id: '550e8400-e29b-41d4-a716-446655440003', // Valid test user ID from database
-    organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000', // Valid org ID (Albaly Digital)
-    email: 'admin@albaly.com',
-    name: 'Test User',
-    passwordHash: 'hashed',
-    avatarUrl: null,
-    status: 'active',
-    lastLoginAt: null,
-    emailVerifiedAt: new Date(),
-    settings: {},
-    metadata: {},
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    organization: {} as any,
-    companyLists: [],
-    userRoles2: [],
-  }) as unknown as User;
-
 interface CompanyListSearchQuery {
   searchTerm?: string;
   organizationId?: string;
@@ -130,8 +108,7 @@ export class CompanyListsController {
     };
 
     // For public lists, allow without authentication
-    const mockUser = createMockUser(query.organizationId);
-    return this.companyListsService.searchCompanyLists(searchParams, mockUser);
+    return this.companyListsService.searchCompanyLists(searchParams, undefined);
   }
 
   @Get(':id')
@@ -151,8 +128,7 @@ export class CompanyListsController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    const mockUser = createMockUser(organizationId);
-    return this.companyListsService.getCompanyListById(id, mockUser);
+    return this.companyListsService.getCompanyListById(id, undefined);
   }
 
   @Post()
@@ -172,10 +148,22 @@ export class CompanyListsController {
   ) {
     // Create a proper user object from JWT payload
     const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+      name: user.name || 'User',
+      passwordHash: '',
+      avatarUrl: null,
+      status: 'active',
+      lastLoginAt: null,
+      emailVerifiedAt: new Date(),
+      settings: {},
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: {} as any,
+      companyLists: [],
+      userRoles2: [],
     } as User;
     return this.companyListsService.createCompanyList(
       createListDto,
@@ -204,7 +192,24 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+      name: user.name || 'User',
+      passwordHash: '',
+      avatarUrl: null,
+      status: 'active',
+      lastLoginAt: null,
+      emailVerifiedAt: new Date(),
+      settings: {},
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: {} as any,
+      companyLists: [],
+      userRoles2: [],
+    } as User;
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
@@ -232,7 +237,24 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+      name: user.name || 'User',
+      passwordHash: '',
+      avatarUrl: null,
+      status: 'active',
+      lastLoginAt: null,
+      emailVerifiedAt: new Date(),
+      settings: {},
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: {} as any,
+      companyLists: [],
+      userRoles2: [],
+    } as User;
     await this.companyListsService.deleteCompanyList(id, userWithOrg);
     return { message: 'Company list deleted successfully' };
   }
@@ -254,8 +276,7 @@ export class CompanyListsController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    const mockUser = createMockUser(organizationId);
-    const items = await this.companyListsService.getListItems(id, mockUser);
+    const items = await this.companyListsService.getListItems(id, undefined);
     return { data: items };
   }
 
@@ -283,10 +304,22 @@ export class CompanyListsController {
   ) {
     // Create a proper user object from JWT payload
     const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+      name: user.name || 'User',
+      passwordHash: '',
+      avatarUrl: null,
+      status: 'active',
+      lastLoginAt: null,
+      emailVerifiedAt: new Date(),
+      settings: {},
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: {} as any,
+      companyLists: [],
+      userRoles2: [],
     } as User;
     return this.companyListsService.addCompaniesToList(
       listId,
@@ -316,7 +349,24 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+      name: user.name || 'User',
+      passwordHash: '',
+      avatarUrl: null,
+      status: 'active',
+      lastLoginAt: null,
+      emailVerifiedAt: new Date(),
+      settings: {},
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      organization: {} as any,
+      companyLists: [],
+      userRoles2: [],
+    } as User;
     return this.companyListsService.removeCompaniesFromList(
       listId,
       body.companyIds,
