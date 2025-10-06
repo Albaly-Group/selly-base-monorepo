@@ -10,6 +10,7 @@ import {
 } from '../../entities';
 import { CompaniesService } from './companies.service';
 import { CompaniesController } from './companies.controller';
+import { LeadScoringService } from './lead-scoring.service';
 import { AuditModule } from '../audit/audit.module';
 
 @Module({
@@ -21,7 +22,7 @@ import { AuditModule } from '../audit/audit.module';
     AuditModule,
   ],
   controllers: [CompaniesController],
-  providers: [CompaniesService],
-  exports: [CompaniesService],
+  providers: [CompaniesService, LeadScoringService],
+  exports: [CompaniesService, LeadScoringService],
 })
 export class CompaniesModule {}

@@ -20,6 +20,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
+import { LeadScoringService } from './lead-scoring.service';
 import { Users, Users as User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
@@ -48,7 +49,10 @@ interface PaginatedResponse<T> {
 @ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
-  constructor(private readonly companiesService: CompaniesService) {}
+  constructor(
+    private readonly companiesService: CompaniesService,
+    private readonly leadScoringService: LeadScoringService,
+  ) {}
 
   @Get('search')
   @ApiOperation({ summary: 'Search companies with advanced filters' })
@@ -160,5 +164,95 @@ export class CompaniesController {
     @Query('organizationId') organizationId?: string,
   ) {
     return this.companiesService.getCompanyById(id, organizationId, undefined);
+  }
+
+  @Post(':id/calculate-score')
+  @ApiOperation({ summary: 'Calculate lead score for a company' })
+  @ApiParam({ name: 'id', description: 'Company ID' })
+  @ApiQuery({
+    name: 'organizationId',
+    required: false,
+    description: 'Organization ID for access control',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lead score calculated successfully',
+    schema: {
+      properties: {
+        companyId: { type: 'string' },
+        score: { type: 'number' },
+        breakdown: {
+          type: 'object',
+          properties: {
+            dataQuality: { type: 'number' },
+            companySize: { type: 'number' },
+            industry: { type: 'number' },
+            location: { type: 'number' },
+            engagement: { type: 'number' },
+            verification: { type: 'number' },
+            total: { type: 'number' },
+          },
+        },
+        recommendations: { type: 'array', items: { type: 'string' } },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Company not found' })
+  async calculateCompanyScore(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId?: string,
+    @Body() weights?: { dataQuality?: number; companySize?: number; industry?: number; location?: number; engagement?: number; verification?: number },
+  ) {
+    const company = await this.companiesService.getCompanyById(id, organizationId, undefined);
+    const { score, breakdown } = this.leadScoringService.calculateLeadScore(company, weights);
+    const recommendations = this.leadScoringService.getImprovementRecommendations(company);
+
+    return {
+      companyId: company.id,
+      score,
+      breakdown,
+      recommendations,
+    };
+  }
+
+  @Post('calculate-scores')
+  @ApiOperation({ summary: 'Calculate lead scores for multiple companies' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lead scores calculated successfully',
+    schema: {
+      properties: {
+        results: {
+          type: 'array',
+          items: {
+            properties: {
+              companyId: { type: 'string' },
+              score: { type: 'number' },
+              breakdown: { type: 'object' },
+            },
+          },
+        },
+      },
+    },
+  })
+  async calculateBulkScores(
+    @Body() body: { companyIds: string[]; weights?: any },
+    @Query('organizationId') organizationId?: string,
+  ) {
+    const companies = [];
+    
+    for (const companyId of body.companyIds) {
+      try {
+        const company = await this.companiesService.getCompanyById(companyId, organizationId, undefined);
+        companies.push(company);
+      } catch (error) {
+        // Skip companies that can't be found
+        continue;
+      }
+    }
+
+    const results = this.leadScoringService.calculateBulkLeadScores(companies, body.weights);
+    
+    return { results };
   }
 }
