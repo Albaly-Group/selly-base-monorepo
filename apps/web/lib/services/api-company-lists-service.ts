@@ -128,22 +128,8 @@ export class ApiCompanyListsService {
         updatedAt: list.updatedAt,
       };
     } catch (error) {
-      console.error('API createCompanyList failed, creating mock list:', error);
-      return {
-        id: `mock-list-${Date.now()}`,
-        name: data.name,
-        description: data.description || '',
-        ownerUserId: this.user.id,
-        visibility: 'private' as const,
-        isShared: false,
-        itemCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        organizationId: this.user.organization_id || '',
-        totalCompanies: 0,
-        lastActivityAt: new Date().toISOString(),
-        isSmartList: false,
-      };
+      console.error('API createCompanyList failed:', error);
+      throw error;
     }
   }
 

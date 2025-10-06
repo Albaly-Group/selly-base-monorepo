@@ -26,45 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = JSON.parse(storedUser)
         
-        // if (!userData.roles && userData.role) {
-        //   const mockRoles = [];
-        //   if (userData.role === 'platform_admin') {
-        //     mockRoles.push({
-        //       id: 'role_platform_admin',
-        //       name: 'platform_admin',
-        //       description: 'Platform Administrator',
-        //       created_at: new Date().toISOString(),
-        //       updated_at: new Date().toISOString(),
-        //       permissions: [
-        //         {
-        //           id: 'perm_wildcard',
-        //           key: '*',
-        //           description: 'Full platform access',
-        //           created_at: new Date().toISOString(),
-        //           updated_at: new Date().toISOString(),
-        //         }
-        //       ]
-        //     });
-        //   } else if (userData.role === 'customer_admin') {
-        //     mockRoles.push({
-        //       id: 'role_customer_admin',
-        //       name: 'customer_admin',
-        //       description: 'Customer Administrator',
-        //       created_at: new Date().toISOString(),
-        //       updated_at: new Date().toISOString(),
-        //       permissions: [
-        //         { id: 'perm_org', key: 'org:*', description: 'Organization access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        //         { id: 'perm_users', key: 'users:*', description: 'User management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        //         { id: 'perm_lists', key: 'lists:*', description: 'List management', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        //         { id: 'perm_projects', key: 'projects:*', description: 'Project access', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-        //       ]
-        //     });
-        //   }
-        //   userData.roles = mockRoles;
-          
-        //   localStorage.setItem("selly-user", JSON.stringify(userData))
-        // }
-        
         setUser(userData)
         if (!document.cookie.includes("selly-user=")) {
           document.cookie = `selly-user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
@@ -134,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return true;
         }
       } catch (apiError) {
-        console.log('API login failed, falling back to mock auth:', apiError);
+        console.log('API login failed:', apiError);
         return false;
       }
 

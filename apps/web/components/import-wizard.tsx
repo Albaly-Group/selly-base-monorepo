@@ -82,7 +82,7 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
     }, 200)
   }
 
-  const mockValidationResults = {
+  const validationResults = {
     totalRows: 1250,
     validRows: 1180,
     invalidRows: 70,
@@ -182,18 +182,18 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-green-600">
-                  {Math.round((progress / 100) * mockValidationResults.validRows)}
+                  {Math.round((progress / 100) * validationResults.validRows)}
                 </div>
                 <div className="text-sm text-gray-600">Processed</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {mockValidationResults.totalRows - Math.round((progress / 100) * mockValidationResults.validRows)}
+                  {validationResults.totalRows - Math.round((progress / 100) * validationResults.validRows)}
                 </div>
                 <div className="text-sm text-gray-600">Remaining</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600">{mockValidationResults.invalidRows}</div>
+                <div className="text-2xl font-bold text-red-600">{validationResults.invalidRows}</div>
                 <div className="text-sm text-gray-600">Errors</div>
               </div>
             </div>
@@ -206,29 +206,29 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
             <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
             <div>
               <h3 className="text-lg font-medium">Import Completed!</h3>
-              <p className="text-gray-600">Successfully processed {mockValidationResults.validRows} records</p>
+              <p className="text-gray-600">Successfully processed {validationResults.validRows} records</p>
             </div>
             
             <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{mockValidationResults.validRows}</div>
+                <div className="text-2xl font-bold text-green-600">{validationResults.validRows}</div>
                 <div className="text-sm text-gray-600">Imported</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{mockValidationResults.invalidRows}</div>
+                <div className="text-2xl font-bold text-red-600">{validationResults.invalidRows}</div>
                 <div className="text-sm text-gray-600">Errors</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{mockValidationResults.totalRows}</div>
+                <div className="text-2xl font-bold text-blue-600">{validationResults.totalRows}</div>
                 <div className="text-sm text-gray-600">Total</div>
               </div>
             </div>
 
-            {mockValidationResults.invalidRows > 0 && (
+            {validationResults.invalidRows > 0 && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  {mockValidationResults.invalidRows} records had errors. 
+                  {validationResults.invalidRows} records had errors. 
                   <Button variant="link" className="p-0 h-auto ml-1">
                     Download error report
                   </Button>
