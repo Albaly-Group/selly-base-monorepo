@@ -20,7 +20,6 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CompanyListsService } from './company-lists.service';
-import { Users, Users as User } from '../../entities';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   CurrentUser,
@@ -32,6 +31,8 @@ import {
   AddCompaniesToListDto,
   RemoveCompaniesFromListDto,
 } from '../../dtos/company-list.dto';
+import { UserContext } from '../../dtos/user-context.dto';
+import { Users } from '../../entities/Users';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -114,7 +115,7 @@ export class CompanyListsController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.companyListsService.getCompanyListById(id, undefined);
+    return this.companyListsService.getCompanyListById(id);
   }
 
   async getCompanyLists(
@@ -131,41 +132,19 @@ export class CompanyListsController {
       scope: query.scope || 'organization',
     };
 
-    let userWithOrg: Users | undefined = undefined;
+    let userWithOrg: UserContext | undefined;
     if (user) {
       userWithOrg = {
         id: user.sub,
         email: user.email,
-        organizationId: organizationId,
         name: user.name || 'User',
-        passwordHash: '',
-        avatarUrl: null,
-        status: 'active',
-        lastLoginAt: null,
-        emailVerifiedAt: new Date(),
-        settings: {},
-        metadata: {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        organization: {} as any,
-        auditLogs: [],
-        companyListItems: [],
-        companyLists: [],
-        exportJobs: [],
-        importJobs: [],
-        leadProjectCompanies: [],
-        leadProjectCompanies2: [],
-        leadProjectTasks: [],
-        leadProjects: [],
-        leadProjects2: [],
-        leadProjects3: [],
-        userActivityLogs: [],
-        userRoles: [],
-        userRoles2: [],
+        organizationId: organizationId ?? '',
       };
+      if (!userWithOrg.organizationId) {
+        throw new Error('organizationId is required for UserContext');
+      }
     }
 
-    // สำหรับ public lists ให้ไม่ต้องส่ง user
     if (searchParams.scope === 'public') {
       return this.companyListsService.searchCompanyLists(
         searchParams,
@@ -193,40 +172,15 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg: Users = {
-      id: user.sub,
+    const userContext: UserContext = {
+      id: user.id,
       email: user.email,
-      organizationId: organizationId,
+      organizationId: organizationId ?? '',
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      auditLogs: [],
-      companyListItems: [],
-      companyLists: [],
-      exportJobs: [],
-      importJobs: [],
-      leadProjectCompanies: [],
-      leadProjectCompanies2: [],
-      leadProjectTasks: [],
-      leadProjects: [],
-      leadProjects2: [],
-      leadProjects3: [],
-      userActivityLogs: [],
-      userRoles: [],
-      userRoles2: [],
     };
-
     return this.companyListsService.createCompanyList(
       createListDto,
-      userWithOrg,
+      userContext,
     );
   }
 
@@ -248,39 +202,18 @@ export class CompanyListsController {
   async updateCompanyList(
     @Param('id') id: string,
     @Body() updateListDto: UpdateCompanyListDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: Users,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg: Users = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      auditLogs: [],
-      companyListItems: [],
-      companyLists: [],
-      exportJobs: [],
-      importJobs: [],
-      leadProjectCompanies: [],
-      leadProjectCompanies2: [],
-      leadProjectTasks: [],
-      leadProjects: [],
-      leadProjects2: [],
-      leadProjects3: [],
-      userActivityLogs: [],
-      userRoles: [],
-      userRoles2: [],
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
@@ -308,36 +241,15 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg: Users = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      auditLogs: [],
-      companyListItems: [],
-      companyLists: [],
-      exportJobs: [],
-      importJobs: [],
-      leadProjectCompanies: [],
-      leadProjectCompanies2: [],
-      leadProjectTasks: [],
-      leadProjects: [],
-      leadProjects2: [],
-      leadProjects3: [],
-      userActivityLogs: [],
-      userRoles: [],
-      userRoles2: [],
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
     await this.companyListsService.deleteCompanyList(id, userWithOrg);
     return { message: 'Company list deleted successfully' };
   }
@@ -385,37 +297,15 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg: Users = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      auditLogs: [],
-      companyListItems: [],
-      companyLists: [],
-      exportJobs: [],
-      importJobs: [],
-      leadProjectCompanies: [],
-      leadProjectCompanies2: [],
-      leadProjectTasks: [],
-      leadProjects: [],
-      leadProjects2: [],
-      leadProjects3: [],
-      userActivityLogs: [],
-      userRoles: [],
-      userRoles2: [],
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
 
     return this.companyListsService.addCompaniesToList(
       listId,
@@ -445,36 +335,15 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg: Users = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
-      organizationId: organizationId,
       name: user.name || 'User',
-      passwordHash: '',
-      avatarUrl: null,
-      status: 'active',
-      lastLoginAt: null,
-      emailVerifiedAt: new Date(),
-      settings: {},
-      metadata: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      organization: {} as any,
-      auditLogs: [],
-      companyListItems: [],
-      companyLists: [],
-      exportJobs: [],
-      importJobs: [],
-      leadProjectCompanies: [],
-      leadProjectCompanies2: [],
-      leadProjectTasks: [],
-      leadProjects: [],
-      leadProjects2: [],
-      leadProjects3: [],
-      userActivityLogs: [],
-      userRoles: [],
-      userRoles2: [],
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
 
     return this.companyListsService.removeCompaniesFromList(
       listId,

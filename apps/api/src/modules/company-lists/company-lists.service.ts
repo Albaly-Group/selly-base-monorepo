@@ -9,12 +9,11 @@ import {
   CompanyLists,
   CompanyListItems,
   Companies,
-  Users,
   CompanyLists as CompanyList,
   CompanyListItems as CompanyListItem,
   Companies as Company,
-  Users as User,
 } from '../../entities';
+import { UserContext } from '../../dtos/user-context.dto';
 
 interface CompanyListSearchParams {
   searchTerm?: string;
@@ -60,7 +59,7 @@ export class CompanyListsService {
 
   async searchCompanyLists(
     params: CompanyListSearchParams,
-    user?: User,
+    user?: UserContext,
   ): Promise<PaginatedResponse<any>> {
     // Database implementation only - no mock data fallback
     return this.searchListsFromDatabase(params, user);
@@ -70,7 +69,7 @@ export class CompanyListsService {
 
   private async searchListsFromDatabase(
     params: CompanyListSearchParams,
-    user?: User,
+    user?: UserContext,
   ): Promise<PaginatedResponse<CompanyList>> {
     const {
       searchTerm,
@@ -161,12 +160,14 @@ export class CompanyListsService {
     };
   }
 
-  async getCompanyListById(id: string, user?: User): Promise<any> {
-    return this.getListByIdFromDatabase(id);
+  async getCompanyListById(id: string, user?: UserContext): Promise<any> {
+    // Database implementation only - no mock data fallback
+    return this.getListByIdFromDatabase(id, user);
   }
 
   private async getListByIdFromDatabase(
     id: string,
+    user?: UserContext,
   ): Promise<CompanyList> {
     const query = this.companyListRepository!.createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
@@ -195,14 +196,14 @@ export class CompanyListsService {
 
   async createCompanyList(
     data: CompanyListCreateRequest,
-    user: User,
+    user: UserContext,
   ): Promise<any> {
     if (this.companyListRepository) {
       // Database implementation
       const listData: Partial<CompanyList> = {
         name: data.name,
         description: data.description || undefined,
-        organizationId: user.organizationId!,
+        organizationId: user.organizationId,
         ownerUserId: user.id,
         visibility: data.visibility || 'private',
         isShared: data.visibility === 'public',
@@ -225,9 +226,9 @@ export class CompanyListsService {
   async updateCompanyList(
     id: string,
     data: CompanyListUpdateRequest,
-    user: User,
+    user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(id, user);
+  const list = await this.getCompanyListById(id);
 
     // Only allow updates by owner or organization admin
     if (
@@ -254,8 +255,8 @@ export class CompanyListsService {
     return updatedList;
   }
 
-  async deleteCompanyList(id: string, user: User): Promise<void> {
-    const list = await this.getCompanyListById(id, user);
+  async deleteCompanyList(id: string, user: UserContext): Promise<void> {
+  const list = await this.getCompanyListById(id);
 
     // Only allow deletion by owner
     if (list.ownerUserId !== user.id) {
@@ -268,9 +269,9 @@ export class CompanyListsService {
   async addCompaniesToList(
     listId: string,
     companyIds: string[],
-    user: User,
+    user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId, user);
+  const list = await this.getCompanyListById(listId);
 
     // Check if user can modify this list
     if (
@@ -303,9 +304,9 @@ export class CompanyListsService {
   async removeCompaniesFromList(
     listId: string,
     companyIds: string[],
-    user: User,
+    user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId, user);
+  const list = await this.getCompanyListById(listId);
 
     // Check if user can modify this list
     if (
@@ -319,8 +320,8 @@ export class CompanyListsService {
     return { message: 'Companies removed from list successfully' };
   }
 
-  async getListItems(listId: string, user?: User): Promise<any[]> {
-    const list = await this.getCompanyListById(listId, user);
+  async getListItems(listId: string, user?: UserContext): Promise<any[]> {
+  const list = await this.getCompanyListById(listId);
 
     // Return mock items for demonstration
     return [

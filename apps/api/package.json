@@ -29,7 +29,8 @@
     "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
     "migration:show": "npx typeorm-ts-node-commonjs migration:show -d src/database/data-source.ts",
     "schema:sync": "npx typeorm-ts-node-commonjs schema:sync -d src/database/data-source.ts",
-    "schema:drop": "npx typeorm-ts-node-commonjs schema:drop -d src/database/data-source.ts"
+    "schema:drop": "npx typeorm-ts-node-commonjs schema:drop -d src/database/data-source.ts",
+    "seed": "npx ts-node src/database/seeds/run-seeds.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.8",
