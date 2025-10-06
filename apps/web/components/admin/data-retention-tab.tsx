@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth, canManageOrganizationData } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -11,6 +12,9 @@ import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Database, Trash2, Clock, Shield } from "lucide-react"
 
 export function DataRetentionTab() {
+  const { user: currentUser } = useAuth()
+  
+  // Initialize all hooks first (must be called unconditionally)
   const [retentionPolicies, setRetentionPolicies] = useState({
     autoArchive: {
       enabled: true,
@@ -51,6 +55,22 @@ export function DataRetentionTab() {
       console.log("Running cleanup job...")
       alert("Cleanup job started. This may take several minutes to complete.")
     }
+  }
+
+  // Check permissions after all hooks
+  if (!currentUser || !canManageOrganizationData(currentUser)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don&apos;t have permission to manage data retention policies.</p>
+            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   const retentionStats = {
