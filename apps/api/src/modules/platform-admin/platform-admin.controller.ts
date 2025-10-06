@@ -14,9 +14,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @Controller('platform-admin')
 @UseGuards(JwtAuthGuard)
 export class PlatformAdminController {
-  constructor(
-    private readonly platformAdminService: PlatformAdminService,
-  ) {}
+  constructor(private readonly platformAdminService: PlatformAdminService) {}
 
   /**
    * Check if user has platform admin permissions
@@ -24,7 +22,7 @@ export class PlatformAdminController {
    */
   private checkPlatformAdminPermission(user: any, requiredPermission: string) {
     const permissions = user.permissions || [];
-    
+
     // Check for wildcard permission (full platform admin access)
     const hasWildcard = permissions.some((perm: any) => perm.key === '*');
     if (hasWildcard) return;
@@ -52,7 +50,9 @@ export class PlatformAdminController {
   }
 
   @Get('tenants')
-  @ApiOperation({ summary: 'Get all tenant organizations (Platform Admin only)' })
+  @ApiOperation({
+    summary: 'Get all tenant organizations (Platform Admin only)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Tenant organizations retrieved successfully',

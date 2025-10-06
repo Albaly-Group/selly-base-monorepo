@@ -66,7 +66,7 @@ describe('Platform Admin Endpoints (e2e)', () => {
           expect(res.body.pagination).toHaveProperty('page');
           expect(res.body.pagination).toHaveProperty('total');
           expect(res.body.pagination).toHaveProperty('totalPages');
-          
+
           // Verify tenant data structure
           if (res.body.data.length > 0) {
             const tenant = res.body.data[0];
@@ -123,7 +123,7 @@ describe('Platform Admin Endpoints (e2e)', () => {
           expect(res.body).toHaveProperty('data');
           expect(res.body).toHaveProperty('pagination');
           expect(Array.isArray(res.body.data)).toBe(true);
-          
+
           // Verify user data structure
           if (res.body.data.length > 0) {
             const user = res.body.data[0];
@@ -182,7 +182,7 @@ describe('Platform Admin Endpoints (e2e)', () => {
           expect(res.body).toHaveProperty('data');
           expect(res.body).toHaveProperty('pagination');
           expect(Array.isArray(res.body.data)).toBe(true);
-          
+
           // Verify company data structure
           if (res.body.data.length > 0) {
             const company = res.body.data[0];
@@ -222,7 +222,7 @@ describe('Platform Admin Endpoints (e2e)', () => {
     it('should deny access to regular user without platform admin permissions', async () => {
       // Try to login with a regular user
       let regularUserToken: string;
-      
+
       try {
         const loginResponse = await request(app.getHttpServer())
           .post('/api/v1/auth/login')
@@ -233,7 +233,7 @@ describe('Platform Admin Endpoints (e2e)', () => {
 
         if (loginResponse.status === 200 && loginResponse.body.accessToken) {
           regularUserToken = loginResponse.body.accessToken;
-          
+
           // Try to access platform admin endpoints with regular user token
           await request(app.getHttpServer())
             .get('/api/v1/platform-admin/tenants')
@@ -274,10 +274,16 @@ describe('Platform Admin Endpoints (e2e)', () => {
           if (res.body.data.length > 0) {
             const tenant = res.body.data[0];
             // Database records should have UUID format IDs
-            expect(tenant.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+            expect(tenant.id).toMatch(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+            );
             // Should have timestamps from database
-            expect(new Date(tenant.created_at).toString()).not.toBe('Invalid Date');
-            expect(new Date(tenant.updated_at).toString()).not.toBe('Invalid Date');
+            expect(new Date(tenant.created_at).toString()).not.toBe(
+              'Invalid Date',
+            );
+            expect(new Date(tenant.updated_at).toString()).not.toBe(
+              'Invalid Date',
+            );
           }
         });
     });
