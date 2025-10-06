@@ -59,8 +59,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
 
   const companyDetails = company
 
-  if (!company) return null
-
+  console.log(company)
   useEffect(() => {
     if (company && open) {
       const fetchCompanyLists = async () => {
@@ -87,6 +86,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       fetchCompanyLists()
     }
   }, [company, open])
+
+  if (!company) return null
 
   // Mock data
   // const contactPersons = [
@@ -162,19 +163,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   //   }
   // ]
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case "Needs Verification":
-        return <Clock className="h-4 w-4 text-yellow-500" />
-      case "Invalid":
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
-      default:
-        return null
-    }
-  }
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "verified":
@@ -184,14 +172,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       default:
         return "font-bold bg-gray-100 text-gray-800"
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString()
-  }
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString()
   }
 
   const getActivityIcon = (type: string) => {
@@ -205,6 +185,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       default:
         return <Activity className="h-4 w-4" />
     }
+  }
+
+  const onAddContact = async() => {
+    console.log('Add contact')
+    
   }
 
   return (
@@ -296,11 +281,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Registration ID</Label>
-                      <div className="mt-1 font-mono">{companyDetails.registeredNo}</div>
+                      <div className="mt-1 font-mono">{companyDetails.registrationId}</div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Registration Date</Label>
-                      <div className="mt-1">{formatDate(companyDetails.registrationDate)}</div>
+                      <div className="mt-1">{new Date(companyDetails.registrationDate).toDateString()}</div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Data Completeness</Label>
@@ -308,7 +293,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Last Updated</Label>
-                      <div className="mt-1">{formatDate(companyDetails.updatedAt)}</div>
+                      <div className="mt-1">{new Date(companyDetails.updatedAt).toLocaleDateString()}</div>
                     </div>
                   </div>
                 </div>
@@ -454,7 +439,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                           )}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Last verified: {formatDate(contact.lastVerified)}
+                          Last verified: {new Date(contact.lastVerified).toLocaleDateString()}
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
@@ -508,7 +493,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                           </div>
                         )}
                         <div className="text-xs text-gray-500">
-                          {formatDateTime(activity.createdAt)}
+                          {new Date(activity.createdAt).tocaleString()}
                         </div>
                       </div>
                     </div>
@@ -542,7 +527,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       </Badge>
                     </TableCell>
                     <TableCell>{list.owner}</TableCell>
-                    <TableCell>{formatDate(list.addedDate)}</TableCell>
+                    <TableCell>{new Date(list.addedDate).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm">
                         Open List
@@ -575,7 +560,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     <TableCell className="text-red-600">{change.oldValue}</TableCell>
                     <TableCell className="text-green-600">{change.newValue}</TableCell>
                     <TableCell>{change.changedBy}</TableCell>
-                    <TableCell>{formatDateTime(change.changedAt)}</TableCell>
+                    <TableCell>{new Date(change.changedAt).tolocalString()}</TableCell>
                   </TableRow>
                 ))} */}
               </TableBody>
@@ -624,7 +609,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               <Button variant="outline" onClick={() => setShowAddContact(false)}>
                 Cancel
               </Button>
-              <Button>Add Contact</Button>
+              <Button onClick={onAddContact}>
+                Add Contact
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
