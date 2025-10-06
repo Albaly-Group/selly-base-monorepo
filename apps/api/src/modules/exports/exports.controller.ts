@@ -67,16 +67,12 @@ export class ExportsController {
   @Get(':id/download')
   @ApiOperation({ summary: 'Download export file' })
   @ApiResponse({ status: 200, description: 'File downloaded successfully' })
-  async downloadExportFile(@Param('id') id: string) {
-    // This endpoint would typically stream the file or return a signed URL
-    // For now, return mock CSV data
-    const csvData =
-      'Name,Email,Company\nJohn Doe,john@example.com,Example Corp\nJane Smith,jane@example.com,Tech Ltd';
-    return {
-      data: csvData,
-      filename: `export-${id}.csv`,
-      contentType: 'text/csv',
-    };
+  @ApiResponse({ status: 404, description: 'Export file not found' })
+  async downloadExportFile(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId?: string,
+  ) {
+    return this.exportsService.downloadExportFile(id, organizationId);
   }
 
   @Delete(':id')

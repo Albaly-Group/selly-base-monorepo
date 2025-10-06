@@ -34,7 +34,7 @@ export class StaffService {
     const limit = Math.min(params?.limit || 50, 100);
     const skip = (page - 1) * limit;
 
-    // Database implementation only - no mock data fallback
+
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
@@ -80,7 +80,7 @@ export class StaffService {
   }
 
   async getStaffMemberById(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
+
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
@@ -123,7 +123,7 @@ export class StaffService {
     organizationId?: string;
     role?: string;
   }) {
-    // Database implementation only - no mock data fallback
+
     const user = this.userRepository.create({
       name: staffData.name,
       email: staffData.email,
@@ -160,7 +160,7 @@ export class StaffService {
     updateData: any,
     organizationId?: string,
   ) {
-    // Database implementation only - no mock data fallback
+
     const queryBuilder = this.userRepository
       .createQueryBuilder()
       .update(User)
@@ -188,7 +188,7 @@ export class StaffService {
   }
 
   async deleteStaffMember(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
+
     const queryBuilder = this.userRepository
       .createQueryBuilder()
       .delete()
@@ -210,7 +210,7 @@ export class StaffService {
   }
 
   async updateStaffRole(id: string, role: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
+
     const roleEntity = await this.roleRepository.findOne({
       where: { name: role },
     });

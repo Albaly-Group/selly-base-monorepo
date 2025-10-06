@@ -51,7 +51,7 @@ export class CompaniesService {
     const startTime = Date.now();
 
     try {
-      // Database implementation only - no mock data fallback
+
       const result = await this.searchCompaniesFromDatabase(searchDto, user);
 
       // Log search operation
@@ -242,7 +242,7 @@ export class CompaniesService {
     }
 
     try {
-      // Database implementation only - no mock data fallback
+
       const company = await this.getCompanyByIdFromDatabase(id, organizationId, user);
 
       // Log read operation
@@ -344,71 +344,46 @@ export class CompaniesService {
         contacts: [],
       };
 
-      // In a real implementation, this would save to database
-      if (this.companyRepository) {
-        // Clean the data for TypeORM by converting null to undefined
-        const cleanedData = {
-          ...companyData,
-          nameTh: companyData.nameTh || undefined,
-          primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
-          businessDescription: companyData.businessDescription || undefined,
-          websiteUrl: companyData.websiteUrl || undefined,
-          primaryEmail: companyData.primaryEmail || undefined,
-          primaryPhone: companyData.primaryPhone || undefined,
-          addressLine1: companyData.addressLine1 || undefined,
-          addressLine2: companyData.addressLine2 || undefined,
-          district: companyData.district || undefined,
-          subdistrict: companyData.subdistrict || undefined,
-          province: companyData.province || undefined,
-          postalCode: companyData.postalCode || undefined,
-          employeeCountEstimate: companyData.employeeCountEstimate || undefined,
-        };
+      // Clean the data for TypeORM by converting null to undefined
+      const cleanedData = {
+        ...companyData,
+        nameTh: companyData.nameTh || undefined,
+        primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
+        businessDescription: companyData.businessDescription || undefined,
+        websiteUrl: companyData.websiteUrl || undefined,
+        primaryEmail: companyData.primaryEmail || undefined,
+        primaryPhone: companyData.primaryPhone || undefined,
+        addressLine1: companyData.addressLine1 || undefined,
+        addressLine2: companyData.addressLine2 || undefined,
+        district: companyData.district || undefined,
+        subdistrict: companyData.subdistrict || undefined,
+        province: companyData.province || undefined,
+        postalCode: companyData.postalCode || undefined,
+        employeeCountEstimate: companyData.employeeCountEstimate || undefined,
+      };
 
-        const company = this.companyRepository.create(cleanedData);
-        const savedCompany = await this.companyRepository.save(company);
+      const company = this.companyRepository.create(cleanedData);
+      const savedCompany = await this.companyRepository.save(company);
 
-        // Log creation
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(
-            user,
-            'CREATE',
-            savedCompany.id,
-            {
-              newValues: companyData,
-              metadata: { dataSource: 'customer_input' },
-            },
-          );
-        }
-
-        // Transform response to match DTO field names
-        return {
-          ...savedCompany,
-          companyNameEn: savedCompany.nameEn,
-          companyNameTh: savedCompany.nameTh,
-        };
-      } else {
-        // Mock implementation
-        const mockCompanyWithId = {
-          id: `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          ...companyData,
-        };
-        console.log('📝 Created company:', mockCompanyWithId);
-
-        // Log creation for mock
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(
-            user,
-            'CREATE',
-            mockCompanyWithId.id,
-            {
-              newValues: mockCompanyWithId,
-              metadata: { dataSource: 'customer_input', mock: true },
-            },
-          );
-        }
-
-        return mockCompanyWithId;
+      // Log creation
+      if (this.auditService) {
+        await this.auditService.logCompanyOperation(
+          user,
+          'CREATE',
+          savedCompany.id,
+          {
+            newValues: companyData,
+            metadata: { dataSource: 'customer_input' },
+          },
+        );
       }
+
+      // Transform response to match DTO field names
+      return {
+        ...savedCompany,
+        companyNameEn: savedCompany.nameEn,
+        companyNameTh: savedCompany.nameTh,
+      };
     } catch (error) {
       // Log error
       if (this.auditService && user) {
@@ -534,41 +509,23 @@ export class CompaniesService {
       // Calculate changes for audit log
       const changes = this.calculateChanges(oldValues, updatedCompany);
 
-      // In a real implementation, save to database
-      if (this.companyRepository) {
-        // Remove GENERATED columns from update data (displayName, searchVector)
-        const { displayName, searchVector, ...updateData } = updatedCompany;
-        await this.companyRepository.update(id, updateData);
-        const savedCompany = await this.companyRepository.findOne({
-          where: { id },
+      // Remove GENERATED columns from update data (displayName, searchVector)
+      const { displayName, searchVector, ...updateData } = updatedCompany;
+      await this.companyRepository.update(id, updateData);
+      const savedCompany = await this.companyRepository.findOne({
+        where: { id },
+      });
+
+      // Log update
+      if (this.auditService) {
+        await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
+          oldValues,
+          newValues: updatedCompany,
+          changes,
         });
-
-        // Log update
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
-            oldValues,
-            newValues: updatedCompany,
-            changes,
-          });
-        }
-
-        return savedCompany;
-      } else {
-        // Mock implementation
-        console.log('📝 Updated company:', updatedCompany);
-
-        // Log update for mock
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
-            oldValues,
-            newValues: updatedCompany,
-            changes,
-            metadata: { mock: true },
-          });
-        }
-
-        return updatedCompany;
       }
+
+      return savedCompany;
     } catch (error) {
       // Log error
       if (this.auditService && user) {
@@ -606,21 +563,12 @@ export class CompaniesService {
         throw new ForbiddenException('Cannot delete shared data companies');
       }
 
-      // Check for dependencies (lists, etc.)
-      // In a real implementation, check if company is referenced in lists
-
-      if (this.companyRepository) {
-        await this.companyRepository.delete(id);
-      } else {
-        // Mock deletion
-        console.log('🗑️ Deleted company:', id);
-      }
+      await this.companyRepository.delete(id);
 
       // Log deletion
       if (this.auditService) {
         await this.auditService.logCompanyOperation(user, 'DELETE', id, {
           oldValues: company,
-          metadata: { mock: !this.companyRepository },
         });
       }
     } catch (error) {
@@ -659,7 +607,7 @@ export class CompaniesService {
     }
 
     try {
-      // Database implementation only - no mock data fallback
+
       const query = this.companyRepository
         .createQueryBuilder('company')
         // Note: contacts relation not yet defined in entity

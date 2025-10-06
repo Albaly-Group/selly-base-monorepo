@@ -45,28 +45,6 @@ interface PaginatedResponse<T> {
   };
 }
 
-// For endpoints that don't require authentication, we create a mock user
-// Use valid organization ID from test database (Albaly Digital)
-const createMockUser = (organizationId?: string): User =>
-  ({
-    id: '550e8400-e29b-41d4-a716-446655440003', // Valid test user ID from database
-    organizationId: organizationId || '550e8400-e29b-41d4-a716-446655440000', // Valid org ID (Albaly Digital)
-    email: 'admin@albaly.com',
-    name: 'Test User',
-    passwordHash: 'hashed',
-    avatarUrl: null,
-    status: 'active',
-    lastLoginAt: null,
-    emailVerifiedAt: new Date(),
-    settings: {},
-    metadata: {},
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    organization: {} as any,
-    companyLists: [],
-    userRoles2: [],
-  }) as unknown as User;
-
 interface CompanyListSearchQuery {
   searchTerm?: string;
   organizationId?: string;
@@ -82,16 +60,13 @@ export class CompanyListsController {
   constructor(private readonly companyListsService: CompanyListsService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get company lists with filters' })
   @ApiQuery({
     name: 'searchTerm',
     required: false,
     description: 'Search term for list name or description',
-  })
-  @ApiQuery({
-    name: 'organizationId',
-    required: false,
-    description: 'Organization ID to filter by',
   })
   @ApiQuery({
     name: 'visibility',
@@ -117,42 +92,51 @@ export class CompanyListsController {
     status: 200,
     description: 'Company lists retrieved successfully',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getCompanyLists(
     @Query() query: CompanyListSearchQuery,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
   ): Promise<PaginatedResponse<any>> {
     const searchParams = {
       searchTerm: query.searchTerm,
-      organizationId: query.organizationId,
+      organizationId: organizationId,
       visibility: query.visibility,
       page: query.page ? parseInt(query.page, 10) : 1,
       limit: query.limit ? parseInt(query.limit, 10) : 50,
       scope: query.scope || 'organization',
     };
 
-    // For public lists, allow without authentication
-    const mockUser = createMockUser(query.organizationId);
-    return this.companyListsService.searchCompanyLists(searchParams, mockUser);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
+    return this.companyListsService.searchCompanyLists(searchParams, userWithOrg);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get company list by ID' })
   @ApiParam({ name: 'id', description: 'Company list ID' })
-  @ApiQuery({
-    name: 'organizationId',
-    required: false,
-    description: 'Organization ID for access control',
-  })
   @ApiResponse({
     status: 200,
     description: 'Company list retrieved successfully',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Company list not found' })
   async getCompanyListById(
     @Param('id') id: string,
-    @Query('organizationId') organizationId?: string,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
   ) {
-    const mockUser = createMockUser(organizationId);
-    return this.companyListsService.getCompanyListById(id, mockUser);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
+    return this.companyListsService.getCompanyListById(id, userWithOrg);
   }
 
   @Post()
@@ -170,12 +154,10 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
     const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
     } as User;
     return this.companyListsService.createCompanyList(
       createListDto,
@@ -204,7 +186,11 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
@@ -232,30 +218,37 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
     await this.companyListsService.deleteCompanyList(id, userWithOrg);
     return { message: 'Company list deleted successfully' };
   }
 
   @Get(':id/items')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get items in a company list' })
   @ApiParam({ name: 'id', description: 'Company list ID' })
-  @ApiQuery({
-    name: 'organizationId',
-    required: false,
-    description: 'Organization ID for access control',
-  })
   @ApiResponse({
     status: 200,
     description: 'List items retrieved successfully',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Company list not found' })
   async getListItems(
     @Param('id') id: string,
-    @Query('organizationId') organizationId?: string,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
   ) {
-    const mockUser = createMockUser(organizationId);
-    const items = await this.companyListsService.getListItems(id, mockUser);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
+    const items = await this.companyListsService.getListItems(id, userWithOrg);
     return { data: items };
   }
 
@@ -281,12 +274,10 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
     const userWithOrg = {
-      ...createMockUser(organizationId),
-      id: user.sub, // Use actual user ID from JWT
-      email: user.email, // Use actual email from JWT
-      organizationId: organizationId, // Use actual organization ID from JWT
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
     } as User;
     return this.companyListsService.addCompaniesToList(
       listId,
@@ -316,7 +307,11 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = createMockUser(organizationId);
+    const userWithOrg = {
+      id: user.sub,
+      email: user.email,
+      organizationId: organizationId,
+    } as User;
     return this.companyListsService.removeCompaniesFromList(
       listId,
       body.companyIds,

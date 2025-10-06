@@ -29,7 +29,6 @@ export class ExportsService {
     const limit = Math.min(params?.limit || 50, 100);
     const skip = (page - 1) * limit;
 
-    // Database implementation only - no mock data fallback
     const queryBuilder = this.exportJobRepository
       .createQueryBuilder('export_job')
       .leftJoinAndSelect('export_job.organization', 'organization')
@@ -74,7 +73,6 @@ export class ExportsService {
     organizationId?: string;
     requestedBy?: string;
   }) {
-    // Database implementation only - no mock data fallback
     const exportJob = this.exportJobRepository.create({
       filename: exportData.filename,
       scope: exportData.scope,
@@ -90,7 +88,6 @@ export class ExportsService {
   }
 
   async getExportJobById(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
     const queryBuilder = this.exportJobRepository
       .createQueryBuilder('export_job')
       .leftJoinAndSelect('export_job.organization', 'organization')
@@ -113,7 +110,6 @@ export class ExportsService {
   }
 
   async deleteExportJob(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
     const queryBuilder = this.exportJobRepository
       .createQueryBuilder()
       .delete()
@@ -132,5 +128,27 @@ export class ExportsService {
     }
 
     return { message: `Export job ${id} cancelled successfully` };
+  }
+
+  async downloadExportFile(id: string, organizationId?: string) {
+    const exportJob = await this.getExportJobById(id, organizationId);
+
+    if (exportJob.status !== 'completed') {
+      throw new NotFoundException('Export file not ready or not found');
+    }
+
+    if (!exportJob.downloadUrl) {
+      throw new NotFoundException('Export file location not found');
+    }
+
+    return {
+      downloadUrl: exportJob.downloadUrl,
+      filename: exportJob.filename,
+      format: exportJob.format,
+      fileSize: exportJob.fileSize,
+      contentType: exportJob.format === 'CSV' ? 'text/csv' : 
+                   exportJob.format === 'Excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+                   'application/json',
+    };
   }
 }
