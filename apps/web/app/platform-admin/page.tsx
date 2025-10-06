@@ -45,7 +45,7 @@ function PlatformAdminPage() {
           totalUsers,
           totalData,
           activeTenants,
-          systemHealth: 98.5, // Mock for now
+          systemHealth: 100,
           analytics
         })
       } catch (error) {

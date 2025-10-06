@@ -30,14 +30,8 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)
   const [mappings, setMappings] = useState<Record<string, string>>({})
-  
-  // Mock detected columns from uploaded file
-  const detectedColumns = [
-    "Company Name", "Registration No", "Industry Type", "Province", 
-    "Contact Name", "Phone Number", "Email Address", "Website"
-  ]
+  const [detectedColumns, setDetectedColumns] = useState<string[]>([])
 
-  // Required field mappings for the system
   const requiredFields = {
     "company_name_en": "Company Name (English)",
     "registration_id": "Registration ID (13 digits)",
@@ -53,6 +47,8 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
     const file = event.target.files?.[0]
     if (file) {
       setUploadedFile(file)
+      // TODO: Parse CSV/Excel file to extract column headers
+      setDetectedColumns([])
       setCurrentStep("mapping")
     }
   }
@@ -66,7 +62,7 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
 
   const proceedToValidation = () => {
     setCurrentStep("validation")
-    // Mock validation process
+    // TODO: Call backend API to validate the file
     setTimeout(() => {
       setCurrentStep("processing")
       simulateProcessing()

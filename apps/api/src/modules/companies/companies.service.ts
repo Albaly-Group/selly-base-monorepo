@@ -383,27 +383,7 @@ export class CompaniesService {
           companyNameTh: savedCompany.nameTh,
         };
       } else {
-        // Mock implementation
-        const mockCompanyWithId = {
-          id: `company-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          ...companyData,
-        };
-        console.log('📝 Created company:', mockCompanyWithId);
-
-        // Log creation for mock
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(
-            user,
-            'CREATE',
-            mockCompanyWithId.id,
-            {
-              newValues: mockCompanyWithId,
-              metadata: { dataSource: 'customer_input', mock: true },
-            },
-          );
-        }
-
-        return mockCompanyWithId;
+        throw new Error('Database repository is not available');
       }
     } catch (error) {
       // Log error
@@ -550,20 +530,7 @@ export class CompaniesService {
 
         return savedCompany;
       } else {
-        // Mock implementation
-        console.log('📝 Updated company:', updatedCompany);
-
-        // Log update for mock
-        if (this.auditService) {
-          await this.auditService.logCompanyOperation(user, 'UPDATE', id, {
-            oldValues,
-            newValues: updatedCompany,
-            changes,
-            metadata: { mock: true },
-          });
-        }
-
-        return updatedCompany;
+        throw new Error('Database repository is not available');
       }
     } catch (error) {
       // Log error
@@ -608,15 +575,13 @@ export class CompaniesService {
       if (this.companyRepository) {
         await this.companyRepository.delete(id);
       } else {
-        // Mock deletion
-        console.log('🗑️ Deleted company:', id);
+        throw new Error('Database repository is not available');
       }
 
       // Log deletion
       if (this.auditService) {
         await this.auditService.logCompanyOperation(user, 'DELETE', id, {
           oldValues: company,
-          metadata: { mock: !this.companyRepository },
         });
       }
     } catch (error) {

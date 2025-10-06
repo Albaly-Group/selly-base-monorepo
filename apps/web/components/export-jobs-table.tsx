@@ -80,15 +80,11 @@ export function ExportJobsTable({ jobs }: ExportJobsTableProps) {
   }
 
   const handleDownload = (job: ExportJob) => {
-    // Mock file download
-    const csvContent = `Company Name,Industry,Province,Contact Person,Phone,Email,Status\nExample Company,Technology,Bangkok,John Doe,+66-2-123-4567,john@example.com,Active`
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = job.filename
-    a.click()
-    URL.revokeObjectURL(url)
+    if (job.downloadUrl) {
+      window.open(job.downloadUrl, '_blank')
+    } else {
+      alert('Download URL not available')
+    }
   }
 
   return (
