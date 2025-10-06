@@ -252,7 +252,12 @@ The application has a comprehensive test suite covering all layers with enhanced
 # Core tests
 ./run-all-tests.sh              # Run all core tests
 npm test                        # Run unit/component tests
-npm run test:e2e                # Run E2E tests
+
+# E2E tests (UX-focused) 🎭
+npm run test:e2e:docker         # Run E2E tests with Docker (RECOMMENDED)
+npm run test:e2e                # Run E2E tests (requires services running)
+npm run test:e2e:ui             # Debug E2E tests interactively
+npm run test:e2e:report         # View detailed E2E test report
 
 # Enhanced tests ✨
 npm run test:visual             # Visual regression
@@ -271,10 +276,17 @@ npm run test:all                # Run comprehensive test suite
 - **Frontend**: 27 component tests
 - **Backend API**: 65+ API tests
 - **Integration**: 40+ database tests
-- **E2E**: 25+ workflow tests
+- **E2E**: 78 UX-focused workflow tests 🎭 **NEW**
 - **Visual Regression**: 15+ screenshot tests ✨
 - **Accessibility**: 10+ WCAG compliance tests ✨
-- **Total**: 195+ tests
+- **Total**: 235+ tests
+
+**E2E Test Highlights:**
+- ✅ 100% route coverage (10 major routes)
+- ✅ UX-focused testing approach
+- ✅ Semantic, accessible selectors
+- ✅ Complete Docker environment
+- ✅ Automated setup and cleanup
 
 ### Enhanced Testing Features ✨
 - **Visual Regression**: Detect unintended UI changes
@@ -286,13 +298,22 @@ npm run test:all                # Run comprehensive test suite
 - **Coverage**: Target 90%+ code coverage
 
 ### Documentation
+
+**E2E Testing (UX-Focused) 🎭 NEW**
+- ⚡ [E2E Quick Start](./E2E_QUICK_START.md) - Run E2E tests in 1 command
+- 📖 [E2E Docker Guide](./E2E_DOCKER_GUIDE.md) - Complete Docker setup guide
+- 🎨 [UX Improvements](./E2E_UX_IMPROVEMENTS.md) - What changed and why
+- 📚 [E2E Documentation Index](./E2E_DOCUMENTATION_INDEX.md) - Navigation hub
+- ✅ [Implementation Summary](./E2E_IMPLEMENTATION_COMPLETE.md) - Full summary
+
+**General Testing**
 - 📖 [Quick Start Guide](./TEST_QUICK_START.md) - Get started with testing
 - ✨ [Test Enhancements](./TEST_ENHANCEMENTS.md) - Enhanced testing capabilities
 - ⚡ [Enhancements Quick Start](./TEST_ENHANCEMENTS_QUICK_START.md) - Quick reference
 - 📋 [Documentation Index](./TEST_DOCUMENTATION_INDEX.md) - All test documentation
 - 📚 [Complete Documentation](./TEST_SUITE_COMPLETE.md) - Full test suite details
 - 🏗️ [Test Architecture](./TESTING_ARCHITECTURE.md) - Testing strategy
-- 🐳 [Docker Testing](./DOCKER_E2E_TESTING.md) - Docker setup guide
+- 🐳 [Docker Testing](./DOCKER_E2E_TESTING.md) - Backend integration tests
 
 ## 📚 Documentation
 
