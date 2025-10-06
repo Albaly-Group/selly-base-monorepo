@@ -1,8 +1,6 @@
 "use client"
 
-import { useAuth, canManageTenants, canManageOrganizationUsers } from "@/lib/auth"
-import { CustomerDashboard } from "@/components/customer-dashboard"
-import { PlatformAdminDashboard } from "@/components/platform-admin-dashboard"
+import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
@@ -17,14 +15,8 @@ export default function HomePage() {
         router.replace("/login")
         return
       }
-      if (canManageTenants(user)) {
-        router.replace("/platform-admin")
-        return
-      }
-      if (canManageOrganizationUsers(user)) {
-        router.replace("/admin")
-        return
-      }
+      // Redirect all authenticated users to dashboard
+      router.replace("/dashboard")
     }
   }, [user, isLoading, router])
 
@@ -36,16 +28,6 @@ export default function HomePage() {
     )
   }
 
-  if (!user) {
-    // Return null while redirecting to login
-    return null
-  }
-
-  // Platform admins should be redirected to /platform-admin, but show their dashboard if they're here
-  if (canManageTenants(user)) {
-    return <PlatformAdminDashboard />
-  }
-
-  // Show customer dashboard for regular users, staff, and customer admins
-  return <CustomerDashboard />
+  // Return null while redirecting
+  return null
 }
