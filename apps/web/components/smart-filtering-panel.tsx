@@ -289,7 +289,7 @@ export function SmartFilteringPanel({
                 </div>
                 {totalWeight !== 100 && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    Weights don't need to total 100%. Results will be normalized.
+                    Weights don&apos;t need to total 100%. Results will be normalized.
                   </p>
                 )}
               </div>

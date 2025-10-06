@@ -25,26 +25,12 @@ interface User {
 
 export function UserManagementTab() {
   const { user: currentUser } = useAuth()
+  
+  // Initialize all hooks first (must be called unconditionally)
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddUser, setShowAddUser] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
-
-  // Check permissions - only customer admins can manage organization users
-  if (!currentUser || !canManageOrganizationUsers(currentUser)) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-            <p>You don't have permission to manage organization users.</p>
-            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   // Fetch users from backend
   useEffect(() => {
@@ -84,7 +70,7 @@ export function UserManagementTab() {
     }
 
     fetchUsers()
-  }, [])
+  }, [currentUser.organization?.domain])
 
   const refreshUsers = async () => {
     try {
@@ -162,6 +148,22 @@ export function UserManagementTab() {
     } catch (error) {
       console.error('Failed to toggle user status:', error)
     }
+  }
+
+  // Check permissions after all hooks
+  if (!currentUser || !canManageOrganizationUsers(currentUser)) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p>You don&apos;t have permission to manage organization users.</p>
+            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

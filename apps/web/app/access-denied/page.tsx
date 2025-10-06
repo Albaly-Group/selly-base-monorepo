@@ -27,7 +27,7 @@ export default function AccessDeniedPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Access Denied</h1>
           <h2 className="text-xl font-semibold text-red-600 mb-4">Insufficient Permissions</h2>
           <p className="text-gray-600 mb-6">
-            You don't have the required permissions to access this page. Please contact your administrator if you believe this is an error.
+            You don&apos;t have the required permissions to access this page. Please contact your administrator if you believe this is an error.
           </p>
           {user && (
             <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">

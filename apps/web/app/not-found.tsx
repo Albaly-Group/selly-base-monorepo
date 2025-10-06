@@ -14,7 +14,7 @@ export default function NotFound() {
             <Search className="h-8 w-8 text-gray-400" />
           </div>
           <CardTitle className="text-2xl">Page Not Found</CardTitle>
-          <CardDescription>The page you're looking for doesn't exist or has been moved.</CardDescription>
+          <CardDescription>The page you&apos;re looking for doesn&apos;t exist or has been moved.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
