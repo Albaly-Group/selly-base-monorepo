@@ -65,8 +65,6 @@ export class CompanyListsService {
     return this.searchListsFromDatabase(params, user);
   }
 
-
-
   private async searchListsFromDatabase(
     params: CompanyListSearchParams,
     user?: UserContext,
@@ -80,7 +78,8 @@ export class CompanyListsService {
       scope = 'mine',
     } = params;
 
-    const query = this.companyListRepository!.createQueryBuilder('list')
+    const query = this.companyListRepository
+      .createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
       .leftJoinAndSelect('list.companyListItems', 'items')
@@ -169,7 +168,8 @@ export class CompanyListsService {
     id: string,
     user?: UserContext,
   ): Promise<CompanyList> {
-    const query = this.companyListRepository!.createQueryBuilder('list')
+    const query = this.companyListRepository
+      .createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
       .leftJoinAndSelect('list.companyListItems', 'items')
@@ -183,32 +183,17 @@ export class CompanyListsService {
       throw new NotFoundException('Company list not found');
     }
 
-    // Access control logic
-    // Public lists are accessible to everyone
     if (list.visibility === 'public' && list.isShared) {
       return list;
     }
 
-    // For non-public lists, user authentication is required
-    if (!user) {
-      throw new NotFoundException('Company list not found');
-    }
-
-    // Owner has access
-    if (list.ownerUserId === user.id) {
-      return list;
-    }
-
-    // Organization members can access organization/team lists
     if (
-      list.organizationId === user.organizationId &&
+      list.organizationId &&
       (list.visibility === 'organization' || list.visibility === 'team')
     ) {
       return list;
     }
 
-    // Private lists are only accessible to owner
-    // If none of the above conditions match, deny access
     throw new NotFoundException('Company list not found');
   }
 
@@ -246,7 +231,7 @@ export class CompanyListsService {
     data: CompanyListUpdateRequest,
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(id, user);
+    const list = await this.getCompanyListById(id);
 
     // Only allow updates by owner or organization admin
     if (
@@ -274,7 +259,7 @@ export class CompanyListsService {
   }
 
   async deleteCompanyList(id: string, user: UserContext): Promise<void> {
-    const list = await this.getCompanyListById(id, user);
+    const list = await this.getCompanyListById(id);
 
     // Only allow deletion by owner
     if (list.ownerUserId !== user.id) {
@@ -289,7 +274,7 @@ export class CompanyListsService {
     companyIds: string[],
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId, user);
+    const list = await this.getCompanyListById(listId);
 
     // Check if user can modify this list
     if (
@@ -324,7 +309,7 @@ export class CompanyListsService {
     companyIds: string[],
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId, user);
+    const list = await this.getCompanyListById(listId);
 
     // Check if user can modify this list
     if (
@@ -339,7 +324,7 @@ export class CompanyListsService {
   }
 
   async getListItems(listId: string, user?: UserContext): Promise<any[]> {
-    const list = await this.getCompanyListById(listId, user);
+    const list = await this.getCompanyListById(listId);
 
     // Return mock items for demonstration
     return [

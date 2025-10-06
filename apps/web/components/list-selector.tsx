@@ -159,9 +159,8 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{list.createdAt}</span>
-                  <span>•</span>
-                  <span className={list.status === "Active" ? "text-green-600" : "text-gray-500"}>{list.status}</span>
+                  <span>{new Date(list.createdAt).toDateString()}</span>
+                  <span className="text-gray-500">{list.status}</span>
                 </div>
               </div>
             </Button>

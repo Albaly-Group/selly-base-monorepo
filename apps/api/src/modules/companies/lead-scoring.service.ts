@@ -29,12 +29,12 @@ export interface ScoringWeights {
 export class LeadScoringService {
   // Default scoring weights (can be customized per organization)
   private defaultWeights: ScoringWeights = {
-    dataQuality: 0.25,  // 25%
-    companySize: 0.20,   // 20%
-    industry: 0.15,      // 15%
-    location: 0.15,      // 15%
-    engagement: 0.15,    // 15%
-    verification: 0.10,  // 10%
+    dataQuality: 0.25, // 25%
+    companySize: 0.2, // 20%
+    industry: 0.15, // 15%
+    location: 0.15, // 15%
+    engagement: 0.15, // 15%
+    verification: 0.1, // 10%
   };
 
   /**
@@ -60,11 +60,11 @@ export class LeadScoringService {
     // Calculate weighted total score
     const totalScore = Math.round(
       dataQualityScore * scoringWeights.dataQuality +
-      companySizeScore * scoringWeights.companySize +
-      industryScore * scoringWeights.industry +
-      locationScore * scoringWeights.location +
-      engagementScore * scoringWeights.engagement +
-      verificationScore * scoringWeights.verification
+        companySizeScore * scoringWeights.companySize +
+        industryScore * scoringWeights.industry +
+        locationScore * scoringWeights.location +
+        engagementScore * scoringWeights.engagement +
+        verificationScore * scoringWeights.verification,
     );
 
     return {
@@ -87,7 +87,11 @@ export class LeadScoringService {
   calculateBulkLeadScores(
     companies: Companies[],
     weights?: Partial<ScoringWeights>,
-  ): Array<{ companyId: string; score: number; breakdown: LeadScoreBreakdown }> {
+  ): Array<{
+    companyId: string;
+    score: number;
+    breakdown: LeadScoreBreakdown;
+  }> {
     return companies.map((company) => {
       const result = this.calculateLeadScore(company, weights);
       return {
@@ -103,7 +107,10 @@ export class LeadScoringService {
    */
   private scoreDataQuality(company: Companies): number {
     // Use existing data_quality_score if available
-    if (company.dataQualityScore !== null && company.dataQualityScore !== undefined) {
+    if (
+      company.dataQualityScore !== null &&
+      company.dataQualityScore !== undefined
+    ) {
       return Number(company.dataQualityScore) * 100;
     }
 
@@ -122,7 +129,9 @@ export class LeadScoringService {
       company.companySize,
     ];
 
-    const filledFields = fields.filter((field) => field !== null && field !== undefined && field !== '').length;
+    const filledFields = fields.filter(
+      (field) => field !== null && field !== undefined && field !== '',
+    ).length;
     score = (filledFields / fields.length) * 100;
 
     return Math.round(score);
@@ -180,17 +189,20 @@ export class LeadScoringService {
     ];
 
     if (company.industryClassification) {
-      const industryData = typeof company.industryClassification === 'string' 
-        ? JSON.parse(company.industryClassification) 
-        : company.industryClassification;
-      
+      const industryData =
+        typeof company.industryClassification === 'string'
+          ? JSON.parse(company.industryClassification)
+          : company.industryClassification;
+
       const primaryCode = industryData?.primaryCode || industryData?.code;
-      
+
       if (primaryCode) {
-        if (highValueIndustries.some(code => primaryCode.startsWith(code))) {
+        if (highValueIndustries.some((code) => primaryCode.startsWith(code))) {
           return 90;
         }
-        if (mediumValueIndustries.some(code => primaryCode.startsWith(code))) {
+        if (
+          mediumValueIndustries.some((code) => primaryCode.startsWith(code))
+        ) {
           return 70;
         }
         return 50; // Other industries
@@ -207,10 +219,18 @@ export class LeadScoringService {
   private scoreLocation(company: Companies): number {
     const premiumLocations = ['bangkok', 'bkk', 'กรุงเทพ'];
     const goodLocations = [
-      'chiang mai', 'cnx', 'เชียงใหม่',
-      'phuket', 'pkt', 'ภูเก็ต',
-      'chonburi', 'cbi', 'ชลบุรี',
-      'rayong', 'ryg', 'ระยอง',
+      'chiang mai',
+      'cnx',
+      'เชียงใหม่',
+      'phuket',
+      'pkt',
+      'ภูเก็ต',
+      'chonburi',
+      'cbi',
+      'ชลบุรี',
+      'rayong',
+      'ryg',
+      'ระยอง',
     ];
 
     const province = (company.province || '').toLowerCase();
@@ -267,7 +287,9 @@ export class LeadScoringService {
       inactive: 0,
     };
 
-    return statusScores[company.verificationStatus] ?? 50;
+    return company.verificationStatus
+      ? (statusScores[company.verificationStatus] ?? 50)
+      : 50;
   }
 
   /**
@@ -277,7 +299,11 @@ export class LeadScoringService {
     companies: Companies[],
     minScore: number,
     weights?: Partial<ScoringWeights>,
-  ): Array<{ company: Companies; score: number; breakdown: LeadScoreBreakdown }> {
+  ): Array<{
+    company: Companies;
+    score: number;
+    breakdown: LeadScoreBreakdown;
+  }> {
     const scored = companies.map((company) => {
       const result = this.calculateLeadScore(company, weights);
       return {
@@ -299,15 +325,21 @@ export class LeadScoringService {
     const { breakdown } = this.calculateLeadScore(company);
 
     if (breakdown.dataQuality < 70) {
-      recommendations.push('Complete missing company information (description, contact details, address)');
+      recommendations.push(
+        'Complete missing company information (description, contact details, address)',
+      );
     }
 
     if (breakdown.engagement < 60) {
-      recommendations.push('Add website URL, LinkedIn profile, or social media links');
+      recommendations.push(
+        'Add website URL, LinkedIn profile, or social media links',
+      );
     }
 
     if (breakdown.verification < 100) {
-      recommendations.push('Verify company information to increase trust score');
+      recommendations.push(
+        'Verify company information to increase trust score',
+      );
     }
 
     if (!company.primaryEmail && !company.primaryPhone) {
@@ -315,7 +347,9 @@ export class LeadScoringService {
     }
 
     if (!company.industryClassification) {
-      recommendations.push('Specify industry classification for better targeting');
+      recommendations.push(
+        'Specify industry classification for better targeting',
+      );
     }
 
     return recommendations;

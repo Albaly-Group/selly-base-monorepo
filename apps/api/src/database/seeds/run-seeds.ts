@@ -12,13 +12,34 @@ async function runSeeds() {
 
   // Get database configuration
   const dbConfig = databaseConfig();
-  
-  // Create data source
-  const dataSource = new DataSource({
-    ...dbConfig,
+
+  // Create a sanitized Postgres options object to avoid passing
+  // driver-specific complex properties into DataSource.
+  const pgOptions: import('typeorm').DataSourceOptions = {
+    type: 'postgres',
+    host: String(
+      (dbConfig as any).host ?? process.env.DATABASE_HOST ?? 'localhost',
+    ),
+    port: Number((dbConfig as any).port ?? process.env.DATABASE_PORT ?? 5432),
+    username: String(
+      (dbConfig as any).username ?? process.env.DATABASE_USER ?? 'postgres',
+    ),
+    password: String(
+      (dbConfig as any).password ?? process.env.DATABASE_PASSWORD ?? 'postgres',
+    ),
+    database: String(
+      (dbConfig as any).database ?? process.env.DATABASE_NAME ?? 'selly_base',
+    ),
     entities: ['src/entities/*.ts'],
     migrations: ['src/database/migrations/*.ts'],
-  });
+    synchronize: Boolean((dbConfig as any).synchronize),
+    migrationsRun: Boolean((dbConfig as any).migrationsRun),
+    logging: Boolean((dbConfig as any).logging),
+    ssl: (dbConfig as any).ssl ?? false,
+    extra: (dbConfig as any).extra ?? {},
+  };
+
+  const dataSource = new DataSource(pgOptions);
 
   try {
     // Initialize connection

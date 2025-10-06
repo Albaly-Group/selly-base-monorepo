@@ -45,10 +45,7 @@ export class ReferenceDataService {
     }
   }
 
-  async getProvinces(
-    activeOnly = true,
-    countryCode = 'TH',
-  ): Promise<any[]> {
+  async getProvinces(activeOnly = true, countryCode = 'TH'): Promise<any[]> {
     try {
       const query = this.regionRepository.createQueryBuilder('region');
 
@@ -152,14 +149,39 @@ export class ReferenceDataService {
 
   private getFallbackProvinces(): any[] {
     return [
-      { code: 'BKK', name: 'Bangkok', nameEn: 'Bangkok', nameTh: 'กรุงเทพมหานคร' },
-      { code: 'CNX', name: 'Chiang Mai', nameEn: 'Chiang Mai', nameTh: 'เชียงใหม่' },
+      {
+        code: 'BKK',
+        name: 'Bangkok',
+        nameEn: 'Bangkok',
+        nameTh: 'กรุงเทพมหานคร',
+      },
+      {
+        code: 'CNX',
+        name: 'Chiang Mai',
+        nameEn: 'Chiang Mai',
+        nameTh: 'เชียงใหม่',
+      },
       { code: 'PKT', name: 'Phuket', nameEn: 'Phuket', nameTh: 'ภูเก็ต' },
-      { code: 'KKC', name: 'Khon Kaen', nameEn: 'Khon Kaen', nameTh: 'ขอนแก่น' },
+      {
+        code: 'KKC',
+        name: 'Khon Kaen',
+        nameEn: 'Khon Kaen',
+        nameTh: 'ขอนแก่น',
+      },
       { code: 'CBI', name: 'Chonburi', nameEn: 'Chonburi', nameTh: 'ชลบุรี' },
       { code: 'RYG', name: 'Rayong', nameEn: 'Rayong', nameTh: 'ระยอง' },
-      { code: 'SPK', name: 'Samut Prakan', nameEn: 'Samut Prakan', nameTh: 'สมุทรปราการ' },
-      { code: 'SKA', name: 'Samut Sakhon', nameEn: 'Samut Sakhon', nameTh: 'สมุทรสาคร' },
+      {
+        code: 'SPK',
+        name: 'Samut Prakan',
+        nameEn: 'Samut Prakan',
+        nameTh: 'สมุทรปราการ',
+      },
+      {
+        code: 'SKA',
+        name: 'Samut Sakhon',
+        nameEn: 'Samut Sakhon',
+        nameTh: 'สมุทรสาคร',
+      },
     ];
   }
 }

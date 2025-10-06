@@ -29,7 +29,8 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       code: '05',
       titleEn: 'Mining and quarrying',
       titleTh: 'การทำเหมืองแร่และเหมืองหิน',
-      description: 'Mining of coal, metal ores, crude petroleum and natural gas',
+      description:
+        'Mining of coal, metal ores, crude petroleum and natural gas',
       classificationSystem: 'TSIC',
       level: 1,
       parentCode: null,
@@ -39,7 +40,8 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       code: '10',
       titleEn: 'Manufacturing',
       titleTh: 'อุตสาหกรรมการผลิต',
-      description: 'Manufacture of food products, beverages, textiles, chemicals, machinery',
+      description:
+        'Manufacture of food products, beverages, textiles, chemicals, machinery',
       classificationSystem: 'TSIC',
       level: 1,
       parentCode: null,
@@ -69,7 +71,8 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       code: '45',
       titleEn: 'Wholesale and retail trade',
       titleTh: 'การค้าส่งและการค้าปลีก',
-      description: 'Sale and repair of motor vehicles, wholesale and retail trade',
+      description:
+        'Sale and repair of motor vehicles, wholesale and retail trade',
       classificationSystem: 'TSIC',
       level: 1,
       parentCode: null,
@@ -79,7 +82,8 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       code: '49',
       titleEn: 'Transportation and storage',
       titleTh: 'การขนส่งและสถานที่เก็บสินค้า',
-      description: 'Land transport, water transport, air transport, warehousing',
+      description:
+        'Land transport, water transport, air transport, warehousing',
       classificationSystem: 'TSIC',
       level: 1,
       parentCode: null,
@@ -109,7 +113,8 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       code: '62',
       titleEn: 'Computer programming, consultancy',
       titleTh: 'การเขียนโปรแกรมคอมพิวเตอร์และที่ปรึกษา',
-      description: 'Software development, IT consulting, computer facilities management',
+      description:
+        'Software development, IT consulting, computer facilities management',
       classificationSystem: 'TSIC',
       level: 2,
       parentCode: '58',
@@ -188,10 +193,13 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
   ];
 
   console.log(`  Seeding ${industries.length} industry codes...`);
-  
+
   for (const industry of industries) {
     const existing = await industryRepo.findOne({
-      where: { code: industry.code, classificationSystem: industry.classificationSystem },
+      where: {
+        code: industry.code,
+        classificationSystem: industry.classificationSystem,
+      },
     });
 
     if (!existing) {
@@ -201,41 +209,167 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
 
   // Seed Thai Provinces (Regions)
   const provinces = [
-    { code: 'BKK', nameEn: 'Bangkok', nameTh: 'กรุงเทพมหานคร', regionType: 'province', countryCode: 'TH' },
-    { code: 'CNX', nameEn: 'Chiang Mai', nameTh: 'เชียงใหม่', regionType: 'province', countryCode: 'TH' },
-    { code: 'CNR', nameEn: 'Chiang Rai', nameTh: 'เชียงราย', regionType: 'province', countryCode: 'TH' },
-    { code: 'NMA', nameEn: 'Nakhon Ratchasima', nameTh: 'นครราชสีมา', regionType: 'province', countryCode: 'TH' },
-    { code: 'PKT', nameEn: 'Phuket', nameTh: 'ภูเก็ต', regionType: 'province', countryCode: 'TH' },
-    { code: 'KBI', nameEn: 'Krabi', nameTh: 'กระบี่', regionType: 'province', countryCode: 'TH' },
-    { code: 'CBI', nameEn: 'Chonburi', nameTh: 'ชลบุรี', regionType: 'province', countryCode: 'TH' },
-    { code: 'RYG', nameEn: 'Rayong', nameTh: 'ระยอง', regionType: 'province', countryCode: 'TH' },
-    { code: 'SPK', nameEn: 'Samut Prakan', nameTh: 'สมุทรปราการ', regionType: 'province', countryCode: 'TH' },
-    { code: 'SKA', nameEn: 'Samut Sakhon', nameTh: 'สมุทรสาคร', regionType: 'province', countryCode: 'TH' },
-    { code: 'NBI', nameEn: 'Nonthaburi', nameTh: 'นนทบุรี', regionType: 'province', countryCode: 'TH' },
-    { code: 'PTE', nameEn: 'Pathum Thani', nameTh: 'ปทุมธานี', regionType: 'province', countryCode: 'TH' },
-    { code: 'AYA', nameEn: 'Phra Nakhon Si Ayutthaya', nameTh: 'พระนครศรีอยุธยา', regionType: 'province', countryCode: 'TH' },
-    { code: 'KKC', nameEn: 'Khon Kaen', nameTh: 'ขอนแก่น', regionType: 'province', countryCode: 'TH' },
-    { code: 'UDT', nameEn: 'Udon Thani', nameTh: 'อุดรธานี', regionType: 'province', countryCode: 'TH' },
-    { code: 'UBN', nameEn: 'Ubon Ratchathani', nameTh: 'อุบลราชธานี', regionType: 'province', countryCode: 'TH' },
-    { code: 'HKT', nameEn: 'Hat Yai', nameTh: 'หาดใหญ่', regionType: 'province', countryCode: 'TH' },
-    { code: 'SKA', nameEn: 'Songkhla', nameTh: 'สงขลา', regionType: 'province', countryCode: 'TH' },
-    { code: 'NWT', nameEn: 'Nakhon Si Thammarat', nameTh: 'นครศรีธรรมราช', regionType: 'province', countryCode: 'TH' },
-    { code: 'SRT', nameEn: 'Surat Thani', nameTh: 'สุราษฎร์ธานี', regionType: 'province', countryCode: 'TH' },
+    {
+      code: 'BKK',
+      nameEn: 'Bangkok',
+      nameTh: 'กรุงเทพมหานคร',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'CNX',
+      nameEn: 'Chiang Mai',
+      nameTh: 'เชียงใหม่',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'CNR',
+      nameEn: 'Chiang Rai',
+      nameTh: 'เชียงราย',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'NMA',
+      nameEn: 'Nakhon Ratchasima',
+      nameTh: 'นครราชสีมา',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'PKT',
+      nameEn: 'Phuket',
+      nameTh: 'ภูเก็ต',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'KBI',
+      nameEn: 'Krabi',
+      nameTh: 'กระบี่',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'CBI',
+      nameEn: 'Chonburi',
+      nameTh: 'ชลบุรี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'RYG',
+      nameEn: 'Rayong',
+      nameTh: 'ระยอง',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'SPK',
+      nameEn: 'Samut Prakan',
+      nameTh: 'สมุทรปราการ',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'SKA',
+      nameEn: 'Samut Sakhon',
+      nameTh: 'สมุทรสาคร',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'NBI',
+      nameEn: 'Nonthaburi',
+      nameTh: 'นนทบุรี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'PTE',
+      nameEn: 'Pathum Thani',
+      nameTh: 'ปทุมธานี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'AYA',
+      nameEn: 'Phra Nakhon Si Ayutthaya',
+      nameTh: 'พระนครศรีอยุธยา',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'KKC',
+      nameEn: 'Khon Kaen',
+      nameTh: 'ขอนแก่น',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'UDT',
+      nameEn: 'Udon Thani',
+      nameTh: 'อุดรธานี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'UBN',
+      nameEn: 'Ubon Ratchathani',
+      nameTh: 'อุบลราชธานี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'HKT',
+      nameEn: 'Hat Yai',
+      nameTh: 'หาดใหญ่',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'SKA',
+      nameEn: 'Songkhla',
+      nameTh: 'สงขลา',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'NWT',
+      nameEn: 'Nakhon Si Thammarat',
+      nameTh: 'นครศรีธรรมราช',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
+    {
+      code: 'SRT',
+      nameEn: 'Surat Thani',
+      nameTh: 'สุราษฎร์ธานี',
+      regionType: 'province',
+      countryCode: 'TH',
+    },
   ];
 
   console.log(`  Seeding ${provinces.length} provinces...`);
 
   for (const province of provinces) {
     const existing = await regionRepo.findOne({
-      where: { code: province.code, countryCode: province.countryCode, regionType: province.regionType },
+      where: {
+        code: province.code,
+        countryCode: province.countryCode,
+        regionType: province.regionType,
+      },
     });
 
     if (!existing) {
-      await regionRepo.save(regionRepo.create({
-        ...province,
-        isActive: true,
-        parentRegionId: null,
-      }));
+      await regionRepo.save(
+        regionRepo.create({
+          ...province,
+          isActive: true,
+          parentRegion: undefined,
+        }),
+      );
     }
   }
 

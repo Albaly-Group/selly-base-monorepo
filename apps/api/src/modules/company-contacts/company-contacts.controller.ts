@@ -21,7 +21,10 @@ import {
 import { CompanyContactsService } from './company-contacts.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { CreateCompanyContactDto, UpdateCompanyContactDto } from '../../dtos/company-contact.dto';
+import {
+  CreateCompanyContactDto,
+  UpdateCompanyContactDto,
+} from '../../dtos/company-contact.dto';
 
 @ApiTags('company-contacts')
 @Controller('company-contacts')

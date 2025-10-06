@@ -60,8 +60,7 @@ export class StaffService {
       lastLogin: user.lastLoginAt,
       createdAt: user.createdAt,
       organization: user.organization?.name,
-      roles:
-        user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+      roles: user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
       permissions:
         user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
     }));
@@ -109,8 +108,7 @@ export class StaffService {
       lastLogin: user.lastLoginAt,
       createdAt: user.createdAt,
       organization: user.organization?.name,
-      roles:
-        user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
+      roles: user.userRoles2?.map((ur) => ur.role?.name).filter(Boolean) || [],
       permissions:
         user.userRoles2?.flatMap((ur) => ur.role?.permissions || []) || [],
     };
@@ -240,5 +238,4 @@ export class StaffService {
       message: `Staff member role updated to ${role}`,
     };
   }
-
 }

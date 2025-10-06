@@ -32,6 +32,7 @@ import {
   RemoveCompaniesFromListDto,
 } from '../../dtos/company-list.dto';
 import { UserContext } from '../../dtos/user-context.dto';
+import { Users } from '../../entities/Users';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -60,6 +61,8 @@ export class CompanyListsController {
   constructor(private readonly companyListsService: CompanyListsService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get company lists with filters' })
   @ApiQuery({
     name: 'searchTerm',
@@ -97,18 +100,41 @@ export class CompanyListsController {
   })
   async getCompanyLists(
     @Query() query: CompanyListSearchQuery,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
   ): Promise<PaginatedResponse<any>> {
     const searchParams = {
       searchTerm: query.searchTerm,
-      organizationId: query.organizationId,
+      organizationId: query.organizationId || organizationId,
       visibility: query.visibility,
       page: query.page ? parseInt(query.page, 10) : 1,
       limit: query.limit ? parseInt(query.limit, 10) : 50,
       scope: query.scope || 'organization',
     };
 
-    // For public lists, allow without authentication
-    return this.companyListsService.searchCompanyLists(searchParams, undefined);
+    let userWithOrg: UserContext | undefined;
+    if (user) {
+      userWithOrg = {
+        id: user.sub,
+        email: user.email,
+        name: user.name || 'User',
+        organizationId: organizationId ?? '',
+      };
+      if (!userWithOrg.organizationId) {
+        throw new Error('organizationId is required for UserContext');
+      }
+    }
+
+    if (searchParams.scope === 'public') {
+      return this.companyListsService.searchCompanyLists(
+        searchParams,
+        undefined,
+      );
+    }
+    return this.companyListsService.searchCompanyLists(
+      searchParams,
+      userWithOrg,
+    );
   }
 
   @Get(':id')
@@ -128,7 +154,7 @@ export class CompanyListsController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
-    return this.companyListsService.getCompanyListById(id, undefined);
+    return this.companyListsService.getCompanyListById(id);
   }
 
   @Post()
@@ -147,10 +173,10 @@ export class CompanyListsController {
     @CurrentOrganization() organizationId: string,
   ) {
     const userContext: UserContext = {
-      id: user.sub,
+      id: user.id,
       email: user.email,
+      organizationId: organizationId ?? '',
       name: user.name || 'User',
-      organizationId: organizationId,
     };
     return this.companyListsService.createCompanyList(
       createListDto,
@@ -176,19 +202,22 @@ export class CompanyListsController {
   async updateCompanyList(
     @Param('id') id: string,
     @Body() updateListDto: UpdateCompanyListDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: Users,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userContext: UserContext = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
       name: user.name || 'User',
-      organizationId: organizationId,
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
-      userContext,
+      userWithOrg,
     );
   }
 
@@ -212,13 +241,16 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userContext: UserContext = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
       name: user.name || 'User',
-      organizationId: organizationId,
+      organizationId: organizationId ?? '',
     };
-    await this.companyListsService.deleteCompanyList(id, userContext);
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
+    await this.companyListsService.deleteCompanyList(id, userWithOrg);
     return { message: 'Company list deleted successfully' };
   }
 
@@ -265,16 +297,20 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userContext: UserContext = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
       name: user.name || 'User',
-      organizationId: organizationId,
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
+
     return this.companyListsService.addCompaniesToList(
       listId,
       body.companyIds,
-      userContext,
+      userWithOrg,
     );
   }
 
@@ -299,16 +335,20 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userContext: UserContext = {
-      id: user.sub,
+    const userWithOrg: UserContext = {
+      id: user.id,
       email: user.email,
       name: user.name || 'User',
-      organizationId: organizationId,
+      organizationId: organizationId ?? '',
     };
+    if (!userWithOrg.organizationId) {
+      throw new Error('organizationId is required for UserContext');
+    }
+
     return this.companyListsService.removeCompaniesFromList(
       listId,
       body.companyIds,
-      userContext,
+      userWithOrg,
     );
   }
 }

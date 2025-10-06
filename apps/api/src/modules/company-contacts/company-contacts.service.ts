@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompanyContacts } from '../../entities';
-import { CreateCompanyContactDto, UpdateCompanyContactDto } from '../../dtos/company-contact.dto';
+import {
+  CreateCompanyContactDto,
+  UpdateCompanyContactDto,
+} from '../../dtos/company-contact.dto';
 
 @Injectable()
 export class CompanyContactsService {
@@ -105,7 +108,9 @@ export class CompanyContactsService {
       companyId: createDto.companyId,
       firstName: createDto.firstName,
       lastName: createDto.lastName,
-      fullName: createDto.fullName || `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim(),
+      fullName:
+        createDto.fullName ||
+        `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim(),
       title: createDto.title,
       department: createDto.department,
       seniorityLevel: createDto.seniorityLevel,
@@ -148,7 +153,9 @@ export class CompanyContactsService {
 
     Object.assign(contact, {
       ...updateDto,
-      fullName: updateDto.fullName || `${updateDto.firstName || contact.firstName || ''} ${updateDto.lastName || contact.lastName || ''}`.trim(),
+      fullName:
+        updateDto.fullName ||
+        `${updateDto.firstName || contact.firstName || ''} ${updateDto.lastName || contact.lastName || ''}`.trim(),
       updatedAt: new Date(),
     });
 
