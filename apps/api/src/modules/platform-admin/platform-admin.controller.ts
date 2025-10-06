@@ -14,40 +14,45 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @Controller('platform-admin')
 @UseGuards(JwtAuthGuard)
 export class PlatformAdminController {
-  constructor(
-    private readonly platformAdminService: PlatformAdminService,
-  ) {}
+  constructor(private readonly platformAdminService: PlatformAdminService) {}
 
   /**
    * Check if user has platform admin permissions
-   * Platform admins should have the 'platform_admin' role or '*' permission
+   * Uses consistent RBAC permission checks: tenants:*, users:*, analytics:*, etc.
    */
-  private checkPlatformAdminPermission(user: any) {
-    // Check if user has platform_admin role
-    const roles = user.roles || [];
-    const isPlatformAdmin = roles.some(
-      (role: any) =>
-        role.name === 'platform_admin' || role.name === 'Platform Admin',
-    );
-
-    // Check if user has wildcard permission
+  private checkPlatformAdminPermission(user: any, requiredPermission: string) {
     const permissions = user.permissions || [];
+
+    // Check for wildcard permission (full platform admin access)
     const hasWildcard = permissions.some((perm: any) => perm.key === '*');
+    if (hasWildcard) return;
 
-    // Check if user has specific platform admin permissions
-    const hasPlatformPermission = permissions.some((perm: any) =>
-      perm.key?.startsWith('platform:') || perm.key?.startsWith('tenants:'),
+    // Check for exact permission match
+    const hasExactPermission = permissions.some(
+      (perm: any) => perm.key === requiredPermission,
     );
+    if (hasExactPermission) return;
 
-    if (!isPlatformAdmin && !hasWildcard && !hasPlatformPermission) {
-      throw new ForbiddenException(
-        'Access denied. Platform admin privileges required.',
-      );
-    }
+    // Check for wildcard category permission (e.g., 'tenants:*' matches 'tenants:manage')
+    const hasWildcardCategory = permissions.some((perm: any) => {
+      if (perm.key?.endsWith(':*')) {
+        const prefix = perm.key.slice(0, -1); // Remove '*'
+        return requiredPermission.startsWith(prefix);
+      }
+      return false;
+    });
+    if (hasWildcardCategory) return;
+
+    // No matching permissions found
+    throw new ForbiddenException(
+      'Access denied. Platform admin privileges required.',
+    );
   }
 
   @Get('tenants')
-  @ApiOperation({ summary: 'Get all tenant organizations (Platform Admin only)' })
+  @ApiOperation({
+    summary: 'Get all tenant organizations (Platform Admin only)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Tenant organizations retrieved successfully',
@@ -63,8 +68,8 @@ export class PlatformAdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    // Check platform admin permissions
-    this.checkPlatformAdminPermission(req.user);
+    // Check platform admin permissions - requires 'tenants:manage' or wildcard
+    this.checkPlatformAdminPermission(req.user, 'tenants:manage');
 
     return this.platformAdminService.getTenants(
       parseInt(page || '1', 10),
@@ -89,8 +94,8 @@ export class PlatformAdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    // Check platform admin permissions
-    this.checkPlatformAdminPermission(req.user);
+    // Check platform admin permissions - requires 'users:manage' or wildcard
+    this.checkPlatformAdminPermission(req.user, 'users:manage');
 
     return this.platformAdminService.getPlatformUsers(
       parseInt(page || '1', 10),
@@ -115,8 +120,8 @@ export class PlatformAdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    // Check platform admin permissions
-    this.checkPlatformAdminPermission(req.user);
+    // Check platform admin permissions - requires 'shared-data:manage' or wildcard
+    this.checkPlatformAdminPermission(req.user, 'shared-data:manage');
 
     return this.platformAdminService.getSharedCompanies(
       parseInt(page || '1', 10),

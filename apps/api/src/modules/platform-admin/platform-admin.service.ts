@@ -199,9 +199,13 @@ export class PlatformAdminService {
 
         // Extract industry name from industryClassification JSONB
         let industryName = 'N/A';
-        if (company.industryClassification && typeof company.industryClassification === 'object') {
+        if (
+          company.industryClassification &&
+          typeof company.industryClassification === 'object'
+        ) {
           const industryData = company.industryClassification as any;
-          industryName = industryData.name || industryData.industryName || 'N/A';
+          industryName =
+            industryData.name || industryData.industryName || 'N/A';
         }
 
         return {
@@ -217,7 +221,9 @@ export class PlatformAdminService {
                 ? 'Needs Verification'
                 : 'Invalid',
           dataCompleteness: dataCompleteness,
-          lastUpdated: company.updatedAt?.toISOString() || company.createdAt?.toISOString(),
+          lastUpdated:
+            company.updatedAt?.toISOString() ||
+            company.createdAt?.toISOString(),
           createdBy: 'System', // Could be enhanced to track actual creator
           isShared: company.isSharedData,
           tenantCount: 0, // Would need a query to count how many tenants use this company
