@@ -26,13 +26,32 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Building2, Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
 import type { Organization } from "@/lib/types"
-import { mockTenantData, type TenantData, validateOrganizationData } from "@/lib/platform-admin-data"
+import { getTenants, type TenantData, validateOrganizationData } from "@/lib/platform-admin-data"
+import { useEffect } from "react"
 
 export function TenantManagementTab() {
   const { user } = useAuth()
-  const [tenants, setTenants] = useState<TenantData[]>(mockTenantData.filter(validateOrganizationData))
+  const [tenants, setTenants] = useState<TenantData[]>([])
   const [showAddTenant, setShowAddTenant] = useState(false)
   const [editingTenant, setEditingTenant] = useState<TenantData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch tenants from backend
+  useEffect(() => {
+    const fetchTenants = async () => {
+      setIsLoading(true)
+      try {
+        const data = await getTenants()
+        setTenants(data.filter(validateOrganizationData))
+      } catch (error) {
+        console.error('Error fetching tenants:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchTenants()
+  }, [])
 
   // Check permissions
   if (!user || !canManageTenants(user)) {
@@ -157,6 +176,15 @@ export function TenantManagementTab() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading tenants...
+            </div>
+          ) : tenants.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No tenants found
+            </div>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -237,6 +265,7 @@ export function TenantManagementTab() {
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>
