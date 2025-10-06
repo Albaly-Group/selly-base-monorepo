@@ -43,3 +43,9 @@ next-env.d.ts
 # lost-pixel visual regression
 .lostpixel/current
 .lostpixel/difference
+
+# playwright test artifacts
+/playwright-report-e2e
+/test-results
+playwright-report
+.lighthouseci
