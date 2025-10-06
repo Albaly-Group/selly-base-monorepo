@@ -12,6 +12,9 @@ import { ImportsModule } from './modules/imports/imports.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ReferenceDataModule } from './modules/reference-data/reference-data.module';
+import { CompanyContactsModule } from './modules/company-contacts/company-contacts.module';
+import { CompanyActivitiesModule } from './modules/company-activities/company-activities.module';
 import { DatabaseHealthService } from './database/database-health.service';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -32,6 +35,9 @@ const getImports = () => {
     StaffModule,
     ReportsModule,
     AdminModule,
+    ReferenceDataModule,
+    CompanyContactsModule,
+    CompanyActivitiesModule,
   ];
 
   // Only add TypeORM if not skipping database
