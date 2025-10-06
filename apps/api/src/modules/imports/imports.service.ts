@@ -29,7 +29,7 @@ export class ImportsService {
     const limit = Math.min(params?.limit || 50, 100);
     const skip = (page - 1) * limit;
 
-
+    // Database implementation only - no mock data fallback
     const queryBuilder = this.importJobRepository
       .createQueryBuilder('import_job')
       .leftJoinAndSelect('import_job.organization', 'organization')
@@ -72,7 +72,7 @@ export class ImportsService {
     organizationId?: string;
     uploadedBy?: string;
   }) {
-
+    // Database implementation only - no mock data fallback
     const importJob = this.importJobRepository.create({
       filename: importData.filename,
       organizationId: importData.organizationId,
@@ -85,7 +85,7 @@ export class ImportsService {
   }
 
   async getImportJobById(id: string, organizationId?: string) {
-
+    // Database implementation only - no mock data fallback
     const queryBuilder = this.importJobRepository
       .createQueryBuilder('import_job')
       .leftJoinAndSelect('import_job.organization', 'organization')
@@ -108,7 +108,7 @@ export class ImportsService {
   }
 
   async validateImportData(id: string, organizationId?: string) {
-
+    // Database implementation only - no mock data fallback
     const importJob = await this.getImportJobById(id, organizationId);
 
     // Update status to validating
@@ -162,7 +162,7 @@ export class ImportsService {
   }
 
   async executeImportJob(id: string, organizationId?: string) {
-
+    // Database implementation only - no mock data fallback
     await this.importJobRepository.update(id, {
       status: 'processing',
     });

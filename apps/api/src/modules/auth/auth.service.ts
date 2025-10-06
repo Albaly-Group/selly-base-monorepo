@@ -72,6 +72,7 @@ export class AuthService {
   async login(loginRequest: LoginRequest): Promise<LoginResponse> {
     const { email, password } = loginRequest;
 
+    // Always use database - no mock data fallback
     const user = await this.validateUserFromDatabase(email, password);
 
     if (!user) {
@@ -141,6 +142,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      // Handle database errors - no mock data fallback
       if (
         error.message?.includes('does not exist') &&
         error.message?.includes('relation')

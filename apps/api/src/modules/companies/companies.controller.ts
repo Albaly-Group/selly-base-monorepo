@@ -45,6 +45,7 @@ interface PaginatedResponse<T> {
   };
 }
 
+// For endpoints that don't require authentication, we create a mock user
 @ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
@@ -122,6 +123,8 @@ export class CompaniesController {
   async searchCompanies(
     @Query() searchDto: CompanySearchDto,
   ): Promise<PaginatedResponse<any>> {
+    // For public search, use mock user with provided organizationId
+    // const mockUser = createMockUser(searchDto.organizationId);
     return this.companiesService.searchCompanies(searchDto);
   }
 
@@ -134,6 +137,7 @@ export class CompaniesController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ): Promise<PaginatedResponse<any>> {
+    // Simple parameter handling without complex validation for now
     const searchDto = {
       organizationId,
       includeSharedData: includeSharedData === 'true',
@@ -141,6 +145,7 @@ export class CompaniesController {
       limit: limit ? parseInt(limit, 10) : 10,
     };
 
+    // const mockUser = createMockUser(organizationId);
     return this.companiesService.searchCompanies(searchDto as any, undefined);
   }
 
@@ -158,6 +163,7 @@ export class CompaniesController {
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
   ) {
+    // const mockUser = createMockUser(organizationId);
     return this.companiesService.getCompanyById(id, organizationId, undefined);
   }
 

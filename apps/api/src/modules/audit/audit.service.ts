@@ -48,7 +48,7 @@ export class AuditService {
 
   async log(data: AuditLogData): Promise<void> {
     try {
-
+      // Database implementation only - no mock data fallback
       const auditLog = this.auditLogRepository.create({
         ...data,
         createdAt: new Date(),
