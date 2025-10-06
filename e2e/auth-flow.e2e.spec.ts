@@ -102,18 +102,17 @@ test.describe('Authentication E2E Flow', () => {
     await expect(submitButton).toBeEnabled();
   });
 
-  test('should successfully login with valid credentials and show welcome state', async ({ page }) => {
-    // UX Test: Successful login should provide clear feedback and take user
-    // to their expected destination smoothly
+  test('should successfully login as Platform Admin and show welcome state', async ({ page }) => {
+    // UX Test: Platform Admin should have full system access
     await page.goto('/login');
     
     const emailInput = page.getByLabel(/email/i);
     const passwordInput = page.getByLabel(/password/i);
     const submitButton = page.getByRole('button', { name: /sign in|login/i });
     
-    // Enter valid test credentials
-    await emailInput.fill('admin@selly.com');
-    await passwordInput.fill('Admin@123');
+    // Login as Platform Admin (from seed SQL)
+    await emailInput.fill('platform@albaly.com');
+    await passwordInput.fill('password123');
     
     // Submit login form
     await submitButton.click();
@@ -122,7 +121,6 @@ test.describe('Authentication E2E Flow', () => {
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
     
     // Verify user sees their logged-in state
-    // Look for typical post-login UI elements
     const loggedInIndicators = [
       page.getByText(/dashboard/i),
       page.getByText(/welcome/i),
@@ -141,14 +139,102 @@ test.describe('Authentication E2E Flow', () => {
     expect(foundIndicator).toBeTruthy();
   });
 
+  test('should successfully login as Platform Staff with limited access', async ({ page }) => {
+    // UX Test: Platform Staff should have read-only platform access
+    await page.goto('/login');
+    
+    const emailInput = page.getByLabel(/email/i);
+    const passwordInput = page.getByLabel(/password/i);
+    const submitButton = page.getByRole('button', { name: /sign in|login/i });
+    
+    // Login as Platform Staff (from seed SQL)
+    await emailInput.fill('support@albaly.com');
+    await passwordInput.fill('password123');
+    
+    await submitButton.click();
+    
+    // Should redirect to dashboard
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
+    
+    // Verify successful login
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should successfully login as Customer Admin with org access', async ({ page }) => {
+    // UX Test: Customer Admin should have full organization access
+    await page.goto('/login');
+    
+    const emailInput = page.getByLabel(/email/i);
+    const passwordInput = page.getByLabel(/password/i);
+    const submitButton = page.getByRole('button', { name: /sign in|login/i });
+    
+    // Login as Customer Admin (from seed SQL)
+    await emailInput.fill('admin@albaly.com');
+    await passwordInput.fill('password123');
+    
+    await submitButton.click();
+    
+    // Should redirect to dashboard
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
+    
+    // Verify successful login
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should successfully login as Customer Staff', async ({ page }) => {
+    // UX Test: Customer Staff should have limited organization access
+    await page.goto('/login');
+    
+    const emailInput = page.getByLabel(/email/i);
+    const passwordInput = page.getByLabel(/password/i);
+    const submitButton = page.getByRole('button', { name: /sign in|login/i });
+    
+    // Login as Customer Staff (from seed SQL)
+    await emailInput.fill('staff@albaly.com');
+    await passwordInput.fill('password123');
+    
+    await submitButton.click();
+    
+    // Should redirect to dashboard
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
+    
+    // Verify successful login
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should successfully login as Customer User with basic access', async ({ page }) => {
+    // UX Test: Customer User should have basic read access
+    await page.goto('/login');
+    
+    const emailInput = page.getByLabel(/email/i);
+    const passwordInput = page.getByLabel(/password/i);
+    const submitButton = page.getByRole('button', { name: /sign in|login/i });
+    
+    // Login as Customer User (from seed SQL)
+    await emailInput.fill('user@albaly.com');
+    await passwordInput.fill('password123');
+    
+    await submitButton.click();
+    
+    // Should redirect to dashboard
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
+    
+    // Verify successful login
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 5000 });
+  });
+
   test('should maintain login session across page refreshes', async ({ page }) => {
     // UX Test: Users expect to stay logged in when they refresh the page
     // This tests session persistence and prevents frustrating re-logins
     await page.goto('/login');
     
-    // Login successfully
-    await page.getByLabel(/email/i).fill('admin@selly.com');
-    await page.getByLabel(/password/i).fill('Admin@123');
+    // Login successfully with seed SQL credentials
+    await page.getByLabel(/email/i).fill('admin@albaly.com');
+    await page.getByLabel(/password/i).fill('password123');
     await page.getByRole('button', { name: /sign in|login/i }).click();
     
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
@@ -168,10 +254,10 @@ test.describe('Authentication E2E Flow', () => {
     // UX Test: Users should be able to easily find and use logout,
     // and be clearly informed they've been logged out
     
-    // First login
+    // First login with seed SQL credentials
     await page.goto('/login');
-    await page.getByLabel(/email/i).fill('admin@selly.com');
-    await page.getByLabel(/password/i).fill('Admin@123');
+    await page.getByLabel(/email/i).fill('admin@albaly.com');
+    await page.getByLabel(/password/i).fill('password123');
     await page.getByRole('button', { name: /sign in|login/i }).click();
     
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
@@ -249,8 +335,8 @@ test.describe('Authentication E2E Flow', () => {
       latency: 500,                   // 500ms latency
     });
     
-    await page.getByLabel(/email/i).fill('admin@selly.com');
-    await page.getByLabel(/password/i).fill('Admin@123');
+    await page.getByLabel(/email/i).fill('admin@albaly.com');
+    await page.getByLabel(/password/i).fill('password123');
     
     const submitButton = page.getByRole('button', { name: /sign in|login/i });
     await submitButton.click();

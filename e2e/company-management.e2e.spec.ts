@@ -19,9 +19,9 @@ test.describe('Company Management E2E Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     
-    // Login with test credentials
-    await page.getByLabel(/email/i).fill('admin@selly.com');
-    await page.getByLabel(/password/i).fill('Admin@123');
+    // Login with seed SQL credentials
+    await page.getByLabel(/email/i).fill('admin@albaly.com');
+    await page.getByLabel(/password/i).fill('password123');
     await page.getByRole('button', { name: /sign in|login/i }).click();
     
     // Wait for successful login
