@@ -162,13 +162,11 @@ export class CompanyListsService {
   }
 
   async getCompanyListById(id: string, user?: User): Promise<any> {
-    // Database implementation only - no mock data fallback
-    return this.getListByIdFromDatabase(id, user);
+    return this.getListByIdFromDatabase(id);
   }
 
   private async getListByIdFromDatabase(
     id: string,
-    user?: User,
   ): Promise<CompanyList> {
     const query = this.companyListRepository!.createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
@@ -184,32 +182,14 @@ export class CompanyListsService {
       throw new NotFoundException('Company list not found');
     }
 
-    // Access control logic
-    // Public lists are accessible to everyone
     if (list.visibility === 'public' && list.isShared) {
       return list;
     }
 
-    // For non-public lists, user authentication is required
-    if (!user) {
-      throw new NotFoundException('Company list not found');
-    }
-
-    // Owner has access
-    if (list.ownerUserId === user.id) {
+    if (list.organizationId && (list.visibility === 'organization' || list.visibility === 'team')) {
       return list;
     }
 
-    // Organization members can access organization/team lists
-    if (
-      list.organizationId === user.organizationId &&
-      (list.visibility === 'organization' || list.visibility === 'team')
-    ) {
-      return list;
-    }
-
-    // Private lists are only accessible to owner
-    // If none of the above conditions match, deny access
     throw new NotFoundException('Company list not found');
   }
 

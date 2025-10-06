@@ -36,12 +36,12 @@ function ListManagementPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // Fetch user lists from backend
   useEffect(() => {
     const fetchLists = async () => {
       try {
         setIsLoading(true)
         const response = await apiClient.getCompanyLists()
+
         if (response.data) {
           setUserLists(response.data)
           if (response.data.length > 0 && !selectedListId) {
@@ -68,6 +68,7 @@ function ListManagementPage() {
 
       try {
         const response = await apiClient.getCompanyListItems(selectedListId)
+        console.log('Fetched companies for list:', response);
         setListCompanies(response || [])
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
@@ -196,7 +197,6 @@ function ListManagementPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* List Selector Sidebar */}
           <div className="lg:col-span-1">
             <ListSelector 
               lists={userLists} 
@@ -211,15 +211,14 @@ function ListManagementPage() {
           <div className="lg:col-span-3 space-y-6">
             {selectedList ? (
               <>
-                {/* List Header */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>{selectedList.name}</span>
-                      <span className="text-sm font-normal text-gray-500">{listCompanies.length} companies</span>
+                      <span className="text-sm font-normal text-gray-500">{listCompanies.length}companies</span>
                     </CardTitle>
                     <CardDescription>
-                      Created on {selectedList.createdAt} • Status: {selectedList.status}
+                      Created on {new Date(selectedList.createdAt).toLocaleDateString()} • Status: {selectedList.verificationStatus}
                     </CardDescription>
                   </CardHeader>
                 </Card>

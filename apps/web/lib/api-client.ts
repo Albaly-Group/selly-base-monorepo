@@ -387,6 +387,8 @@ class ApiClient {
   }
 
   async getCompanyListItems(id: string, organizationId?: string): Promise<any[]> {
+    console.log("ID", id);
+    console.log("Org ID", organizationId);
     const params = organizationId ? { organizationId } : undefined;
     return this.get<any[]>(`/api/v1/company-lists/${id}/items`, params);
   }

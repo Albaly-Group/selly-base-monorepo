@@ -60,6 +60,8 @@ export class CompanyListsController {
   constructor(private readonly companyListsService: CompanyListsService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get company lists with filters' })
   @ApiQuery({
     name: 'searchTerm',
@@ -95,22 +97,6 @@ export class CompanyListsController {
     status: 200,
     description: 'Company lists retrieved successfully',
   })
-  async getCompanyLists(
-    @Query() query: CompanyListSearchQuery,
-  ): Promise<PaginatedResponse<any>> {
-    const searchParams = {
-      searchTerm: query.searchTerm,
-      organizationId: query.organizationId,
-      visibility: query.visibility,
-      page: query.page ? parseInt(query.page, 10) : 1,
-      limit: query.limit ? parseInt(query.limit, 10) : 50,
-      scope: query.scope || 'organization',
-    };
-
-    // For public lists, allow without authentication
-    return this.companyListsService.searchCompanyLists(searchParams, undefined);
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get company list by ID' })
   @ApiParam({ name: 'id', description: 'Company list ID' })
@@ -131,6 +117,67 @@ export class CompanyListsController {
     return this.companyListsService.getCompanyListById(id, undefined);
   }
 
+  async getCompanyLists(
+    @Query() query: CompanyListSearchQuery,
+    @CurrentUser() user: any,
+    @CurrentOrganization() organizationId: string,
+  ): Promise<PaginatedResponse<any>> {
+    const searchParams = {
+      searchTerm: query.searchTerm,
+      organizationId: query.organizationId || organizationId,
+      visibility: query.visibility,
+      page: query.page ? parseInt(query.page, 10) : 1,
+      limit: query.limit ? parseInt(query.limit, 10) : 50,
+      scope: query.scope || 'organization',
+    };
+
+    let userWithOrg: Users | undefined = undefined;
+    if (user) {
+      userWithOrg = {
+        id: user.sub,
+        email: user.email,
+        organizationId: organizationId,
+        name: user.name || 'User',
+        passwordHash: '',
+        avatarUrl: null,
+        status: 'active',
+        lastLoginAt: null,
+        emailVerifiedAt: new Date(),
+        settings: {},
+        metadata: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        organization: {} as any,
+        auditLogs: [],
+        companyListItems: [],
+        companyLists: [],
+        exportJobs: [],
+        importJobs: [],
+        leadProjectCompanies: [],
+        leadProjectCompanies2: [],
+        leadProjectTasks: [],
+        leadProjects: [],
+        leadProjects2: [],
+        leadProjects3: [],
+        userActivityLogs: [],
+        userRoles: [],
+        userRoles2: [],
+      };
+    }
+
+    // สำหรับ public lists ให้ไม่ต้องส่ง user
+    if (searchParams.scope === 'public') {
+      return this.companyListsService.searchCompanyLists(
+        searchParams,
+        undefined,
+      );
+    }
+    return this.companyListsService.searchCompanyLists(
+      searchParams,
+      userWithOrg,
+    );
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
@@ -146,8 +193,7 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    // Create a proper user object from JWT payload
-    const userWithOrg = {
+    const userWithOrg: Users = {
       id: user.sub,
       email: user.email,
       organizationId: organizationId,
@@ -162,9 +208,22 @@ export class CompanyListsController {
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: {} as any,
+      auditLogs: [],
+      companyListItems: [],
       companyLists: [],
+      exportJobs: [],
+      importJobs: [],
+      leadProjectCompanies: [],
+      leadProjectCompanies2: [],
+      leadProjectTasks: [],
+      leadProjects: [],
+      leadProjects2: [],
+      leadProjects3: [],
+      userActivityLogs: [],
+      userRoles: [],
       userRoles2: [],
-    } as User;
+    };
+
     return this.companyListsService.createCompanyList(
       createListDto,
       userWithOrg,
@@ -192,7 +251,7 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userWithOrg: Users = {
       id: user.sub,
       email: user.email,
       organizationId: organizationId,
@@ -207,9 +266,21 @@ export class CompanyListsController {
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: {} as any,
+      auditLogs: [],
+      companyListItems: [],
       companyLists: [],
+      exportJobs: [],
+      importJobs: [],
+      leadProjectCompanies: [],
+      leadProjectCompanies2: [],
+      leadProjectTasks: [],
+      leadProjects: [],
+      leadProjects2: [],
+      leadProjects3: [],
+      userActivityLogs: [],
+      userRoles: [],
       userRoles2: [],
-    } as User;
+    };
     return this.companyListsService.updateCompanyList(
       id,
       updateListDto,
@@ -237,7 +308,7 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userWithOrg: Users = {
       id: user.sub,
       email: user.email,
       organizationId: organizationId,
@@ -252,9 +323,21 @@ export class CompanyListsController {
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: {} as any,
+      auditLogs: [],
+      companyListItems: [],
       companyLists: [],
+      exportJobs: [],
+      importJobs: [],
+      leadProjectCompanies: [],
+      leadProjectCompanies2: [],
+      leadProjectTasks: [],
+      leadProjects: [],
+      leadProjects2: [],
+      leadProjects3: [],
+      userActivityLogs: [],
+      userRoles: [],
       userRoles2: [],
-    } as User;
+    };
     await this.companyListsService.deleteCompanyList(id, userWithOrg);
     return { message: 'Company list deleted successfully' };
   }
@@ -303,7 +386,7 @@ export class CompanyListsController {
     @CurrentOrganization() organizationId: string,
   ) {
     // Create a proper user object from JWT payload
-    const userWithOrg = {
+    const userWithOrg: Users = {
       id: user.sub,
       email: user.email,
       organizationId: organizationId,
@@ -318,9 +401,22 @@ export class CompanyListsController {
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: {} as any,
+      auditLogs: [],
+      companyListItems: [],
       companyLists: [],
+      exportJobs: [],
+      importJobs: [],
+      leadProjectCompanies: [],
+      leadProjectCompanies2: [],
+      leadProjectTasks: [],
+      leadProjects: [],
+      leadProjects2: [],
+      leadProjects3: [],
+      userActivityLogs: [],
+      userRoles: [],
       userRoles2: [],
-    } as User;
+    };
+
     return this.companyListsService.addCompaniesToList(
       listId,
       body.companyIds,
@@ -349,7 +445,7 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-    const userWithOrg = {
+    const userWithOrg: Users = {
       id: user.sub,
       email: user.email,
       organizationId: organizationId,
@@ -364,9 +460,22 @@ export class CompanyListsController {
       createdAt: new Date(),
       updatedAt: new Date(),
       organization: {} as any,
+      auditLogs: [],
+      companyListItems: [],
       companyLists: [],
+      exportJobs: [],
+      importJobs: [],
+      leadProjectCompanies: [],
+      leadProjectCompanies2: [],
+      leadProjectTasks: [],
+      leadProjects: [],
+      leadProjects2: [],
+      leadProjects3: [],
+      userActivityLogs: [],
+      userRoles: [],
       userRoles2: [],
-    } as User;
+    };
+
     return this.companyListsService.removeCompaniesFromList(
       listId,
       body.companyIds,
