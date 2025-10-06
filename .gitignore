@@ -25,6 +25,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# E2E test logs
+e2e-test-logs/
+
 # env files
 .env*
 !.env.example
