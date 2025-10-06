@@ -5,7 +5,7 @@ async function main() {
   const hash = await argon2.hash(password);
   console.log(`Password: ${password}`);
   console.log(`Hash: ${hash}`);
-  
+
   // Test verification
   const valid = await argon2.verify(hash, password);
   console.log(`Verification: ${valid}`);

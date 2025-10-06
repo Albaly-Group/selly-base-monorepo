@@ -14,7 +14,10 @@ export class ReferenceDataController {
     required: false,
     description: 'Filter by active status (default: true)',
   })
-  @ApiResponse({ status: 200, description: 'Industries retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Industries retrieved successfully',
+  })
   async getIndustries(
     @Query('active') active?: string,
   ): Promise<{ data: any[] }> {

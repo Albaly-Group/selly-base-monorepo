@@ -47,10 +47,7 @@ export class ExportsService {
       });
     }
 
-    queryBuilder
-      .orderBy('export_job.createdAt', 'DESC')
-      .skip(skip)
-      .take(limit);
+    queryBuilder.orderBy('export_job.createdAt', 'DESC').skip(skip).take(limit);
 
     const [jobs, total] = await queryBuilder.getManyAndCount();
 

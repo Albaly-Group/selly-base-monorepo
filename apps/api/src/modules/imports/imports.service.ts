@@ -47,10 +47,7 @@ export class ImportsService {
       });
     }
 
-    queryBuilder
-      .orderBy('import_job.createdAt', 'DESC')
-      .skip(skip)
-      .take(limit);
+    queryBuilder.orderBy('import_job.createdAt', 'DESC').skip(skip).take(limit);
 
     const [jobs, total] = await queryBuilder.getManyAndCount();
 
@@ -182,5 +179,4 @@ export class ImportsService {
       message: 'Import job execution started',
     };
   }
-
 }

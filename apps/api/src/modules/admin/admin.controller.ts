@@ -96,7 +96,10 @@ export class AdminController {
   })
   async updateOrganizationPolicies(@Request() req: any, @Body() policies: any) {
     const organizationId = req.user?.organizationId;
-    return this.adminService.updateOrganizationPolicies(organizationId, policies);
+    return this.adminService.updateOrganizationPolicies(
+      organizationId,
+      policies,
+    );
   }
 
   @Get('integrations')

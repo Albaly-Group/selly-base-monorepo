@@ -201,11 +201,27 @@ export class CompaniesController {
   async calculateCompanyScore(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,
-    @Body() weights?: { dataQuality?: number; companySize?: number; industry?: number; location?: number; engagement?: number; verification?: number },
+    @Body()
+    weights?: {
+      dataQuality?: number;
+      companySize?: number;
+      industry?: number;
+      location?: number;
+      engagement?: number;
+      verification?: number;
+    },
   ) {
-    const company = await this.companiesService.getCompanyById(id, organizationId, undefined);
-    const { score, breakdown } = this.leadScoringService.calculateLeadScore(company, weights);
-    const recommendations = this.leadScoringService.getImprovementRecommendations(company);
+    const company = await this.companiesService.getCompanyById(
+      id,
+      organizationId,
+      undefined,
+    );
+    const { score, breakdown } = this.leadScoringService.calculateLeadScore(
+      company,
+      weights,
+    );
+    const recommendations =
+      this.leadScoringService.getImprovementRecommendations(company);
 
     return {
       companyId: company.id,
@@ -240,10 +256,14 @@ export class CompaniesController {
     @Query('organizationId') organizationId?: string,
   ) {
     const companies = [];
-    
+
     for (const companyId of body.companyIds) {
       try {
-        const company = await this.companiesService.getCompanyById(companyId, organizationId, undefined);
+        const company = await this.companiesService.getCompanyById(
+          companyId,
+          organizationId,
+          undefined,
+        );
         companies.push(company);
       } catch (error) {
         // Skip companies that can't be found
@@ -251,8 +271,11 @@ export class CompaniesController {
       }
     }
 
-    const results = this.leadScoringService.calculateBulkLeadScores(companies, body.weights);
-    
+    const results = this.leadScoringService.calculateBulkLeadScores(
+      companies,
+      body.weights,
+    );
+
     return { results };
   }
 }
