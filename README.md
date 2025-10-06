@@ -1,31 +1,32 @@
-# Selly Base - B2B Prospecting Platform (Production-Ready Monorepo)
+# Selly Base - B2B Prospecting Platform
 
-## 🚀 Current Status: Backend API Complete ✅
+## 🚀 Production-Ready Monorepo ✅
 
-This project has been **successfully transformed** from a monolithic Next.js application to a **production-ready microservices architecture** with comprehensive NestJS backend API featuring enterprise-grade validation, audit logging, and security.
+**Selly Base** is a comprehensive B2B prospecting and lead management platform built with modern enterprise architecture. The system enables business professionals to search, filter, and manage company databases with advanced lead scoring, multi-tenant support, and full audit capabilities.
 
-### 🏗️ Architecture Overview
+**Current Status**: Production-ready with complete frontend, backend API (40+ endpoints), comprehensive test suite (195+ tests), and Docker-based infrastructure.
+
+### 📁 Project Structure
 
 ```
 selly-base-monorepo/
 ├── apps/
-│   ├── web/              # Next.js frontend application (port 3000)
-│   │   ├── app/          # Pages and routing
-│   │   ├── components/   # UI components
-│   │   └── lib/         # API client and utilities
-│   └── api/              # NestJS backend API (port 3001) ✅ COMPLETE
+│   ├── web/              # Next.js frontend (port 3000)
+│   │   ├── app/          # Next.js App Router pages
+│   │   ├── components/   # React UI components
+│   │   └── lib/          # API client and utilities
+│   └── api/              # NestJS backend (port 3001)
 │       ├── src/
-│       │   ├── modules/  # Feature modules (auth, companies, lists)
-│       │   ├── entities/ # Database entities with TypeORM
-│       │   ├── dtos/     # Validation and data transfer objects
-│       │   └── config/   # Database and JWT configuration
-│       └── .env.example  # Environment configuration template
+│       │   ├── modules/  # Feature modules (auth, companies, lists, etc.)
+│       │   ├── entities/ # TypeORM database entities
+│       │   ├── dtos/     # Validation schemas
+│       │   └── config/   # Configuration (DB, JWT, etc.)
+│       └── test/         # Backend integration tests
 ├── packages/
-│   └── types/            # Shared TypeScript type definitions
-├── docs/                 # Comprehensive documentation
-├── .env.example          # Root environment template
-├── turbo.json           # Turborepo task orchestration
-└── package.json         # Workspace configuration
+│   └── types/            # Shared TypeScript types
+├── e2e/                  # End-to-end Playwright tests
+├── docs/                 # Documentation
+└── docker-compose.yml    # PostgreSQL + pgAdmin setup
 ```
 
 ## 🚀 Quick Start
@@ -210,19 +211,16 @@ JWT_SECRET=your-production-secret
 
 ## 📊 Current Implementation Status
 
-### ✅ **Completed (Production Ready)**
-- **Backend API**: 100% complete with all endpoints
-- **Authentication**: JWT-based auth system
-- **Database Layer**: TypeORM entities and relationships
-- **Validation**: Comprehensive input validation
-- **Security**: Multi-tenant architecture
-- **Documentation**: Complete Swagger documentation
-- **Audit Logging**: Enterprise-grade tracking
-
-### ⏳ **In Progress**
-- **Frontend Integration**: Migrating components to use API
-- **State Management**: React Query integration
-- **Error Handling**: UI error boundaries
+### ✅ **Production Ready**
+- **Backend API**: 100% complete with all endpoints (40+ endpoints across 9 modules)
+- **Frontend Application**: Complete UI with all features implemented
+- **Authentication**: JWT-based auth system with role-based access control
+- **Database Layer**: TypeORM entities with PostgreSQL + pgvector support
+- **Data Validation**: Comprehensive input validation (25+ validation rules)
+- **Security**: Multi-tenant architecture with organization-level isolation
+- **Documentation**: Complete Swagger API documentation
+- **Audit Logging**: Enterprise-grade tracking for compliance
+- **Docker Integration**: Containerized database with automated setup
 
 ### ✅ **Testing Suite Complete + Enhanced**
 - **Frontend Component Tests**: 27 tests (Jest + React Testing Library)
@@ -314,233 +312,104 @@ npm run test:all                # Run comprehensive test suite
 4. Shared types go in `packages/types/`
 5. Update documentation for significant changes
 
-## 📈 Performance
+## 📈 Performance & Quality
 
+### Performance Metrics
 - **API Response Time**: < 100ms for most endpoints
-- **Concurrent Users**: Designed for 1000+ concurrent users
-- **Data Quality**: Automated scoring for company records
-- **Search Performance**: Optimized with proper indexing
+- **Database Queries**: Optimized with proper indexing (pgvector for embeddings)
+- **Concurrent Users**: Architecture supports 1000+ concurrent users
+- **Test Coverage**: 195+ tests across all layers
+
+### Quality Assurance
+- **Code Quality**: TypeScript strict mode, ESLint, Prettier
+- **Data Quality**: Automated scoring algorithm for company records
+- **Security**: OWASP vulnerability scanning, JWT authentication
+- **Accessibility**: WCAG 2.1 Level AA compliance testing
+- **Performance Testing**: Lighthouse CI (target: 90+ score)
 
 ---
 
-**Status**: Backend API is production-ready. Frontend integration in progress.
+## 🏗️ Architecture Overview
 
-**Start frontend only:**
-```bash
-cd apps/web && npm run dev
-```
+### Monorepo Structure
+This project uses **Turborepo** for efficient monorepo management with clear separation of concerns:
 
-## Migration Benefits
+### Applications
 
-- ✅ **Separation of Concerns**: Clear frontend/backend boundaries
-- ✅ **Type Safety**: Shared types across applications  
-- ✅ **Scalability**: Independent scaling and deployment
-- ✅ **Better DX**: Parallel development and debugging
-- ✅ **API-First**: RESTful API with future Swagger documentation
-
-## Applications
-
-### Frontend (`apps/web`) - Next.js
+**Frontend (`apps/web`)** - Next.js 15
 - **Port**: 3000
-- **Features**: All existing UI functionality migrated
-- **API Client**: Communicates with NestJS backend
+- **Framework**: Next.js with App Router
+- **UI**: shadcn/ui + Tailwind CSS v4
+- **Features**: Complete B2B prospecting interface
+- **Authentication**: Role-based access (User/Staff/Platform Admin)
 
-### Backend (`apps/api`) - NestJS  
+**Backend (`apps/api`)** - NestJS
 - **Port**: 3001
-- **Features**: REST API, database abstraction, business logic
-- **Endpoints**: `/api/health`, `/api/companies`
+- **Framework**: NestJS with TypeORM
+- **Database**: PostgreSQL 16 with pgvector
+- **Features**: 40+ REST API endpoints across 9 modules
+- **Documentation**: Interactive Swagger UI at `/api/docs`
 
-### Shared Types (`packages/types`)
+**Shared Types (`packages/types`)**
 - TypeScript definitions shared between frontend and backend
 - Ensures type safety across the monorepo
 
----
+### Key Features
 
-## Original Project Overview
-Selly Base is a comprehensive B2B prospecting and lead management platform designed for business professionals and staff administrators. The platform enables users to search, filter, and manage company databases with advanced lead scoring capabilities.
+#### Core Functionality
+- **Company Search & Management**: Advanced filtering with 12+ search options
+- **Company Lists**: Create, manage, and share company lists
+- **Lead Scoring**: Smart algorithm with configurable weights
+- **Bulk Operations**: Import/export with CSV support
+- **Dashboard Analytics**: Real-time metrics and reports
+- **Platform Administration**: Multi-tenant management
 
-## Current Implementation Status
-
-### ✅ Completed Features
-
-#### Core Infrastructure
-- **Authentication System**: Role-based authentication with user/staff/admin roles
-- **Route Protection**: Middleware-based route protection with role validation
-- **Modern UI**: Professional design system with shadcn/ui components
-- **Responsive Layout**: Mobile-first design with proper navigation
-
-#### User Features (TR.001 & TR.002)
-- **Company Lookup Page** (`/lookup`): 
-  - Global search bar with keyword, company name, and registered number search
-  - Advanced filtering (industry, province, company size, contact status)
-  - Results table with all required fields
-  - Add to list functionality with dialog
-  - Export capabilities
-  - Tab navigation (All Companies / My Lists)
-
-#### List Management (TR.001 & TR.002)
-- **List Management Page** (`/lists`):
-  - List content table with company records
-  - Lead scoring with smart filtering
-  - Partial matching algorithm
-  - Row-level and page-level actions
-  - Export ranked lists
-
-#### Staff Features (TR.001)
-- **Staff Dashboard** (`/staff`):
-  - Database management table
-  - Approve/Reject workflow
-  - Bulk operations
-  - Company editing capabilities
-  - Import/Export functionality
-
-### 🔧 Technical Implementation
-
-#### Data Layer
-- **Mock Data System**: Comprehensive mock data with 5+ sample companies
-- **TypeScript Types**: Full type safety with interfaces for all entities
-- **Utility Functions**: Search, filter, and lead scoring algorithms
-
-#### Authentication
-- **Demo Accounts**:
-  - User: `user@selly.com` / `password123`
-  - Staff: `staff@selly.com` / `staff123`
-  - Admin: `admin@selly.com` / `admin123`
-
-## Open Questions & Decisions
-
-### 🤔 Ambiguities Resolved
-
-#### 1. Navigation Structure
-**Question**: Should the navigation be in a sidebar or top navigation?
-**Options**: 
-- A) Top navigation bar
-- B) Sidebar navigation
-- C) Hybrid approach
-
-**DECISION**: Top navigation bar for simplicity and mobile responsiveness
-**Rationale**: Matches the requirements specification layout descriptions and provides better mobile experience
-
-#### 2. Data Persistence
-**Question**: How should user lists and preferences be stored without database integration?
-**Options**:
-- A) localStorage only
-- B) sessionStorage for temporary data
-- C) Hybrid localStorage + sessionStorage
-
-**DECISION**: localStorage for user session and lists, with fallback handling
-**Rationale**: Provides persistence across browser sessions while maintaining demo functionality
-
-#### 3. Lead Scoring Algorithm
-**Question**: Exact scoring weights not specified in requirements
-**Options**:
-- A) Equal weights for all criteria
-- B) Industry-focused weighting
-- C) Balanced approach with data completeness bonus
-
-**DECISION**: Balanced approach (Industry: 20pts, Province: 15pts, Size: 10pts, Status: 10pts, + completeness bonus)
-**Rationale**: Reflects business importance hierarchy while rewarding data quality
-
-#### 4. Export Format
-**Question**: Requirements mention "Excel/CSV" but don't specify default
-**Options**:
-- A) CSV only (simpler)
-- B) Excel only (richer format)
-- C) User choice between formats
-
-**DECISION**: CSV format with proper headers and UTF-8 encoding
-**Rationale**: Universal compatibility and easier implementation for demo
-
-### 📋 TODO Items
-
-#### High Priority
-- [ ] **TODO(spec-needed)**: Clarify exact TSIC industry categories from DBD datawarehouse
-- [ ] **TODO(spec-needed)**: Define complete list of Thai provinces for filtering
-- [ ] **TODO(spec-needed)**: Specify company size classification criteria (S/M/L thresholds)
-
-#### Medium Priority  
-- [ ] **TODO(enhancement)**: Add pagination for large result sets
-- [ ] **TODO(enhancement)**: Implement advanced search operators (AND, OR, quotes)
-- [ ] **TODO(enhancement)**: Add keyboard shortcuts for power users
-
-#### Low Priority
-- [ ] **TODO(polish)**: Add loading states for all async operations
-- [ ] **TODO(polish)**: Implement toast notifications for user feedback
-- [ ] **TODO(accessibility)**: Add ARIA labels for screen readers
-
-## Architecture Decisions
-
-### Component Structure
-\`\`\`
-app/
-├── page.tsx              # Home/Login page
-├── lookup/page.tsx       # Company lookup (TR.001)
-├── lists/page.tsx        # List management (TR.002)
-├── staff/page.tsx        # Staff dashboard (TR.001 Staff)
-└── layout.tsx            # Root layout with auth
-
-components/
-├── company-*.tsx         # Company-related components
-├── list-*.tsx           # List management components
-├── staff-*.tsx          # Staff-specific components
-└── ui/                  # Reusable UI components
-\`\`\`
-
-### State Management
-- **Authentication**: React Context with localStorage persistence
-- **Component State**: useState for local component state
-- **Data Fetching**: Direct function calls to mock data utilities
-
-### Styling Approach
-- **Design System**: shadcn/ui with Tailwind CSS v4
-- **Color Palette**: Professional blue-gray theme with high contrast
-- **Typography**: Geist Sans for UI, Geist Mono for code/data
-- **Responsive**: Mobile-first with breakpoint-specific layouts
-
-## Getting Started
+#### Enterprise Features
+- **Multi-tenant Architecture**: Organization-level data isolation
+- **Audit Logging**: Complete operation tracking for compliance
+- **Role-Based Access Control**: User, Staff, and Platform Admin roles
+- **Data Validation**: 25+ comprehensive validation rules
+- **API Documentation**: Auto-generated Swagger/OpenAPI docs
 
 ### Demo Accounts
 \`\`\`
-User Account:  user@selly.com  / password123
-Staff Account: staff@selly.com / staff123
-Admin Account: admin@selly.com / admin123
+User:           user@selly.com  / password123
+Staff:          staff@selly.com / staff123
+Platform Admin: admin@selly.com / admin123
 \`\`\`
 
-### Key Features to Test
-1. **Company Search**: Try searching for "ABC", "Bangkok", or "0105564111698"
-2. **Filtering**: Use the filters dropdown to narrow results
-3. **List Management**: Add companies to lists and use lead scoring
-4. **Staff Functions**: Login as staff to approve/reject companies
-5. **Export**: Test CSV export functionality
+## 🛠️ Technical Stack
 
-## Production Readiness Checklist
-
-### ✅ Completed
-- [x] TypeScript implementation with strict types
-- [x] Responsive design with mobile support
-- [x] Role-based authentication and authorization
-- [x] Error boundaries and loading states
-- [x] Accessible UI components
-- [x] SEO-friendly metadata
-
-### 🔄 In Progress
-- [ ] Database integration (currently using mock data)
-- [ ] API endpoints for CRUD operations
-- [ ] Real authentication with JWT/sessions
-- [ ] File upload for bulk imports
-- [ ] Email notifications for staff workflows
-
-### 📝 Future Enhancements
-- [ ] Advanced analytics and reporting
-- [ ] Integration with external data sources
-- [ ] Automated lead scoring with ML
-- [ ] Multi-language support (Thai/English)
-- [ ] Mobile app companion
-
-## Technical Stack
+### Frontend
 - **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4 + shadcn/ui
-- **State**: React Context + localStorage
+- **Language**: TypeScript (strict mode)
+- **UI Library**: shadcn/ui components
+- **Styling**: Tailwind CSS v4
+- **State Management**: React Query + Context API
 - **Icons**: Lucide React
 - **Fonts**: Geist Sans & Mono
+
+### Backend
+- **Framework**: NestJS
+- **Language**: TypeScript
+- **ORM**: TypeORM
+- **Database**: PostgreSQL 16 with pgvector extension
+- **Authentication**: JWT with refresh tokens
+- **Validation**: class-validator + class-transformer
+- **Documentation**: Swagger/OpenAPI 3.0
+
+### DevOps & Tools
+- **Monorepo**: Turborepo
+- **Package Manager**: npm
+- **Testing**: Jest, Playwright, React Testing Library
+- **Linting**: ESLint + Prettier
+- **Containerization**: Docker + Docker Compose
+- **CI/CD**: GitHub Actions
+
+### Enhanced Testing Suite ✨
+- **Visual Regression**: lost-pixel
+- **Performance**: Lighthouse CI
+- **Accessibility**: axe-core
+- **Load Testing**: k6
+- **Contract Testing**: Pact
+- **Security**: OWASP ZAP
