@@ -1,0 +1,11 @@
+{
+  "buildCommand": "turbo build",
+  "env": {
+    "SKIP_DATABASE": "true"
+  },
+  "build": {
+    "env": {
+      "SKIP_DATABASE": "true"
+    }
+  }
+}
