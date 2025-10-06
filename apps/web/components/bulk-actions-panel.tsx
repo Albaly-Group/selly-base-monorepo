@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { apiClient } from "@/lib/api-client"
 
 interface BulkActionsPanelProps {
   open: boolean
@@ -22,11 +23,42 @@ interface BulkActionsPanelProps {
   onComplete: () => void
 }
 
+// Fallback options in case API fails
+const fallbackStatusOptions = [
+  { value: "Active", label: "Active" },
+  { value: "Needs Verification", label: "Needs Verification" },
+  { value: "Invalid", label: "Invalid" },
+]
+
 export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onComplete }: BulkActionsPanelProps) {
   const [action, setAction] = useState<"approve" | "reject" | "update-status">("approve")
   const [newStatus, setNewStatus] = useState("")
   const [reason, setReason] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [statusOptions, setStatusOptions] = useState<{ value: string; label: string }[]>(fallbackStatusOptions)
+
+  useEffect(() => {
+    const fetchContactStatuses = async () => {
+      try {
+        const response = await apiClient.getContactStatuses()
+        if (response.data && response.data.length > 0) {
+          setStatusOptions(
+            response.data.map((item: any) => ({
+              value: item.label,
+              label: item.label,
+            }))
+          )
+        }
+      } catch (error) {
+        console.error('Failed to fetch contact statuses, using fallback:', error)
+        // Fallback options already set in state
+      }
+    }
+
+    if (open) {
+      fetchContactStatuses()
+    }
+  }, [open])
 
   const handleSubmit = async () => {
     setIsLoading(true)
@@ -85,9 +117,11 @@ export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onCom
                   <SelectValue placeholder="Select new status..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Needs Verification">Needs Verification</SelectItem>
-                  <SelectItem value="Invalid">Invalid</SelectItem>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

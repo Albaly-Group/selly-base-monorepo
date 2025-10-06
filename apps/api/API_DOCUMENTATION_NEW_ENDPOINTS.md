@@ -2,6 +2,8 @@
 
 This document describes the newly implemented API endpoints for reference data, company contacts, company activities, and audit logs.
 
+> **📋 Related Documentation**: For dropdown integration in the frontend, see [DROPDOWN_API_DOCUMENTATION.md](../../DROPDOWN_API_DOCUMENTATION.md)
+
 ## Table of Contents
 - [Reference Data API](#reference-data-api)
 - [Company Contacts API](#company-contacts-api)
