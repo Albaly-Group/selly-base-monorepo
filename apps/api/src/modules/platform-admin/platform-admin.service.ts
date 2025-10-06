@@ -187,20 +187,27 @@ export class PlatformAdminService {
         if (company.nameEn) filledFields++;
         if (company.primaryRegistrationNo) filledFields++;
         if (company.province) filledFields++;
-        if (company.industryCode) filledFields++;
-        if (company.website) filledFields++;
-        if (company.phone) filledFields++;
-        if (company.email) filledFields++;
-        if (company.address) filledFields++;
+        if (company.industryClassification) filledFields++;
+        if (company.websiteUrl) filledFields++;
+        if (company.primaryPhone) filledFields++;
+        if (company.primaryEmail) filledFields++;
+        if (company.addressLine1) filledFields++;
         if (company.companySize) filledFields++;
         if (company.verificationStatus) filledFields++;
 
         const dataCompleteness = Math.round((filledFields / totalFields) * 100);
 
+        // Extract industry name from industryClassification JSONB
+        let industryName = 'N/A';
+        if (company.industryClassification && typeof company.industryClassification === 'object') {
+          const industryData = company.industryClassification as any;
+          industryName = industryData.name || industryData.industryName || 'N/A';
+        }
+
         return {
           id: company.id,
           companyNameEn: company.nameEn,
-          industrialName: company.industryCode || 'N/A',
+          industrialName: industryName,
           province: company.province || 'N/A',
           registeredNo: company.primaryRegistrationNo,
           verificationStatus:
