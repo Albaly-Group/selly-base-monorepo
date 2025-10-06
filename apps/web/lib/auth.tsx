@@ -237,19 +237,19 @@ export function canManageSharedData(user: User): boolean {
 
 // Organization Admin permissions - RBAC Standard
 export function canManageOrganizationUsers(user: User): boolean {
-  return hasPermission(user, 'org-users:manage') || hasPermission(user, '*')
+  return hasPermission(user, 'users:manage') || hasPermission(user, 'users:*') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationPolicies(user: User): boolean {
-  return hasPermission(user, 'org-policies:manage') || hasPermission(user, '*')
+  return hasPermission(user, 'org:manage') || hasPermission(user, 'org:*') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationData(user: User): boolean {
-  return hasPermission(user, 'org-data:manage') || hasPermission(user, '*')
+  return hasPermission(user, 'org:manage') || hasPermission(user, 'org:*') || hasPermission(user, '*')
 }
 
 export function canManageOrganizationSettings(user: User): boolean {
-  return hasPermission(user, 'org-settings:manage') || hasPermission(user, '*')
+  return hasPermission(user, 'org:manage') || hasPermission(user, 'org:*') || hasPermission(user, '*')
 }
 
 // Staff permissions - RBAC Standard

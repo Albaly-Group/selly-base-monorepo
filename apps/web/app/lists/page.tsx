@@ -327,4 +327,4 @@ function ListManagementPage() {
   )
 }
 
-export default requireAuth(["lists:manage", "*"])(ListManagementPage)
+export default requireAuth(["lists:*", "lists:create", "lists:read", "lists:read:own", "*"])(ListManagementPage)
