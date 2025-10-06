@@ -56,6 +56,20 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
   const [companyLists, setCompanyLists] = useState<any[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
+  const [contactFormData, setContactFormData] = useState({
+    firstName: "",
+    lastName: "",
+    title: "",
+    phone: "",
+    email: "",
+  })
+  const [activityFormData, setActivityFormData] = useState({
+    activityType: "",
+    outcome: "",
+    content: "",
+  })
+  const [isSavingContact, setIsSavingContact] = useState(false)
+  const [isSavingActivity, setIsSavingActivity] = useState(false)
 
   const companyDetails = company
 
@@ -88,6 +102,69 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   }, [company, open])
 
+  const handleSaveContact = async () => {
+    if (!company?.id) return
+
+    try {
+      setIsSavingContact(true)
+      await apiClient.createCompanyContact({
+        companyId: company.id,
+        firstName: contactFormData.firstName,
+        lastName: contactFormData.lastName,
+        title: contactFormData.title,
+        phone: contactFormData.phone,
+        email: contactFormData.email,
+      })
+      
+      // Reset form and close dialog
+      setContactFormData({
+        firstName: "",
+        lastName: "",
+        title: "",
+        phone: "",
+        email: "",
+      })
+      setShowAddContact(false)
+      
+      // Show success message (you can add a toast notification here)
+      console.log('Contact added successfully')
+    } catch (error) {
+      console.error('Failed to add contact:', error)
+      alert('Failed to add contact. Please try again.')
+    } finally {
+      setIsSavingContact(false)
+    }
+  }
+
+  const handleSaveActivity = async () => {
+    if (!company?.id) return
+
+    try {
+      setIsSavingActivity(true)
+      await apiClient.createCompanyActivity({
+        companyId: company.id,
+        activityType: activityFormData.activityType,
+        outcome: activityFormData.outcome,
+        content: activityFormData.content,
+      })
+      
+      // Reset form and close dialog
+      setActivityFormData({
+        activityType: "",
+        outcome: "",
+        content: "",
+      })
+      setShowAddActivity(false)
+      
+      // Show success message (you can add a toast notification here)
+      console.log('Activity logged successfully')
+    } catch (error) {
+      console.error('Failed to log activity:', error)
+      alert('Failed to log activity. Please try again.')
+    } finally {
+      setIsSavingActivity(false)
+    }
+  }
   if (!company) return null
 
   // Mock data
@@ -584,32 +661,54 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>First Name</Label>
-                  <Input placeholder="Enter first name" />
+                  <Input 
+                    placeholder="Enter first name"
+                    value={contactFormData.firstName}
+                    onChange={(e) => setContactFormData({ ...contactFormData, firstName: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Last Name</Label>
-                  <Input placeholder="Enter last name" />
+                  <Input 
+                    placeholder="Enter last name"
+                    value={contactFormData.lastName}
+                    onChange={(e) => setContactFormData({ ...contactFormData, lastName: e.target.value })}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Title/Position</Label>
-                <Input placeholder="e.g., Chief Technology Officer" />
+                <Input 
+                  placeholder="e.g., Chief Technology Officer"
+                  value={contactFormData.title}
+                  onChange={(e) => setContactFormData({ ...contactFormData, title: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Phone</Label>
-                  <Input placeholder="+66-2-123-4567" />
+                  <Input 
+                    placeholder="+66-2-123-4567"
+                    value={contactFormData.phone}
+                    onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input placeholder="contact@company.com" />
+                  <Input 
+                    placeholder="contact@company.com"
+                    value={contactFormData.email}
+                    onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddContact(false)}>
+              <Button variant="outline" onClick={() => setShowAddContact(false)} disabled={isSavingContact}>
                 Cancel
               </Button>
+              <Button onClick={handleSaveContact} disabled={isSavingContact}>
+                {isSavingContact ? 'Saving...' : 'Add Contact'}
               <Button onClick={onAddContact}>
                 Add Contact
               </Button>
@@ -630,7 +729,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Activity Type</Label>
-                  <Select>
+                  <Select 
+                    value={activityFormData.activityType}
+                    onValueChange={(value) => setActivityFormData({ ...activityFormData, activityType: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -644,7 +746,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 </div>
                 <div className="space-y-2">
                   <Label>Outcome</Label>
-                  <Select>
+                  <Select
+                    value={activityFormData.outcome}
+                    onValueChange={(value) => setActivityFormData({ ...activityFormData, outcome: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select outcome" />
                     </SelectTrigger>
@@ -659,14 +764,21 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </div>
               <div className="space-y-2">
                 <Label>Notes</Label>
-                <Textarea placeholder="Enter activity details..." rows={3} />
+                <Textarea 
+                  placeholder="Enter activity details..." 
+                  rows={3}
+                  value={activityFormData.content}
+                  onChange={(e) => setActivityFormData({ ...activityFormData, content: e.target.value })}
+                />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddActivity(false)}>
+              <Button variant="outline" onClick={() => setShowAddActivity(false)} disabled={isSavingActivity}>
                 Cancel
               </Button>
-              <Button>Log Activity</Button>
+              <Button onClick={handleSaveActivity} disabled={isSavingActivity}>
+                {isSavingActivity ? 'Saving...' : 'Log Activity'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
