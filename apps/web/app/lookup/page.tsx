@@ -6,6 +6,7 @@ import { CompanySearch } from "@/components/company-search"
 import { CompanyTable } from "@/components/company-table"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer"
+import { CompanyCreateDialog } from "@/components/company-create-dialog"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { requireAuth } from "@/lib/auth"
 import { useCompaniesSearch } from "@/lib/hooks/api-hooks"
@@ -13,13 +14,14 @@ import { searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/mock-data
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Filter, Loader2 } from "lucide-react"
+import { Search, Filter, Loader2, Plus } from "lucide-react"
 
 function CompanyLookupPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [smartFiltering, setSmartFiltering] = useState<SmartFilteringCriteria>({})
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showSmartFilteringDialog, setShowSmartFilteringDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
@@ -217,6 +219,12 @@ function CompanyLookupPage() {
     setShowCompanyDetail(true)
   }
 
+  const handleCreateSuccess = (newCompany: Company) => {
+    // Optionally refresh the search results or show a success message
+    // For now, just close the dialog (handled by the dialog component)
+    console.log("Company created successfully:", newCompany)
+  }
+
   const hasResults = isSimpleSearch || hasAppliedFiltering
 
   return (
@@ -316,6 +324,13 @@ function CompanyLookupPage() {
 
                   <div className="flex gap-2">
                     <button
+                      onClick={() => setShowCreateDialog(true)}
+                      className="px-3 py-2 bg-green-600 text-sm text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Create Company
+                    </button>
+                    <button
                       onClick={onAddToList}
                       disabled={selectedCompanies.length === 0 || isLoading}
                       className="px-3 py-2 bg-primary text-sm text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
@@ -375,6 +390,13 @@ function CompanyLookupPage() {
             setSelectedCompanies([])
             setShowAddToListDialog(false)
           }}
+        />
+
+        {/* Create Company Dialog */}
+        <CompanyCreateDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onSuccess={handleCreateSuccess}
         />
 
         {/* Smart Filtering Dialog */}
