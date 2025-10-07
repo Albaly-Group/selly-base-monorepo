@@ -31,9 +31,9 @@ const industrialOptions = [
 const provinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
 
 const companySizeOptions = [
-  { value: "S", label: "Small (S)" },
-  { value: "M", label: "Medium (M)" },
-  { value: "L", label: "Large (L)" },
+  { value: "small", label: "Small (S)" },
+  { value: "medium", label: "Medium (M)" },
+  { value: "large", label: "Large (L)" },
 ]
 
 const contactStatusOptions = ["Active", "Needs Verification", "Invalid"]
@@ -97,7 +97,7 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
           {companySizeOptions.map((option) => (
             <DropdownMenuItem
               key={option.value}
-              onClick={() => updateFilter("companySize", option.value as "S" | "M" | "L")}
+              onClick={() => updateFilter("companySize", option.value)}
               className={filters.companySize === option.value ? "bg-accent" : ""}
             >
               {option.label}
