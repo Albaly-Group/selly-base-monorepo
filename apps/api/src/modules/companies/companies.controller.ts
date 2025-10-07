@@ -105,6 +105,11 @@ export class CompaniesController {
     description: 'Filter by company size',
   })
   @ApiQuery({
+    name: 'industrial',
+    required: false,
+    description: 'Filter by industry classification',
+  })
+  @ApiQuery({
     name: 'province',
     required: false,
     description: 'Filter by province',
