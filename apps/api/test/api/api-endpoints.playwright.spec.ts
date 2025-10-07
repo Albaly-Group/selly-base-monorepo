@@ -3,7 +3,7 @@ import { ApiTestHelper, AuthHelper } from './helpers/api-test-helpers';
 
 /**
  * API Endpoints E2E Tests using Playwright
- * 
+ *
  * These tests verify all backend API endpoints using Playwright's API testing capabilities.
  */
 
@@ -17,7 +17,7 @@ test.describe('API Endpoints (Playwright e2e)', () => {
     const requestContext = await request.newContext({
       baseURL: BASE_URL,
       extraHTTPHeaders: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
     });

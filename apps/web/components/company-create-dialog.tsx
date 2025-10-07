@@ -114,7 +114,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Company</DialogTitle>
-          <DialogDescription>Add a new company to your organization's database.</DialogDescription>
+          <DialogDescription>Add a new company to your organization&apos;s database.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

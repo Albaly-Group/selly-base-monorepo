@@ -165,8 +165,8 @@ export class ImportsService {
     });
 
     // Simulate processing (in real implementation, this would be async)
-    setTimeout(async () => {
-      await this.importJobRepository.update(id, {
+    setTimeout(() => {
+      void this.importJobRepository.update(id, {
         status: 'completed',
         completedAt: new Date(),
         processedRecords: 98,
