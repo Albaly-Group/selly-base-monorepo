@@ -40,6 +40,8 @@ import {
   Activity
 } from "lucide-react"
 import type { Company } from "@/lib/types"
+import { createContactSchema, createActivitySchema } from "@/lib/validation-schemas"
+import { useFormValidation } from "@/hooks/use-form-validation"
 
 interface CompanyDetailDrawerProps {
   company: Company | null
@@ -72,6 +74,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   })
   const [isSavingContact, setIsSavingContact] = useState(false)
   const [isSavingActivity, setIsSavingActivity] = useState(false)
+  
+  const contactValidation = useFormValidation(createContactSchema)
+  const activityValidation = useFormValidation(createActivitySchema)
 
   const companyDetails = company
 
@@ -126,16 +131,24 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleSaveContact = async () => {
     if (!company?.id) return
 
+    // Validate contact form
+    const contactData = {
+      companyId: company.id,
+      firstName: contactFormData.firstName,
+      lastName: contactFormData.lastName,
+      title: contactFormData.title,
+      phone: contactFormData.phone,
+      email: contactFormData.email,
+    }
+
+    if (!contactValidation.validate(contactData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
     try {
       setIsSavingContact(true)
-      await apiClient.createCompanyContact({
-        companyId: company.id,
-        firstName: contactFormData.firstName,
-        lastName: contactFormData.lastName,
-        title: contactFormData.title,
-        phone: contactFormData.phone,
-        email: contactFormData.email,
-      })
+      await apiClient.createCompanyContact(contactData)
       
       // Reset form and close dialog
       setContactFormData({
@@ -173,14 +186,22 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleSaveActivity = async () => {
     if (!company?.id) return
 
+    // Validate activity form
+    const activityData = {
+      companyId: company.id,
+      activityType: activityFormData.activityType,
+      outcome: activityFormData.outcome,
+      content: activityFormData.content,
+    }
+
+    if (!activityValidation.validate(activityData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
     try {
       setIsSavingActivity(true)
-      await apiClient.createCompanyActivity({
-        companyId: company.id,
-        activityType: activityFormData.activityType,
-        outcome: activityFormData.outcome,
-        content: activityFormData.content,
-      })
+      await apiClient.createCompanyActivity(activityData)
       
       // Reset form and close dialog
       setActivityFormData({
@@ -628,16 +649,30 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <Input 
                     placeholder="Enter first name"
                     value={contactFormData.firstName}
-                    onChange={(e) => setContactFormData({ ...contactFormData, firstName: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, firstName: e.target.value })
+                      contactValidation.clearError('firstName')
+                    }}
+                    className={contactValidation.hasError('firstName') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('firstName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('firstName')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Last Name</Label>
                   <Input 
                     placeholder="Enter last name"
                     value={contactFormData.lastName}
-                    onChange={(e) => setContactFormData({ ...contactFormData, lastName: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, lastName: e.target.value })
+                      contactValidation.clearError('lastName')
+                    }}
+                    className={contactValidation.hasError('lastName') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('lastName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('lastName')}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -654,16 +689,31 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <Input 
                     placeholder="+66-2-123-4567"
                     value={contactFormData.phone}
-                    onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, phone: e.target.value })
+                      contactValidation.clearError('phone')
+                    }}
+                    className={contactValidation.hasError('phone') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('phone') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('phone')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <Input 
+                    type="email"
                     placeholder="contact@company.com"
                     value={contactFormData.email}
-                    onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, email: e.target.value })
+                      contactValidation.clearError('email')
+                    }}
+                    className={contactValidation.hasError('email') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('email') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('email')}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -690,12 +740,15 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Activity Type</Label>
+                  <Label>Activity Type <span className="text-red-500">*</span></Label>
                   <Select 
                     value={activityFormData.activityType}
-                    onValueChange={(value) => setActivityFormData({ ...activityFormData, activityType: value })}
+                    onValueChange={(value) => {
+                      setActivityFormData({ ...activityFormData, activityType: value })
+                      activityValidation.clearError('activityType')
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={activityValidation.hasError('activityType') ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -705,6 +758,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <SelectItem value="email">Email</SelectItem>
                     </SelectContent>
                   </Select>
+                  {activityValidation.hasError('activityType') && (
+                    <p className="text-sm text-red-500">{activityValidation.getError('activityType')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Outcome</Label>

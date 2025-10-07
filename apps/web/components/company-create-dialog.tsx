@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import { CheckCircle2, AlertCircle } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
+import { createCompanySchema } from "@/lib/validation-schemas"
+import { useFormValidation } from "@/hooks/use-form-validation"
 
 interface CompanyCreateDialogProps {
   open: boolean
@@ -47,6 +49,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const { errors, validate, clearError, getError, hasError } = useFormValidation(createCompanySchema)
 
   const resetForm = () => {
     setFormData({
@@ -80,9 +83,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   }
 
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.companyNameEn.trim()) {
-      setError("Company name (English) is required")
+    // Validate all fields using Zod schema
+    if (!validate(formData)) {
+      setError("Please fix the validation errors before submitting")
       return
     }
 
@@ -140,6 +143,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     setError(null)
+    clearError(field)
   }
 
   return (
@@ -166,7 +170,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   onChange={(e) => updateField("companyNameEn", e.target.value)}
                   placeholder="Acme Corporation"
                   disabled={isLoading}
+                  className={hasError("companyNameEn") ? "border-red-500" : ""}
                 />
+                {hasError("companyNameEn") && (
+                  <p className="text-sm text-red-500">{getError("companyNameEn")}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -177,7 +185,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   onChange={(e) => updateField("companyNameTh", e.target.value)}
                   placeholder="บริษัท อัคมี"
                   disabled={isLoading}
+                  className={hasError("companyNameTh") ? "border-red-500" : ""}
                 />
+                {hasError("companyNameTh") && (
+                  <p className="text-sm text-red-500">{getError("companyNameTh")}</p>
+                )}
               </div>
             </div>
 
@@ -219,7 +231,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   onChange={(e) => updateField("primaryEmail", e.target.value)}
                   placeholder="contact@example.com"
                   disabled={isLoading}
+                  className={hasError("primaryEmail") ? "border-red-500" : ""}
                 />
+                {hasError("primaryEmail") && (
+                  <p className="text-sm text-red-500">{getError("primaryEmail")}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -231,7 +247,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   onChange={(e) => updateField("primaryPhone", e.target.value)}
                   placeholder="+66 2 123 4567"
                   disabled={isLoading}
+                  className={hasError("primaryPhone") ? "border-red-500" : ""}
                 />
+                {hasError("primaryPhone") && (
+                  <p className="text-sm text-red-500">{getError("primaryPhone")}</p>
+                )}
               </div>
             </div>
 
@@ -244,7 +264,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                 onChange={(e) => updateField("websiteUrl", e.target.value)}
                 placeholder="https://example.com"
                 disabled={isLoading}
+                className={hasError("websiteUrl") ? "border-red-500" : ""}
               />
+              {hasError("websiteUrl") && (
+                <p className="text-sm text-red-500">{getError("websiteUrl")}</p>
+              )}
             </div>
           </div>
 
