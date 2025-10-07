@@ -279,12 +279,8 @@ export class CompanyListsController {
     description: 'List items retrieved successfully',
   })
   @ApiResponse({ status: 404, description: 'Company list not found' })
-  async getListItems(
-    @Param('id') id: string,
-    @Query('organizationId') organizationId?: string,
-  ) {
-    const items = await this.companyListsService.getListItems(id, undefined);
-    return { data: items };
+  async getListItems(@Param('id') id: string): Promise<any> {
+    return await this.companyListsService.getListItems(id);
   }
 
   @Post(':id/companies')
@@ -305,23 +301,34 @@ export class CompanyListsController {
   })
   async addCompaniesToList(
     @Param('id') listId: string,
-    @Body() body: AddCompaniesToListDto,
+    @Body() addCompanyToListDto: AddCompaniesToListDto,
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
+
+    const userId = user.id ?? user.sub;
+    const userName = user.name;
+
     const userWithOrg: UserContext = {
-      id: user.id,
+      id: userId,
       email: user.email,
-      name: user.name || 'User',
-      organizationId: organizationId ?? '',
+      name: userName,
+      organizationId: organizationId,
     };
+
+    console.log("Id", listId);
+    console.log("addCompanyToListDto", addCompanyToListDto);
+    console.log("User", user);
+    console.log("Organization", organizationId);
+    console.log("UserWithOrg", userWithOrg);
+
     if (!userWithOrg.organizationId) {
       throw new Error('organizationId is required for UserContext');
     }
 
     return this.companyListsService.addCompaniesToList(
       listId,
-      body.companyIds,
+      addCompanyToListDto.companyIds,
       userWithOrg,
     );
   }

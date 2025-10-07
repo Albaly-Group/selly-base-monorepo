@@ -138,7 +138,6 @@ export class CompaniesController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ): Promise<PaginatedResponse<any>> {
-    // Simple parameter handling without complex validation for now
     const searchDto = {
       organizationId,
       includeSharedData: includeSharedData === 'true',
