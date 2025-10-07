@@ -54,10 +54,28 @@ describe('ExportsService', () => {
   });
 
   describe('getExportJobs', () => {
-    it('should return paginated export jobs from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
+    it('should return paginated export jobs from database', async () => {
+      const mockJobs = [
+        {
+          id: '1',
+          filename: 'test-export.csv',
+          status: 'completed',
+          scope: 'Test Export',
+          organization: { id: 'org1', name: 'Test Org' },
+        },
+      ];
 
-      const result = await serviceWithoutRepo.getExportJobs({
+      mockExportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockJobs, 1]),
+      });
+
+      const result = await service.getExportJobs({
         page: 1,
         limit: 10,
       });
@@ -68,25 +86,48 @@ describe('ExportsService', () => {
       expect(result.pagination.page).toBe(1);
     });
 
-    it('should filter export jobs by status', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
+    it('should filter export jobs by status from database', async () => {
+      const mockJobs = [
+        {
+          id: '1',
+          filename: 'test-export.csv',
+          status: 'completed',
+          scope: 'Test Export',
+        },
+      ];
 
-      const result = await serviceWithoutRepo.getExportJobs({
+      mockExportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockJobs, 1]),
+      });
+
+      const result = await service.getExportJobs({
         status: 'completed',
         page: 1,
         limit: 10,
       });
 
       expect(result.data.length).toBeGreaterThan(0);
-      result.data.forEach((job) => {
-        expect(job.status).toBe('completed');
-      });
+      expect(mockExportJobRepository.createQueryBuilder).toHaveBeenCalled();
     });
 
     it('should handle pagination parameters', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
+      mockExportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      });
 
-      const result = await serviceWithoutRepo.getExportJobs({
+      const result = await service.getExportJobs({
         page: 2,
         limit: 5,
       });
@@ -97,10 +138,21 @@ describe('ExportsService', () => {
   });
 
   describe('getExportJobById', () => {
-    it('should return export job by id from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
+    it('should return export job by id from database', async () => {
+      const mockJob = {
+        id: '1',
+        filename: 'test-export.csv',
+        status: 'completed',
+        scope: 'Test Export',
+      };
 
-      const result = await serviceWithoutRepo.getExportJobById('1');
+      mockExportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockJob),
+      });
+
+      const result = await service.getExportJobById('1');
 
       expect(result).toBeDefined();
       expect(result.id).toBe('1');
@@ -108,44 +160,62 @@ describe('ExportsService', () => {
   });
 
   describe('createExportJob', () => {
-    it('should create export job with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
-
+    it('should create export job using database', async () => {
       const exportData = {
         filename: 'test-export.csv',
         scope: 'Test Export',
         format: 'CSV' as const,
       };
 
-      const result = await serviceWithoutRepo.createExportJob(exportData);
+      const mockJob = {
+        id: '123',
+        ...exportData,
+        status: 'queued',
+      };
+
+      mockExportJobRepository.create.mockReturnValue(mockJob);
+      mockExportJobRepository.save.mockResolvedValue(mockJob);
+
+      const result = await service.createExportJob(exportData);
 
       expect(result).toBeDefined();
       expect(result.filename).toBe(exportData.filename);
       expect(result.status).toBeDefined();
+      expect(mockExportJobRepository.create).toHaveBeenCalled();
     });
 
     it('should set initial status to queued', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
-
       const exportData = {
         filename: 'test-export.csv',
         scope: 'Test Export',
       };
 
-      const result = await serviceWithoutRepo.createExportJob(exportData);
+      const mockJob = {
+        id: '123',
+        ...exportData,
+        status: 'queued',
+      };
+
+      mockExportJobRepository.create.mockReturnValue(mockJob);
+      mockExportJobRepository.save.mockResolvedValue(mockJob);
+
+      const result = await service.createExportJob(exportData);
 
       expect(result.status).toBe('queued');
     });
   });
 
   describe('deleteExportJob', () => {
-    it('should delete export job by id', async () => {
-      const serviceWithoutRepo = new ExportsService(undefined, undefined);
+    it('should delete export job by id using database', async () => {
+      mockExportJobRepository.createQueryBuilder.mockReturnValue({
+        delete: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({ affected: 1 }),
+      });
 
-      await serviceWithoutRepo.deleteExportJob('1');
+      await service.deleteExportJob('1');
 
-      // If no error is thrown, test passes
-      expect(true).toBe(true);
+      expect(mockExportJobRepository.createQueryBuilder).toHaveBeenCalled();
     });
   });
 });

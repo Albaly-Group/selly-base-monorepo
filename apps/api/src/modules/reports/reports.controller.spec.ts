@@ -1,15 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsController } from './reports.controller';
+import { ReportsService } from './reports.service';
 
 describe('ReportsController', () => {
   let controller: ReportsController;
+  let reportsService: ReportsService;
+
+  const mockReportsService = {
+    getDashboardAnalytics: jest.fn(),
+    getDataQualityMetrics: jest.fn(),
+    getUserActivityReports: jest.fn(),
+    getExportHistoryReports: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReportsController],
+      providers: [
+        {
+          provide: ReportsService,
+          useValue: mockReportsService,
+        },
+      ],
     }).compile();
 
     controller = module.get<ReportsController>(ReportsController);
+    reportsService = module.get<ReportsService>(ReportsService);
   });
 
   it('should be defined', () => {
@@ -18,6 +34,31 @@ describe('ReportsController', () => {
 
   describe('getDashboardAnalytics', () => {
     it('should return dashboard analytics with all metrics', async () => {
+      const mockAnalytics = {
+        totalCompanies: 100,
+        totalLists: 10,
+        totalExports: 5,
+        totalImports: 3,
+        activeUsers: 20,
+        dataQualityScore: 0.85,
+        monthlyGrowth: {
+          companies: 10,
+          exports: 2,
+          users: 5,
+        },
+        recentActivity: [
+          {
+            type: 'company_created',
+            description: 'New company added',
+            timestamp: new Date(),
+          },
+        ],
+      };
+
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(
+        mockAnalytics,
+      );
+
       const result = await controller.getDashboardAnalytics();
 
       expect(result).toBeDefined();
@@ -36,6 +77,21 @@ describe('ReportsController', () => {
     });
 
     it('should return monthly growth data', async () => {
+      const mockAnalytics = {
+        totalCompanies: 100,
+        totalLists: 10,
+        monthlyGrowth: {
+          companies: 10,
+          exports: 2,
+          users: 5,
+        },
+        recentActivity: [],
+      };
+
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(
+        mockAnalytics,
+      );
+
       const result = await controller.getDashboardAnalytics();
 
       expect(result.monthlyGrowth).toBeDefined();
@@ -45,6 +101,21 @@ describe('ReportsController', () => {
     });
 
     it('should return recent activity list', async () => {
+      const mockAnalytics = {
+        totalCompanies: 100,
+        recentActivity: [
+          {
+            type: 'company_created',
+            description: 'New company added',
+            timestamp: new Date(),
+          },
+        ],
+      };
+
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(
+        mockAnalytics,
+      );
+
       const result = await controller.getDashboardAnalytics();
 
       expect(Array.isArray(result.recentActivity)).toBe(true);
@@ -59,6 +130,24 @@ describe('ReportsController', () => {
 
   describe('getDataQualityMetrics', () => {
     it('should return data quality metrics', async () => {
+      const mockMetrics = {
+        overallScore: 0.85,
+        metrics: {
+          completeness: 0.9,
+          accuracy: 0.85,
+          consistency: 0.8,
+          timeliness: 0.85,
+        },
+        issues: [],
+        trends: {
+          thisMonth: 0.85,
+          lastMonth: 0.80,
+          improvement: 0.05,
+        },
+      };
+
+      mockReportsService.getDataQualityMetrics.mockResolvedValue(mockMetrics);
+
       const result = await controller.getDataQualityMetrics();
 
       expect(result).toBeDefined();
@@ -73,6 +162,20 @@ describe('ReportsController', () => {
     });
 
     it('should return quality metrics breakdown', async () => {
+      const mockMetrics = {
+        overallScore: 0.85,
+        metrics: {
+          completeness: 0.9,
+          accuracy: 0.85,
+          consistency: 0.8,
+          timeliness: 0.85,
+        },
+        issues: [],
+        trends: {},
+      };
+
+      mockReportsService.getDataQualityMetrics.mockResolvedValue(mockMetrics);
+
       const result = await controller.getDataQualityMetrics();
 
       expect(result.metrics).toBeDefined();
@@ -83,6 +186,21 @@ describe('ReportsController', () => {
     });
 
     it('should return quality issues list', async () => {
+      const mockMetrics = {
+        overallScore: 0.85,
+        metrics: {},
+        issues: [
+          {
+            field: 'email',
+            count: 5,
+            severity: 'high',
+          },
+        ],
+        trends: {},
+      };
+
+      mockReportsService.getDataQualityMetrics.mockResolvedValue(mockMetrics);
+
       const result = await controller.getDataQualityMetrics();
 
       expect(Array.isArray(result.issues)).toBe(true);
@@ -95,6 +213,19 @@ describe('ReportsController', () => {
     });
 
     it('should return trend data', async () => {
+      const mockMetrics = {
+        overallScore: 0.85,
+        metrics: {},
+        issues: [],
+        trends: {
+          thisMonth: 0.85,
+          lastMonth: 0.80,
+          improvement: 0.05,
+        },
+      };
+
+      mockReportsService.getDataQualityMetrics.mockResolvedValue(mockMetrics);
+
       const result = await controller.getDataQualityMetrics();
 
       expect(result.trends).toBeDefined();
@@ -106,6 +237,19 @@ describe('ReportsController', () => {
 
   describe('getUserActivityReports', () => {
     it('should return user activity reports', async () => {
+      const mockReports = {
+        period: {
+          startDate: '2024-01-01',
+          endDate: '2024-01-31',
+        },
+        totalSessions: 100,
+        uniqueUsers: 20,
+        topActions: [],
+        userBreakdown: [],
+      };
+
+      mockReportsService.getUserActivityReports.mockResolvedValue(mockReports);
+
       const result = await controller.getUserActivityReports();
 
       expect(result).toBeDefined();
@@ -120,6 +264,16 @@ describe('ReportsController', () => {
       const startDate = '2024-01-01';
       const endDate = '2024-01-31';
 
+      const mockReports = {
+        period: { startDate, endDate },
+        totalSessions: 100,
+        uniqueUsers: 20,
+        topActions: [],
+        userBreakdown: [],
+      };
+
+      mockReportsService.getUserActivityReports.mockResolvedValue(mockReports);
+
       const result = await controller.getUserActivityReports(
         startDate,
         endDate,
@@ -130,6 +284,21 @@ describe('ReportsController', () => {
     });
 
     it('should return top actions list', async () => {
+      const mockReports = {
+        period: {},
+        totalSessions: 100,
+        uniqueUsers: 20,
+        topActions: [
+          {
+            action: 'login',
+            count: 50,
+          },
+        ],
+        userBreakdown: [],
+      };
+
+      mockReportsService.getUserActivityReports.mockResolvedValue(mockReports);
+
       const result = await controller.getUserActivityReports();
 
       expect(Array.isArray(result.topActions)).toBe(true);
@@ -141,6 +310,22 @@ describe('ReportsController', () => {
     });
 
     it('should return user breakdown', async () => {
+      const mockReports = {
+        period: {},
+        totalSessions: 100,
+        uniqueUsers: 20,
+        topActions: [],
+        userBreakdown: [
+          {
+            user: 'John Doe',
+            sessions: 10,
+            actions: 50,
+          },
+        ],
+      };
+
+      mockReportsService.getUserActivityReports.mockResolvedValue(mockReports);
+
       const result = await controller.getUserActivityReports();
 
       expect(Array.isArray(result.userBreakdown)).toBe(true);
@@ -155,6 +340,30 @@ describe('ReportsController', () => {
 
   describe('getExportHistoryReports', () => {
     it('should return export history reports', async () => {
+      const mockReports = {
+        period: {
+          startDate: '2024-01-01',
+          endDate: '2024-01-31',
+        },
+        totalExports: 50,
+        totalRecords: 1000,
+        formatBreakdown: {
+          csv: 30,
+          excel: 15,
+          json: 5,
+        },
+        statusBreakdown: {
+          completed: 45,
+          processing: 3,
+          failed: 2,
+        },
+        topExporters: [],
+      };
+
+      mockReportsService.getExportHistoryReports.mockResolvedValue(
+        mockReports,
+      );
+
       const result = await controller.getExportHistoryReports();
 
       expect(result).toBeDefined();
@@ -170,6 +379,19 @@ describe('ReportsController', () => {
       const startDate = '2024-01-01';
       const endDate = '2024-01-31';
 
+      const mockReports = {
+        period: { startDate, endDate },
+        totalExports: 50,
+        totalRecords: 1000,
+        formatBreakdown: {},
+        statusBreakdown: {},
+        topExporters: [],
+      };
+
+      mockReportsService.getExportHistoryReports.mockResolvedValue(
+        mockReports,
+      );
+
       const result = await controller.getExportHistoryReports(
         startDate,
         endDate,
@@ -180,6 +402,23 @@ describe('ReportsController', () => {
     });
 
     it('should return format breakdown', async () => {
+      const mockReports = {
+        period: {},
+        totalExports: 50,
+        totalRecords: 1000,
+        formatBreakdown: {
+          csv: 30,
+          excel: 15,
+          json: 5,
+        },
+        statusBreakdown: {},
+        topExporters: [],
+      };
+
+      mockReportsService.getExportHistoryReports.mockResolvedValue(
+        mockReports,
+      );
+
       const result = await controller.getExportHistoryReports();
 
       expect(result.formatBreakdown).toBeDefined();
@@ -189,6 +428,23 @@ describe('ReportsController', () => {
     });
 
     it('should return status breakdown', async () => {
+      const mockReports = {
+        period: {},
+        totalExports: 50,
+        totalRecords: 1000,
+        formatBreakdown: {},
+        statusBreakdown: {
+          completed: 45,
+          processing: 3,
+          failed: 2,
+        },
+        topExporters: [],
+      };
+
+      mockReportsService.getExportHistoryReports.mockResolvedValue(
+        mockReports,
+      );
+
       const result = await controller.getExportHistoryReports();
 
       expect(result.statusBreakdown).toBeDefined();
@@ -198,6 +454,24 @@ describe('ReportsController', () => {
     });
 
     it('should return top exporters list', async () => {
+      const mockReports = {
+        period: {},
+        totalExports: 50,
+        totalRecords: 1000,
+        formatBreakdown: {},
+        statusBreakdown: {},
+        topExporters: [
+          {
+            user: 'John Doe',
+            exports: 10,
+          },
+        ],
+      };
+
+      mockReportsService.getExportHistoryReports.mockResolvedValue(
+        mockReports,
+      );
+
       const result = await controller.getExportHistoryReports();
 
       expect(Array.isArray(result.topExporters)).toBe(true);

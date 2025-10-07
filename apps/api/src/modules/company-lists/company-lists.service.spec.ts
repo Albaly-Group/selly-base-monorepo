@@ -85,19 +85,40 @@ describe('CompanyListsService', () => {
   });
 
   describe('searchCompanyLists', () => {
-    it('should return paginated company lists from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompanyListsService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should return paginated company lists from database', async () => {
+      const mockUser: any = {
+        id: 'user1',
+        organizationId: 'org1',
+      };
 
-      const result = await serviceWithoutRepo.searchCompanyLists({
-        page: 1,
-        limit: 10,
+      const mockLists = [
+        {
+          id: '1',
+          name: 'Test List',
+          description: 'Test description',
+          visibility: 'private',
+          createdBy2: { id: 'user1', name: 'Test User' },
+        },
+      ];
+
+      mockCompanyListsRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockLists, 1]),
       });
+
+      const result = await service.searchCompanyLists(
+        {
+          page: 1,
+          limit: 10,
+        },
+        mockUser,
+      );
 
       expect(result).toHaveProperty('data');
       expect(result).toHaveProperty('pagination');
@@ -106,18 +127,29 @@ describe('CompanyListsService', () => {
     });
 
     it('should handle pagination parameters', async () => {
-      const serviceWithoutRepo = new CompanyListsService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      const mockUser: any = {
+        id: 'user1',
+        organizationId: 'org1',
+      };
 
-      const result = await serviceWithoutRepo.searchCompanyLists({
-        page: 2,
-        limit: 5,
+      mockCompanyListsRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
       });
+
+      const result = await service.searchCompanyLists(
+        {
+          page: 2,
+          limit: 5,
+        },
+        mockUser,
+      );
 
       expect(result.pagination.page).toBe(2);
       expect(result.pagination.limit).toBe(5);
@@ -125,18 +157,31 @@ describe('CompanyListsService', () => {
   });
 
   describe('getCompanyListById', () => {
-    it('should return company list by id from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompanyListsService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+    it('should return company list by id from database', async () => {
+      const mockUser: any = {
+        id: 'user1',
+        organizationId: 'org1',
+      };
 
-      // Use a mock list ID that exists in the mock data
-      const result = await serviceWithoutRepo.getCompanyListById(
+      const mockList = {
+        id: '123e4567-e89b-12d3-a456-426614174003',
+        name: 'Test List',
+        description: 'Test description',
+        organizationId: 'org1',
+        visibility: 'organization',
+        createdBy: 'user1',
+        createdBy2: { id: 'user1', name: 'Test User' },
+      };
+
+      mockCompanyListsRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockList),
+      });
+
+      const result = await service.getCompanyListById(
         '123e4567-e89b-12d3-a456-426614174003',
+        mockUser,
       );
 
       expect(result).toBeDefined();
@@ -145,15 +190,7 @@ describe('CompanyListsService', () => {
   });
 
   describe('createCompanyList', () => {
-    it('should create company list with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompanyListsService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
-
+    it('should create company list using database', async () => {
       const mockUser: any = {
         id: 'user1',
         organizationId: 'org1',
@@ -165,34 +202,57 @@ describe('CompanyListsService', () => {
         visibility: 'private' as const,
       };
 
-      const result = await serviceWithoutRepo.createCompanyList(
-        listData,
-        mockUser,
-      );
+      const mockList = {
+        id: '123',
+        ...listData,
+        organizationId: mockUser.organizationId,
+        createdBy: mockUser.id,
+      };
+
+      mockCompanyListsRepository.create.mockReturnValue(mockList);
+      mockCompanyListsRepository.save.mockResolvedValue(mockList);
+
+      const result = await service.createCompanyList(listData, mockUser);
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
+      expect(mockCompanyListsRepository.create).toHaveBeenCalled();
+      expect(mockCompanyListsRepository.save).toHaveBeenCalled();
     });
   });
 
   describe('addCompaniesToList', () => {
-    it('should add companies to list with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new CompanyListsService(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
-
-      // Use owner user ID and matching organization ID from mock data
+    it('should add companies to list using database', async () => {
       const mockUser: any = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         organizationId: '123e4567-e89b-12d3-a456-426614174001',
       };
 
-      // Use a mock list ID that exists in the mock data
-      const result = await serviceWithoutRepo.addCompaniesToList(
+      const mockList = {
+        id: '123e4567-e89b-12d3-a456-426614174003',
+        name: 'Test List',
+        organizationId: mockUser.organizationId,
+        visibility: 'organization',
+        createdBy: mockUser.id,
+      };
+
+      const mockCompanies = [
+        { id: 'company1', nameEn: 'Company 1' },
+        { id: 'company2', nameEn: 'Company 2' },
+      ];
+
+      mockCompanyListsRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockList),
+      });
+      mockCompaniesRepository.findByIds = jest
+        .fn()
+        .mockResolvedValue(mockCompanies);
+      mockCompanyListItemsRepository.create.mockImplementation((item) => item);
+      mockCompanyListItemsRepository.save.mockResolvedValue([]);
+
+      const result = await service.addCompaniesToList(
         '123e4567-e89b-12d3-a456-426614174003',
         ['company1', 'company2'],
         mockUser,

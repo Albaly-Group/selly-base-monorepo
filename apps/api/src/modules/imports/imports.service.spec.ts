@@ -15,6 +15,7 @@ describe('ImportsService', () => {
     findOne: jest.fn(),
     save: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   };
 
   const mockOrganizationRepository = {
@@ -54,10 +55,28 @@ describe('ImportsService', () => {
   });
 
   describe('getImportJobs', () => {
-    it('should return paginated import jobs from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
+    it('should return paginated import jobs from database', async () => {
+      const mockJobs = [
+        {
+          id: '1',
+          filename: 'test.csv',
+          status: 'completed',
+          uploadedBy: 'user1',
+          organization: { id: 'org1', name: 'Test Org' },
+        },
+      ];
 
-      const result = await serviceWithoutRepo.getImportJobs({
+      mockImportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockJobs, 1]),
+      });
+
+      const result = await service.getImportJobs({
         page: 1,
         limit: 10,
       });
@@ -68,25 +87,48 @@ describe('ImportsService', () => {
       expect(result.pagination.page).toBe(1);
     });
 
-    it('should filter import jobs by status', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
+    it('should filter import jobs by status from database', async () => {
+      const mockJobs = [
+        {
+          id: '1',
+          filename: 'test.csv',
+          status: 'completed',
+          uploadedBy: 'user1',
+        },
+      ];
 
-      const result = await serviceWithoutRepo.getImportJobs({
+      mockImportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockJobs, 1]),
+      });
+
+      const result = await service.getImportJobs({
         status: 'completed',
         page: 1,
         limit: 10,
       });
 
       expect(result.data.length).toBeGreaterThan(0);
-      result.data.forEach((job) => {
-        expect(job.status).toBe('completed');
-      });
+      expect(mockImportJobRepository.createQueryBuilder).toHaveBeenCalled();
     });
 
     it('should handle pagination parameters', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
+      mockImportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      });
 
-      const result = await serviceWithoutRepo.getImportJobs({
+      const result = await service.getImportJobs({
         page: 2,
         limit: 5,
       });
@@ -97,10 +139,21 @@ describe('ImportsService', () => {
   });
 
   describe('getImportJobById', () => {
-    it('should return import job by id from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
+    it('should return import job by id from database', async () => {
+      const mockJob = {
+        id: '1',
+        filename: 'test.csv',
+        status: 'completed',
+        uploadedBy: 'user1',
+      };
 
-      const result = await serviceWithoutRepo.getImportJobById('1');
+      mockImportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockJob),
+      });
+
+      const result = await service.getImportJobById('1');
 
       expect(result).toBeDefined();
       expect(result.id).toBe('1');
@@ -108,39 +161,69 @@ describe('ImportsService', () => {
   });
 
   describe('createImportJob', () => {
-    it('should create import job with mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
-
+    it('should create import job using database', async () => {
       const importData = {
         filename: 'test-import.csv',
         uploadedBy: 'test@example.com',
       };
 
-      const result = await serviceWithoutRepo.createImportJob(importData);
+      const mockJob = {
+        id: '123',
+        ...importData,
+        status: 'queued',
+      };
+
+      mockImportJobRepository.create.mockReturnValue(mockJob);
+      mockImportJobRepository.save.mockResolvedValue(mockJob);
+
+      const result = await service.createImportJob(importData);
 
       expect(result).toBeDefined();
       expect(result.filename).toBe(importData.filename);
       expect(result.status).toBeDefined();
+      expect(mockImportJobRepository.create).toHaveBeenCalled();
     });
 
     it('should set initial status to queued', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
-
       const importData = {
         filename: 'test-import.csv',
       };
 
-      const result = await serviceWithoutRepo.createImportJob(importData);
+      const mockJob = {
+        id: '123',
+        ...importData,
+        status: 'queued',
+      };
+
+      mockImportJobRepository.create.mockReturnValue(mockJob);
+      mockImportJobRepository.save.mockResolvedValue(mockJob);
+
+      const result = await service.createImportJob(importData);
 
       expect(result.status).toBe('queued');
     });
   });
 
   describe('executeImportJob', () => {
-    it('should execute import job from mock data when repository is not available', async () => {
-      const serviceWithoutRepo = new ImportsService(undefined, undefined);
+    it('should execute import job using database', async () => {
+      const mockJob = {
+        id: '1',
+        filename: 'test.csv',
+        status: 'queued',
+        uploadedBy: 'user1',
+      };
 
-      const result = await serviceWithoutRepo.executeImportJob('1');
+      mockImportJobRepository.createQueryBuilder.mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockJob),
+      });
+      mockImportJobRepository.save.mockResolvedValue({
+        ...mockJob,
+        status: 'processing',
+      });
+
+      const result = await service.executeImportJob('1');
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty('status');
