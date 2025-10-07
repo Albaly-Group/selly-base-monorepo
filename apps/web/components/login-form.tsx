@@ -93,15 +93,6 @@ export function LoginForm() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-6 text-sm text-muted-foreground">
-            <p className="font-medium mb-2">Demo Accounts:</p>
-            <div className="space-y-1">
-              <p>User: user@selly.com / password123</p>
-              <p>Staff: staff@selly.com / staff123</p>
-              <p>Admin: admin@selly.com / admin123</p>
-              <p className="text-purple-600 font-medium">Platform Admin: platform@albaly.com / platform123</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
