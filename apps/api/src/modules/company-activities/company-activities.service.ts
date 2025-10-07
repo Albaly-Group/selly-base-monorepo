@@ -125,4 +125,57 @@ export class CompanyActivitiesService {
       createdAt: savedActivity.createdAt,
     };
   }
+
+  async updateActivity(
+    id: string,
+    updateDto: any,
+    user: any,
+  ): Promise<any> {
+    const activity = await this.activityRepository.findOne({ where: { id } });
+    
+    if (!activity) {
+      throw new NotFoundException(`Activity with ID ${id} not found`);
+    }
+
+    // Merge existing details with updates
+    const updatedDetails = {
+      ...activity.details,
+      ...(updateDto.outcome && { outcome: updateDto.outcome }),
+      ...(updateDto.content && { content: updateDto.content }),
+      ...(updateDto.contactPerson && { contactPerson: updateDto.contactPerson }),
+      ...(updateDto.details && updateDto.details),
+    };
+
+    Object.assign(activity, {
+      ...(updateDto.activityType && { activityType: updateDto.activityType }),
+      details: updatedDetails,
+      ...(updateDto.metadata && { metadata: { ...activity.metadata, ...updateDto.metadata } }),
+    });
+
+    const savedActivity = await this.activityRepository.save(activity);
+
+    return {
+      id: savedActivity.id,
+      userId: savedActivity.userId,
+      organizationId: savedActivity.organizationId,
+      activityType: savedActivity.activityType,
+      entityType: savedActivity.entityType,
+      entityId: savedActivity.entityId,
+      details: savedActivity.details,
+      metadata: savedActivity.metadata,
+      createdAt: savedActivity.createdAt,
+    };
+  }
+
+  async deleteActivity(id: string, user: any): Promise<{ message: string }> {
+    const activity = await this.activityRepository.findOne({ where: { id } });
+
+    if (!activity) {
+      throw new NotFoundException(`Activity with ID ${id} not found`);
+    }
+
+    await this.activityRepository.remove(activity);
+
+    return { message: 'Activity deleted successfully' };
+  }
 }

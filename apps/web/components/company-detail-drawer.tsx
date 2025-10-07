@@ -289,9 +289,20 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       return
     }
 
-    // Note: The API client doesn't have deleteCompanyActivity method yet
-    // You'll need to add it to the API client
-    alert('Delete activity functionality needs to be added to the API client first.')
+    try {
+      await apiClient.deleteCompanyActivity(activityId)
+      
+      // Refresh activities list
+      const response = await apiClient.getCompanyActivities({ companyId: company.id })
+      if (response.data) {
+        setActivities(response.data)
+      }
+      
+      console.log('Activity deleted successfully')
+    } catch (error) {
+      console.error('Failed to delete activity:', error)
+      alert('Failed to delete activity. Please try again.')
+    }
   }
 
   const handleEditActivity = async (activityId: string) => {

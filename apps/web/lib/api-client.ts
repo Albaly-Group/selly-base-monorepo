@@ -660,6 +660,14 @@ class ApiClient {
     return this.post<any>('/api/v1/company-activities', activityData);
   }
 
+  async updateCompanyActivity(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/company-activities/${id}`, updateData);
+  }
+
+  async deleteCompanyActivity(id: string): Promise<{ message: string }> {
+    return this.delete<{ message: string }>(`/api/v1/company-activities/${id}`);
+  }
+
   // Audit Logs endpoints
   async getAuditLogs(params?: { 
     entityType?: string; 
