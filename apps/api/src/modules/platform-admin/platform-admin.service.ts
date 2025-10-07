@@ -534,7 +534,7 @@ export class PlatformAdminService {
       const savedUser = await this.usersRepo.save(user);
 
       // Update role if provided
-      if (updateUserDto.roleId) {
+      if (updateUserDto.roleId && user.organizationId) {
         // Remove existing roles
         await this.userRolesRepo.delete({ userId: user.id });
 
