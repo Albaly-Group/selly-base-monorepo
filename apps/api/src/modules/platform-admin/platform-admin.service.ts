@@ -1,7 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import { Organizations, Users, Companies } from '../../entities';
+import { Organizations, Users, Companies, Roles, UserRoles } from '../../entities';
+import {
+  CreateTenantDto,
+  UpdateTenantDto,
+  CreatePlatformUserDto,
+  UpdatePlatformUserDto,
+  UpdateSharedCompanyDto,
+} from '../../dtos/platform-admin.dto';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class PlatformAdminService {
@@ -12,6 +25,10 @@ export class PlatformAdminService {
     private readonly usersRepo: Repository<Users>,
     @InjectRepository(Companies)
     private readonly companiesRepo: Repository<Companies>,
+    @InjectRepository(Roles)
+    private readonly rolesRepo: Repository<Roles>,
+    @InjectRepository(UserRoles)
+    private readonly userRolesRepo: Repository<UserRoles>,
   ) {}
 
   /**
@@ -256,6 +273,374 @@ export class PlatformAdminService {
           hasPrev: false,
         },
       };
+    }
+  }
+
+  /**
+   * Create a new tenant organization
+   */
+  async createTenant(createTenantDto: CreateTenantDto) {
+    try {
+      // Check if slug already exists
+      const existingOrg = await this.orgsRepo.findOne({
+        where: { slug: createTenantDto.slug },
+      });
+      if (existingOrg) {
+        throw new ConflictException(
+          `Organization with slug '${createTenantDto.slug}' already exists`,
+        );
+      }
+
+      // Create organization
+      const org = this.orgsRepo.create({
+        name: createTenantDto.name,
+        slug: createTenantDto.slug,
+        domain: createTenantDto.domain,
+        status: createTenantDto.status || 'active',
+        subscriptionTier: createTenantDto.subscriptionTier || 'basic',
+      });
+
+      const savedOrg = await this.orgsRepo.save(org);
+
+      // Create admin user if credentials provided
+      if (
+        createTenantDto.adminEmail &&
+        createTenantDto.adminName &&
+        createTenantDto.adminPassword
+      ) {
+        const hashedPassword = await argon2.hash(
+          createTenantDto.adminPassword,
+        );
+
+        const adminUser = this.usersRepo.create({
+          organizationId: savedOrg.id,
+          email: createTenantDto.adminEmail,
+          name: createTenantDto.adminName,
+          passwordHash: hashedPassword,
+          status: 'active',
+        });
+
+        await this.usersRepo.save(adminUser);
+
+        // Assign customer_admin role if it exists
+        const customerAdminRole = await this.rolesRepo.findOne({
+          where: { name: 'customer_admin' },
+        });
+        if (customerAdminRole) {
+          const userRole = this.userRolesRepo.create({
+            userId: adminUser.id,
+            roleId: customerAdminRole.id,
+            organizationId: savedOrg.id,
+          });
+          await this.userRolesRepo.save(userRole);
+        }
+      }
+
+      return {
+        message: 'Tenant organization created successfully',
+        data: {
+          id: savedOrg.id,
+          name: savedOrg.name,
+          slug: savedOrg.slug,
+          domain: savedOrg.domain,
+          status: savedOrg.status,
+          subscription_tier: savedOrg.subscriptionTier,
+          created_at: savedOrg.createdAt,
+          updated_at: savedOrg.updatedAt,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      console.error('Error creating tenant:', error);
+      throw new BadRequestException('Failed to create tenant organization');
+    }
+  }
+
+  /**
+   * Update a tenant organization
+   */
+  async updateTenant(tenantId: string, updateTenantDto: UpdateTenantDto) {
+    try {
+      const org = await this.orgsRepo.findOne({ where: { id: tenantId } });
+      if (!org) {
+        throw new NotFoundException(`Tenant organization not found`);
+      }
+
+      // Update fields if provided
+      if (updateTenantDto.name !== undefined) org.name = updateTenantDto.name;
+      if (updateTenantDto.domain !== undefined)
+        org.domain = updateTenantDto.domain;
+      if (updateTenantDto.status !== undefined)
+        org.status = updateTenantDto.status;
+      if (updateTenantDto.subscriptionTier !== undefined)
+        org.subscriptionTier = updateTenantDto.subscriptionTier;
+
+      org.updatedAt = new Date();
+
+      const savedOrg = await this.orgsRepo.save(org);
+
+      return {
+        message: 'Tenant organization updated successfully',
+        data: {
+          id: savedOrg.id,
+          name: savedOrg.name,
+          slug: savedOrg.slug,
+          domain: savedOrg.domain,
+          status: savedOrg.status,
+          subscription_tier: savedOrg.subscriptionTier,
+          created_at: savedOrg.createdAt,
+          updated_at: savedOrg.updatedAt,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating tenant:', error);
+      throw new BadRequestException('Failed to update tenant organization');
+    }
+  }
+
+  /**
+   * Delete a tenant organization (soft delete by setting status to inactive)
+   */
+  async deleteTenant(tenantId: string) {
+    try {
+      const org = await this.orgsRepo.findOne({ where: { id: tenantId } });
+      if (!org) {
+        throw new NotFoundException(`Tenant organization not found`);
+      }
+
+      // Soft delete by setting status to inactive
+      org.status = 'inactive';
+      org.updatedAt = new Date();
+      await this.orgsRepo.save(org);
+
+      return {
+        message: 'Tenant organization deactivated successfully',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error deleting tenant:', error);
+      throw new BadRequestException('Failed to delete tenant organization');
+    }
+  }
+
+  /**
+   * Create a new platform user
+   */
+  async createPlatformUser(createUserDto: CreatePlatformUserDto) {
+    try {
+      // Check if email already exists
+      const existingUser = await this.usersRepo.findOne({
+        where: { email: createUserDto.email },
+      });
+      if (existingUser) {
+        throw new ConflictException(
+          `User with email '${createUserDto.email}' already exists`,
+        );
+      }
+
+      // Verify organization exists
+      const org = await this.orgsRepo.findOne({
+        where: { id: createUserDto.organizationId },
+      });
+      if (!org) {
+        throw new NotFoundException(
+          `Organization with ID '${createUserDto.organizationId}' not found`,
+        );
+      }
+
+      // Hash password
+      const hashedPassword = await argon2.hash(createUserDto.password);
+
+      // Create user
+      const user = this.usersRepo.create({
+        organizationId: createUserDto.organizationId,
+        email: createUserDto.email,
+        name: createUserDto.name,
+        passwordHash: hashedPassword,
+        status: createUserDto.status || 'active',
+        avatarUrl: createUserDto.avatarUrl,
+      });
+
+      const savedUser = await this.usersRepo.save(user);
+
+      // Assign role if provided
+      if (createUserDto.roleId) {
+        const role = await this.rolesRepo.findOne({
+          where: { id: createUserDto.roleId },
+        });
+        if (role) {
+          const userRole = this.userRolesRepo.create({
+            userId: savedUser.id,
+            roleId: createUserDto.roleId,
+            organizationId: createUserDto.organizationId,
+          });
+          await this.userRolesRepo.save(userRole);
+        }
+      }
+
+      return {
+        message: 'Platform user created successfully',
+        data: {
+          id: savedUser.id,
+          name: savedUser.name,
+          email: savedUser.email,
+          status: savedUser.status,
+          organization_id: savedUser.organizationId,
+          created_at: savedUser.createdAt,
+          updated_at: savedUser.updatedAt,
+        },
+      };
+    } catch (error) {
+      if (
+        error instanceof ConflictException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      console.error('Error creating platform user:', error);
+      throw new BadRequestException('Failed to create platform user');
+    }
+  }
+
+  /**
+   * Update a platform user
+   */
+  async updatePlatformUser(
+    userId: string,
+    updateUserDto: UpdatePlatformUserDto,
+  ) {
+    try {
+      const user = await this.usersRepo.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User not found`);
+      }
+
+      // Update fields if provided
+      if (updateUserDto.name !== undefined) user.name = updateUserDto.name;
+      if (updateUserDto.status !== undefined)
+        user.status = updateUserDto.status;
+      if (updateUserDto.avatarUrl !== undefined)
+        user.avatarUrl = updateUserDto.avatarUrl;
+
+      user.updatedAt = new Date();
+
+      const savedUser = await this.usersRepo.save(user);
+
+      // Update role if provided
+      if (updateUserDto.roleId && user.organizationId) {
+        // Remove existing roles
+        await this.userRolesRepo.delete({ userId: user.id });
+
+        // Add new role
+        const role = await this.rolesRepo.findOne({
+          where: { id: updateUserDto.roleId },
+        });
+        if (role) {
+          const userRole = this.userRolesRepo.create({
+            userId: savedUser.id,
+            roleId: updateUserDto.roleId,
+            organizationId: user.organizationId,
+          });
+          await this.userRolesRepo.save(userRole);
+        }
+      }
+
+      return {
+        message: 'Platform user updated successfully',
+        data: {
+          id: savedUser.id,
+          name: savedUser.name,
+          email: savedUser.email,
+          status: savedUser.status,
+          organization_id: savedUser.organizationId,
+          created_at: savedUser.createdAt,
+          updated_at: savedUser.updatedAt,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating platform user:', error);
+      throw new BadRequestException('Failed to update platform user');
+    }
+  }
+
+  /**
+   * Delete a platform user (soft delete by setting status to inactive)
+   */
+  async deletePlatformUser(userId: string) {
+    try {
+      const user = await this.usersRepo.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User not found`);
+      }
+
+      // Soft delete by setting status to inactive
+      user.status = 'inactive';
+      user.updatedAt = new Date();
+      await this.usersRepo.save(user);
+
+      return {
+        message: 'Platform user deactivated successfully',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error deleting platform user:', error);
+      throw new BadRequestException('Failed to delete platform user');
+    }
+  }
+
+  /**
+   * Update a shared company
+   */
+  async updateSharedCompany(
+    companyId: string,
+    updateCompanyDto: UpdateSharedCompanyDto,
+  ) {
+    try {
+      const company = await this.companiesRepo.findOne({
+        where: { id: companyId },
+      });
+      if (!company) {
+        throw new NotFoundException(`Company not found`);
+      }
+
+      // Update fields if provided
+      if (updateCompanyDto.isSharedData !== undefined)
+        company.isSharedData = updateCompanyDto.isSharedData;
+      if (updateCompanyDto.verificationStatus !== undefined)
+        company.verificationStatus = updateCompanyDto.verificationStatus;
+
+      company.updatedAt = new Date();
+
+      const savedCompany = await this.companiesRepo.save(company);
+
+      return {
+        message: 'Shared company updated successfully',
+        data: {
+          id: savedCompany.id,
+          companyNameEn: savedCompany.nameEn,
+          isSharedData: savedCompany.isSharedData,
+          verificationStatus: savedCompany.verificationStatus,
+          updated_at: savedCompany.updatedAt,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating shared company:', error);
+      throw new BadRequestException('Failed to update shared company');
     }
   }
 }

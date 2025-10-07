@@ -551,6 +551,64 @@ class ApiClient {
     return this.get<{ data: any[] }>('/api/v1/platform-admin/shared-companies', params);
   }
 
+  async createTenant(data: {
+    name: string;
+    slug: string;
+    domain?: string;
+    status?: string;
+    subscriptionTier?: string;
+    adminEmail?: string;
+    adminName?: string;
+    adminPassword?: string;
+  }): Promise<any> {
+    return this.post('/api/v1/platform-admin/tenants', data);
+  }
+
+  async updateTenant(id: string, data: {
+    name?: string;
+    domain?: string;
+    status?: string;
+    subscriptionTier?: string;
+  }): Promise<any> {
+    return this.put(`/api/v1/platform-admin/tenants/${id}`, data);
+  }
+
+  async deleteTenant(id: string): Promise<any> {
+    return this.delete(`/api/v1/platform-admin/tenants/${id}`);
+  }
+
+  async createPlatformUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    organizationId: string;
+    roleId?: string;
+    status?: string;
+    avatarUrl?: string;
+  }): Promise<any> {
+    return this.post('/api/v1/platform-admin/users', data);
+  }
+
+  async updatePlatformUser(id: string, data: {
+    name?: string;
+    status?: string;
+    avatarUrl?: string;
+    roleId?: string;
+  }): Promise<any> {
+    return this.put(`/api/v1/platform-admin/users/${id}`, data);
+  }
+
+  async deletePlatformUser(id: string): Promise<any> {
+    return this.delete(`/api/v1/platform-admin/users/${id}`);
+  }
+
+  async updateSharedCompany(id: string, data: {
+    isSharedData?: boolean;
+    verificationStatus?: string;
+  }): Promise<any> {
+    return this.put(`/api/v1/platform-admin/shared-companies/${id}`, data);
+  }
+
   // Reference Data endpoints
   async getIndustries(params?: { active?: boolean }): Promise<{ data: any[] }> {
     return this.get<{ data: any[] }>('/api/v1/reference-data/industries', params);
