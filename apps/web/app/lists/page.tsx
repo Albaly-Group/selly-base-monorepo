@@ -42,11 +42,14 @@ function ListManagementPage() {
         setIsLoading(true)
         const response = await apiClient.getCompanyLists()
 
-        if (response.data) {
+        if (response && response.data && Array.isArray(response.data)) {
           setUserLists(response.data)
           if (response.data.length > 0 && !selectedListId) {
             setSelectedListId(response.data[0].id)
           }
+        } else {
+          console.warn('Unexpected response format from getCompanyLists:', response)
+          setUserLists([])
         }
       } catch (error) {
         console.error('Failed to fetch company lists:', error)
@@ -79,12 +82,14 @@ function ListManagementPage() {
         }
         
         // Transform list items to extract companies
+        // Ensure we always set an array, even if items is null/undefined
         const companies = Array.isArray(items) 
           ? items.map((item: any) => item?.company).filter(Boolean)
           : []
         
         console.log('Extracted companies:', companies);
-        setListCompanies(companies)
+        // Ensure we're always setting an array
+        setListCompanies(Array.isArray(companies) ? companies : [])
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])
@@ -97,20 +102,29 @@ function ListManagementPage() {
   const selectedList = userLists.find((list) => list.id === selectedListId)
 
   const { displayCompanies, leadScores } = useMemo(() => {
+    // Ensure listCompanies is always an array
+    const safeListCompanies = Array.isArray(listCompanies) ? listCompanies : []
+    
     if (!showSmartFiltering || Object.keys(smartFiltering).length === 0) {
       return { 
-        displayCompanies: listCompanies, 
+        displayCompanies: safeListCompanies, 
         leadScores: {} as { [key: string]: WeightedLeadScore }
       }
     }
 
-    const scoredResults = searchAndScoreCompanies(listCompanies, smartFiltering)
-    const companies = scoredResults.map(result => result.company)
+    const scoredResults = searchAndScoreCompanies(safeListCompanies, smartFiltering)
+    const companies = Array.isArray(scoredResults) 
+      ? scoredResults.map(result => result.company).filter(Boolean)
+      : []
     const scores: { [key: string]: WeightedLeadScore } = {}
     
-    scoredResults.forEach(result => {
-      scores[result.company.id] = result.score
-    })
+    if (Array.isArray(scoredResults)) {
+      scoredResults.forEach(result => {
+        if (result?.company?.id) {
+          scores[result.company.id] = result.score
+        }
+      })
+    }
 
     return {
       displayCompanies: companies,
@@ -128,7 +142,10 @@ function ListManagementPage() {
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedCompanies(displayCompanies.map((c) => c.id))
+      // Ensure displayCompanies is an array before mapping
+      if (Array.isArray(displayCompanies)) {
+        setSelectedCompanies(displayCompanies.map((c) => c.id))
+      }
     } else {
       setSelectedCompanies([])
     }
@@ -151,6 +168,13 @@ function ListManagementPage() {
   }
 
   const onExportExcelList = () => {
+    // Ensure displayCompanies is an array before filtering
+    if (!Array.isArray(displayCompanies)) {
+      console.error('displayCompanies is not an array:', displayCompanies)
+      alert('Unable to export: No companies data available')
+      return
+    }
+    
     const exportData = displayCompanies.filter((c) => selectedCompanies.includes(c.id))
     const csvContent = [
       [
