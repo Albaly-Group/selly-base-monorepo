@@ -36,6 +36,12 @@ export function PlatformDataTab() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
+  // Calculate stats from real data
+  const totalSharedCompanies = sharedCompanies.length
+  const verifiedCompanies = sharedCompanies.filter(c => c.verificationStatus === "Active").length
+  const needReview = sharedCompanies.filter(c => c.verificationStatus === "Needs Verification").length
+  const verificationRate = totalSharedCompanies > 0 ? ((verifiedCompanies / totalSharedCompanies) * 100).toFixed(1) : "0.0"
+
   // Fetch shared companies from backend
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -187,7 +193,7 @@ export function PlatformDataTab() {
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45,231</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : totalSharedCompanies.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Available to all tenants
             </p>
@@ -200,9 +206,9 @@ export function PlatformDataTab() {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42,156</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : verifiedCompanies.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              93.2% verification rate
+              {verificationRate}% verification rate
             </p>
           </CardContent>
         </Card>
@@ -213,7 +219,7 @@ export function PlatformDataTab() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,875</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : needReview.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Pending verification
             </p>
@@ -222,13 +228,13 @@ export function PlatformDataTab() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
+            <CardTitle className="text-sm font-medium">Data Status</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2 hours</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : "Active"}</div>
             <p className="text-xs text-muted-foreground">
-              From DBD warehouse
+              From database
             </p>
           </CardContent>
         </Card>
@@ -255,7 +261,7 @@ export function PlatformDataTab() {
                 <div className="text-center py-8 text-muted-foreground">
                   Loading shared companies...
                 </div>
-              ) : filteredCompanies.length === 0 ? (
+              ) : sharedCompanies.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No shared companies found
                 </div>
