@@ -60,6 +60,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [isLoadingLists, setIsLoadingLists] = useState(false)
   const [contacts, setContacts] = useState<any[]>([])
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
+  const [activities, setActivities] = useState<any[]>([])
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false)
   const [contactFormData, setContactFormData] = useState({
     firstName: "",
     lastName: "",
@@ -123,8 +125,25 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         }
       }
       
+      const fetchActivities = async () => {
+        if (!company?.id) return
+        try {
+          setIsLoadingActivities(true)
+          const response = await apiClient.getCompanyActivities({ companyId: company.id })
+          if (response.data) {
+            setActivities(response.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch activities:', error)
+          setActivities([])
+        } finally {
+          setIsLoadingActivities(false)
+        }
+      }
+      
       fetchCompanyLists()
       fetchContacts()
+      fetchActivities()
     }
   }, [company, open])
 
@@ -210,6 +229,19 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         content: "",
       })
       setShowAddActivity(false)
+      
+      // Refresh activities list to show the new activity instantly
+      try {
+        setIsLoadingActivities(true)
+        const response = await apiClient.getCompanyActivities({ companyId: company.id })
+        if (response.data) {
+          setActivities(response.data)
+        }
+      } catch (fetchError) {
+        console.error('Failed to refresh activities:', fetchError)
+      } finally {
+        setIsLoadingActivities(false)
+      }
       
       // Show success message (you can add a toast notification here)
       console.log('Activity logged successfully')
@@ -532,37 +564,47 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {/* {activities.map((activity) => (
-                <Card key={activity.id}>
-                  <CardContent>
-                    <div className="flex gap-3">
-                      <div className="p-2rounded-full">
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{activity.type}</Badge>
-                          {activity.outcome && (
-                            <Badge variant="secondary">{activity.outcome}</Badge>
-                          )}
-                          <span className="text-sm text-gray-500">
-                            by {activity.createdBy}
-                          </span>
+              {isLoadingActivities ? (
+                <div className="text-center text-gray-500 py-8">Loading activities...</div>
+              ) : activities.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No activities logged yet. Log your first activity above.</div>
+              ) : (
+                activities.map((activity) => (
+                  <Card key={activity.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex gap-3">
+                        <div className="p-2 rounded-full bg-gray-100">
+                          {getActivityIcon(activity.activityType)}
                         </div>
-                        <div className="text-sm">{activity.content}</div>
-                        {activity.contactPerson && (
-                          <div className="text-sm text-gray-600">
-                            Contact: {activity.contactPerson}
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline">{activity.activityType}</Badge>
+                            {activity.details?.outcome && (
+                              <Badge variant="secondary">{activity.details.outcome}</Badge>
+                            )}
+                            {activity.user && (
+                              <span className="text-sm text-gray-500">
+                                by {activity.user.name || activity.user.email}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        <div className="text-xs text-gray-500">
-                          {new Date(activity.createdAt).tocaleString()}
+                          {activity.details?.content && (
+                            <div className="text-sm">{activity.details.content}</div>
+                          )}
+                          {activity.details?.contactPerson && (
+                            <div className="text-sm text-gray-600">
+                              Contact: {activity.details.contactPerson}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-500">
+                            {new Date(activity.createdAt).toLocaleString()}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))} */}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 

@@ -70,7 +70,24 @@ export class CompanyActivitiesService {
       throw new NotFoundException(`Activity with ID ${id} not found`);
     }
 
-    return { activity };
+    return {
+      id: activity.id,
+      userId: activity.userId,
+      organizationId: activity.organizationId,
+      activityType: activity.activityType,
+      entityType: activity.entityType,
+      entityId: activity.entityId,
+      details: activity.details,
+      metadata: activity.metadata,
+      createdAt: activity.createdAt,
+      user: activity.user
+        ? {
+            id: activity.user.id,
+            name: activity.user.name,
+            email: activity.user.email,
+          }
+        : null,
+    };
   }
 
   async createActivity(
@@ -96,6 +113,16 @@ export class CompanyActivitiesService {
 
     const savedActivity = await this.activityRepository.save(activity);
 
-    return { savedActivity };
+    return {
+      id: savedActivity.id,
+      userId: savedActivity.userId,
+      organizationId: savedActivity.organizationId,
+      activityType: savedActivity.activityType,
+      entityType: savedActivity.entityType,
+      entityId: savedActivity.entityId,
+      details: savedActivity.details,
+      metadata: savedActivity.metadata,
+      createdAt: savedActivity.createdAt,
+    };
   }
 }
