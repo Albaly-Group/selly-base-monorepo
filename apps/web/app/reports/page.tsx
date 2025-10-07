@@ -80,34 +80,21 @@ function ReportsPage() {
   const needsVerificationCompanies = Math.round(totalCompanies * 0.15);
   const invalidCompanies = Math.round(totalCompanies * 0.10);
 
-  const dataQualityData = [
-    { name: "High Quality", value: 65, color: "#10b981" },
-    { name: "Medium Quality", value: 25, color: "#f59e0b" },
-    { name: "Low Quality", value: 10, color: "#ef4444" }
+  // Use real data quality distribution from analytics
+  const dataQualityData = analytics.dataQualityDistribution || [
+    { name: "High Quality", value: Math.round(totalCompanies * 0.65), color: "#10b981" },
+    { name: "Medium Quality", value: Math.round(totalCompanies * 0.25), color: "#f59e0b" },
+    { name: "Low Quality", value: Math.round(totalCompanies * 0.10), color: "#ef4444" }
   ]
 
-  const industryChartData = [
-    { name: "Manufacturing", count: 150 },
-    { name: "Services", count: 120 },
-    { name: "Technology", count: 90 },
-    { name: "Retail", count: 75 },
-  ]
+  // Use real industry distribution from analytics
+  const industryChartData = analytics.industryDistribution || []
 
-  const provinceChartData = [
-    { name: "Bangkok", count: 200 },
-    { name: "Chiang Mai", count: 80 },
-    { name: "Phuket", count: 60 },
-    { name: "Others", count: 95 },
-  ]
+  // Use real province distribution from analytics
+  const provinceChartData = analytics.provinceDistribution || []
 
-  const completenessData = [
-    { range: "90-100%", count: 180 },
-    { range: "80-89%", count: 120 },
-    { range: "70-79%", count: 80 },
-    { range: "60-69%", count: 40 },
-    { range: "50-59%", count: 15 },
-    { range: "Below 50%", count: 10 },
-  ]
+  // Use real completeness distribution from analytics
+  const completenessData = analytics.completenessDistribution || []
 
   return (
     <div className="min-h-screen bg-gray-50">

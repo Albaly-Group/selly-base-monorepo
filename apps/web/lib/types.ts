@@ -45,5 +45,8 @@ export type {
   ExportData
 };
 
-import type { UserList } from "./mock-data"
-export type { UserList }
+import type { UserList, WeightedLeadScore } from "./mock-data"
+export type { UserList, WeightedLeadScore }
+
+// Re-export utility functions from mock-data for lead scoring
+export { calculateLeadScore, calculateWeightedLeadScore, searchAndScoreCompanies } from "./mock-data"

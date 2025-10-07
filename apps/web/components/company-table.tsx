@@ -1,6 +1,6 @@
 "use client"
 import type { Company } from "@/lib/types"
-import type { WeightedLeadScore } from "@/lib/mock-data"
+import type { WeightedLeadScore } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
