@@ -193,9 +193,9 @@ describe('CompaniesService', () => {
         getOne: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(
-        service.getCompanyById('non-existent-id'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getCompanyById('non-existent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

@@ -305,7 +305,6 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-
     const userId = user.id ?? user.sub;
     const userName = user.name;
 
@@ -316,11 +315,11 @@ export class CompanyListsController {
       organizationId: organizationId,
     };
 
-    console.log("Id", listId);
-    console.log("addCompanyToListDto", addCompanyToListDto);
-    console.log("User", user);
-    console.log("Organization", organizationId);
-    console.log("UserWithOrg", userWithOrg);
+    console.log('Id', listId);
+    console.log('addCompanyToListDto', addCompanyToListDto);
+    console.log('User', user);
+    console.log('Organization', organizationId);
+    console.log('UserWithOrg', userWithOrg);
 
     if (!userWithOrg.organizationId) {
       throw new Error('organizationId is required for UserContext');

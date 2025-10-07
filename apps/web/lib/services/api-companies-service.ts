@@ -7,6 +7,7 @@ interface SearchFilters {
   industrial?: string;
   province?: string;
   companySize?: string;
+  contactStatus?: string;
   dataSource?: string[];
   verificationStatus?: string;
   dataSensitivity?: string[];
@@ -70,6 +71,7 @@ export class ApiCompaniesService {
         industrial: filters.industrial,
         province: filters.province,
         companySize: filters.companySize,
+        contactStatus: filters.contactStatus,
         verificationStatus: filters.verificationStatus,
         dataSource: filters.dataSource?.join(','),
         dataSensitivity: filters.dataSensitivity?.join(','),

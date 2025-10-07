@@ -194,10 +194,9 @@ export class CompaniesService {
 
     if (industrial) {
       // Search in JSONB array for industry classification
-      query.andWhere(
-        `company.industryClassification::text ILIKE :industrial`,
-        { industrial: `%${industrial}%` },
-      );
+      query.andWhere(`company.industryClassification::text ILIKE :industrial`, {
+        industrial: `%${industrial}%`,
+      });
     }
 
     if (province) {

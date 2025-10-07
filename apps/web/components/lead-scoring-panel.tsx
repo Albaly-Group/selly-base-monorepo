@@ -30,9 +30,9 @@ const fallbackIndustrialOptions = [
 const fallbackProvinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
 
 const fallbackCompanySizeOptions = [
-  { value: "S", label: "Small (S)" },
-  { value: "M", label: "Medium (M)" },
-  { value: "L", label: "Large (L)" },
+  { value: "small", label: "Small (S)" },
+  { value: "medium", label: "Medium (M)" },
+  { value: "large", label: "Large (L)" },
 ]
 
 const fallbackContactStatusOptions = ["Active", "Needs Verification", "Invalid"]
@@ -72,7 +72,7 @@ export function LeadScoringPanel({ isActive, criteria, onApplyScoring, onClearSc
         if (sizesResponse.data && sizesResponse.data.length > 0) {
           setCompanySizeOptions(
             sizesResponse.data.map((item: any) => ({
-              value: item.code || item.value,
+              value: item.value, // Use 'value' (e.g., 'small') not 'code' (e.g., 'S') to match database
               label: item.displayName || item.label,
             }))
           )

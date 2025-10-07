@@ -69,7 +69,7 @@ export class CompanyListItems {
     default: () => 'CURRENT_TIMESTAMP',
   })
   addedAt: Date | null;
-  
+
   @ManyToOne(() => Users, (users) => users.companyListItems, {
     onDelete: 'SET NULL',
   })

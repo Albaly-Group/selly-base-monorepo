@@ -171,8 +171,8 @@ export class CompanyListsService {
     id: string,
     user?: UserContext,
   ): Promise<CompanyList> {
-    console.log("Id getListByIdFromDatabase", id);
-    console.log("User getListByIdFromDatabase", user);
+    console.log('Id getListByIdFromDatabase', id);
+    console.log('User getListByIdFromDatabase', user);
 
     const query = this.companyListRepository
       .createQueryBuilder('list')
@@ -184,7 +184,7 @@ export class CompanyListsService {
       .where('list.id = :id', { id });
 
     const list = await query.getOne();
-    console.log("Find One", list)
+    console.log('Find One', list);
 
     if (!list) {
       throw new NotFoundException('Company list not found');
@@ -194,7 +194,8 @@ export class CompanyListsService {
       return list;
     }
 
-    if (list.organizationId &&
+    if (
+      list.organizationId &&
       (list.visibility === 'organization' || list.visibility === 'team')
     ) {
       return list;
@@ -298,7 +299,10 @@ export class CompanyListsService {
   ): Promise<any> {
     const list = await this.getCompanyListById(listId, user);
 
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
@@ -307,27 +311,31 @@ export class CompanyListsService {
       select: ['companyId'],
     });
     const existingCompanyIds = existingItems.map((item) => item.companyId);
-    console.log('Existing', existingCompanyIds);
-    const newCompanyIds = companyIds.filter((id) => !existingCompanyIds.includes(id),);
+    console.log('Exitsing', existingCompanyIds);
+    const newCompanyIds = companyIds.filter(
+      (id) => !existingCompanyIds.includes(id),
+    );
 
     if (newCompanyIds.length === 0) {
-      throw new BadRequestException('All selected companies already exist in this list');
+      throw new BadRequestException(
+        'All selected companies already exist in this list',
+      );
     }
 
-    const newItems = newCompanyIds.map(companyId =>
+    const newItems = newCompanyIds.map((companyId) =>
       this.companyListItemRepository.create({
         list: { id: listId },
         company: { id: companyId },
         note: null,
         position: null,
-        customFields: {},        
-        leadScore: '0',            
-        scoreBreakdown: {},      
-        scoreCalculatedAt: null, 
+        customFields: {},
+        leadScore: '0',
+        scoreBreakdown: {},
+        scoreCalculatedAt: null,
         status: 'new',
-        statusChangedAt: new Date(),  
+        statusChangedAt: new Date(),
         addedByUser: { id: user.id },
-        addedAt: new Date(),         
+        addedAt: new Date(),
       }),
     );
 
