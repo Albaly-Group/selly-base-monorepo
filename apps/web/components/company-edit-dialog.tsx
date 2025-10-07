@@ -120,6 +120,18 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           <DialogDescription>Update company information and contact details.</DialogDescription>
         </DialogHeader>
 
+        {company?.isSharedData && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-red-800">
+              <p className="font-medium">Cannot Edit Shared Data</p>
+              <p className="text-red-700 mt-1">
+                This company is from a shared data source and cannot be edited. Please close this dialog.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
@@ -132,6 +144,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   id="companyName"
                   value={formData.companyNameEn || ""}
                   onChange={(e) => updateField("companyNameEn", e.target.value)}
+                  disabled={company?.isSharedData}
                 />
               </div>
 
@@ -141,6 +154,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   id="registrationId"
                   value={formData.registrationId || ""}
                   onChange={(e) => updateField("registrationId", e.target.value)}
+                  disabled={company?.isSharedData}
                 />
               </div>
             </div>
@@ -151,6 +165,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 id="companyNameTh"
                 value={formData.companyNameTh || ""}
                 onChange={(e) => updateField("companyNameTh", e.target.value)}
+                disabled={company?.isSharedData}
               />
             </div>
 
@@ -160,6 +175,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 id="businessDescription"
                 value={formData.businessDescription || ""}
                 onChange={(e) => updateField("businessDescription", e.target.value)}
+                disabled={company?.isSharedData}
               />
             </div>
           </div>
@@ -176,6 +192,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   type="email"
                   value={formData.primaryEmail || ""}
                   onChange={(e) => updateField("primaryEmail", e.target.value)}
+                  disabled={company?.isSharedData}
                 />
               </div>
 
@@ -396,9 +413,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Cancel
+            {company?.isSharedData ? "Close" : "Cancel"}
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || success}>
+          <Button onClick={handleSubmit} disabled={isLoading || success || company?.isSharedData}>
             {isLoading ? "Saving..." : success ? "Saved!" : "Save Changes"}
           </Button>
         </DialogFooter>

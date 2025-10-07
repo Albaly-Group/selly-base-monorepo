@@ -294,6 +294,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 <Badge variant="secondary" className={getStatusColor(company.verificationStatus)}>
                   {company.verificationStatus}
                 </Badge>
+                {company.isSharedData && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    Shared Reference Data
+                  </Badge>
+                )}
                 <Badge variant="outline">
                   {company.industrialName}
                 </Badge>
@@ -306,15 +311,28 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </DialogDescription>
             </div>
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs sm:text-sm"
-                onClick={() => setShowEditDialog(true)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Edit</span>
-              </Button>
+              {!company.isSharedData ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs sm:text-sm"
+                  onClick={() => setShowEditDialog(true)}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs sm:text-sm"
+                  disabled
+                  title="Cannot edit shared reference data"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -329,6 +347,18 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden px-6">
+          {company.isSharedData && (
+            <div className="mt-4 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Shared Reference Data</p>
+                <p className="text-blue-700 mt-1">
+                  This company is from a shared data source and cannot be edited. You can still add contacts and log activities.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-5 mb-4 text-xs sm:text-sm">
               <TabsTrigger value="overview" className="px-2">Overview</TabsTrigger>
