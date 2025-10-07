@@ -68,7 +68,8 @@ export class CreateTenantDto {
   })
   @IsOptional()
   @IsIn(['basic', 'professional', 'enterprise'], {
-    message: 'Subscription tier must be one of: basic, professional, enterprise',
+    message:
+      'Subscription tier must be one of: basic, professional, enterprise',
   })
   subscriptionTier?: string;
 
@@ -148,7 +149,8 @@ export class UpdateTenantDto {
   })
   @IsOptional()
   @IsIn(['basic', 'professional', 'enterprise'], {
-    message: 'Subscription tier must be one of: basic, professional, enterprise',
+    message:
+      'Subscription tier must be one of: basic, professional, enterprise',
   })
   subscriptionTier?: string;
 }

@@ -233,7 +233,6 @@ export class CompanyListsService {
     data: CompanyListUpdateRequest,
     user: UserContext,
   ): Promise<any> {
-
     const list = await this.companyListRepository.findOne({
       where: { id },
       relations: ['organization', 'ownerUser', 'companyListItems'],
@@ -351,12 +350,17 @@ export class CompanyListsService {
   ): Promise<any> {
     const list = await this.getCompanyListById(listId, user);
 
-    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
+    if (
+      list.ownerUserId !== user.id &&
+      list.organizationId !== user.organizationId
+    ) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
     if (!Array.isArray(companyIds) || companyIds.length === 0) {
-      throw new BadRequestException('companyIds is required and must be a non-empty array');
+      throw new BadRequestException(
+        'companyIds is required and must be a non-empty array',
+      );
     }
 
     const existingItems = await this.companyListItemRepository.find({
@@ -364,10 +368,14 @@ export class CompanyListsService {
       select: ['companyId'],
     });
     const existingCompanyIds = existingItems.map((item) => item.companyId);
-    const companyIdsToRemove = companyIds.filter((id) => existingCompanyIds.includes(id));
+    const companyIdsToRemove = companyIds.filter((id) =>
+      existingCompanyIds.includes(id),
+    );
 
     if (companyIdsToRemove.length === 0) {
-      throw new BadRequestException('None of the selected companies exist in this list');
+      throw new BadRequestException(
+        'None of the selected companies exist in this list',
+      );
     }
 
     const deleteResult = await this.companyListItemRepository.delete({
@@ -376,9 +384,12 @@ export class CompanyListsService {
     });
 
     list.lastActivityAt = new Date();
-    await this.companyListRepository.save(list as any);
+    await this.companyListRepository.save(list);
 
-    return { message: 'Companies removed from list successfully', removed: deleteResult.affected};
+    return {
+      message: 'Companies removed from list successfully',
+      removed: deleteResult.affected,
+    };
   }
 
   async getListItems(listId: string): Promise<any> {
