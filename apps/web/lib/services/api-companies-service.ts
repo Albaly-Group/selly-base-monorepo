@@ -4,8 +4,9 @@ import { User } from '@/lib/types';
 
 interface SearchFilters {
   q?: string;
+  industrial?: string;
   province?: string;
-  companySize?: string[];
+  companySize?: string;
   dataSource?: string[];
   verificationStatus?: string;
   dataSensitivity?: string[];
@@ -66,11 +67,12 @@ export class ApiCompaniesService {
         includeSharedData: filters.includeSharedData,
         page: filters.page || 1,
         limit: filters.limit || 25,
+        industrial: filters.industrial,
         province: filters.province,
+        companySize: filters.companySize,
         verificationStatus: filters.verificationStatus,
         dataSource: filters.dataSource?.join(','),
         dataSensitivity: filters.dataSensitivity?.join(','),
-        companySize: filters.companySize?.join(','),
       };
 
       const cleanParams = Object.fromEntries(

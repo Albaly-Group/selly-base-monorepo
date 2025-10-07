@@ -89,38 +89,57 @@ function CompanyLookupPage() {
     }
 
     if (shouldSearch && apiSearchResult && !hasApiError) {
-      const companies = apiSearchResult.items.map((item: any) => ({
-        id: item.id,
-        organizationId: item.organizationId,
-        companyNameEn: item.nameEn,
-        companyNameTh: item.nameTh,
-        companyNameLocal: item.nameLocal,
-        displayName: item.displayName,
-        primaryRegistrationNo: item.primaryRegistrationNo,
-        registrationId: item.registrationId,
-        registrationDate: item.establishedDate,
-        industrialName: item.industryClassification[0],
-        province: item.province,
-        websiteUrl: item.websiteUrl,
-        primaryEmail: item.primaryEmail,
-        primaryPhone: item.primaryPhone,
-        address1: item.addressLine_1,
-        address2: item.addressLine_2,
-        district: item.district, 
-        employeeCountEstimate: item.employeeCountEstimate || 0,
-        dataSource: item.dataSource,
-        verificationStatus: item.verificationStatus,
-        qualityScore: item.dataQualityScore || 0,
-        contactPersons: item.contactPersons || [],
-        companySize: item.companySize,
-        businessDescription: item.businessDescription,
-        dataQualityScore: item.data_quality_score || 0,
-        dataSensitivity: item.dataSensitivity,
-        dataCompleteness: item.dataQualityScore,
-        isSharedData: item.isSharedData,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-      }));
+      const companies = apiSearchResult.items.map((item: any) => {
+        // Handle industry_classification which can be JSONB array or object
+        let industrialName = 'N/A';
+        if (item.industryClassification) {
+          if (Array.isArray(item.industryClassification)) {
+            industrialName = item.industryClassification[0] || 'N/A';
+          } else if (typeof item.industryClassification === 'object' && item.industryClassification.name) {
+            industrialName = item.industryClassification.name;
+          } else if (typeof item.industryClassification === 'string') {
+            industrialName = item.industryClassification;
+          }
+        }
+
+        // Calculate data completeness percentage from quality score (0.0-1.0 to 0-100)
+        const qualityScore = parseFloat(item.dataQualityScore) || 0;
+        const dataCompleteness = Math.round(qualityScore * 100);
+
+        return {
+          id: item.id,
+          organizationId: item.organizationId,
+          companyNameEn: item.nameEn,
+          companyNameTh: item.nameTh,
+          companyNameLocal: item.nameLocal,
+          displayName: item.displayName,
+          primaryRegistrationNo: item.primaryRegistrationNo,
+          registrationId: item.registrationId || item.primaryRegistrationNo,
+          registeredNo: item.primaryRegistrationNo,
+          registrationDate: item.establishedDate,
+          industrialName: industrialName,
+          province: item.province || 'N/A',
+          websiteUrl: item.websiteUrl,
+          primaryEmail: item.primaryEmail,
+          primaryPhone: item.primaryPhone,
+          address1: item.addressLine_1,
+          address2: item.addressLine_2,
+          district: item.district, 
+          employeeCountEstimate: item.employeeCountEstimate || 0,
+          dataSource: item.dataSource,
+          verificationStatus: item.verificationStatus || 'unverified',
+          qualityScore: qualityScore,
+          contactPersons: item.companyContacts || item.contactPersons || [],
+          companySize: item.companySize,
+          businessDescription: item.businessDescription,
+          dataQualityScore: qualityScore,
+          dataSensitivity: item.dataSensitivity,
+          dataCompleteness: dataCompleteness,
+          isSharedData: item.isSharedData,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        };
+      });
 
       return { filteredCompanies: companies, leadScores: {}, isLoading: false };
     }
