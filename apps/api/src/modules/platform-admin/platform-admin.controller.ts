@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Body,
@@ -176,7 +177,9 @@ export class PlatformAdminController {
 
   // ===== UPDATE OPERATIONS =====
 
+  // Support both PATCH and PUT for updates
   @Patch('tenants/:id')
+  @Put('tenants/:id')
   @ApiOperation({ summary: 'Update a tenant organization (Platform Admin only)' })
   @ApiResponse({ status: 200, description: 'Tenant updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
@@ -194,6 +197,7 @@ export class PlatformAdminController {
   }
 
   @Patch('users/:id')
+  @Put('users/:id')
   @ApiOperation({ summary: 'Update a platform user (Platform Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
@@ -211,6 +215,7 @@ export class PlatformAdminController {
   }
 
   @Patch('shared-companies/:id')
+  @Put('shared-companies/:id')
   @ApiOperation({ summary: 'Update a shared company (Platform Admin only)' })
   @ApiResponse({ status: 200, description: 'Company updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
