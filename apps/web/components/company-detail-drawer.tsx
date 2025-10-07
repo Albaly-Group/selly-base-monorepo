@@ -253,6 +253,51 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       setIsSavingActivity(false)
     }
   }
+
+  const handleDeleteContact = async (contactId: string) => {
+    if (!company?.id) return
+    
+    if (!confirm('Are you sure you want to delete this contact?')) {
+      return
+    }
+
+    try {
+      await apiClient.deleteCompanyContact(contactId)
+      
+      // Refresh contacts list
+      const response = await apiClient.getCompanyContacts(company.id)
+      if (response.data) {
+        setContacts(response.data)
+      }
+      
+      console.log('Contact deleted successfully')
+    } catch (error) {
+      console.error('Failed to delete contact:', error)
+      alert('Failed to delete contact. Please try again.')
+    }
+  }
+
+  const handleEditContact = async (contactId: string) => {
+    // For now, just show an alert. You can implement a proper edit dialog later
+    alert('Edit functionality will be implemented soon. Contact ID: ' + contactId)
+  }
+
+  const handleDeleteActivity = async (activityId: string) => {
+    if (!company?.id) return
+    
+    if (!confirm('Are you sure you want to delete this activity?')) {
+      return
+    }
+
+    // Note: The API client doesn't have deleteCompanyActivity method yet
+    // You'll need to add it to the API client
+    alert('Delete activity functionality needs to be added to the API client first.')
+  }
+
+  const handleEditActivity = async (activityId: string) => {
+    // For now, just show an alert. You can implement a proper edit dialog later
+    alert('Edit functionality will be implemented soon. Activity ID: ' + activityId)
+  }
   if (!company) return null
 
   const getStatusColor = (status: string) => {
@@ -568,10 +613,22 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                           )}
                         </div>
                         <div className="flex gap-1 shrink-0">
-                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditContact(contact.id)}
+                            title="Edit contact"
+                          >
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleDeleteContact(contact.id)}
+                            title="Delete contact"
+                          >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
@@ -630,6 +687,26 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                           <div className="text-xs text-gray-500">
                             {new Date(activity.createdAt).toLocaleString()}
                           </div>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditActivity(activity.id)}
+                            title="Edit activity"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleDeleteActivity(activity.id)}
+                            title="Delete activity"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
