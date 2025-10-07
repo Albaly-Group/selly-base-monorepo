@@ -6,7 +6,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import { Organizations, Users, Companies, Roles, UserRoles } from '../../entities';
+import {
+  Organizations,
+  Users,
+  Companies,
+  Roles,
+  UserRoles,
+} from '../../entities';
 import {
   CreateTenantDto,
   UpdateTenantDto,
@@ -308,9 +314,7 @@ export class PlatformAdminService {
         createTenantDto.adminName &&
         createTenantDto.adminPassword
       ) {
-        const hashedPassword = await argon2.hash(
-          createTenantDto.adminPassword,
-        );
+        const hashedPassword = await argon2.hash(createTenantDto.adminPassword);
 
         const adminUser = this.usersRepo.create({
           organizationId: savedOrg.id,
