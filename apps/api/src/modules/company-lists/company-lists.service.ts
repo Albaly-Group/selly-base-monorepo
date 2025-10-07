@@ -233,7 +233,7 @@ export class CompanyListsService {
     data: CompanyListUpdateRequest,
     user: UserContext,
   ): Promise<any> {
-    // Load the entity directly so we can enforce update permissions here
+
     const list = await this.companyListRepository.findOne({
       where: { id },
       relations: ['organization', 'ownerUser', 'companyListItems'],
@@ -268,7 +268,6 @@ export class CompanyListsService {
     if (data.smartCriteria !== undefined)
       fieldsToUpdate.smartCriteria = data.smartCriteria;
 
-    // Merge and persist
     this.companyListRepository.merge(list as any, fieldsToUpdate);
     const updateList = await this.companyListRepository.save(list);
     console.log('Update company list in database:', updateList);
@@ -350,38 +349,53 @@ export class CompanyListsService {
     companyIds: string[],
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId);
+    const list = await this.getCompanyListById(listId, user);
 
-    if (
-      list.ownerUserId !== user.id &&
-      list.organizationId !== user.organizationId
-    ) {
+    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
-    console.log('Removed companies from list:', { listId, companyIds });
-    return { message: 'Companies removed from list successfully' };
+    if (!Array.isArray(companyIds) || companyIds.length === 0) {
+      throw new BadRequestException('companyIds is required and must be a non-empty array');
+    }
+
+    const existingItems = await this.companyListItemRepository.find({
+      where: { listId, companyId: In(companyIds) },
+      select: ['companyId'],
+    });
+    const existingCompanyIds = existingItems.map((item) => item.companyId);
+    const companyIdsToRemove = companyIds.filter((id) => existingCompanyIds.includes(id));
+
+    if (companyIdsToRemove.length === 0) {
+      throw new BadRequestException('None of the selected companies exist in this list');
+    }
+
+    const deleteResult = await this.companyListItemRepository.delete({
+      listId,
+      companyId: In(companyIdsToRemove),
+    });
+
+    list.lastActivityAt = new Date();
+    await this.companyListRepository.save(list as any);
+
+    return { message: 'Companies removed from list successfully', removed: deleteResult.affected};
   }
 
-  async getListItems(listId: string, user?: UserContext): Promise<any[]> {
-    const list = await this.getCompanyListById(listId, user);
-
-    const items = await this.companyListItemRepository.find({
+  async getListItems(listId: string): Promise<any> {
+    const Listitems = await this.companyListItemRepository.find({
       where: { listId },
       relations: ['company', 'addedByUser'],
       order: { position: 'ASC', addedAt: 'DESC' },
     });
 
-    return items.map((it: any) => ({
+    if (!Listitems) {
+      throw new NotFoundException(`Contact with ID ${listId} not found`);
+    }
+
+    return Listitems.map((it: any) => ({
       id: it.id,
       companyId: it.companyId || it.company?.id,
-      company: it.company
-        ? {
-            id: it.company.id,
-            name: it.company.name,
-            domain: it.company.domain,
-          }
-        : null,
+      company: it.company,
       note: it.note,
       position: it.position,
       customFields: it.customFields,

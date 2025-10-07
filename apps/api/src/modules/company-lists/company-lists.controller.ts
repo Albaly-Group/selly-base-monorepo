@@ -353,12 +353,22 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
+    const userId = user.id ?? user.sub;
+    const userName = user.name;
+
     const userWithOrg: UserContext = {
-      id: user.id,
+      id: userId,
       email: user.email,
-      name: user.name || 'User',
+      name: userName,
       organizationId: organizationId ?? '',
     };
+
+    console.log("Id", listId);
+    console.log("body", body);
+    console.log("User", user);
+    console.log("Organization", organizationId);
+    console.log("UserWithOrg", userWithOrg);
+
     if (!userWithOrg.organizationId) {
       throw new Error('organizationId is required for UserContext');
     }
