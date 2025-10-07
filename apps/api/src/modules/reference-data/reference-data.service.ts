@@ -86,14 +86,8 @@ export class ReferenceDataService {
     // Company sizes are standard categories, not stored in database yet
     return [
       {
-        value: 'micro',
-        label: 'Micro (1-10 employees)',
-        code: 'S',
-        displayName: 'Small (S)',
-      },
-      {
         value: 'small',
-        label: 'Small (11-50 employees)',
+        label: 'Small (1-50 employees)',
         code: 'S',
         displayName: 'Small (S)',
       },
@@ -105,13 +99,7 @@ export class ReferenceDataService {
       },
       {
         value: 'large',
-        label: 'Large (251-1000 employees)',
-        code: 'L',
-        displayName: 'Large (L)',
-      },
-      {
-        value: 'enterprise',
-        label: 'Enterprise (1000+ employees)',
+        label: 'Large (251+ employees)',
         code: 'L',
         displayName: 'Large (L)',
       },
