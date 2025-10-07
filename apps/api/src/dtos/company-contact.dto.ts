@@ -68,7 +68,7 @@ export class CreateCompanyContactDto {
   })
   @IsOptional()
   @IsString()
-  seniorityLevel?: string;
+  seniorityLevel?: string | null;
 
   @ApiProperty({
     description: 'Email address',
@@ -123,5 +123,5 @@ export class UpdateCompanyContactDto extends PartialType(
   })
   @IsOptional()
   @IsDateString()
-  optOutDate?: string;
+  optOutDate?: Date | null;
 }
