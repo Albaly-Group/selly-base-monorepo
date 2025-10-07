@@ -7,8 +7,11 @@ import {
   MaxLength,
   IsIn,
   Matches,
+  IsNumber,
+  Min,
+  Max,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // ===== Tenant/Organization DTOs =====
@@ -280,6 +283,198 @@ export class UpdatePlatformUserDto {
 // ===== Shared Company DTOs =====
 
 export class UpdateSharedCompanyDto {
+  @ApiPropertyOptional({
+    description: 'Company name in English',
+    example: 'Albaly Digital Co., Ltd.',
+    minLength: 2,
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(2, { message: 'Company name must be at least 2 characters long' })
+  @MaxLength(255, { message: 'Company name must not exceed 255 characters' })
+  @Transform(({ value }) => value?.trim())
+  companyNameEn?: string;
+
+  @ApiPropertyOptional({
+    description: 'Company name in Thai',
+    example: 'บริษัท อัลบาลี ดิจิทัล จำกัด',
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255, {
+    message: 'Thai company name must not exceed 255 characters',
+  })
+  @Transform(({ value }) => value?.trim())
+  companyNameTh?: string;
+
+  @ApiPropertyOptional({
+    description: 'Business registration number',
+    example: '0105562174634',
+    maxLength: 50,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  @Transform(({ value }) => value?.trim())
+  primaryRegistrationNo?: string;
+
+  @ApiPropertyOptional({
+    description: 'Business description',
+    example: 'Digital transformation and software development company',
+    maxLength: 1000,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000, {
+    message: 'Business description must not exceed 1000 characters',
+  })
+  @Transform(({ value }) => value?.trim())
+  businessDescription?: string;
+
+  @ApiPropertyOptional({
+    description: 'Company website URL',
+    example: 'https://albaly.com',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  websiteUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary email address',
+    example: 'info@albaly.com',
+  })
+  @IsOptional()
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @MaxLength(255)
+  primaryEmail?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary phone number',
+    example: '+66-2-123-4567',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  primaryPhone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Address line 1',
+    example: '123 Sukhumvit Road',
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @Transform(({ value }) => value?.trim())
+  addressLine1?: string;
+
+  @ApiPropertyOptional({
+    description: 'Address line 2',
+    example: 'Floor 15, Tower A',
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @Transform(({ value }) => value?.trim())
+  addressLine2?: string;
+
+  @ApiPropertyOptional({
+    description: 'District',
+    example: 'Watthana',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  @Transform(({ value }) => value?.trim())
+  district?: string;
+
+  @ApiPropertyOptional({
+    description: 'Sub-district',
+    example: 'Khlong Toei Nuea',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  @Transform(({ value }) => value?.trim())
+  subdistrict?: string;
+
+  @ApiPropertyOptional({
+    description: 'Province',
+    example: 'Bangkok',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  @Transform(({ value }) => value?.trim())
+  province?: string;
+
+  @ApiPropertyOptional({
+    description: 'Postal code',
+    example: '10110',
+    maxLength: 20,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
+  postalCode?: string;
+
+  @ApiPropertyOptional({
+    description: 'Country code (ISO 3166-1 alpha-2)',
+    example: 'TH',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2)
+  @MinLength(2)
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'Country code must be 2 uppercase letters',
+  })
+  @Transform(({ value }) => value?.toUpperCase())
+  countryCode?: string;
+
+  @ApiPropertyOptional({
+    description: 'Company size category',
+    enum: ['micro', 'small', 'medium', 'large', 'enterprise'],
+    example: 'medium',
+  })
+  @IsOptional()
+  @IsIn(['micro', 'small', 'medium', 'large', 'enterprise'], {
+    message: 'Invalid company size',
+  })
+  companySize?: string;
+
+  @ApiPropertyOptional({
+    description: 'Estimated employee count',
+    example: 50,
+    minimum: 1,
+    maximum: 1000000,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Employee count must be a number' })
+  @Min(1, { message: 'Employee count must be at least 1' })
+  @Max(1000000, { message: 'Employee count must not exceed 1,000,000' })
+  employeeCountEstimate?: number;
+
+  @ApiPropertyOptional({
+    description: 'Data sensitivity level',
+    enum: ['public', 'standard', 'confidential', 'restricted'],
+    example: 'standard',
+  })
+  @IsOptional()
+  @IsIn(['public', 'standard', 'confidential', 'restricted'], {
+    message: 'Invalid data sensitivity level',
+  })
+  dataSensitivity?: string;
+
   @ApiPropertyOptional({
     description: 'Whether the company is shared data',
   })

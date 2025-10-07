@@ -619,7 +619,41 @@ export class PlatformAdminService {
         throw new NotFoundException(`Company not found`);
       }
 
-      // Update fields if provided
+      // Update all fields if provided (matching enhanced-company.dto.ts)
+      if (updateCompanyDto.companyNameEn !== undefined)
+        company.nameEn = updateCompanyDto.companyNameEn;
+      if (updateCompanyDto.companyNameTh !== undefined)
+        company.nameTh = updateCompanyDto.companyNameTh;
+      if (updateCompanyDto.primaryRegistrationNo !== undefined)
+        company.primaryRegistrationNo = updateCompanyDto.primaryRegistrationNo;
+      if (updateCompanyDto.businessDescription !== undefined)
+        company.businessDescription = updateCompanyDto.businessDescription;
+      if (updateCompanyDto.websiteUrl !== undefined)
+        company.websiteUrl = updateCompanyDto.websiteUrl;
+      if (updateCompanyDto.primaryEmail !== undefined)
+        company.primaryEmail = updateCompanyDto.primaryEmail;
+      if (updateCompanyDto.primaryPhone !== undefined)
+        company.primaryPhone = updateCompanyDto.primaryPhone;
+      if (updateCompanyDto.addressLine1 !== undefined)
+        company.addressLine_1 = updateCompanyDto.addressLine1;
+      if (updateCompanyDto.addressLine2 !== undefined)
+        company.addressLine_2 = updateCompanyDto.addressLine2;
+      if (updateCompanyDto.district !== undefined)
+        company.district = updateCompanyDto.district;
+      if (updateCompanyDto.subdistrict !== undefined)
+        company.subdistrict = updateCompanyDto.subdistrict;
+      if (updateCompanyDto.province !== undefined)
+        company.province = updateCompanyDto.province;
+      if (updateCompanyDto.postalCode !== undefined)
+        company.postalCode = updateCompanyDto.postalCode;
+      if (updateCompanyDto.countryCode !== undefined)
+        company.countryCode = updateCompanyDto.countryCode;
+      if (updateCompanyDto.companySize !== undefined)
+        company.companySize = updateCompanyDto.companySize;
+      if (updateCompanyDto.employeeCountEstimate !== undefined)
+        company.employeeCountEstimate = updateCompanyDto.employeeCountEstimate;
+      if (updateCompanyDto.dataSensitivity !== undefined)
+        company.dataSensitivity = updateCompanyDto.dataSensitivity;
       if (updateCompanyDto.isSharedData !== undefined)
         company.isSharedData = updateCompanyDto.isSharedData;
       if (updateCompanyDto.verificationStatus !== undefined)
@@ -634,6 +668,22 @@ export class PlatformAdminService {
         data: {
           id: savedCompany.id,
           companyNameEn: savedCompany.nameEn,
+          companyNameTh: savedCompany.nameTh,
+          primaryRegistrationNo: savedCompany.primaryRegistrationNo,
+          businessDescription: savedCompany.businessDescription,
+          websiteUrl: savedCompany.websiteUrl,
+          primaryEmail: savedCompany.primaryEmail,
+          primaryPhone: savedCompany.primaryPhone,
+          addressLine1: savedCompany.addressLine_1,
+          addressLine2: savedCompany.addressLine_2,
+          district: savedCompany.district,
+          subdistrict: savedCompany.subdistrict,
+          province: savedCompany.province,
+          postalCode: savedCompany.postalCode,
+          countryCode: savedCompany.countryCode,
+          companySize: savedCompany.companySize,
+          employeeCountEstimate: savedCompany.employeeCountEstimate,
+          dataSensitivity: savedCompany.dataSensitivity,
           isSharedData: savedCompany.isSharedData,
           verificationStatus: savedCompany.verificationStatus,
           updated_at: savedCompany.updatedAt,
