@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   CompanyLists,
   CompanyListItems,
@@ -12,6 +13,7 @@ import {
   CompanyLists as CompanyList,
   CompanyListItems as CompanyListItem,
   Companies as Company,
+  Users,
 } from '../../entities';
 import { UserContext } from '../../dtos/user-context.dto';
 
@@ -169,6 +171,9 @@ export class CompanyListsService {
     id: string,
     user?: UserContext,
   ): Promise<CompanyList> {
+    console.log("Id getListByIdFromDatabase", id);
+    console.log("User getListByIdFromDatabase", user);
+
     const query = this.companyListRepository
       .createQueryBuilder('list')
       .leftJoinAndSelect('list.organization', 'organization')
@@ -179,6 +184,7 @@ export class CompanyListsService {
       .where('list.id = :id', { id });
 
     const list = await query.getOne();
+    console.log("Find One", list)
 
     if (!list) {
       throw new NotFoundException('Company list not found');
@@ -188,14 +194,13 @@ export class CompanyListsService {
       return list;
     }
 
-    if (
-      list.organizationId &&
+    if (list.organizationId &&
       (list.visibility === 'organization' || list.visibility === 'team')
     ) {
       return list;
     }
 
-    throw new NotFoundException('Company list not found');
+    return list;
   }
 
   async createCompanyList(
@@ -292,34 +297,44 @@ export class CompanyListsService {
     companyIds: string[],
     user: UserContext,
   ): Promise<any> {
-    const list = await this.getCompanyListById(listId);
+    const list = await this.getCompanyListById(listId, user);
 
-    // Check if user can modify this list
-    if (
-      list.ownerUserId !== user.id &&
-      list.organizationId !== user.organizationId
-    ) {
+    if (list.ownerUserId !== user.id && list.organizationId !== user.organizationId) {
       throw new ForbiddenException('Cannot modify this company list');
     }
 
-    const items = companyIds.map((companyId) => ({
-      id: `item-${Date.now()}-${companyId}`,
-      listId,
-      companyId,
-      note: null,
-      position: null,
-      customFields: {},
-      leadScore: 0.0,
-      scoreBreakdown: {},
-      scoreCalculatedAt: null,
-      status: 'new',
-      statusChangedAt: new Date(),
-      addedByUserId: user.id,
-      addedAt: new Date(),
-    }));
+    const existingItems = await this.companyListItemRepository.find({
+      where: { listId, companyId: In(companyIds) },
+      select: ['companyId'],
+    });
+    const existingCompanyIds = existingItems.map((item) => item.companyId);
+    console.log("Exitsing", existingCompanyIds);
+    const newCompanyIds = companyIds.filter((id) => !existingCompanyIds.includes(id),);
 
+    if (newCompanyIds.length === 0) {
+      throw new BadRequestException('All selected companies already exist in this list');
+    }
+
+    const newItems = newCompanyIds.map(companyId =>
+      this.companyListItemRepository.create({
+        list: { id: listId },
+        company: { id: companyId },
+        note: null,
+        position: null,
+        customFields: {},        
+        leadScore: '0',            
+        scoreBreakdown: {},      
+        scoreCalculatedAt: null, 
+        status: 'new',
+        statusChangedAt: new Date(),  
+        addedByUser: { id: user.id },
+        addedAt: new Date(),         
+      }),
+    );
+
+    const items = await this.companyListItemRepository.save(newItems);
     console.log('Added companies to list:', { listId, items });
-    return { message: 'Companies added to list successfully', items };
+    return { items };
   }
 
   async removeCompaniesFromList(
@@ -329,7 +344,6 @@ export class CompanyListsService {
   ): Promise<any> {
     const list = await this.getCompanyListById(listId);
 
-    // Check if user can modify this list
     if (
       list.ownerUserId !== user.id &&
       list.organizationId !== user.organizationId
@@ -342,35 +356,34 @@ export class CompanyListsService {
   }
 
   async getListItems(listId: string, user?: UserContext): Promise<any[]> {
-    const list = await this.getCompanyListById(listId);
+    const list = await this.getCompanyListById(listId, user);
 
-    return [
-      {
-        id: `item-${listId}-1`,
-        listId,
-        companyId: '123e4567-e89b-12d3-a456-426614174002',
-        note: 'Promising tech company',
-        position: 1,
-        customFields: {},
-        leadScore: 85.5,
-        scoreBreakdown: {
-          size: 25,
-          industry: 30,
-          location: 15,
-          engagement: 15.5,
-        },
-        scoreCalculatedAt: new Date(),
-        status: 'qualified',
-        statusChangedAt: new Date(),
-        addedByUserId: user?.id,
-        addedAt: new Date('2024-01-01'),
-        company: {
-          id: '123e4567-e89b-12d3-a456-426614174002',
-          nameEn: 'Sample Tech Corp',
-          displayName: 'Sample Tech Corp',
-          businessDescription: 'Sample technology company for demonstration',
-        },
-      },
-    ];
+    const items = await this.companyListItemRepository.find({
+      where: { listId },
+      relations: ['company', 'addedByUser'],
+      order: { position: 'ASC', addedAt: 'DESC' },
+    });
+
+    return items.map((it: any) => ({
+      id: it.id,
+      companyId: it.companyId || it.company?.id,
+      company: it.company
+        ? {
+            id: it.company.id,
+            name: it.company.name,
+            domain: it.company.domain,
+          }
+        : null,
+      note: it.note,
+      position: it.position,
+      customFields: it.customFields,
+      leadScore: it.leadScore,
+      scoreBreakdown: it.scoreBreakdown,
+      scoreCalculatedAt: it.scoreCalculatedAt,
+      status: it.status,
+      statusChangedAt: it.statusChangedAt,
+      addedByUser: it.addedByUser,
+      addedAt: it.addedAt,
+    }));
   }
 }
