@@ -40,6 +40,8 @@ import {
   Activity
 } from "lucide-react"
 import type { Company } from "@/lib/types"
+import { createContactSchema, createActivitySchema } from "@/lib/validation-schemas"
+import { useFormValidation } from "@/hooks/use-form-validation"
 
 interface CompanyDetailDrawerProps {
   company: Company | null
@@ -56,6 +58,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
   const [companyLists, setCompanyLists] = useState<any[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
+  const [contacts, setContacts] = useState<any[]>([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
+  const [activities, setActivities] = useState<any[]>([])
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false)
   const [contactFormData, setContactFormData] = useState({
     firstName: "",
     lastName: "",
@@ -70,10 +76,14 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   })
   const [isSavingContact, setIsSavingContact] = useState(false)
   const [isSavingActivity, setIsSavingActivity] = useState(false)
+  
+  const contactValidation = useFormValidation(createContactSchema)
+  const activityValidation = useFormValidation(createActivitySchema)
 
   const companyDetails = company
 
   console.log(company)
+
   useEffect(() => {
     if (company && open) {
       const fetchCompanyLists = async () => {
@@ -98,23 +108,66 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
           setIsLoadingLists(false)
         }
       }
+      
+      const fetchContacts = async () => {
+        if (!company?.id) return
+        try {
+          setIsLoadingContacts(true)
+          const response = await apiClient.getCompanyContacts(company.id)
+          if (response.data) {
+            setContacts(response.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch contacts:', error)
+          setContacts([])
+        } finally {
+          setIsLoadingContacts(false)
+        }
+      }
+      
+      const fetchActivities = async () => {
+        if (!company?.id) return
+        try {
+          setIsLoadingActivities(true)
+          const response = await apiClient.getCompanyActivities({ companyId: company.id })
+          if (response.data) {
+            setActivities(response.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch activities:', error)
+          setActivities([])
+        } finally {
+          setIsLoadingActivities(false)
+        }
+      }
+      
       fetchCompanyLists()
+      fetchContacts()
+      fetchActivities()
     }
   }, [company, open])
 
   const handleSaveContact = async () => {
     if (!company?.id) return
 
+    // Validate contact form
+    const contactData = {
+      companyId: company.id,
+      firstName: contactFormData.firstName,
+      lastName: contactFormData.lastName,
+      title: contactFormData.title,
+      phone: contactFormData.phone,
+      email: contactFormData.email,
+    }
+
+    if (!contactValidation.validate(contactData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
     try {
       setIsSavingContact(true)
-      await apiClient.createCompanyContact({
-        companyId: company.id,
-        firstName: contactFormData.firstName,
-        lastName: contactFormData.lastName,
-        title: contactFormData.title,
-        phone: contactFormData.phone,
-        email: contactFormData.email,
-      })
+      await apiClient.createCompanyContact(contactData)
       
       // Reset form and close dialog
       setContactFormData({
@@ -125,6 +178,19 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         email: "",
       })
       setShowAddContact(false)
+      
+      // Refresh contacts list to show the new contact instantly
+      try {
+        setIsLoadingContacts(true)
+        const response = await apiClient.getCompanyContacts(company.id)
+        if (response.data) {
+          setContacts(response.data)
+        }
+      } catch (fetchError) {
+        console.error('Failed to refresh contacts:', fetchError)
+      } finally {
+        setIsLoadingContacts(false)
+      }
       
       // Show success message (you can add a toast notification here)
       console.log('Contact added successfully')
@@ -139,14 +205,22 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleSaveActivity = async () => {
     if (!company?.id) return
 
+    // Validate activity form
+    const activityData = {
+      companyId: company.id,
+      activityType: activityFormData.activityType,
+      outcome: activityFormData.outcome,
+      content: activityFormData.content,
+    }
+
+    if (!activityValidation.validate(activityData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
     try {
       setIsSavingActivity(true)
-      await apiClient.createCompanyActivity({
-        companyId: company.id,
-        activityType: activityFormData.activityType,
-        outcome: activityFormData.outcome,
-        content: activityFormData.content,
-      })
+      await apiClient.createCompanyActivity(activityData)
       
       // Reset form and close dialog
       setActivityFormData({
@@ -155,6 +229,19 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         content: "",
       })
       setShowAddActivity(false)
+      
+      // Refresh activities list to show the new activity instantly
+      try {
+        setIsLoadingActivities(true)
+        const response = await apiClient.getCompanyActivities({ companyId: company.id })
+        if (response.data) {
+          setActivities(response.data)
+        }
+      } catch (fetchError) {
+        console.error('Failed to refresh activities:', fetchError)
+      } finally {
+        setIsLoadingActivities(false)
+      }
       
       // Show success message (you can add a toast notification here)
       console.log('Activity logged successfully')
@@ -207,6 +294,11 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 <Badge variant="secondary" className={getStatusColor(company.verificationStatus)}>
                   {company.verificationStatus}
                 </Badge>
+                {company.isSharedData && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    Shared Reference Data
+                  </Badge>
+                )}
                 <Badge variant="outline">
                   {company.industrialName}
                 </Badge>
@@ -219,15 +311,28 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </DialogDescription>
             </div>
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs sm:text-sm"
-                onClick={() => setShowEditDialog(true)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Edit</span>
-              </Button>
+              {!company.isSharedData ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs sm:text-sm"
+                  onClick={() => setShowEditDialog(true)}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs sm:text-sm"
+                  disabled
+                  title="Cannot edit shared reference data"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -242,6 +347,18 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden px-6">
+          {company.isSharedData && (
+            <div className="mt-4 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Shared Reference Data</p>
+                <p className="text-blue-700 mt-1">
+                  This company is from a shared data source and cannot be edited. You can still add contacts and log activities.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-5 mb-4 text-xs sm:text-sm">
               <TabsTrigger value="overview" className="px-2">Overview</TabsTrigger>
@@ -409,55 +526,59 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {/* {contactPersons.map((contact) => (
-                <Card key={contact.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-medium">{contact.name}</h4>
-                          {contact.isDecisionMaker && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                              Decision Maker
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className={getStatusColor(contact.status) + " text-xs"}>
-                            {contact.status}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {contact.title} • {contact.department}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-                          {contact.phone && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              <span className="break-all">{contact.phone}</span>
+              {isLoadingContacts ? (
+                <div className="text-center text-gray-500 py-8">Loading contacts...</div>
+              ) : contacts.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No contacts found. Add your first contact above.</div>
+              ) : (
+                contacts.map((contact) => (
+                  <Card key={contact.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-medium">
+                              {contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'N/A'}
+                            </h4>
+                          </div>
+                          {(contact.title || contact.department) && (
+                            <div className="text-sm text-gray-600">
+                              {[contact.title, contact.department].filter(Boolean).join(' • ')}
                             </div>
                           )}
-                          {contact.email && (
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              <span className="break-all">{contact.email}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                            {contact.phone && (
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                <span className="break-all">{contact.phone}</span>
+                              </div>
+                            )}
+                            {contact.email && (
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                <span className="break-all">{contact.email}</span>
+                              </div>
+                            )}
+                          </div>
+                          {contact.lastVerifiedAt && (
+                            <div className="text-xs text-gray-500">
+                              Last verified: {new Date(contact.lastVerifiedAt).toLocaleDateString()}
                             </div>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Last verified: {new Date(contact.lastVerified).toLocaleDateString()}
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))} */}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -473,37 +594,47 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {/* {activities.map((activity) => (
-                <Card key={activity.id}>
-                  <CardContent>
-                    <div className="flex gap-3">
-                      <div className="p-2rounded-full">
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{activity.type}</Badge>
-                          {activity.outcome && (
-                            <Badge variant="secondary">{activity.outcome}</Badge>
-                          )}
-                          <span className="text-sm text-gray-500">
-                            by {activity.createdBy}
-                          </span>
+              {isLoadingActivities ? (
+                <div className="text-center text-gray-500 py-8">Loading activities...</div>
+              ) : activities.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No activities logged yet. Log your first activity above.</div>
+              ) : (
+                activities.map((activity) => (
+                  <Card key={activity.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex gap-3">
+                        <div className="p-2 rounded-full bg-gray-100">
+                          {getActivityIcon(activity.activityType)}
                         </div>
-                        <div className="text-sm">{activity.content}</div>
-                        {activity.contactPerson && (
-                          <div className="text-sm text-gray-600">
-                            Contact: {activity.contactPerson}
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline">{activity.activityType}</Badge>
+                            {activity.details?.outcome && (
+                              <Badge variant="secondary">{activity.details.outcome}</Badge>
+                            )}
+                            {activity.user && (
+                              <span className="text-sm text-gray-500">
+                                by {activity.user.name || activity.user.email}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        <div className="text-xs text-gray-500">
-                          {new Date(activity.createdAt).tocaleString()}
+                          {activity.details?.content && (
+                            <div className="text-sm">{activity.details.content}</div>
+                          )}
+                          {activity.details?.contactPerson && (
+                            <div className="text-sm text-gray-600">
+                              Contact: {activity.details.contactPerson}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-500">
+                            {new Date(activity.createdAt).toLocaleString()}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))} */}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -590,16 +721,30 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <Input 
                     placeholder="Enter first name"
                     value={contactFormData.firstName}
-                    onChange={(e) => setContactFormData({ ...contactFormData, firstName: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, firstName: e.target.value })
+                      contactValidation.clearError('firstName')
+                    }}
+                    className={contactValidation.hasError('firstName') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('firstName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('firstName')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Last Name</Label>
                   <Input 
                     placeholder="Enter last name"
                     value={contactFormData.lastName}
-                    onChange={(e) => setContactFormData({ ...contactFormData, lastName: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, lastName: e.target.value })
+                      contactValidation.clearError('lastName')
+                    }}
+                    className={contactValidation.hasError('lastName') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('lastName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('lastName')}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -616,16 +761,31 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   <Input 
                     placeholder="+66-2-123-4567"
                     value={contactFormData.phone}
-                    onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, phone: e.target.value })
+                      contactValidation.clearError('phone')
+                    }}
+                    className={contactValidation.hasError('phone') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('phone') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('phone')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <Input 
+                    type="email"
                     placeholder="contact@company.com"
                     value={contactFormData.email}
-                    onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, email: e.target.value })
+                      contactValidation.clearError('email')
+                    }}
+                    className={contactValidation.hasError('email') ? 'border-red-500' : ''}
                   />
+                  {contactValidation.hasError('email') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('email')}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -652,12 +812,15 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Activity Type</Label>
+                  <Label>Activity Type <span className="text-red-500">*</span></Label>
                   <Select 
                     value={activityFormData.activityType}
-                    onValueChange={(value) => setActivityFormData({ ...activityFormData, activityType: value })}
+                    onValueChange={(value) => {
+                      setActivityFormData({ ...activityFormData, activityType: value })
+                      activityValidation.clearError('activityType')
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={activityValidation.hasError('activityType') ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -667,6 +830,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <SelectItem value="email">Email</SelectItem>
                     </SelectContent>
                   </Select>
+                  {activityValidation.hasError('activityType') && (
+                    <p className="text-sm text-red-500">{activityValidation.getError('activityType')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Outcome</Label>
