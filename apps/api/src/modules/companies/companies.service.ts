@@ -486,10 +486,22 @@ export class CompaniesService {
           updateDto.addressLine2 !== undefined
             ? updateDto.addressLine2
             : existingCompany.addressLine2,
+        district:
+          updateDto.district !== undefined
+            ? updateDto.district
+            : existingCompany.district,
+        subdistrict:
+          updateDto.subdistrict !== undefined
+            ? updateDto.subdistrict
+            : existingCompany.subdistrict,
         province:
           updateDto.province !== undefined
             ? updateDto.province
             : existingCompany.province,
+        postalCode:
+          updateDto.postalCode !== undefined
+            ? updateDto.postalCode
+            : existingCompany.postalCode,
         countryCode:
           updateDto.countryCode !== undefined
             ? updateDto.countryCode

@@ -56,7 +56,10 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       if (formData.businessDescription !== undefined) updateData.businessDescription = formData.businessDescription
       if (formData.addressLine1 !== undefined) updateData.addressLine1 = formData.addressLine1
       if (formData.addressLine2 !== undefined) updateData.addressLine2 = formData.addressLine2
+      if (formData.district !== undefined) updateData.district = formData.district
+      if (formData.subdistrict !== undefined) updateData.subdistrict = formData.subdistrict
       if (formData.provinceDetected !== undefined) updateData.province = formData.provinceDetected
+      if (formData.postalCode !== undefined) updateData.postalCode = formData.postalCode
       if (formData.countryCode !== undefined) updateData.countryCode = formData.countryCode
       if (formData.websiteUrl !== undefined) updateData.websiteUrl = formData.websiteUrl
       if (formData.primaryEmail !== undefined) updateData.primaryEmail = formData.primaryEmail
@@ -221,16 +224,49 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label htmlFor="district">District</Label>
+                <Input
+                  id="district"
+                  value={formData.district || ""}
+                  onChange={(e) => updateField("district", e.target.value)}
+                  placeholder="Watthana"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subdistrict">Sub-district</Label>
+                <Input
+                  id="subdistrict"
+                  value={formData.subdistrict || ""}
+                  onChange={(e) => updateField("subdistrict", e.target.value)}
+                  placeholder="Khlong Toei Nuea"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="provinceDetected">Province</Label>
                 <Input
                   id="provinceDetected"
                   value={formData.provinceDetected || ""}
                   onChange={(e) => updateField("provinceDetected", e.target.value)}
+                  placeholder="Bangkok"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="countryCode">Country Code</Label>
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  value={formData.postalCode || ""}
+                  onChange={(e) => updateField("postalCode", e.target.value)}
+                  placeholder="10110"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="countryCode">Country</Label>
                 <Input
                   id="countryCode"
                   value={formData.countryCode || ""}

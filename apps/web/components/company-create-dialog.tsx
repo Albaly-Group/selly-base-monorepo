@@ -32,7 +32,10 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
     businessDescription: "",
     addressLine1: "",
     addressLine2: "",
+    district: "",
+    subdistrict: "",
     province: "",
+    postalCode: "",
     countryCode: "TH",
     websiteUrl: "",
     primaryEmail: "",
@@ -53,7 +56,10 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       businessDescription: "",
       addressLine1: "",
       addressLine2: "",
+      district: "",
+      subdistrict: "",
       province: "",
+      postalCode: "",
       countryCode: "TH",
       websiteUrl: "",
       primaryEmail: "",
@@ -97,7 +103,10 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       if (formData.businessDescription.trim()) createData.businessDescription = formData.businessDescription.trim()
       if (formData.addressLine1.trim()) createData.addressLine1 = formData.addressLine1.trim()
       if (formData.addressLine2.trim()) createData.addressLine2 = formData.addressLine2.trim()
+      if (formData.district.trim()) createData.district = formData.district.trim()
+      if (formData.subdistrict.trim()) createData.subdistrict = formData.subdistrict.trim()
       if (formData.province.trim()) createData.province = formData.province.trim()
+      if (formData.postalCode.trim()) createData.postalCode = formData.postalCode.trim()
       if (formData.countryCode.trim()) createData.countryCode = formData.countryCode.trim()
       if (formData.websiteUrl.trim()) createData.websiteUrl = formData.websiteUrl.trim()
       if (formData.primaryEmail.trim()) createData.primaryEmail = formData.primaryEmail.trim()
@@ -267,6 +276,30 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label htmlFor="district">District</Label>
+                <Input
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) => updateField("district", e.target.value)}
+                  placeholder="Watthana"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subdistrict">Sub-district</Label>
+                <Input
+                  id="subdistrict"
+                  value={formData.subdistrict}
+                  onChange={(e) => updateField("subdistrict", e.target.value)}
+                  placeholder="Khlong Toei Nuea"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="province">Province</Label>
                 <Input
                   id="province"
@@ -278,7 +311,18 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="countryCode">Country Code</Label>
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  value={formData.postalCode}
+                  onChange={(e) => updateField("postalCode", e.target.value)}
+                  placeholder="10110"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="countryCode">Country</Label>
                 <Input
                   id="countryCode"
                   value={formData.countryCode}
