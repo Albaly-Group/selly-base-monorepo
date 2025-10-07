@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Users, Plus, MoreHorizontal, Shield, Building, Search, Filter, Eye, Edit, UserX } from "lucide-react"
-import { getPlatformUsers, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
+import { getPlatformUsers, getTenants, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
 import { useEffect } from "react"
 
 export function PlatformUsersTab() {
@@ -37,6 +37,7 @@ export function PlatformUsersTab() {
   const [roleFilter, setRoleFilter] = useState("all")
   const [showAddUser, setShowAddUser] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [organizations, setOrganizations] = useState<any[]>([])
 
   // Calculate stats from real data
   const totalUsers = users.length
@@ -48,21 +49,25 @@ export function PlatformUsersTab() {
     return lastLogin === today
   }).length
 
-  // Fetch platform users from backend
+  // Fetch platform users and organizations from backend
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       setIsLoading(true)
       try {
-        const data = await getPlatformUsers()
-        setUsers(data.filter(validateUserData))
+        const [usersData, tenantsData] = await Promise.all([
+          getPlatformUsers(),
+          getTenants()
+        ])
+        setUsers(usersData.filter(validateUserData))
+        setOrganizations(tenantsData)
       } catch (error) {
-        console.error('Error fetching platform users:', error)
+        console.error('Error fetching platform data:', error)
       } finally {
         setIsLoading(false)
       }
     }
     
-    fetchUsers()
+    fetchData()
   }, [])
 
   // Check permissions
@@ -169,9 +174,11 @@ export function PlatformUsersTab() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Organization (Platform Admin)</SelectItem>
-                    <SelectItem value="org_customer1">Customer Company 1</SelectItem>
-                    <SelectItem value="org_customer2">Global Manufacturing Inc</SelectItem>
-                    <SelectItem value="org_customer3">Tech Solutions Ltd</SelectItem>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

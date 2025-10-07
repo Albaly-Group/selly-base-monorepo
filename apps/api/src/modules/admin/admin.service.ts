@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual, LessThan, Between } from 'typeorm';
 import { Users, Organizations, AuditLogs } from '../../entities';
 import * as bcrypt from 'bcryptjs';
 
@@ -251,10 +251,12 @@ export class AdminService {
       const whereClause: any = {};
 
       // Filter by date range if provided
-      if (startDate || endDate) {
-        whereClause.createdAt = {};
-        if (startDate) whereClause.createdAt.$gte = new Date(startDate);
-        if (endDate) whereClause.createdAt.$lte = new Date(endDate);
+      if (startDate && endDate) {
+        whereClause.createdAt = Between(new Date(startDate), new Date(endDate));
+      } else if (startDate) {
+        whereClause.createdAt = MoreThanOrEqual(new Date(startDate));
+      } else if (endDate) {
+        whereClause.createdAt = LessThan(new Date(endDate));
       }
 
       const [logs, total] = await this.auditRepo.findAndCount({

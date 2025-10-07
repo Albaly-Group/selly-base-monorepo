@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual, LessThan, Between } from 'typeorm';
 import {
   Companies,
   CompanyLists,
@@ -91,46 +91,37 @@ export class ReportsService {
         this.companiesRepo.count({
           where: {
             ...whereClause,
-            createdAt: { $gte: thirtyDaysAgo } as any,
+            createdAt: MoreThanOrEqual(thirtyDaysAgo),
           },
         }),
         this.companiesRepo.count({
           where: {
             ...whereClause,
-            createdAt: {
-              $gte: sixtyDaysAgo,
-              $lt: thirtyDaysAgo,
-            } as any,
+            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
           },
         }),
         this.exportRepo.count({
           where: {
             ...whereClause,
-            createdAt: { $gte: thirtyDaysAgo } as any,
+            createdAt: MoreThanOrEqual(thirtyDaysAgo),
           },
         }),
         this.exportRepo.count({
           where: {
             ...whereClause,
-            createdAt: {
-              $gte: sixtyDaysAgo,
-              $lt: thirtyDaysAgo,
-            } as any,
+            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
           },
         }),
         this.usersRepo.count({
           where: {
             ...whereClause,
-            createdAt: { $gte: thirtyDaysAgo } as any,
+            createdAt: MoreThanOrEqual(thirtyDaysAgo),
           },
         }),
         this.usersRepo.count({
           where: {
             ...whereClause,
-            createdAt: {
-              $gte: sixtyDaysAgo,
-              $lt: thirtyDaysAgo,
-            } as any,
+            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
           },
         }),
       ]);
@@ -243,10 +234,12 @@ export class ReportsService {
     try {
       const whereClause: any = organizationId ? { organizationId } : {};
 
-      if (startDate || endDate) {
-        whereClause.createdAt = {};
-        if (startDate) whereClause.createdAt.$gte = new Date(startDate);
-        if (endDate) whereClause.createdAt.$lte = new Date(endDate);
+      if (startDate && endDate) {
+        whereClause.createdAt = Between(new Date(startDate), new Date(endDate));
+      } else if (startDate) {
+        whereClause.createdAt = MoreThanOrEqual(new Date(startDate));
+      } else if (endDate) {
+        whereClause.createdAt = LessThan(new Date(endDate));
       }
 
       const totalSessions = await this.auditRepo.count({ where: whereClause });
@@ -309,10 +302,12 @@ export class ReportsService {
     try {
       const whereClause: any = organizationId ? { organizationId } : {};
 
-      if (startDate || endDate) {
-        whereClause.createdAt = {};
-        if (startDate) whereClause.createdAt.$gte = new Date(startDate);
-        if (endDate) whereClause.createdAt.$lte = new Date(endDate);
+      if (startDate && endDate) {
+        whereClause.createdAt = Between(new Date(startDate), new Date(endDate));
+      } else if (startDate) {
+        whereClause.createdAt = MoreThanOrEqual(new Date(startDate));
+      } else if (endDate) {
+        whereClause.createdAt = LessThan(new Date(endDate));
       }
 
       const [totalExports, exports] = await Promise.all([

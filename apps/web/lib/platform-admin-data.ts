@@ -66,16 +66,17 @@ export async function getTotalDataRecords(): Promise<number> {
 
 export async function getActiveTenants(): Promise<number> {
   try {
-    if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
-      return analyticsCache.data.activeUsers || 0
+    if (tenantsCache && Date.now() - tenantsCache.timestamp < CACHE_DURATION) {
+      return tenantsCache.data.filter(t => t.status === 'active').length
     }
     
-    const response = await apiClient.getDashboardAnalytics()
-    analyticsCache = { data: response, timestamp: Date.now() }
-    return response.activeUsers || 0
+    const response = await apiClient.getPlatformTenants()
+    const tenants = response.data || []
+    tenantsCache = { data: tenants, timestamp: Date.now() }
+    return tenants.filter((t: any) => t.status === 'active').length
   } catch (error) {
-    console.error('Failed to fetch analytics from backend:', error)
-    throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
+    console.error('Failed to fetch tenants from backend:', error)
+    throw new Error('Unable to fetch active tenants. Please ensure the backend is running.')
   }
 }
 
