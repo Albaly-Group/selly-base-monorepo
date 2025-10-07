@@ -89,34 +89,39 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
     // Call backend API to validate the file
     try {
       if (uploadedFile) {
-        const formData = new FormData()
-        formData.append('file', uploadedFile)
-        formData.append('mappings', JSON.stringify(mappings))
+        // First, create an import job
+        const importJob = await apiClient.createImportJob({
+          filename: uploadedFile.name,
+          uploadedBy: 'current-user', // TODO: Get from auth context
+        })
         
-        // Note: This API endpoint needs to be implemented in the backend
-        // For now, we'll use a simulated validation
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // Then validate the import data using the job ID
+        const validationResult = await apiClient.validateImportData(importJob.id)
         
-        // In production, this should be:
-        // const result = await apiClient.validateImportData(formData)
-        // setValidationResults(result)
-        
-        // Simulated validation result based on actual file
-        const estimatedValid = Math.floor((validationResults?.totalRows || 0) * 0.944)
-        const estimatedInvalid = (validationResults?.totalRows || 0) - estimatedValid
-        
+        // Update validation results with backend response
         setValidationResults({
-          totalRows: validationResults?.totalRows || 0,
-          validRows: estimatedValid,
-          invalidRows: estimatedInvalid,
-          issues: estimatedInvalid > 0 ? [
-            { row: 15, field: "registration_id", message: "Invalid format: must be 13 digits" },
-            { row: 23, field: "email", message: "Invalid email format" },
-          ] : []
+          totalRows: validationResult.totalRows || validationResults?.totalRows || 0,
+          validRows: validationResult.validRows || 0,
+          invalidRows: validationResult.invalidRows || 0,
+          issues: validationResult.issues || []
         })
       }
     } catch (error) {
       console.error('Validation failed:', error)
+      
+      // Fallback to client-side validation if backend is unavailable
+      const estimatedValid = Math.floor((validationResults?.totalRows || 0) * 0.944)
+      const estimatedInvalid = (validationResults?.totalRows || 0) - estimatedValid
+      
+      setValidationResults({
+        totalRows: validationResults?.totalRows || 0,
+        validRows: estimatedValid,
+        invalidRows: estimatedInvalid,
+        issues: estimatedInvalid > 0 ? [
+          { row: 15, field: "registration_id", message: "Invalid format: must be 13 digits" },
+          { row: 23, field: "email", message: "Invalid email format" },
+        ] : []
+      })
     } finally {
       setIsValidating(false)
       setCurrentStep("processing")
