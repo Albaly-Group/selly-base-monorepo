@@ -111,10 +111,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             errorMessage = 'Account not found';
           } else if (msg.includes('403') || msg.includes('forbidden')) {
             errorMessage = 'Access denied';
-          } else if (msg.includes('network') || msg.includes('fetch')) {
+          } else if (msg.includes('network') || msg.includes('fetch') || msg.includes('failed to fetch')) {
             errorMessage = 'Unable to connect to server. Please check your connection.';
           } else if (msg.includes('timeout')) {
             errorMessage = 'Request timed out. Please try again.';
+          } else if (msg.includes('api request failed:')) {
+            // Extract status code info from API client error messages
+            if (msg.includes('401')) {
+              errorMessage = 'Invalid email or password';
+            } else if (msg.includes('500') || msg.includes('502') || msg.includes('503')) {
+              errorMessage = 'Server error. Please try again later.';
+            } else {
+              errorMessage = 'Login failed. Please try again.';
+            }
           } else {
             // For other errors, use a generic message
             errorMessage = 'Login failed. Please try again.';
