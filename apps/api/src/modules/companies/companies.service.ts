@@ -114,6 +114,7 @@ export class CompaniesService {
       dataSource,
       verificationStatus,
       companySize,
+      industrial,
       province,
       countryCode,
       tags,
@@ -189,6 +190,14 @@ export class CompaniesService {
 
     if (companySize) {
       query.andWhere('company.companySize = :companySize', { companySize });
+    }
+
+    if (industrial) {
+      // Search in JSONB array for industry classification
+      query.andWhere(
+        `company.industryClassification::text ILIKE :industrial`,
+        { industrial: `%${industrial}%` },
+      );
     }
 
     if (province) {

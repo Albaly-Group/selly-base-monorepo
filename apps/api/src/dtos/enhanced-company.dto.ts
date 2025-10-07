@@ -531,6 +531,17 @@ export class CompanySearchDto {
   companySize?: CompanySize;
 
   @ApiPropertyOptional({
+    description: 'Filter by industry classification',
+    example: 'Manufacturing',
+    maxLength: 200,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  @Transform(({ value }) => value?.trim())
+  industrial?: string;
+
+  @ApiPropertyOptional({
     description: 'Filter by province',
     example: 'Bangkok',
     maxLength: 100,

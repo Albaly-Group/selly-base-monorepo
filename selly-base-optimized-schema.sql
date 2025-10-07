@@ -696,7 +696,7 @@ INSERT INTO user_roles (user_id, role_id, organization_id, assigned_by, assigned
 INSERT INTO companies (
   id, organization_id, name_en, name_th, province, business_description,
   data_source, source_reference, is_shared_data, data_sensitivity, 
-  verification_status, created_by
+  verification_status, created_by, industry_classification, company_size, tags, data_quality_score
 ) VALUES 
 (
   '550e8400-e29b-41d4-a716-446655440030', NULL,
@@ -704,7 +704,11 @@ INSERT INTO companies (
   'Bangkok', 'Leading commercial bank in Thailand',
   'albaly_list', 'Albaly-Fortune-500-Thailand-2024', 
   true, 'public', 'verified',
-  '550e8400-e29b-41d4-a716-446655440001'
+  '550e8400-e29b-41d4-a716-446655440001',
+  '["Financial and insurance activities"]'::jsonb,
+  'large',
+  ARRAY['finance', 'banking', 'enterprise'],
+  0.95
 ),
 (
   '550e8400-e29b-41d4-a716-446655440031', NULL,
@@ -712,28 +716,40 @@ INSERT INTO companies (
   'Bangkok', 'Food and agribusiness conglomerate',
   'dbd_registry', 'DBD-Public-Companies-2024-Q4',
   true, 'public', 'verified',
-  '550e8400-e29b-41d4-a716-446655440001'
+  '550e8400-e29b-41d4-a716-446655440001',
+  '["Manufacturing", "Agriculture, forestry and fishing"]'::jsonb,
+  'enterprise',
+  ARRAY['food', 'agriculture', 'manufacturing'],
+  0.92
 );
 
 -- 2. Customer-specific private data 
 INSERT INTO companies (
   id, organization_id, name_en, province, business_description,
   data_source, source_reference, is_shared_data, data_sensitivity,
-  verification_status, created_by
+  verification_status, created_by, industry_classification, company_size, tags, data_quality_score
 ) VALUES
 (
   '550e8400-e29b-41d4-a716-446655440032', '550e8400-e29b-41d4-a716-446655440001',
   'Local Bangkok Restaurant Chain', 'Bangkok', 'Restaurant franchise with 15 locations',
   'customer_input', 'Customer manual entry - 2024-12-18',
   false, 'confidential', 'unverified',
-  '550e8400-e29b-41d4-a716-446655440008'
+  '550e8400-e29b-41d4-a716-446655440008',
+  '["Accommodation and food service activities"]'::jsonb,
+  'medium',
+  ARRAY['restaurant', 'hospitality'],
+  0.65
 ),
 (
   '550e8400-e29b-41d4-a716-446655440033', '550e8400-e29b-41d4-a716-446655440001', 
   'Bangkok Tech Startup Ltd', 'Bangkok', 'AI/ML software development company',
   'customer_input', 'Customer prospect research - 2024-12-18',
   false, 'standard', 'unverified',
-  '550e8400-e29b-41d4-a716-446655440008'
+  '550e8400-e29b-41d4-a716-446655440008',
+  '["Computer programming, consultancy", "Information and communication"]'::jsonb,
+  'small',
+  ARRAY['technology', 'ai', 'software', 'startup'],
+  0.72
 );
 
 COMMIT;
@@ -751,7 +767,7 @@ COMMIT;
 -- COMMENTS & DOCUMENTATION
 -- =========================================================
 
-COMMENT ON DATABASE postgres IS 'Selly Base - B2B Prospecting SaaS Platform Database';
+COMMENT ON DATABASE selly_base IS 'Selly Base - B2B Prospecting SaaS Platform Database';
 COMMENT ON TABLE organizations IS 'Multi-tenant organizations/customers for SaaS isolation';
 COMMENT ON TABLE users IS 'Users scoped to organizations with RBAC';
 COMMENT ON TABLE companies IS 'Canonical company data with SaaS privacy controls - shared reference data (organization_id=NULL) and customer-specific data (organization_id set)';
