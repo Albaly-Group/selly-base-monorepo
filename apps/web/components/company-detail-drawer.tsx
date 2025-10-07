@@ -56,6 +56,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
   const [companyLists, setCompanyLists] = useState<any[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
+  const [contacts, setContacts] = useState<any[]>([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const [contactFormData, setContactFormData] = useState({
     firstName: "",
     lastName: "",
@@ -74,6 +76,23 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const companyDetails = company
 
   console.log(company)
+  
+  const fetchContacts = async () => {
+    if (!company?.id) return
+    try {
+      setIsLoadingContacts(true)
+      const response = await apiClient.getCompanyContacts(company.id)
+      if (response.data) {
+        setContacts(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch contacts:', error)
+      setContacts([])
+    } finally {
+      setIsLoadingContacts(false)
+    }
+  }
+
   useEffect(() => {
     if (company && open) {
       const fetchCompanyLists = async () => {
@@ -99,6 +118,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         }
       }
       fetchCompanyLists()
+      fetchContacts()
     }
   }, [company, open])
 
@@ -125,6 +145,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
         email: "",
       })
       setShowAddContact(false)
+      
+      // Refresh contacts list to show the new contact instantly
+      await fetchContacts()
       
       // Show success message (you can add a toast notification here)
       console.log('Contact added successfully')
@@ -409,55 +432,59 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             </div>
 
             <div className="space-y-4">
-              {/* {contactPersons.map((contact) => (
-                <Card key={contact.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-medium">{contact.name}</h4>
-                          {contact.isDecisionMaker && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                              Decision Maker
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className={getStatusColor(contact.status) + " text-xs"}>
-                            {contact.status}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {contact.title} • {contact.department}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-                          {contact.phone && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              <span className="break-all">{contact.phone}</span>
+              {isLoadingContacts ? (
+                <div className="text-center text-gray-500 py-8">Loading contacts...</div>
+              ) : contacts.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No contacts found. Add your first contact above.</div>
+              ) : (
+                contacts.map((contact) => (
+                  <Card key={contact.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-medium">
+                              {contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'N/A'}
+                            </h4>
+                          </div>
+                          {(contact.title || contact.department) && (
+                            <div className="text-sm text-gray-600">
+                              {[contact.title, contact.department].filter(Boolean).join(' • ')}
                             </div>
                           )}
-                          {contact.email && (
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              <span className="break-all">{contact.email}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                            {contact.phone && (
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                <span className="break-all">{contact.phone}</span>
+                              </div>
+                            )}
+                            {contact.email && (
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                <span className="break-all">{contact.email}</span>
+                              </div>
+                            )}
+                          </div>
+                          {contact.lastVerifiedAt && (
+                            <div className="text-xs text-gray-500">
+                              Last verified: {new Date(contact.lastVerifiedAt).toLocaleDateString()}
                             </div>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Last verified: {new Date(contact.lastVerified).toLocaleDateString()}
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))} */}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 

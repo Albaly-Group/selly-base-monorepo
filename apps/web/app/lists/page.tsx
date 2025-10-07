@@ -142,7 +142,7 @@ function ListManagementPage() {
         "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Lead Score",
       ],
       ...exportData.map((company) => {
-        const score = leadScores.find((s) => s.companyId === company.id)?.score || 0
+        const score = leadScores[company.id]?.totalScore || 0
         return [
           company.companyNameEn,
           company.industrialName,
@@ -152,7 +152,7 @@ function ListManagementPage() {
           company.primaryEmail,
           company.verificationStatus,
           `${company.dataCompleteness}%`,
-          showLeadScoring ? score.toString() : "N/A",
+          showSmartFiltering ? score.toString() : "N/A",
         ]
       }),
     ]
@@ -215,10 +215,10 @@ function ListManagementPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>{selectedList.name}</span>
-                      <span className="text-sm font-normal text-gray-500">{listCompanies.length}companies</span>
+                      <span className="text-sm font-normal text-gray-500">{listCompanies.length} companies</span>
                     </CardTitle>
                     <CardDescription>
-                      Created on {new Date(selectedList.createdAt).toLocaleDateString()} • Status: {selectedList.verificationStatus}
+                      Created on {new Date(selectedList.createdAt).toLocaleDateString()} • Status: {selectedList.status || 'Active'}
                     </CardDescription>
                   </CardHeader>
                 </Card>
