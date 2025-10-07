@@ -36,7 +36,7 @@ const execAsync = promisify(exec);
 async function queryDatabase(query: string): Promise<string> {
   try {
     const { stdout } = await execAsync(
-      `docker exec selly-base-postgres psql -U postgres -d selly_base -t -c "${query}"`,
+      `docker exec selly-base-postgres-e2e psql -U postgres -d selly_base_e2e -t -c "${query}"`,
     );
     return stdout.trim();
   } catch (error) {
