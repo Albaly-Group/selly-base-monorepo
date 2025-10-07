@@ -62,3 +62,60 @@ export class CreateCompanyActivityDto {
   @IsObject()
   metadata?: Record<string, any>;
 }
+
+export class UpdateCompanyActivityDto {
+  @ApiProperty({
+    description: 'Type of activity',
+    example: 'call',
+    enum: ['call', 'meeting', 'email', 'note', 'task', 'other'],
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  activityType?: string;
+
+  @ApiProperty({
+    description: 'Activity outcome',
+    example: 'Interested',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  outcome?: string;
+
+  @ApiProperty({
+    description: 'Activity content/notes',
+    example: 'Discussed B2B software requirements',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @ApiProperty({
+    description: 'Contact person involved',
+    example: 'John Doe',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  contactPerson?: string;
+
+  @ApiProperty({
+    description: 'Additional activity details',
+    example: { duration: 30, followUpRequired: true },
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  details?: Record<string, any>;
+
+  @ApiProperty({
+    description: 'Activity metadata',
+    example: { source: 'web', deviceType: 'desktop' },
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, any>;
+}

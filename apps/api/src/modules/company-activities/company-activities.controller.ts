@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -22,7 +24,7 @@ import {
   CurrentUser,
   CurrentOrganization,
 } from '../auth/current-user.decorator';
-import { CreateCompanyActivityDto } from '../../dtos/company-activity.dto';
+import { CreateCompanyActivityDto, UpdateCompanyActivityDto } from '../../dtos/company-activity.dto';
 
 @ApiTags('company-activities')
 @Controller('company-activities')
@@ -101,5 +103,36 @@ export class CompanyActivitiesController {
       user.sub,
       organizationId,
     );
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update a company activity' })
+  @ApiParam({ name: 'id', description: 'Activity UUID' })
+  @ApiResponse({ status: 200, description: 'Activity updated successfully' })
+  @ApiResponse({ status: 404, description: 'Activity not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateActivity(
+    @Param('id') id: string,
+    @Body(new ValidationPipe()) updateDto: UpdateCompanyActivityDto,
+    @CurrentUser() user: any,
+  ): Promise<any> {
+    return this.companyActivitiesService.updateActivity(id, updateDto, user);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete a company activity' })
+  @ApiParam({ name: 'id', description: 'Activity UUID' })
+  @ApiResponse({ status: 200, description: 'Activity deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Activity not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async deleteActivity(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ): Promise<{ message: string }> {
+    return this.companyActivitiesService.deleteActivity(id, user);
   }
 }
