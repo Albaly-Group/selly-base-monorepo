@@ -38,6 +38,16 @@ export function PlatformUsersTab() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Calculate stats from real data
+  const totalUsers = users.length
+  const platformAdmins = users.filter(u => u.role === "platform_admin").length
+  const customerAdmins = users.filter(u => u.role === "customer_admin").length
+  const today = new Date().toDateString()
+  const activeToday = users.filter(u => {
+    const lastLogin = new Date(u.lastLogin).toDateString()
+    return lastLogin === today
+  }).length
+
   // Fetch platform users from backend
   useEffect(() => {
     const fetchUsers = async () => {
@@ -182,7 +192,7 @@ export function PlatformUsersTab() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,247</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : totalUsers.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Across all tenants
             </p>
@@ -195,7 +205,7 @@ export function PlatformUsersTab() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : platformAdmins}</div>
             <p className="text-xs text-muted-foreground">
               System administrators
             </p>
@@ -208,7 +218,7 @@ export function PlatformUsersTab() {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : customerAdmins}</div>
             <p className="text-xs text-muted-foreground">
               Organization admins
             </p>
@@ -221,7 +231,7 @@ export function PlatformUsersTab() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : activeToday}</div>
             <p className="text-xs text-muted-foreground">
               Users logged in today
             </p>
