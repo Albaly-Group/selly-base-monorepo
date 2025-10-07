@@ -8,24 +8,27 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Users, Database, Settings, BarChart3, Building2, Globe } from "lucide-react"
 import Link from "next/link"
-import { getTotalUsers, getActiveTenants } from "@/lib/platform-admin-data"
+import { getTotalUsers, getActiveTenants, getSharedCompanies } from "@/lib/platform-admin-data"
 
 export function PlatformAdminDashboard() {
   const { user } = useAuth()
   const [totalUsers, setTotalUsers] = useState(0)
   const [activeTenants, setActiveTenants] = useState(0)
+  const [sharedCompaniesCount, setSharedCompaniesCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [usersCount, tenantsCount] = await Promise.all([
+        const [usersCount, tenantsCount, sharedCompanies] = await Promise.all([
           getTotalUsers(),
-          getActiveTenants()
+          getActiveTenants(),
+          getSharedCompanies()
         ])
         setTotalUsers(usersCount)
         setActiveTenants(tenantsCount)
+        setSharedCompaniesCount(sharedCompanies.length)
       } catch (error) {
         console.error('Failed to fetch platform data:', error)
         // Keep default values of 0 on error
@@ -80,7 +83,7 @@ export function PlatformAdminDashboard() {
       href: "/platform-admin",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      stats: "45.2K Companies"
+      stats: loading ? "Loading..." : `${sharedCompaniesCount} Companies`
     },
     {
       title: "Analytics",
@@ -89,7 +92,7 @@ export function PlatformAdminDashboard() {
       href: "/platform-admin",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      stats: "99.9% Uptime"
+      stats: "View Analytics"
     },
     {
       title: "Platform Settings",
@@ -171,7 +174,9 @@ export function PlatformAdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Shared Companies</p>
-                  <p className="text-2xl font-bold text-purple-600">45.2K</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {loading ? "..." : sharedCompaniesCount}
+                  </p>
                 </div>
                 <Database className="h-8 w-8 text-purple-400" />
               </div>
@@ -182,7 +187,7 @@ export function PlatformAdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">System Health</p>
-                  <p className="text-2xl font-bold text-green-600">99.9%</p>
+                  <p className="text-2xl font-bold text-green-600">Healthy</p>
                 </div>
                 <Globe className="h-8 w-8 text-green-400" />
               </div>
