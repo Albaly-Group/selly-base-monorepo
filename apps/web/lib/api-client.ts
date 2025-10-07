@@ -570,7 +570,7 @@ class ApiClient {
     status?: string;
     subscriptionTier?: string;
   }): Promise<any> {
-    return this.patch(`/api/v1/platform-admin/tenants/${id}`, data);
+    return this.put(`/api/v1/platform-admin/tenants/${id}`, data);
   }
 
   async deleteTenant(id: string): Promise<any> {
@@ -595,7 +595,7 @@ class ApiClient {
     avatarUrl?: string;
     roleId?: string;
   }): Promise<any> {
-    return this.patch(`/api/v1/platform-admin/users/${id}`, data);
+    return this.put(`/api/v1/platform-admin/users/${id}`, data);
   }
 
   async deletePlatformUser(id: string): Promise<any> {
@@ -606,7 +606,7 @@ class ApiClient {
     isSharedData?: boolean;
     verificationStatus?: string;
   }): Promise<any> {
-    return this.patch(`/api/v1/platform-admin/shared-companies/${id}`, data);
+    return this.put(`/api/v1/platform-admin/shared-companies/${id}`, data);
   }
 
   // Reference Data endpoints

@@ -271,35 +271,38 @@ export function PlatformUsersTab() {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Full Name</Label>
-                <Input placeholder="John Smith" />
+                <Label>Full Name *</Label>
+                <Input 
+                  placeholder="John Smith" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input placeholder="john@company.com" type="email" />
+                <Label>Email *</Label>
+                <Input 
+                  placeholder="john@company.com" 
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="platform_admin">Platform Admin</SelectItem>
-                    <SelectItem value="customer_admin">Customer Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Password *</Label>
+                <Input 
+                  placeholder="Minimum 8 characters" 
+                  type="password" 
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Organization</Label>
-                <Select>
+                <Label>Organization *</Label>
+                <Select value={formData.organizationId} onValueChange={(value) => setFormData({ ...formData, organizationId: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select organization" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No Organization (Platform Admin)</SelectItem>
                     {organizations.map((org) => (
                       <SelectItem key={org.id} value={org.id}>
                         {org.name}
@@ -308,10 +311,25 @@ export function PlatformUsersTab() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddUser(false)}>Cancel</Button>
-              <Button onClick={handleAddUser}>Create User</Button>
+              <Button onClick={handleAddUser} disabled={isSaving}>
+                {isSaving ? "Creating..." : "Create User"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -486,13 +504,13 @@ export function PlatformUsersTab() {
                           <Eye className="h-3 w-3 mr-2" />
                           View Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditUser(filteredUser)}>
                           <Edit className="h-3 w-3 mr-2" />
                           Edit User
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(filteredUser.id)}>
                           <UserX className="h-3 w-3 mr-2" />
-                          Suspend User
+                          Deactivate User
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -504,6 +522,56 @@ export function PlatformUsersTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Platform User</DialogTitle>
+            <DialogDescription>
+              Update user account details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name *</Label>
+              <Input 
+                placeholder="John Smith" 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email (read-only)</Label>
+              <Input 
+                placeholder="john@company.com" 
+                type="email" 
+                value={formData.email}
+                disabled
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

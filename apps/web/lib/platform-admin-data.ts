@@ -103,29 +103,25 @@ export function getTenantUsageLevel(dataCount: number): "high" | "medium" | "low
 }
 
 // Function to ensure organization data consistency across components
-export function validateOrganizationData(org: TenantData): boolean {
+export function validateOrganizationData(org: any): org is TenantData {
   return !!(
+    org &&
     org.id &&
     org.name &&
     org.status &&
-    org.subscription_tier &&
     typeof org.user_count === "number" &&
-    typeof org.data_count === "number" &&
-    org.created_at &&
-    org.updated_at
+    typeof org.data_count === "number"
   )
 }
 
 // Function to ensure user data consistency
-export function validateUserData(user: PlatformUser): boolean {
+export function validateUserData(user: any): user is PlatformUser {
   return !!(
+    user &&
     user.id &&
     user.name &&
     user.email &&
-    user.role &&
     user.status &&
-    user.created_at &&
-    user.updated_at &&
     typeof user.loginCount === "number"
   )
 }
