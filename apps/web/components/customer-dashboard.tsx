@@ -4,7 +4,7 @@ import { useAuth, canManageDatabase, canManageOrganizationUsers } from "@/lib/au
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Users, Target, Database, BarChart3, TrendingUp } from "lucide-react"
+import { Search, Users, Target, Database, BarChart3, TrendingUp, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
@@ -24,10 +24,12 @@ export function CustomerDashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        setError(null)
         const [analyticsData, listsData] = await Promise.all([
           apiClient.getDashboardAnalytics(),
           apiClient.getCompanyLists().catch(() => ({ data: [] }))
@@ -41,13 +43,8 @@ export function CustomerDashboard() {
         })
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
-        // Fallback to reasonable defaults
-        setStats({
-          totalCompanies: 0,
-          totalLists: 0,
-          dataQualityScore: 0,
-          monthlyGrowth: { companies: 0, exports: 0, users: 0 }
-        })
+        setError('Failed to load dashboard data. Please ensure the backend is running.')
+        setStats(null)
       } finally {
         setIsLoading(false)
       }
@@ -59,6 +56,29 @@ export function CustomerDashboard() {
   }, [user])
 
   if (!user) return null
+
+  // Show error state with retry button
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="container mx-auto px-4 py-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-600" />
+                <h3 className="text-lg font-semibold mb-2 text-red-800">Failed to Load Dashboard</h3>
+                <p className="text-gray-600 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Retry
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
 
   const userFeatures = [
     {
