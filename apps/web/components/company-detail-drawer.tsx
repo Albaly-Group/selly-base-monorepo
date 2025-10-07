@@ -57,6 +57,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const [showAddActivity, setShowAddActivity] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showAddToListDialog, setShowAddToListDialog] = useState(false)
+  const [showEditContact, setShowEditContact] = useState(false)
+  const [showEditActivity, setShowEditActivity] = useState(false)
+  const [editingContact, setEditingContact] = useState<any>(null)
+  const [editingActivity, setEditingActivity] = useState<any>(null)
   const [companyLists, setCompanyLists] = useState<any[]>([])
   const [isLoadingLists, setIsLoadingLists] = useState(false)
   const [contacts, setContacts] = useState<any[]>([])
@@ -278,8 +282,59 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   }
 
   const handleEditContact = async (contactId: string) => {
-    // For now, just show an alert. You can implement a proper edit dialog later
-    alert('Edit functionality will be implemented soon. Contact ID: ' + contactId)
+    const contact = contacts.find(c => c.id === contactId)
+    if (contact) {
+      setEditingContact(contact)
+      setContactFormData({
+        firstName: contact.firstName || "",
+        lastName: contact.lastName || "",
+        title: contact.title || "",
+        phone: contact.phone || "",
+        email: contact.email || "",
+      })
+      setShowEditContact(true)
+    }
+  }
+
+  const handleUpdateContact = async () => {
+    if (!company?.id || !editingContact) return
+
+    // Validate contact form
+    const contactData = {
+      companyId: company.id,
+      firstName: contactFormData.firstName,
+      lastName: contactFormData.lastName,
+      title: contactFormData.title,
+      phone: contactFormData.phone,
+      email: contactFormData.email,
+    }
+
+    if (!contactValidation.validate(contactData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
+    try {
+      setIsSavingContact(true)
+      await apiClient.updateCompanyContact(editingContact.id, contactData)
+      
+      // Close dialog
+      setShowEditContact(false)
+      setEditingContact(null)
+      
+      // Refresh contacts list
+      const response = await apiClient.getCompanyContacts(company.id)
+      if (response.data) {
+        setContacts(response.data)
+      }
+      
+      console.log('Contact updated successfully')
+    } catch (error) {
+      console.error('Failed to update contact:', error)
+      alert('Failed to update contact. Please try again.')
+    } finally {
+      setIsSavingContact(false)
+    }
   }
 
   const handleDeleteActivity = async (activityId: string) => {
@@ -306,8 +361,55 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   }
 
   const handleEditActivity = async (activityId: string) => {
-    // For now, just show an alert. You can implement a proper edit dialog later
-    alert('Edit functionality will be implemented soon. Activity ID: ' + activityId)
+    const activity = activities.find(a => a.id === activityId)
+    if (activity) {
+      setEditingActivity(activity)
+      setActivityFormData({
+        activityType: activity.activityType || "",
+        outcome: activity.details?.outcome || "",
+        content: activity.details?.content || "",
+      })
+      setShowEditActivity(true)
+    }
+  }
+
+  const handleUpdateActivity = async () => {
+    if (!company?.id || !editingActivity) return
+
+    // Validate activity form
+    const activityData = {
+      companyId: company.id,
+      activityType: activityFormData.activityType,
+      outcome: activityFormData.outcome,
+      content: activityFormData.content,
+    }
+
+    if (!activityValidation.validate(activityData)) {
+      alert('Please fix validation errors before saving')
+      return
+    }
+
+    try {
+      setIsSavingActivity(true)
+      await apiClient.updateCompanyActivity(editingActivity.id, activityData)
+      
+      // Close dialog
+      setShowEditActivity(false)
+      setEditingActivity(null)
+      
+      // Refresh activities list
+      const response = await apiClient.getCompanyActivities({ companyId: company.id })
+      if (response.data) {
+        setActivities(response.data)
+      }
+      
+      console.log('Activity updated successfully')
+    } catch (error) {
+      console.error('Failed to update activity:', error)
+      alert('Failed to update activity. Please try again.')
+    } finally {
+      setIsSavingActivity(false)
+    }
   }
   if (!company) return null
 
@@ -957,6 +1059,174 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </Button>
               <Button onClick={handleSaveActivity} disabled={isSavingActivity}>
                 {isSavingActivity ? 'Saving...' : 'Log Activity'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Contact Dialog */}
+        <Dialog open={showEditContact} onOpenChange={setShowEditContact}>
+          <DialogContent className="w-[95vw] max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Edit Contact Person</DialogTitle>
+              <DialogDescription>
+                Update contact information for {editingContact?.fullName || 'contact'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>First Name</Label>
+                  <Input 
+                    placeholder="Enter first name"
+                    value={contactFormData.firstName}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, firstName: e.target.value })
+                      contactValidation.clearError('firstName')
+                    }}
+                    className={contactValidation.hasError('firstName') ? 'border-red-500' : ''}
+                  />
+                  {contactValidation.hasError('firstName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('firstName')}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name</Label>
+                  <Input 
+                    placeholder="Enter last name"
+                    value={contactFormData.lastName}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, lastName: e.target.value })
+                      contactValidation.clearError('lastName')
+                    }}
+                    className={contactValidation.hasError('lastName') ? 'border-red-500' : ''}
+                  />
+                  {contactValidation.hasError('lastName') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('lastName')}</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Title/Position</Label>
+                <Input 
+                  placeholder="e.g., Chief Technology Officer"
+                  value={contactFormData.title}
+                  onChange={(e) => setContactFormData({ ...contactFormData, title: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input 
+                    placeholder="+66-2-123-4567"
+                    value={contactFormData.phone}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, phone: e.target.value })
+                      contactValidation.clearError('phone')
+                    }}
+                    className={contactValidation.hasError('phone') ? 'border-red-500' : ''}
+                  />
+                  {contactValidation.hasError('phone') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('phone')}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input 
+                    type="email"
+                    placeholder="contact@company.com"
+                    value={contactFormData.email}
+                    onChange={(e) => {
+                      setContactFormData({ ...contactFormData, email: e.target.value })
+                      contactValidation.clearError('email')
+                    }}
+                    className={contactValidation.hasError('email') ? 'border-red-500' : ''}
+                  />
+                  {contactValidation.hasError('email') && (
+                    <p className="text-sm text-red-500">{contactValidation.getError('email')}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditContact(false)} disabled={isSavingContact}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateContact} disabled={isSavingContact}>
+                {isSavingContact ? 'Saving...' : 'Update Contact'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Activity Dialog */}
+        <Dialog open={showEditActivity} onOpenChange={setShowEditActivity}>
+          <DialogContent className="w-[95vw] max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Edit Activity</DialogTitle>
+              <DialogDescription>
+                Update activity details for {company.companyNameEn}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Activity Type <span className="text-red-500">*</span></Label>
+                  <Select 
+                    value={activityFormData.activityType}
+                    onValueChange={(value) => {
+                      setActivityFormData({ ...activityFormData, activityType: value })
+                      activityValidation.clearError('activityType')
+                    }}
+                  >
+                    <SelectTrigger className={activityValidation.hasError('activityType') ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="call">Call</SelectItem>
+                      <SelectItem value="meeting">Meeting</SelectItem>
+                      <SelectItem value="note">Note</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {activityValidation.hasError('activityType') && (
+                    <p className="text-sm text-red-500">{activityValidation.getError('activityType')}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Outcome</Label>
+                  <Select
+                    value={activityFormData.outcome}
+                    onValueChange={(value) => setActivityFormData({ ...activityFormData, outcome: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select outcome" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="interested">Interested</SelectItem>
+                      <SelectItem value="not-interested">Not Interested</SelectItem>
+                      <SelectItem value="follow-up">Follow-up Required</SelectItem>
+                      <SelectItem value="qualified">Qualified Lead</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea 
+                  placeholder="Enter activity details..." 
+                  rows={3}
+                  value={activityFormData.content}
+                  onChange={(e) => setActivityFormData({ ...activityFormData, content: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditActivity(false)} disabled={isSavingActivity}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateActivity} disabled={isSavingActivity}>
+                {isSavingActivity ? 'Saving...' : 'Update Activity'}
               </Button>
             </DialogFooter>
           </DialogContent>
