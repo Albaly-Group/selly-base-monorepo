@@ -47,16 +47,24 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
     try {
       // Call the actual API to update company
-      const updateData = {
-        companyNameEn: formData.companyNameEn,
-        companyNameTh: formData.companyNameTh,
-        businessDescription: formData.businessDescription,
-        province: formData.province,
-        websiteUrl: formData.websiteUrl,
-        primaryEmail: formData.primaryEmail,
-        primaryPhone: formData.primaryPhone,
-        tags: formData.tags,
-      }
+      // Map frontend field names to backend DTO field names
+      const updateData: any = {}
+      
+      if (formData.companyNameEn !== undefined) updateData.companyNameEn = formData.companyNameEn
+      if (formData.companyNameTh !== undefined) updateData.companyNameTh = formData.companyNameTh
+      if (formData.registrationId !== undefined) updateData.primaryRegistrationNo = formData.registrationId
+      if (formData.businessDescription !== undefined) updateData.businessDescription = formData.businessDescription
+      if (formData.addressLine1 !== undefined) updateData.addressLine1 = formData.addressLine1
+      if (formData.addressLine2 !== undefined) updateData.addressLine2 = formData.addressLine2
+      if (formData.provinceDetected !== undefined) updateData.province = formData.provinceDetected
+      if (formData.countryCode !== undefined) updateData.countryCode = formData.countryCode
+      if (formData.websiteUrl !== undefined) updateData.websiteUrl = formData.websiteUrl
+      if (formData.primaryEmail !== undefined) updateData.primaryEmail = formData.primaryEmail
+      if (formData.primaryPhone !== undefined) updateData.primaryPhone = formData.primaryPhone
+      if (formData.companySize !== undefined) updateData.companySize = formData.companySize
+      if (formData.employeeCountEstimate !== undefined) updateData.employeeCountEstimate = formData.employeeCountEstimate
+      if (formData.tags !== undefined) updateData.tags = formData.tags
+      if (formData.dataSensitivity !== undefined) updateData.dataSensitivity = formData.dataSensitivity
 
       const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
       
@@ -125,34 +133,118 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="registeredNo">Registered Number</Label>
+                <Label htmlFor="registrationId">Registered Number</Label>
                 <Input
-                  id="registeredNo"
-                  value={formData.registeredNo || ""}
-                  onChange={(e) => updateField("registeredNo", e.target.value)}
+                  id="registrationId"
+                  value={formData.registrationId || ""}
+                  onChange={(e) => updateField("registrationId", e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="companyNameTh">Company Name (TH)</Label>
+              <Input
+                id="companyNameTh"
+                value={formData.companyNameTh || ""}
+                onChange={(e) => updateField("companyNameTh", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="businessDescription">Business Description</Label>
+              <Input
+                id="businessDescription"
+                value={formData.businessDescription || ""}
+                onChange={(e) => updateField("businessDescription", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Contact Information</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="primaryEmail">Primary Email</Label>
+                <Input
+                  id="primaryEmail"
+                  type="email"
+                  value={formData.primaryEmail || ""}
+                  onChange={(e) => updateField("primaryEmail", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="primaryPhone">Primary Phone</Label>
+                <Input
+                  id="primaryPhone"
+                  value={formData.primaryPhone || ""}
+                  onChange={(e) => updateField("primaryPhone", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="websiteUrl">Website URL</Label>
+              <Input
+                id="websiteUrl"
+                type="url"
+                value={formData.websiteUrl || ""}
+                onChange={(e) => updateField("websiteUrl", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Address Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Address Information</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="addressLine1">Address Line 1</Label>
+              <Input
+                id="addressLine1"
+                value={formData.addressLine1 || ""}
+                onChange={(e) => updateField("addressLine1", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="addressLine2">Address Line 2</Label>
+              <Input
+                id="addressLine2"
+                value={formData.addressLine2 || ""}
+                onChange={(e) => updateField("addressLine2", e.target.value)}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="provinceDetected">Province</Label>
                 <Input
-                  id="industry"
-                  value={formData.industrialName || ""}
-                  onChange={(e) => updateField("industrialName", e.target.value)}
+                  id="provinceDetected"
+                  value={formData.provinceDetected || ""}
+                  onChange={(e) => updateField("provinceDetected", e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="province">Province</Label>
+                <Label htmlFor="countryCode">Country Code</Label>
                 <Input
-                  id="province"
-                  value={formData.province || ""}
-                  onChange={(e) => updateField("province", e.target.value)}
+                  id="countryCode"
+                  value={formData.countryCode || ""}
+                  onChange={(e) => updateField("countryCode", e.target.value)}
+                  maxLength={2}
+                  placeholder="TH"
                 />
               </div>
             </div>
+          </div>
+
+          {/* Company Details */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Company Details</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -162,29 +254,42 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                     <SelectValue placeholder="Select size..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="S">Small (S)</SelectItem>
-                    <SelectItem value="M">Medium (M)</SelectItem>
-                    <SelectItem value="L">Large (L)</SelectItem>
+                    <SelectItem value="micro">Micro</SelectItem>
+                    <SelectItem value="small">Small</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="large">Large</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Verification Status</Label>
-                <Select
-                  value={formData.verificationStatus || ""}
-                  onValueChange={(value) => updateField("verificationStatus", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Needs Verification">Needs Verification</SelectItem>
-                    <SelectItem value="Invalid">Invalid</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
+                <Input
+                  id="employeeCountEstimate"
+                  type="number"
+                  value={formData.employeeCountEstimate || ""}
+                  onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
+                />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+              <Select
+                value={formData.dataSensitivity || ""}
+                onValueChange={(value) => updateField("dataSensitivity", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sensitivity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="confidential">Confidential</SelectItem>
+                  <SelectItem value="restricted">Restricted</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
