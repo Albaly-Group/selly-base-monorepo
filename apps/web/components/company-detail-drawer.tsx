@@ -36,6 +36,7 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
+  AlertCircle,
   FileText,
   Activity
 } from "lucide-react"

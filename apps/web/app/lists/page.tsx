@@ -69,7 +69,11 @@ function ListManagementPage() {
       try {
         const response = await apiClient.getCompanyListItems(selectedListId)
         console.log('Fetched companies for list:', response);
-        setListCompanies(response || [])
+        // Transform list items to extract companies
+        const companies = Array.isArray(response) 
+          ? response.map((item: any) => item.company).filter(Boolean)
+          : []
+        setListCompanies(companies)
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])
