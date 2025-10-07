@@ -767,7 +767,7 @@ COMMIT;
 -- COMMENTS & DOCUMENTATION
 -- =========================================================
 
-COMMENT ON DATABASE postgres IS 'Selly Base - B2B Prospecting SaaS Platform Database';
+COMMENT ON DATABASE selly_base IS 'Selly Base - B2B Prospecting SaaS Platform Database';
 COMMENT ON TABLE organizations IS 'Multi-tenant organizations/customers for SaaS isolation';
 COMMENT ON TABLE users IS 'Users scoped to organizations with RBAC';
 COMMENT ON TABLE companies IS 'Canonical company data with SaaS privacy controls - shared reference data (organization_id=NULL) and customer-specific data (organization_id set)';
