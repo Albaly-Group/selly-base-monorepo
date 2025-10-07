@@ -55,9 +55,7 @@ describe('ReportsController', () => {
         ],
       };
 
-      mockReportsService.getDashboardAnalytics.mockResolvedValue(
-        mockAnalytics,
-      );
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(mockAnalytics);
 
       const result = await controller.getDashboardAnalytics();
 
@@ -88,9 +86,7 @@ describe('ReportsController', () => {
         recentActivity: [],
       };
 
-      mockReportsService.getDashboardAnalytics.mockResolvedValue(
-        mockAnalytics,
-      );
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(mockAnalytics);
 
       const result = await controller.getDashboardAnalytics();
 
@@ -112,9 +108,7 @@ describe('ReportsController', () => {
         ],
       };
 
-      mockReportsService.getDashboardAnalytics.mockResolvedValue(
-        mockAnalytics,
-      );
+      mockReportsService.getDashboardAnalytics.mockResolvedValue(mockAnalytics);
 
       const result = await controller.getDashboardAnalytics();
 
@@ -141,7 +135,7 @@ describe('ReportsController', () => {
         issues: [],
         trends: {
           thisMonth: 0.85,
-          lastMonth: 0.80,
+          lastMonth: 0.8,
           improvement: 0.05,
         },
       };
@@ -219,7 +213,7 @@ describe('ReportsController', () => {
         issues: [],
         trends: {
           thisMonth: 0.85,
-          lastMonth: 0.80,
+          lastMonth: 0.8,
           improvement: 0.05,
         },
       };
@@ -360,9 +354,7 @@ describe('ReportsController', () => {
         topExporters: [],
       };
 
-      mockReportsService.getExportHistoryReports.mockResolvedValue(
-        mockReports,
-      );
+      mockReportsService.getExportHistoryReports.mockResolvedValue(mockReports);
 
       const result = await controller.getExportHistoryReports();
 
@@ -388,9 +380,7 @@ describe('ReportsController', () => {
         topExporters: [],
       };
 
-      mockReportsService.getExportHistoryReports.mockResolvedValue(
-        mockReports,
-      );
+      mockReportsService.getExportHistoryReports.mockResolvedValue(mockReports);
 
       const result = await controller.getExportHistoryReports(
         startDate,
@@ -415,9 +405,7 @@ describe('ReportsController', () => {
         topExporters: [],
       };
 
-      mockReportsService.getExportHistoryReports.mockResolvedValue(
-        mockReports,
-      );
+      mockReportsService.getExportHistoryReports.mockResolvedValue(mockReports);
 
       const result = await controller.getExportHistoryReports();
 
@@ -441,9 +429,7 @@ describe('ReportsController', () => {
         topExporters: [],
       };
 
-      mockReportsService.getExportHistoryReports.mockResolvedValue(
-        mockReports,
-      );
+      mockReportsService.getExportHistoryReports.mockResolvedValue(mockReports);
 
       const result = await controller.getExportHistoryReports();
 
@@ -468,9 +454,7 @@ describe('ReportsController', () => {
         ],
       };
 
-      mockReportsService.getExportHistoryReports.mockResolvedValue(
-        mockReports,
-      );
+      mockReportsService.getExportHistoryReports.mockResolvedValue(mockReports);
 
       const result = await controller.getExportHistoryReports();
 

@@ -265,9 +265,7 @@ describe('AdminController', () => {
         message: 'Policies updated successfully',
       };
 
-      mockAdminService.updateOrganizationPolicies.mockResolvedValue(
-        mockResult,
-      );
+      mockAdminService.updateOrganizationPolicies.mockResolvedValue(mockResult);
 
       const result = await controller.updateOrganizationPolicies(policiesData);
 

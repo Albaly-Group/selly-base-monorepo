@@ -26,11 +26,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Transform permissions from role.permissions array to Permission[] format
     // that the platform-admin controller expects
-    const permissions = user.userRoles2?.flatMap((userRole: any) => 
-      (userRole.role.permissions || []).map((permissionKey: string) => ({
-        key: permissionKey
-      }))
-    ) || [];
+    const permissions =
+      user.userRoles2?.flatMap((userRole: any) =>
+        (userRole.role.permissions || []).map((permissionKey: string) => ({
+          key: permissionKey,
+        })),
+      ) || [];
 
     // Return user object with permissions for use in guards and controllers
     return {

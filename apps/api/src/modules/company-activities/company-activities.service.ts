@@ -70,7 +70,7 @@ export class CompanyActivitiesService {
       throw new NotFoundException(`Activity with ID ${id} not found`);
     }
 
-    return { activity};
+    return { activity };
   }
 
   async createActivity(
