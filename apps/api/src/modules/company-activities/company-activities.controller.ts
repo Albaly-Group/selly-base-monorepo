@@ -92,9 +92,13 @@ export class CompanyActivitiesController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ): Promise<any> {
+    console.log("CreateDto", createDto)
+    console.log("User", user)
+    console.log("OrganizationId", organizationId)
+
     return this.companyActivitiesService.createActivity(
       createDto,
-      user.id,
+      user.sub,
       organizationId,
     );
   }
