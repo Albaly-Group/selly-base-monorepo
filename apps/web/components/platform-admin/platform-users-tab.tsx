@@ -26,18 +26,40 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Users, Plus, MoreHorizontal, Shield, Building, Search, Filter, Eye, Edit, UserX } from "lucide-react"
-import { getPlatformUsers, getTenants, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
+import { 
+  getPlatformUsers, 
+  getTenants, 
+  createPlatformUser,
+  updatePlatformUser,
+  deletePlatformUser,
+  type PlatformUser, 
+  validateUserData 
+} from "@/lib/platform-admin-data"
 import { useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export function PlatformUsersTab() {
   const { user } = useAuth()
+  const { toast } = useToast()
   const [users, setUsers] = useState<PlatformUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
   const [showAddUser, setShowAddUser] = useState(false)
+  const [editingUser, setEditingUser] = useState<PlatformUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [organizations, setOrganizations] = useState<any[]>([])
+  
+  // Form state for add/edit
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    organizationId: "",
+    status: "active",
+    roleId: "",
+  })
 
   // Calculate stats from real data
   const totalUsers = users.length
@@ -115,8 +137,112 @@ export function PlatformUsersTab() {
     return matchesSearch && matchesStatus && matchesRole
   })
 
-  const handleAddUser = () => {
-    setShowAddUser(false)
+  const refreshUsers = async () => {
+    try {
+      const data = await getPlatformUsers()
+      setUsers(data.filter(validateUserData))
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const handleAddUser = async () => {
+    if (!formData.name || !formData.email || !formData.password || !formData.organizationId) {
+      toast({
+        title: "Validation Error",
+        description: "Name, email, password, and organization are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    const result = await createPlatformUser(formData)
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      })
+      setShowAddUser(false)
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        organizationId: "",
+        status: "active",
+        roleId: "",
+      })
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to create user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEditUser = (user: PlatformUser) => {
+    setEditingUser(user)
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: "",
+      organizationId: user.organization_id || "",
+      status: user.status,
+      roleId: "",
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return
+
+    setIsSaving(true)
+    const result = await updatePlatformUser(editingUser.id, {
+      name: formData.name,
+      status: formData.status,
+      roleId: formData.roleId || undefined,
+    })
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      })
+      setEditingUser(null)
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to deactivate this user? This will set their status to inactive.")) {
+      return
+    }
+
+    const result = await deletePlatformUser(userId)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User deactivated successfully",
+      })
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to deactivate user",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

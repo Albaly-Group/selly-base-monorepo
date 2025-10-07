@@ -26,15 +26,37 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Building2, Plus, MoreHorizontal, Users, Database, Settings, Eye, Edit } from "lucide-react"
 import type { Organization } from "@/lib/types"
-import { getTenants, type TenantData, validateOrganizationData } from "@/lib/platform-admin-data"
+import { 
+  getTenants, 
+  createTenant,
+  updateTenant,
+  deleteTenant,
+  type TenantData, 
+  validateOrganizationData 
+} from "@/lib/platform-admin-data"
 import { useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export function TenantManagementTab() {
   const { user } = useAuth()
+  const { toast } = useToast()
   const [tenants, setTenants] = useState<TenantData[]>([])
   const [showAddTenant, setShowAddTenant] = useState(false)
   const [editingTenant, setEditingTenant] = useState<TenantData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  
+  // Form state for add/edit
+  const [formData, setFormData] = useState({
+    name: "",
+    slug: "",
+    domain: "",
+    status: "active",
+    subscriptionTier: "basic",
+    adminEmail: "",
+    adminName: "",
+    adminPassword: "",
+  })
 
   // Fetch tenants from backend
   useEffect(() => {
@@ -89,19 +111,139 @@ export function TenantManagementTab() {
     return new Date(dateString).toLocaleDateString()
   }
 
-  const handleAddTenant = () => {
-    setShowAddTenant(false)
+  const refreshTenants = async () => {
+    try {
+      const data = await getTenants()
+      setTenants(data.filter(validateOrganizationData))
+    } catch (error) {
+      console.error('Error fetching tenants:', error)
+    }
+  }
+
+  const handleAddTenant = async () => {
+    if (!formData.name || !formData.slug) {
+      toast({
+        title: "Validation Error",
+        description: "Name and slug are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    const result = await createTenant(formData)
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Tenant created successfully",
+      })
+      setShowAddTenant(false)
+      setFormData({
+        name: "",
+        slug: "",
+        domain: "",
+        status: "active",
+        subscriptionTier: "basic",
+        adminEmail: "",
+        adminName: "",
+        adminPassword: "",
+      })
+      await refreshTenants()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to create tenant",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleEditTenant = (tenant: TenantData) => {
     setEditingTenant(tenant)
+    setFormData({
+      name: tenant.name,
+      slug: tenant.slug || "",
+      domain: tenant.domain || "",
+      status: tenant.status,
+      subscriptionTier: tenant.subscription_tier || "basic",
+      adminEmail: "",
+      adminName: "",
+      adminPassword: "",
+    })
   }
 
-  const handleToggleStatus = (tenantId: string) => {
-    setTenants(tenants.map(t => t.id === tenantId ? {
-      ...t,
-      status: t.status === "active" ? "inactive" : "active"
-    } as TenantData : t))
+  const handleSaveEdit = async () => {
+    if (!editingTenant) return
+
+    setIsSaving(true)
+    const result = await updateTenant(editingTenant.id, {
+      name: formData.name,
+      domain: formData.domain,
+      status: formData.status,
+      subscriptionTier: formData.subscriptionTier,
+    })
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Tenant updated successfully",
+      })
+      setEditingTenant(null)
+      await refreshTenants()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update tenant",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleToggleStatus = async (tenantId: string) => {
+    const tenant = tenants.find(t => t.id === tenantId)
+    if (!tenant) return
+
+    const newStatus = tenant.status === "active" ? "inactive" : "active"
+    const result = await updateTenant(tenantId, { status: newStatus })
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: `Tenant ${newStatus === "active" ? "activated" : "deactivated"} successfully`,
+      })
+      await refreshTenants()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update tenant status",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteTenant = async (tenantId: string) => {
+    if (!confirm("Are you sure you want to deactivate this tenant? This will set its status to inactive.")) {
+      return
+    }
+
+    const result = await deleteTenant(tenantId)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Tenant deactivated successfully",
+      })
+      await refreshTenants()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to deactivate tenant",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -130,16 +272,32 @@ export function TenantManagementTab() {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Organization Name</Label>
-                <Input placeholder="Company Name Ltd." />
+                <Label>Organization Name *</Label>
+                <Input 
+                  placeholder="Company Name Ltd." 
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Slug * (URL-friendly identifier)</Label>
+                <Input 
+                  placeholder="company-name" 
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Domain</Label>
-                <Input placeholder="company.com" />
+                <Input 
+                  placeholder="company.com" 
+                  value={formData.domain}
+                  onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Subscription Tier</Label>
-                <Select>
+                <Select value={formData.subscriptionTier} onValueChange={(value) => setFormData({ ...formData, subscriptionTier: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select tier" />
                   </SelectTrigger>
@@ -151,17 +309,37 @@ export function TenantManagementTab() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Admin Email</Label>
-                <Input placeholder="admin@company.com" type="email" />
+                <Label>Admin Email (optional)</Label>
+                <Input 
+                  placeholder="admin@company.com" 
+                  type="email" 
+                  value={formData.adminEmail}
+                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Admin Name</Label>
-                <Input placeholder="Admin User" />
+                <Label>Admin Name (optional)</Label>
+                <Input 
+                  placeholder="Admin User" 
+                  value={formData.adminName}
+                  onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Admin Password (optional)</Label>
+                <Input 
+                  placeholder="Minimum 8 characters" 
+                  type="password"
+                  value={formData.adminPassword}
+                  onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
+                />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddTenant(false)}>Cancel</Button>
-              <Button onClick={handleAddTenant}>Create Tenant</Button>
+              <Button onClick={handleAddTenant} disabled={isSaving}>
+                {isSaving ? "Creating..." : "Create Tenant"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -268,6 +446,68 @@ export function TenantManagementTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Tenant Dialog */}
+      <Dialog open={!!editingTenant} onOpenChange={(open) => !open && setEditingTenant(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Tenant Organization</DialogTitle>
+            <DialogDescription>
+              Update tenant organization details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Organization Name *</Label>
+              <Input 
+                placeholder="Company Name Ltd." 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Domain</Label>
+              <Input 
+                placeholder="company.com" 
+                value={formData.domain}
+                onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subscription Tier</Label>
+              <Select value={formData.subscriptionTier} onValueChange={(value) => setFormData({ ...formData, subscriptionTier: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="professional">Professional</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTenant(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
