@@ -113,10 +113,9 @@ describe('PlatformAdminController', () => {
 
         await controller.patchPlatformUser(mockRequest, testId, updateDto);
 
-        expect(mockPlatformAdminService.updatePlatformUser).toHaveBeenCalledWith(
-          testId,
-          updateDto,
-        );
+        expect(
+          mockPlatformAdminService.updatePlatformUser,
+        ).toHaveBeenCalledWith(testId, updateDto);
       });
 
       it('should call service.updatePlatformUser when updatePlatformUser is called', async () => {
@@ -126,10 +125,9 @@ describe('PlatformAdminController', () => {
 
         await controller.updatePlatformUser(mockRequest, testId, updateDto);
 
-        expect(mockPlatformAdminService.updatePlatformUser).toHaveBeenCalledWith(
-          testId,
-          updateDto,
-        );
+        expect(
+          mockPlatformAdminService.updatePlatformUser,
+        ).toHaveBeenCalledWith(testId, updateDto);
       });
     });
 
@@ -153,10 +151,9 @@ describe('PlatformAdminController', () => {
 
         await controller.patchSharedCompany(mockRequest, testId, updateDto);
 
-        expect(mockPlatformAdminService.updateSharedCompany).toHaveBeenCalledWith(
-          testId,
-          updateDto,
-        );
+        expect(
+          mockPlatformAdminService.updateSharedCompany,
+        ).toHaveBeenCalledWith(testId, updateDto);
       });
 
       it('should call service.updateSharedCompany when updateSharedCompany is called', async () => {
@@ -166,10 +163,9 @@ describe('PlatformAdminController', () => {
 
         await controller.updateSharedCompany(mockRequest, testId, updateDto);
 
-        expect(mockPlatformAdminService.updateSharedCompany).toHaveBeenCalledWith(
-          testId,
-          updateDto,
-        );
+        expect(
+          mockPlatformAdminService.updateSharedCompany,
+        ).toHaveBeenCalledWith(testId, updateDto);
       });
     });
   });

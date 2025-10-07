@@ -76,22 +76,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const companyDetails = company
 
   console.log(company)
-  
-  const fetchContacts = async () => {
-    if (!company?.id) return
-    try {
-      setIsLoadingContacts(true)
-      const response = await apiClient.getCompanyContacts(company.id)
-      if (response.data) {
-        setContacts(response.data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch contacts:', error)
-      setContacts([])
-    } finally {
-      setIsLoadingContacts(false)
-    }
-  }
 
   useEffect(() => {
     if (company && open) {
@@ -117,6 +101,23 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
           setIsLoadingLists(false)
         }
       }
+      
+      const fetchContacts = async () => {
+        if (!company?.id) return
+        try {
+          setIsLoadingContacts(true)
+          const response = await apiClient.getCompanyContacts(company.id)
+          if (response.data) {
+            setContacts(response.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch contacts:', error)
+          setContacts([])
+        } finally {
+          setIsLoadingContacts(false)
+        }
+      }
+      
       fetchCompanyLists()
       fetchContacts()
     }
@@ -147,7 +148,17 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       setShowAddContact(false)
       
       // Refresh contacts list to show the new contact instantly
-      await fetchContacts()
+      try {
+        setIsLoadingContacts(true)
+        const response = await apiClient.getCompanyContacts(company.id)
+        if (response.data) {
+          setContacts(response.data)
+        }
+      } catch (fetchError) {
+        console.error('Failed to refresh contacts:', fetchError)
+      } finally {
+        setIsLoadingContacts(false)
+      }
       
       // Show success message (you can add a toast notification here)
       console.log('Contact added successfully')
