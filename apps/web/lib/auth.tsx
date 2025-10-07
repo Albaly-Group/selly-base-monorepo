@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react"
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isLoading: boolean
 }
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true)
 
     try {
@@ -92,19 +92,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           document.cookie = `selly-user=${JSON.stringify(appUser)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
           
           setIsLoading(false);
-          return true;
+          return { success: true };
         }
-      } catch (apiError) {
+      } catch (apiError: any) {
         console.log('API login failed:', apiError);
-        return false;
+        setIsLoading(false);
+        
+        // Extract user-friendly error message from API error
+        let errorMessage = 'Invalid email or password';
+        
+        if (apiError?.message) {
+          const msg = apiError.message.toLowerCase();
+          
+          // Handle specific error cases
+          if (msg.includes('401') || msg.includes('unauthorized') || msg.includes('invalid credentials')) {
+            errorMessage = 'Invalid email or password';
+          } else if (msg.includes('404') || msg.includes('not found')) {
+            errorMessage = 'Account not found';
+          } else if (msg.includes('403') || msg.includes('forbidden')) {
+            errorMessage = 'Access denied';
+          } else if (msg.includes('network') || msg.includes('fetch') || msg.includes('failed to fetch')) {
+            errorMessage = 'Unable to connect to server. Please check your connection.';
+          } else if (msg.includes('timeout')) {
+            errorMessage = 'Request timed out. Please try again.';
+          } else if (msg.includes('api request failed:')) {
+            // Extract status code info from API client error messages
+            if (msg.includes('401')) {
+              errorMessage = 'Invalid email or password';
+            } else if (msg.includes('500') || msg.includes('502') || msg.includes('503')) {
+              errorMessage = 'Server error. Please try again later.';
+            } else {
+              errorMessage = 'Login failed. Please try again.';
+            }
+          } else {
+            // For other errors, use a generic message
+            errorMessage = 'Login failed. Please try again.';
+          }
+        }
+        
+        return { success: false, error: errorMessage };
       }
 
       setIsLoading(false);
-      return false;
-    } catch (error) {
+      return { success: false, error: 'Login failed. Please try again.' };
+    } catch (error: any) {
       console.error("Login error:", error);
       setIsLoading(false);
-      return false;
+      return { success: false, error: 'An unexpected error occurred. Please try again.' };
     }
   }
 
