@@ -32,38 +32,23 @@ export function UserManagementTab() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
 
+  // State for error handling
+  const [error, setError] = useState<string | null>(null)
+
   // Fetch users from backend
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setIsLoading(true)
+        setError(null)
         const response = await apiClient.getOrganizationUsers()
         if (response.data) {
           setUsers(response.data)
         }
       } catch (error) {
         console.error('Failed to fetch organization users:', error)
-        // Fallback to mock data if API fails
-        setUsers([
-          {
-            id: "1",
-            name: "John Staff",
-            email: "john@" + (currentUser.organization?.domain || "organization.com"),
-            role: "staff",
-            status: "active",
-            lastLogin: "2024-12-08T14:30:00Z",
-            createdAt: "2024-01-15T10:00:00Z"
-          },
-          {
-            id: "2",
-            name: "Sarah User",
-            email: "sarah@" + (currentUser.organization?.domain || "organization.com"),
-            role: "user",
-            status: "active",
-            lastLogin: "2024-12-08T13:15:00Z",
-            createdAt: "2024-03-20T09:30:00Z"
-          }
-        ])
+        setError('Failed to load organization users. Please ensure the backend is running.')
+        setUsers([])
       } finally {
         setIsLoading(false)
       }
@@ -160,6 +145,24 @@ export function UserManagementTab() {
             <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
             <p>You don&apos;t have permission to manage organization users.</p>
             <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show error UI if API failed
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-600" />
+            <h3 className="text-lg font-semibold mb-2 text-red-800">Failed to Load Users</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Retry
+            </Button>
           </div>
         </CardContent>
       </Card>

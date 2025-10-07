@@ -57,6 +57,85 @@ export class CompaniesService {
   }
 
   /**
+   * Parse tags array from database to structured format
+   */
+  private parseTags(tagsArray: any): string[] {
+    if (!tagsArray) return []
+    
+    // If it's already an array, return it
+    if (Array.isArray(tagsArray)) {
+      return tagsArray.filter(tag => tag && typeof tag === 'string')
+    }
+    
+    // If it's a PostgreSQL array string like '{tag1,tag2}'
+    if (typeof tagsArray === 'string') {
+      const cleaned = tagsArray.replace(/^\{|\}$/g, '')
+      if (!cleaned) return []
+      return cleaned.split(',').map(tag => tag.trim()).filter(tag => tag)
+    }
+    
+    return []
+  }
+
+  /**
+   * Parse industry classification JSON from database
+   */
+  private parseClassifications(classificationData: any): Array<{ code: string; name: string; level?: number }> {
+    if (!classificationData) return []
+    
+    try {
+      // If it's a string, parse it as JSON
+      const data = typeof classificationData === 'string' 
+        ? JSON.parse(classificationData) 
+        : classificationData
+      
+      // Handle different classification data structures
+      if (Array.isArray(data)) {
+        return data.map(item => ({
+          code: item.code || item.id || '',
+          name: item.name || item.label || '',
+          level: item.level || undefined
+        }))
+      }
+      
+      // Handle single classification object
+      if (data.code && data.name) {
+        return [{
+          code: data.code,
+          name: data.name,
+          level: data.level || undefined
+        }]
+      }
+      
+      // Handle nested structure
+      if (data.primary || data.secondary) {
+        const classifications = []
+        if (data.primary) {
+          classifications.push({
+            code: data.primary.code || '',
+            name: data.primary.name || '',
+            level: 1
+          })
+        }
+        if (data.secondary && Array.isArray(data.secondary)) {
+          data.secondary.forEach((item: any, index: number) => {
+            classifications.push({
+              code: item.code || '',
+              name: item.name || '',
+              level: index + 2
+            })
+          })
+        }
+        return classifications
+      }
+    } catch (error) {
+      console.error('Failed to parse industry classification:', error)
+    }
+    
+    return []
+  }
+
+  /**
    * Search companies with SaaS privacy controls
    */
   async searchCompanies(filters: SearchFilters = {}): Promise<SearchResult<CompanySummary>> {
@@ -176,6 +255,7 @@ export class CompaniesService {
         c.verification_status,
         c.data_quality_score,
         c.tags,
+        c.industry_classification,
         c.contact_count as contacts_count,
         c.list_membership_count
       FROM mv_company_search c
@@ -207,8 +287,8 @@ export class CompaniesService {
       companySize: row.company_size,
       verificationStatus: row.verification_status,
       dataQualityScore: parseFloat(row.data_quality_score || '0'),
-      headTags: [], // TODO: Parse from tags array
-      classifications: [], // TODO: Load from industry_classification
+      headTags: this.parseTags(row.tags),
+      classifications: this.parseClassifications(row.industry_classification),
       contactsCount: parseInt(row.contacts_count || '0'),
       listMembershipCount: parseInt(row.list_membership_count || '0')
     }))
@@ -244,6 +324,7 @@ export class CompaniesService {
         c.verification_status,
         c.data_quality_score,
         c.tags,
+        c.industry_classification,
         c.contact_count as contacts_count,
         c.list_membership_count
       FROM mv_company_search c
@@ -277,8 +358,8 @@ export class CompaniesService {
       companySize: row.company_size,
       verificationStatus: row.verification_status,
       dataQualityScore: parseFloat(row.data_quality_score || '0'),
-      headTags: [], // TODO: Parse from tags
-      classifications: [], // TODO: Load classifications
+      headTags: this.parseTags(row.tags),
+      classifications: this.parseClassifications(row.industry_classification),
       contactsCount: parseInt(row.contacts_count || '0'),
       listMembershipCount: parseInt(row.list_membership_count || '0')
     }
