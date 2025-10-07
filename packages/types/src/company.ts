@@ -152,7 +152,7 @@ export interface LeadScore {
 export interface FilterOptions {
   industrial?: string
   province?: string
-  companySize?: "S" | "M" | "L"
+  companySize?: 'micro' | 'small' | 'medium' | 'large' | 'enterprise'
   contactStatus?: "Active" | "Needs Verification" | "Invalid"
   dataSensitivity?: 'public' | 'standard' | 'confidential' | 'restricted'
   dataSource?: 'albaly_list' | 'dbd_registry' | 'customer_input' | 'data_enrichment' | 'third_party'

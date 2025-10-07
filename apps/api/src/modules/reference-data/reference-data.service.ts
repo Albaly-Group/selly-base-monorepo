@@ -83,7 +83,8 @@ export class ReferenceDataService {
   }
 
   async getCompanySizes(): Promise<any[]> {
-    // Company sizes are standard categories, not stored in database yet
+    // Company sizes must match database check constraint and backend DTO enum
+    // Database constraint: company_size IN ('micro', 'small', 'medium', 'large', 'enterprise')
     return [
       {
         value: 'small',
