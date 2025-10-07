@@ -25,6 +25,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# E2E test logs
+e2e-test-logs/
+
 # env files
 .env*
 !.env.example
@@ -39,3 +42,13 @@ next-env.d.ts
 
 # turbo
 .turbo
+
+# lost-pixel visual regression
+.lostpixel/current
+.lostpixel/difference
+
+# playwright test artifacts
+/playwright-report-e2e
+/test-results
+playwright-report
+.lighthouseci

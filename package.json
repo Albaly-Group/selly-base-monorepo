@@ -15,10 +15,32 @@
     "clean": "turbo clean",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report playwright-report-e2e"
+    "test:e2e:report": "playwright show-report playwright-report-e2e",
+    "test:e2e:docker": "bash run-e2e-with-docker.sh",
+    "test:e2e:docker:db-only": "bash run-e2e-db-only.sh",
+    "test:e2e:docker:setup": "docker compose -f docker-compose.e2e.yml up -d",
+    "test:e2e:docker:cleanup": "docker compose -f docker-compose.e2e.yml down -v",
+    "test:e2e:docker:logs": "docker compose -f docker-compose.e2e.yml logs",
+    "test:e2e:db-only:setup": "docker compose -f docker-compose.db-only.yml up -d",
+    "test:e2e:db-only:cleanup": "docker compose -f docker-compose.db-only.yml down -v",
+    "test:e2e:db-only:logs": "docker compose -f docker-compose.db-only.yml logs",
+    "test:visual": "lost-pixel update && lost-pixel",
+    "test:visual:update": "lost-pixel update",
+    "test:visual:docker": "lost-pixel docker",
+    "test:a11y": "playwright test e2e/accessibility.spec.ts",
+    "test:performance": "lhci autorun",
+    "test:load": "k6 run k6.config.js",
+    "test:contract": "cd apps/api && npm run test:contract",
+    "test:security": "docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline-scan.py -t http://localhost:3000 -c zap.config.yaml",
+    "test:coverage": "turbo test -- --coverage",
+    "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y"
   },
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "latest",
+    "@axe-core/playwright": "^4.8.2",
+    "@lhci/cli": "^0.12.0",
+    "@pact-foundation/pact": "^12.1.0",
+    "lost-pixel": "^3.16.0"
   },
   "packageManager": "npm@10.2.4"
 }

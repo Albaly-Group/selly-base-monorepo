@@ -3,7 +3,7 @@ import { ApiTestHelper, AuthHelper } from './helpers/api-test-helpers';
 
 /**
  * Platform Admin Endpoints E2E Tests using Playwright
- * 
+ *
  * These tests verify platform admin API endpoints using Playwright's API testing capabilities.
  */
 
@@ -17,7 +17,7 @@ test.describe('Platform Admin Endpoints (Playwright e2e)', () => {
     const requestContext = await request.newContext({
       baseURL: BASE_URL,
       extraHTTPHeaders: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
     });
@@ -164,7 +164,9 @@ test.describe('Platform Admin Endpoints (Playwright e2e)', () => {
 
   test.describe('Platform Admin Shared Companies Endpoint', () => {
     test('/api/v1/platform-admin/shared-companies (GET) - should require authentication', async () => {
-      const response = await apiHelper.get('/api/v1/platform-admin/shared-companies');
+      const response = await apiHelper.get(
+        '/api/v1/platform-admin/shared-companies',
+      );
       apiHelper.assertStatus(response, 401);
     });
 
@@ -175,10 +177,13 @@ test.describe('Platform Admin Endpoints (Playwright e2e)', () => {
         return;
       }
 
-      const response = await apiHelper.get('/api/v1/platform-admin/shared-companies', {
-        query: { page: 1, limit: 10 },
-        headers: authHelper.getAuthHeader(),
-      });
+      const response = await apiHelper.get(
+        '/api/v1/platform-admin/shared-companies',
+        {
+          query: { page: 1, limit: 10 },
+          headers: authHelper.getAuthHeader(),
+        },
+      );
 
       apiHelper.assertStatus(response, 200);
       apiHelper.assertHasProperty(response, 'data');
@@ -208,10 +213,13 @@ test.describe('Platform Admin Endpoints (Playwright e2e)', () => {
         return;
       }
 
-      const response = await apiHelper.get('/api/v1/platform-admin/shared-companies', {
-        query: { page: 1, limit: 5 },
-        headers: authHelper.getAuthHeader(),
-      });
+      const response = await apiHelper.get(
+        '/api/v1/platform-admin/shared-companies',
+        {
+          query: { page: 1, limit: 5 },
+          headers: authHelper.getAuthHeader(),
+        },
+      );
 
       apiHelper.assertStatus(response, 200);
       expect(response.body.pagination.limit).toBe(5);

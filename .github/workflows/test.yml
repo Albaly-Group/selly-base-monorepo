@@ -1,5 +1,17 @@
 name: Test Suite
 
+# CI/CD Cost Optimization:
+# Expensive tests (E2E, Accessibility, Visual Regression, Performance, Security)
+# are commented out to reduce GitHub Actions minutes and costs.
+# 
+# Core tests (Frontend, Backend Unit/API/Integration) run on every PR/push.
+# Expensive tests should be run manually before releases:
+#   - npm run test:e2e          (End-to-End browser tests)
+#   - npm run test:a11y         (Accessibility tests)
+#   - npm run test:visual       (Visual regression tests)
+#   - npm run test:performance  (Lighthouse performance)
+#   - npm run test:security     (OWASP ZAP security scan)
+
 on:
   push:
     branches: [ main, develop ]
@@ -29,7 +41,7 @@ jobs:
         run: cd apps/web && npm test -- --passWithNoTests
       
       - name: Upload coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: frontend-coverage
@@ -57,7 +69,7 @@ jobs:
         run: cd apps/api && npm test -- --passWithNoTests
       
       - name: Upload coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-coverage
@@ -88,7 +100,7 @@ jobs:
         run: cd apps/api && npm run test:api
       
       - name: Upload test report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: api-test-report
@@ -154,75 +166,221 @@ jobs:
           NODE_ENV: test
       
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results
           path: apps/api/test-results
 
-  e2e-tests:
-    name: End-to-End Tests
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: selly_base_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-      
-      - name: Initialize test database
-        run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d selly_base_test -f selly-base-optimized-schema.sql
-      
-      - name: Start application
-        run: |
-          npm run dev &
-          sleep 30
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/selly_base_test
-          SKIP_DATABASE: false
-      
-      - name: Run E2E tests
-        run: npm run test:e2e
-      
-      - name: Upload E2E test report
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: e2e-test-report
-          path: playwright-report-e2e
-      
-      - name: Upload E2E screenshots
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: e2e-screenshots
-          path: test-results
+  # E2E tests are expensive and time-consuming (browser automation, full stack)
+  # Commented out to reduce CI/CD costs - run manually or on main branch only
+  # Uncomment for critical releases or when testing full user workflows
+  # e2e-tests:
+  #   name: End-to-End Tests
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   
+  #   services:
+  #     postgres:
+  #       image: pgvector/pgvector:pg16
+  #       env:
+  #         POSTGRES_USER: postgres
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: selly_base_test
+  #       ports:
+  #         - 5432:5432
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     
+  #     - name: Install Playwright browsers
+  #       run: npx playwright install --with-deps
+  #     
+  #     - name: Initialize test database
+  #       run: |
+  #         PGPASSWORD=postgres psql -h localhost -U postgres -d selly_base_test -f selly-base-optimized-schema.sql
+  #     
+  #     - name: Start application
+  #       run: |
+  #         npm run dev &
+  #         sleep 30
+  #       env:
+  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/selly_base_test
+  #         SKIP_DATABASE: false
+  #     
+  #     - name: Run E2E tests
+  #       run: npm run test:e2e
+  #     
+  #     - name: Upload E2E test report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: e2e-test-report
+  #         path: playwright-report-e2e
+  #     
+  #     - name: Upload E2E screenshots
+  #       uses: actions/upload-artifact@v4
+  #       if: failure()
+  #       with:
+  #         name: e2e-screenshots
+  #         path: test-results
+
+  # Accessibility tests require browser automation and can be expensive
+  # Commented out to reduce CI/CD costs - run manually or periodically
+  # Uncomment for accessibility audits or compliance checks
+  # accessibility-tests:
+  #   name: Accessibility Tests
+  #   runs-on: ubuntu-latest
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     
+  #     - name: Install Playwright
+  #       run: npx playwright install --with-deps
+  #     
+  #     - name: Run accessibility tests
+  #       run: npm run test:a11y
+  #     
+  #     - name: Upload accessibility report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: accessibility-report
+  #         path: test-results
+
+  # Visual regression tests require browser automation and screenshot storage
+  # Commented out to reduce CI/CD costs - run manually when UI changes are made
+  # Uncomment for major UI updates or design system changes
+  # visual-regression-tests:
+  #   name: Visual Regression Tests
+  #   runs-on: ubuntu-latest
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     
+  #     - name: Install Playwright
+  #       run: npx playwright install --with-deps
+  #     
+  #     - name: Run visual regression tests
+  #       run: npm run test:visual
+  #     
+  #     - name: Upload visual test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: visual-test-results
+  #         path: .lostpixel
+
+  # Performance tests require full application startup and Lighthouse analysis
+  # Commented out to reduce CI/CD costs - run manually or on release branches
+  # Uncomment for performance audits or before major releases
+  # performance-tests:
+  #   name: Performance Tests
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     
+  #     - name: Install Lighthouse CI
+  #       run: npm install -g @lhci/cli
+  #     
+  #     - name: Start application
+  #       run: |
+  #         npm run dev &
+  #         sleep 30
+  #     
+  #     - name: Run Lighthouse CI
+  #       run: npm run test:performance
+  #     
+  #     - name: Upload Lighthouse reports
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: lighthouse-reports
+  #         path: .lighthouseci
+
+  # Security tests require full application startup and ZAP scanning
+  # Commented out to reduce CI/CD costs - run manually or on security audits
+  # Uncomment for security reviews or compliance checks
+  # security-tests:
+  #   name: Security Tests
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     
+  #     - name: Start application
+  #       run: |
+  #         npm run dev &
+  #         sleep 30
+  #     
+  #     - name: OWASP ZAP Baseline Scan
+  #       uses: zaproxy/action-baseline@v0.7.0
+  #       with:
+  #         target: 'http://localhost:3000'
+  #         rules_file_name: 'zap.config.yaml'
+  #         cmd_options: '-a'
+  #     
+  #     - name: Upload ZAP reports
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: zap-reports
+  #         path: zap-reports
 
   test-summary:
     name: Test Summary
@@ -233,18 +391,34 @@ jobs:
     steps:
       - name: Check test results
         run: |
-          echo "Test Results:"
-          echo "Frontend Tests: ${{ needs.frontend-tests.result }}"
-          echo "Backend Unit Tests: ${{ needs.backend-unit-tests.result }}"
-          echo "Backend API Tests: ${{ needs.backend-api-tests.result }}"
-          echo "Backend Integration Tests: ${{ needs.backend-integration-tests.result }}"
+          echo "==================================="
+          echo "CI/CD Test Results Summary"
+          echo "==================================="
+          echo ""
+          echo "Core Tests (Always Run):"
+          echo "  Frontend Tests: ${{ needs.frontend-tests.result }}"
+          echo "  Backend Unit Tests: ${{ needs.backend-unit-tests.result }}"
+          echo "  Backend API Tests: ${{ needs.backend-api-tests.result }}"
+          echo "  Backend Integration Tests: ${{ needs.backend-integration-tests.result }}"
+          echo ""
+          echo "Expensive Tests (Commented Out):"
+          echo "  E2E Tests: Skipped (run manually with 'npm run test:e2e')"
+          echo "  Accessibility Tests: Skipped (run manually with 'npm run test:a11y')"
+          echo "  Visual Regression: Skipped (run manually with 'npm run test:visual')"
+          echo "  Performance Tests: Skipped (run manually with 'npm run test:performance')"
+          echo "  Security Tests: Skipped (run manually with 'npm run test:security')"
+          echo ""
+          echo "==================================="
           
           if [[ "${{ needs.frontend-tests.result }}" != "success" ]] || \
              [[ "${{ needs.backend-unit-tests.result }}" != "success" ]] || \
              [[ "${{ needs.backend-api-tests.result }}" != "success" ]] || \
              [[ "${{ needs.backend-integration-tests.result }}" != "success" ]]; then
-            echo "Some tests failed!"
+            echo "❌ Some core tests failed!"
             exit 1
           fi
           
-          echo "All tests passed!"
+          echo "✅ All core tests passed!"
+          echo ""
+          echo "Note: Expensive tests are disabled to reduce CI/CD costs."
+          echo "Run them manually before major releases or when needed."

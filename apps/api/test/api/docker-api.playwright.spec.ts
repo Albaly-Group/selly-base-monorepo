@@ -1,5 +1,9 @@
 import { test, expect, request } from '@playwright/test';
-import { ApiTestHelper, AuthHelper, TestDataHelper } from './helpers/api-test-helpers';
+import {
+  ApiTestHelper,
+  AuthHelper,
+  TestDataHelper,
+} from './helpers/api-test-helpers';
 
 /**
  * E2E Tests with Real Docker Database using Playwright
@@ -32,11 +36,11 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
     }
 
     console.log('🔧 Initializing Playwright API test context...');
-    
+
     const requestContext = await request.newContext({
       baseURL: BASE_URL,
       extraHTTPHeaders: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
     });
@@ -107,7 +111,11 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
       apiHelper.assertPropertyValue(response, 'id', testData.get('userId'));
       apiHelper.assertHasProperty(response, 'email');
       apiHelper.assertHasProperty(response, 'name');
-      apiHelper.assertPropertyValue(response, 'organizationId', testData.get('organizationId'));
+      apiHelper.assertPropertyValue(
+        response,
+        'organizationId',
+        testData.get('organizationId'),
+      );
 
       console.log('✓ User profile retrieved');
     });
@@ -119,7 +127,7 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
 
     test('should reject requests with invalid token', async () => {
       const response = await apiHelper.get('/api/v1/auth/me', {
-        headers: { 'Authorization': 'Bearer invalid-token' },
+        headers: { Authorization: 'Bearer invalid-token' },
       });
       apiHelper.assertStatus(response, 401);
     });
@@ -131,7 +139,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 1,
           limit: 10,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -157,7 +167,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
           keyword: 'tech',
           page: 1,
           limit: 10,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -177,7 +189,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
           industry: 'Technology',
           page: 1,
           limit: 10,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -219,7 +233,11 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
 
       apiHelper.assertStatus(response, 201);
       apiHelper.assertHasProperty(response, 'id');
-      apiHelper.assertPropertyValue(response, 'companyNameEn', newCompany.companyNameEn);
+      apiHelper.assertPropertyValue(
+        response,
+        'companyNameEn',
+        newCompany.companyNameEn,
+      );
 
       testData.set('companyId', response.body.id);
       console.log(`✓ Created company with ID: ${response.body.id}`);
@@ -304,17 +322,20 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
     test('should add company to list', async () => {
       const listId = testData.get('listId');
       const companyId = testData.get('companyId');
-      
+
       if (!listId || !companyId) {
         console.log('⊘ Skipping - no list or company ID available');
         test.skip();
         return;
       }
 
-      const response = await apiHelper.post(`/api/v1/company-lists/${listId}/companies`, {
-        data: { companyIds: [companyId] },
-        headers: authHelper.getAuthHeader(),
-      });
+      const response = await apiHelper.post(
+        `/api/v1/company-lists/${listId}/companies`,
+        {
+          data: { companyIds: [companyId] },
+          headers: authHelper.getAuthHeader(),
+        },
+      );
 
       apiHelper.assertStatus(response, 200);
       console.log('✓ Added company to list');
@@ -328,7 +349,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         return;
       }
 
-      const response = await apiHelper.get(`/api/v1/company-lists/${listId}/items`);
+      const response = await apiHelper.get(
+        `/api/v1/company-lists/${listId}/items`,
+      );
 
       apiHelper.assertStatus(response, 200);
       apiHelper.assertHasProperty(response, 'data');
@@ -457,7 +480,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         return;
       }
 
-      const response = await apiHelper.post(`/api/v1/imports/${importJobId}/validate`);
+      const response = await apiHelper.post(
+        `/api/v1/imports/${importJobId}/validate`,
+      );
 
       apiHelper.assertStatus(response, 201);
       apiHelper.assertHasProperty(response, 'status');
@@ -643,7 +668,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 1,
           limit: 1,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -669,7 +696,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 1,
           limit: 1,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -689,7 +718,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 1,
           limit: 100,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -712,7 +743,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 1,
           limit: 5,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });
@@ -721,7 +754,9 @@ test.describe('Backend API with Docker Database (Playwright e2e)', () => {
         query: {
           page: 2,
           limit: 5,
-          organizationId: testData.get('organizationId') || '550e8400-e29b-41d4-a716-446655440000',
+          organizationId:
+            testData.get('organizationId') ||
+            '550e8400-e29b-41d4-a716-446655440000',
           includeSharedData: 'true',
         },
       });

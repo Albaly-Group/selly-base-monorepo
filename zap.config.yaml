@@ -1,0 +1,70 @@
+# OWASP ZAP Configuration for Security Testing
+env:
+  contexts:
+    - name: "Selly Base Application"
+      urls:
+        - "http://localhost:3000"
+        - "http://localhost:3001"
+      includePaths:
+        - "http://localhost:3000/.*"
+        - "http://localhost:3001/api/.*"
+      excludePaths:
+        - "http://localhost:3000/static/.*"
+        - "http://localhost:3001/api/health"
+      authentication:
+        method: "json"
+        parameters:
+          loginUrl: "http://localhost:3001/api/v1/auth/login"
+          loginRequestData: '{"email":"test@example.com","password":"testpassword"}'
+        verification:
+          method: "response"
+          pollFrequency: 60
+          pollUnits: "requests"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: "spider"
+    parameters:
+      url: "http://localhost:3000"
+      maxDuration: 5
+      maxDepth: 5
+
+  - type: "spiderAjax"
+    parameters:
+      url: "http://localhost:3000"
+      maxDuration: 5
+      maxCrawlDepth: 5
+
+  - type: "passiveScan-config"
+    parameters:
+      maxAlertsPerRule: 10
+
+  - type: "passiveScan-wait"
+    parameters:
+      maxDuration: 5
+
+  - type: "activeScan"
+    parameters:
+      context: "Selly Base Application"
+      policy: "API-scan-minimal"
+      maxRuleDurationInMins: 5
+      maxScanDurationInMins: 15
+
+  - type: "report"
+    parameters:
+      template: "traditional-html"
+      reportDir: "zap-reports"
+      reportFile: "security-report"
+      reportTitle: "Selly Base Security Scan"
+      reportDescription: "Security scan results for Selly Base application"
+
+# Alert filters
+alertFilters:
+  - ruleId: 10021 # X-Content-Type-Options Header Missing
+    newRisk: "Info"
+  - ruleId: 10020 # X-Frame-Options Header Not Set
+    newRisk: "Info"

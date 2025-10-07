@@ -1,15 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller';
+import { AdminService } from './admin.service';
 
 describe('AdminController', () => {
   let controller: AdminController;
+  let adminService: AdminService;
+
+  const mockAdminService = {
+    getOrganizationUsers: jest.fn(),
+    createOrganizationUser: jest.fn(),
+    updateOrganizationUser: jest.fn(),
+    deleteOrganizationUser: jest.fn(),
+    getOrganizationPolicies: jest.fn(),
+    updateOrganizationPolicies: jest.fn(),
+    getIntegrationSettings: jest.fn(),
+    updateIntegrationSettings: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminController],
+      providers: [
+        {
+          provide: AdminService,
+          useValue: mockAdminService,
+        },
+      ],
     }).compile();
 
     controller = module.get<AdminController>(AdminController);
+    adminService = module.get<AdminService>(AdminService);
   });
 
   it('should be defined', () => {
@@ -18,7 +38,18 @@ describe('AdminController', () => {
 
   describe('getOrganizationUsers', () => {
     it('should return paginated organization users', async () => {
-      const result = await controller.getOrganizationUsers();
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
+      const mockUsers = {
+        data: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      };
+
+      mockAdminService.getOrganizationUsers.mockResolvedValue(mockUsers);
+
+      const result = await controller.getOrganizationUsers(mockReq);
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty('data');
@@ -27,7 +58,18 @@ describe('AdminController', () => {
     });
 
     it('should handle pagination parameters', async () => {
-      const result = await controller.getOrganizationUsers('1', '10');
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
+      const mockUsers = {
+        data: [],
+        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      };
+
+      mockAdminService.getOrganizationUsers.mockResolvedValue(mockUsers);
+
+      const result = await controller.getOrganizationUsers(mockReq, '1', '10');
 
       expect(result.pagination).toBeDefined();
       expect(result.pagination.page).toBe(1);
@@ -35,7 +77,27 @@ describe('AdminController', () => {
     });
 
     it('should return users with all required fields', async () => {
-      const result = await controller.getOrganizationUsers();
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
+      const mockUsers = {
+        data: [
+          {
+            id: '1',
+            name: 'Test User',
+            email: 'test@example.com',
+            role: 'member',
+            status: 'active',
+            permissions: [],
+          },
+        ],
+        pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
+      };
+
+      mockAdminService.getOrganizationUsers.mockResolvedValue(mockUsers);
+
+      const result = await controller.getOrganizationUsers(mockReq);
 
       if (result.data.length > 0) {
         const user = result.data[0];
@@ -51,13 +113,25 @@ describe('AdminController', () => {
 
   describe('createOrganizationUser', () => {
     it('should create new organization user', async () => {
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
       const userData = {
         name: 'New User',
         email: 'newuser@albaly.com',
         role: 'member',
       };
 
-      const result = await controller.createOrganizationUser(userData);
+      const mockUser = {
+        id: '123',
+        ...userData,
+        permissions: [],
+      };
+
+      mockAdminService.createOrganizationUser.mockResolvedValue(mockUser);
+
+      const result = await controller.createOrganizationUser(mockReq, userData);
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty('id');
@@ -67,13 +141,25 @@ describe('AdminController', () => {
     });
 
     it('should assign default permissions based on role', async () => {
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
       const userData = {
         name: 'Test User',
         email: 'test@albaly.com',
         role: 'member',
       };
 
-      const result = await controller.createOrganizationUser(userData);
+      const mockUser = {
+        id: '123',
+        ...userData,
+        permissions: ['read:companies'],
+      };
+
+      mockAdminService.createOrganizationUser.mockResolvedValue(mockUser);
+
+      const result = await controller.createOrganizationUser(mockReq, userData);
 
       expect(result.permissions).toBeDefined();
       expect(Array.isArray(result.permissions)).toBe(true);
@@ -87,6 +173,14 @@ describe('AdminController', () => {
         role: 'manager',
       };
 
+      const mockUser = {
+        id: '1',
+        ...updateData,
+        email: 'test@example.com',
+      };
+
+      mockAdminService.updateOrganizationUser.mockResolvedValue(mockUser);
+
       const result = await controller.updateOrganizationUser('1', updateData);
 
       expect(result).toBeDefined();
@@ -97,6 +191,12 @@ describe('AdminController', () => {
 
   describe('deleteOrganizationUser', () => {
     it('should delete organization user', async () => {
+      const mockResult = {
+        message: 'User deleted successfully',
+      };
+
+      mockAdminService.deleteOrganizationUser.mockResolvedValue(mockResult);
+
       const result = await controller.deleteOrganizationUser('1');
 
       expect(result).toBeDefined();
@@ -107,7 +207,20 @@ describe('AdminController', () => {
 
   describe('getOrganizationPolicies', () => {
     it('should return organization policies', async () => {
-      const result = await controller.getOrganizationPolicies();
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
+      const mockPolicies = {
+        dataRetention: {},
+        accessControl: {},
+        dataSharing: {},
+        apiAccess: {},
+      };
+
+      mockAdminService.getOrganizationPolicies.mockResolvedValue(mockPolicies);
+
+      const result = await controller.getOrganizationPolicies(mockReq);
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty('dataRetention');
@@ -117,7 +230,20 @@ describe('AdminController', () => {
     });
 
     it('should return policies with configuration', async () => {
-      const result = await controller.getOrganizationPolicies();
+      const mockReq = {
+        user: { id: 'user1', organizationId: 'org1' },
+      };
+
+      const mockPolicies = {
+        dataRetention: { enabled: true },
+        accessControl: { enabled: true },
+        dataSharing: {},
+        apiAccess: {},
+      };
+
+      mockAdminService.getOrganizationPolicies.mockResolvedValue(mockPolicies);
+
+      const result = await controller.getOrganizationPolicies(mockReq);
 
       expect(result.dataRetention).toBeDefined();
       expect(typeof result.dataRetention).toBe('object');
@@ -135,6 +261,14 @@ describe('AdminController', () => {
         },
       };
 
+      const mockResult = {
+        message: 'Policies updated successfully',
+      };
+
+      mockAdminService.updateOrganizationPolicies.mockResolvedValue(
+        mockResult,
+      );
+
       const result = await controller.updateOrganizationPolicies(policiesData);
 
       expect(result).toBeDefined();
@@ -145,6 +279,14 @@ describe('AdminController', () => {
 
   describe('getIntegrationSettings', () => {
     it('should return integration settings', async () => {
+      const mockSettings = {
+        databases: {},
+        apis: {},
+        exports: {},
+      };
+
+      mockAdminService.getIntegrationSettings.mockResolvedValue(mockSettings);
+
       const result = await controller.getIntegrationSettings();
 
       expect(result).toBeDefined();
@@ -154,6 +296,17 @@ describe('AdminController', () => {
     });
 
     it('should return database connections', async () => {
+      const mockSettings = {
+        databases: {
+          enabled: true,
+          connections: [],
+        },
+        apis: {},
+        exports: {},
+      };
+
+      mockAdminService.getIntegrationSettings.mockResolvedValue(mockSettings);
+
       const result = await controller.getIntegrationSettings();
 
       expect(result.databases).toBeDefined();
@@ -170,6 +323,12 @@ describe('AdminController', () => {
           enabled: true,
         },
       };
+
+      const mockResult = {
+        message: 'Settings updated successfully',
+      };
+
+      mockAdminService.updateIntegrationSettings.mockResolvedValue(mockResult);
 
       const result = await controller.updateIntegrationSettings(settingsData);
 

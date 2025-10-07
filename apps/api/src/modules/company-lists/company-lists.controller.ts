@@ -172,7 +172,6 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-
     const userId = user.id ?? user.sub;
     const userName = user.name;
 
@@ -210,7 +209,6 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-
     const userId = user.id ?? user.sub;
     const userName = user.name;
 
@@ -252,7 +250,6 @@ export class CompanyListsController {
     @CurrentUser() user: any,
     @CurrentOrganization() organizationId: string,
   ) {
-
     const userId = user.id ?? user.sub;
     const userName = user.name;
 
