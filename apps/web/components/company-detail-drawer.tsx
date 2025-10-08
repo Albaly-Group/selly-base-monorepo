@@ -618,22 +618,22 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {companyDetails.contactPersons[0]?.phone && (
+                    {companyDetails.contactPersons?.[0]?.phone && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Phone</Label>
                         <div className="mt-1 flex items-center gap-2">
-                          <span>{companyDetails.contactPersons[0].phone}</span>
+                          <span>{companyDetails.contactPersons?.[0]?.phone}</span>
                           <Button variant="ghost" size="sm" className="p-1 h-6">
                             <Phone className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
                     )}
-                    {companyDetails.contactPersons[0]?.email && (
+                    {companyDetails.contactPersons?.[0]?.email && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Email</Label>
                         <div className="mt-1 flex items-center gap-2">
-                          <span>{companyDetails.contactPersons[0].email}</span>
+                          <span>{companyDetails.contactPersons?.[0]?.email}</span>
                           <Button variant="ghost" size="sm" className="p-1 h-6">
                             <Mail className="h-3 w-3" />
                           </Button>

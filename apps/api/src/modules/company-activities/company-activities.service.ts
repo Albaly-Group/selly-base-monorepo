@@ -126,13 +126,9 @@ export class CompanyActivitiesService {
     };
   }
 
-  async updateActivity(
-    id: string,
-    updateDto: any,
-    user: any,
-  ): Promise<any> {
+  async updateActivity(id: string, updateDto: any, user: any): Promise<any> {
     const activity = await this.activityRepository.findOne({ where: { id } });
-    
+
     if (!activity) {
       throw new NotFoundException(`Activity with ID ${id} not found`);
     }
@@ -142,14 +138,18 @@ export class CompanyActivitiesService {
       ...activity.details,
       ...(updateDto.outcome && { outcome: updateDto.outcome }),
       ...(updateDto.content && { content: updateDto.content }),
-      ...(updateDto.contactPerson && { contactPerson: updateDto.contactPerson }),
+      ...(updateDto.contactPerson && {
+        contactPerson: updateDto.contactPerson,
+      }),
       ...(updateDto.details && updateDto.details),
     };
 
     Object.assign(activity, {
       ...(updateDto.activityType && { activityType: updateDto.activityType }),
       details: updatedDetails,
-      ...(updateDto.metadata && { metadata: { ...activity.metadata, ...updateDto.metadata } }),
+      ...(updateDto.metadata && {
+        metadata: { ...activity.metadata, ...updateDto.metadata },
+      }),
     });
 
     const savedActivity = await this.activityRepository.save(activity);
