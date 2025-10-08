@@ -445,8 +445,18 @@ export class CompaniesService {
         );
       }
 
+      // Check if user can update shared data
       if (existingCompany.isSharedData) {
-        throw new ForbiddenException('Cannot update shared data companies');
+        // Check if user has permission to manage shared data
+        const hasSharedDataPermission = (user as any).permissions?.some(
+          (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+        );
+        
+        if (!hasSharedDataPermission) {
+          throw new ForbiddenException(
+            'Cannot update shared data companies - requires shared-data:manage permission',
+          );
+        }
       }
 
       const oldValues = { ...existingCompany };
@@ -520,6 +530,10 @@ export class CompaniesService {
           updateDto.dataSensitivity !== undefined
             ? updateDto.dataSensitivity
             : existingCompany.dataSensitivity,
+        verificationStatus:
+          updateDto.verificationStatus !== undefined
+            ? updateDto.verificationStatus
+            : existingCompany.verificationStatus,
         dataQualityScore: this.calculateDataQualityScore(
           updateDto,
           existingCompany,

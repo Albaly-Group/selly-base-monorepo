@@ -471,6 +471,15 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity level' })
   dataSensitivity?: DataSensitivity;
+
+  @ApiPropertyOptional({
+    description: 'Verification status of the company data',
+    enum: VerificationStatus,
+    example: VerificationStatus.VERIFIED,
+  })
+  @IsOptional()
+  @IsEnum(VerificationStatus, { message: 'Invalid verification status' })
+  verificationStatus?: VerificationStatus;
 }
 
 export class CompanySearchDto {
