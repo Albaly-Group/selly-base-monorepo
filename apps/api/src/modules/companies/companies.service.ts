@@ -422,7 +422,17 @@ export class CompaniesService {
       throw new BadRequestException('Company ID is required');
     }
 
-    if (!user || !user.organizationId) {
+    if (!user) {
+      throw new BadRequestException('User information is required');
+    }
+
+    // Check if user is platform admin with shared data permissions
+    const isPlatformAdmin = (user as any).permissions?.some(
+      (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+    );
+
+    // For non-platform admins, organization ID is required
+    if (!isPlatformAdmin && !user.organizationId) {
       throw new BadRequestException(
         'User organization information is required',
       );
@@ -436,25 +446,21 @@ export class CompaniesService {
       );
 
       // Enhanced authorization check
-      if (
-        existingCompany.organizationId !== user.organizationId &&
-        !existingCompany.isSharedData
-      ) {
-        throw new ForbiddenException(
-          'Cannot update this company - insufficient permissions',
-        );
-      }
-
-      // Check if user can update shared data
       if (existingCompany.isSharedData) {
-        // Check if user has permission to manage shared data
-        const hasSharedDataPermission = (user as any).permissions?.some(
-          (p: any) => p.key === 'shared-data:manage' || p.key === '*',
-        );
-        
-        if (!hasSharedDataPermission) {
+        // For shared data, only platform admins can update
+        if (!isPlatformAdmin) {
           throw new ForbiddenException(
             'Cannot update shared data companies - requires shared-data:manage permission',
+          );
+        }
+      } else {
+        // For non-shared data, user must own the company
+        if (
+          existingCompany.organizationId !== user.organizationId &&
+          !isPlatformAdmin
+        ) {
+          throw new ForbiddenException(
+            'Cannot update this company - insufficient permissions',
           );
         }
       }
