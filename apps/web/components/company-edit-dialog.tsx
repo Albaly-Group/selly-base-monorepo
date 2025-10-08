@@ -35,8 +35,10 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   // Check if user can edit this company
   const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
   const isOwner = user?.organizationId && company?.organizationId === user.organizationId
-  // Platform admins can also set verification status for shared data
-  const canSetVerificationStatus = isOwner || (company?.isSharedData && user && canEditSharedData(user))
+  // Verification status rules:
+  // - For non-shared data (isSharedData = false): always allow editing
+  // - For shared data (isSharedData = true): only platform admins can edit
+  const canSetVerificationStatus = !company?.isSharedData || (user && canEditSharedData(user))
 
   useEffect(() => {
     if (company) {
