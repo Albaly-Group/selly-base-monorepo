@@ -35,6 +35,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   // Check if user can edit this company
   const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
   const isOwner = user?.organization_id && company?.organization_id === user.organization_id
+  // Platform admins can also set verification status for shared data
+  const canSetVerificationStatus = isOwner || (company?.isSharedData && user && canEditSharedData(user))
 
   useEffect(() => {
     if (company) {
@@ -75,8 +77,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       if (formData.tags !== undefined) updateData.tags = formData.tags
       if (formData.dataSensitivity !== undefined) updateData.dataSensitivity = formData.dataSensitivity
       
-      // Allow organization owners to update verification status
-      if (isOwner && formData.verificationStatus !== undefined) {
+      // Allow organization owners and platform admins (on shared data) to update verification status
+      if (canSetVerificationStatus && formData.verificationStatus !== undefined) {
         updateData.verificationStatus = formData.verificationStatus
       }
 
@@ -354,8 +356,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             </div>
           </div>
 
-          {/* Verification Status - Only for data owners */}
-          {isOwner && (
+          {/* Verification Status - For data owners and platform admins on shared data */}
+          {canSetVerificationStatus && (
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Data Verification</h3>
               <div className="space-y-2">
@@ -375,7 +377,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500">
-                  As the data owner, you can set the verification status for this company.
+                  {isOwner 
+                    ? "As the data owner, you can set the verification status for this company."
+                    : "As a platform admin, you can set the verification status for this shared data."}
                 </p>
               </div>
             </div>
