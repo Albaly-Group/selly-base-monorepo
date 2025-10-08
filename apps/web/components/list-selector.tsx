@@ -128,6 +128,8 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
 export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdate }: ListSelectorProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
+  console.log("Lists", lists)
+
   const handleListCreated = () => {
     setShowCreateDialog(false)
     if (onListsUpdate) {
@@ -155,7 +157,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {list.companyIds.length}
+                    {list.companyListItems.length}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
