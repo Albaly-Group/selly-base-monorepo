@@ -10,7 +10,7 @@ import { CompanyCreateDialog } from "@/components/company-create-dialog"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { requireAuth } from "@/lib/auth"
 import { useCompaniesSearch } from "@/lib/hooks/api-hooks"
-import { searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/types"
+import { searchAndScoreCompanies, type WeightedLeadScore, calculateWeightedLeadScore } from "@/lib/types"
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -45,36 +45,30 @@ function CompanyLookupPage() {
     }
 
     if (hasAppliedFiltering) {
+      // Include shared data for smart filtering
+      filters.includeSharedData = true;
 
-      // if (searchTerm.trim()) {
-      //   filters.q = searchTerm.trim();
-      // }
-
-      if (smartFiltering.keywordWeight) {
-        filters.keywordWeight = smartFiltering.keywordWeight; 
+      // Include keyword if provided in smart filtering
+      if (smartFiltering.keyword && smartFiltering.keyword.trim()) {
+        filters.q = smartFiltering.keyword.trim();
       }
+
+      // Apply attribute filters
       if (smartFiltering.industrial){
         filters.industrial = smartFiltering.industrial;
       }
       if (smartFiltering.province) {
         filters.province = smartFiltering.province;
       }
-      if (smartFiltering.companySize && smartFiltering.companySize.length > 0) {
+      if (smartFiltering.companySize) {
         filters.companySize = smartFiltering.companySize;
       }
       if (smartFiltering.contactStatus){
         filters.contactStatus = smartFiltering.contactStatus;
       }
 
-      // if (smartFiltering.dataSource && smartFiltering.dataSource.length > 0) {
-      //   filters.dataSource = smartFiltering.dataSource;
-      // }
-      // if (smartFiltering.verificationStatus) {
-      //   filters.verificationStatus = smartFiltering.verificationStatus;
-      // }
-      // if (smartFiltering.dataSensitivity && smartFiltering.dataSensitivity.length > 0) {
-      //   filters.dataSensitivity = smartFiltering.dataSensitivity;
-      // }
+      // Note: weights are used for client-side scoring, not sent to backend
+      // Backend filtering is done on the attributes themselves
     }
 
     return filters;
@@ -141,7 +135,16 @@ function CompanyLookupPage() {
         };
       });
 
-      return { filteredCompanies: companies, leadScores: {}, isLoading: false };
+      // Calculate lead scores when smart filtering is applied
+      let calculatedLeadScores: { [companyId: string]: WeightedLeadScore } = {};
+      if (hasAppliedFiltering && smartFiltering) {
+        companies.forEach(company => {
+          const score = calculateWeightedLeadScore(company, smartFiltering);
+          calculatedLeadScores[company.id] = score;
+        });
+      }
+
+      return { filteredCompanies: companies, leadScores: calculatedLeadScores, isLoading: false };
     }
 
     if (hasApiError) {
@@ -149,7 +152,7 @@ function CompanyLookupPage() {
     }
     
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
-  }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError]);
+  }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError, hasAppliedFiltering, smartFiltering]);
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -319,11 +322,26 @@ function CompanyLookupPage() {
                       </div>
                     )}
                     {hasAppliedFiltering && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2 flex-wrap">
                         <Filter className="h-4 w-4 text-blue-600" />
                         <span className="text-sm text-blue-800 font-medium">
-                          Smart Filtering Applied
+                          Smart Filtering:
                         </span>
+                        {smartFiltering.keyword && (
+                          <span className="text-xs bg-blue-100 px-2 py-1 rounded">Keyword</span>
+                        )}
+                        {smartFiltering.industrial && (
+                          <span className="text-xs bg-blue-100 px-2 py-1 rounded">Industry</span>
+                        )}
+                        {smartFiltering.province && (
+                          <span className="text-xs bg-blue-100 px-2 py-1 rounded">Province</span>
+                        )}
+                        {smartFiltering.companySize && (
+                          <span className="text-xs bg-blue-100 px-2 py-1 rounded">Size</span>
+                        )}
+                        {smartFiltering.contactStatus && (
+                          <span className="text-xs bg-blue-100 px-2 py-1 rounded">Status</span>
+                        )}
                         <button
                           onClick={clearFilters}
                           className="text-blue-600 hover:text-blue-800 text-sm underline ml-2"

@@ -160,11 +160,13 @@ export function SmartFilteringPanel({
     onClearFiltering()
   }
 
-  const totalWeight = (tempCriteria.keywordWeight || 0) + 
-                     (tempCriteria.industrialWeight || 0) + 
-                     (tempCriteria.provinceWeight || 0) + 
-                     (tempCriteria.companySizeWeight || 0) + 
-                     (tempCriteria.contactStatusWeight || 0)
+  // Calculate total weight only for active filters
+  const totalWeight = 
+    (tempCriteria.keyword && tempCriteria.keyword.trim() ? (tempCriteria.keywordWeight || 0) : 0) + 
+    (tempCriteria.industrial ? (tempCriteria.industrialWeight || 0) : 0) + 
+    (tempCriteria.province ? (tempCriteria.provinceWeight || 0) : 0) + 
+    (tempCriteria.companySize ? (tempCriteria.companySizeWeight || 0) : 0) + 
+    (tempCriteria.contactStatus ? (tempCriteria.contactStatusWeight || 0) : 0)
 
   const hasActiveCriteria = Object.values(tempCriteria).some((value, index) => {
     const keys = Object.keys(tempCriteria)
@@ -187,6 +189,10 @@ export function SmartFilteringPanel({
               </Badge>
             )}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Filter companies by attributes like industry, province, size, and status. 
+            Keywords are optional - you can filter using attributes alone.
+          </p>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -195,7 +201,7 @@ export function SmartFilteringPanel({
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Search className="h-4 w-4" />
-                Keyword Search
+                Keyword Search (Optional)
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -204,21 +210,26 @@ export function SmartFilteringPanel({
                 <Input
                   id="keyword"
                   className="shadow-sm "
-                  placeholder="Company name, registration number, or keywords..."
+                  placeholder="Optional: Company name, registration number, or keywords..."
                   value={tempCriteria.keyword || ""}
                   onChange={(e) => updateCriteria("keyword", e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Leave empty to filter by attributes only
+                </p>
               </div>
-              <div>
-                <Label>Keyword Weight: {tempCriteria.keywordWeight}%</Label>
-                <Slider
-                  value={[tempCriteria.keywordWeight ?? 25]}
-                  onValueChange={(value) => updateCriteria("keywordWeight", value[0])}
-                  max={50}
-                  step={5}
-                  className="mt-2"
-                />
-              </div>
+              {tempCriteria.keyword && tempCriteria.keyword.trim() && (
+                <div>
+                  <Label>Keyword Weight: {tempCriteria.keywordWeight}%</Label>
+                  <Slider
+                    value={[tempCriteria.keywordWeight ?? 25]}
+                    onValueChange={(value) => updateCriteria("keywordWeight", value[0])}
+                    max={50}
+                    step={5}
+                    className="mt-2"
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -362,16 +373,18 @@ export function SmartFilteringPanel({
               {/* Total Weight Display */}
               <div className="bg-muted p-3 rounded-md">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Weight</span>
+                  <span className="font-medium">Total Active Weight</span>
                   <Badge variant={totalWeight === 100 ? "default" : "secondary"}>
                     {totalWeight}% 
                   </Badge>
                 </div>
-                {totalWeight !== 100 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Weights don&apos;t need to total 100%. Results will be normalized.
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground mt-1">
+                  {totalWeight === 0 
+                    ? "Select at least one filter above to enable weighted scoring"
+                    : totalWeight !== 100 
+                      ? "Weights don't need to total 100%. Results will be normalized."
+                      : "Perfect! Weights are balanced at 100%"}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -425,26 +438,33 @@ export function SmartFilteringPanel({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button onClick={handleApply} className="flex-1">
-              Apply Smart Filtering
-              {hasActiveCriteria && (
-                <Badge variant="secondary" className="ml-2 bg-white/20">
-                  {Object.values(tempCriteria).filter((value, index) => {
-                    const keys = Object.keys(tempCriteria)
-                    const key = keys[index]
-                    if (key.includes('Weight') || key === 'minimumScore' || key === 'profileName') return false
-                    return value !== undefined && value !== ""
-                  }).length}
-                </Badge>
-              )}
-            </Button>
-            <Button variant="outline" onClick={handleClear}>
-              Clear All
-            </Button>
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+          <div className="flex flex-col gap-3 pt-4">
+            {!hasActiveCriteria && (
+              <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                Please select at least one filter (Industry, Province, Company Size, or Contact Status) or add a keyword to apply smart filtering.
+              </p>
+            )}
+            <div className="flex gap-3">
+              <Button onClick={handleApply} className="flex-1" disabled={!hasActiveCriteria}>
+                Apply Smart Filtering
+                {hasActiveCriteria && (
+                  <Badge variant="secondary" className="ml-2 bg-white/20">
+                    {Object.values(tempCriteria).filter((value, index) => {
+                      const keys = Object.keys(tempCriteria)
+                      const key = keys[index]
+                      if (key.includes('Weight') || key === 'minimumScore' || key === 'profileName') return false
+                      return value !== undefined && value !== ""
+                    }).length}
+                  </Badge>
+                )}
+              </Button>
+              <Button variant="outline" onClick={handleClear}>
+                Clear All
+              </Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
