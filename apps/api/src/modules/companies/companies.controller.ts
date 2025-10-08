@@ -180,7 +180,6 @@ export class CompaniesController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async createCompany(
     @Body() createDto: CreateCompanyDto,
     @CurrentUser() user: Users,
@@ -201,7 +200,6 @@ export class CompaniesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Company not found' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async updateCompany(
     @Param('id') id: string,
     @Body() updateDto: UpdateCompanyDto,

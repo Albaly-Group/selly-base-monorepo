@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -71,7 +70,7 @@ export class CompanyContactsController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createContact(
-    @Body(new ValidationPipe()) createDto: CreateCompanyContactDto,
+    @Body() createDto: CreateCompanyContactDto,
     @CurrentUser() user: any,
   ): Promise<any> {
     return this.companyContactsService.createContact(createDto, user);
@@ -87,7 +86,7 @@ export class CompanyContactsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateContact(
     @Param('id') id: string,
-    @Body(new ValidationPipe()) updateDto: UpdateCompanyContactDto,
+    @Body() updateDto: UpdateCompanyContactDto,
     @CurrentUser() user: any,
   ): Promise<any> {
     return this.companyContactsService.updateContact(id, updateDto, user);
