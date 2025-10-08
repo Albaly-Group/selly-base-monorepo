@@ -128,7 +128,7 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
 export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdate }: ListSelectorProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-  console.log("Lists", lists)
+  console.log(lists)
 
   const handleListCreated = () => {
     setShowCreateDialog(false)

@@ -155,15 +155,16 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleSaveContact = async () => {
     if (!company?.id) return
 
-    // Validate contact form
-    const contactData = {
+    // Build contact data, only including non-empty fields
+    const contactData: any = {
       companyId: company.id,
-      firstName: contactFormData.firstName,
-      lastName: contactFormData.lastName,
-      title: contactFormData.title,
-      phone: contactFormData.phone,
-      email: contactFormData.email,
     }
+    
+    if (contactFormData.firstName.trim()) contactData.firstName = contactFormData.firstName.trim()
+    if (contactFormData.lastName.trim()) contactData.lastName = contactFormData.lastName.trim()
+    if (contactFormData.title.trim()) contactData.title = contactFormData.title.trim()
+    if (contactFormData.phone.trim()) contactData.phone = contactFormData.phone.trim()
+    if (contactFormData.email.trim()) contactData.email = contactFormData.email.trim()
 
     if (!contactValidation.validate(contactData)) {
       alert('Please fix validation errors before saving')
@@ -210,13 +211,14 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleSaveActivity = async () => {
     if (!company?.id) return
 
-    // Validate activity form
-    const activityData = {
+    // Build activity data, only including non-empty fields
+    const activityData: any = {
       companyId: company.id,
       activityType: activityFormData.activityType,
-      outcome: activityFormData.outcome,
-      content: activityFormData.content,
     }
+    
+    if (activityFormData.outcome.trim()) activityData.outcome = activityFormData.outcome.trim()
+    if (activityFormData.content.trim()) activityData.content = activityFormData.content.trim()
 
     if (!activityValidation.validate(activityData)) {
       alert('Please fix validation errors before saving')
@@ -299,15 +301,16 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleUpdateContact = async () => {
     if (!company?.id || !editingContact) return
 
-    // Validate contact form
-    const contactData = {
+    // Build contact data, only including non-empty fields
+    const contactData: any = {
       companyId: company.id,
-      firstName: contactFormData.firstName,
-      lastName: contactFormData.lastName,
-      title: contactFormData.title,
-      phone: contactFormData.phone,
-      email: contactFormData.email,
     }
+    
+    if (contactFormData.firstName.trim()) contactData.firstName = contactFormData.firstName.trim()
+    if (contactFormData.lastName.trim()) contactData.lastName = contactFormData.lastName.trim()
+    if (contactFormData.title.trim()) contactData.title = contactFormData.title.trim()
+    if (contactFormData.phone.trim()) contactData.phone = contactFormData.phone.trim()
+    if (contactFormData.email.trim()) contactData.email = contactFormData.email.trim()
 
     if (!contactValidation.validate(contactData)) {
       alert('Please fix validation errors before saving')
@@ -376,15 +379,18 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
   const handleUpdateActivity = async () => {
     if (!company?.id || !editingActivity) return
 
-    // Validate activity form
-    const activityData = {
-      companyId: company.id,
+    // Build activity data, only including non-empty fields
+    // Note: companyId should NOT be included in update payload
+    const activityData: any = {
       activityType: activityFormData.activityType,
-      outcome: activityFormData.outcome,
-      content: activityFormData.content,
     }
+    
+    if (activityFormData.outcome.trim()) activityData.outcome = activityFormData.outcome.trim()
+    if (activityFormData.content.trim()) activityData.content = activityFormData.content.trim()
 
-    if (!activityValidation.validate(activityData)) {
+    // For validation, we need to include companyId temporarily
+    const validationData = { ...activityData, companyId: company.id }
+    if (!activityValidation.validate(validationData)) {
       alert('Please fix validation errors before saving')
       return
     }
@@ -612,22 +618,22 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {companyDetails.contactPersons[0]?.phone && (
+                    {companyDetails.contactPersons?.[0]?.phone && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Phone</Label>
                         <div className="mt-1 flex items-center gap-2">
-                          <span>{companyDetails.contactPersons[0].phone}</span>
+                          <span>{companyDetails.contactPersons?.[0]?.phone}</span>
                           <Button variant="ghost" size="sm" className="p-1 h-6">
                             <Phone className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
                     )}
-                    {companyDetails.contactPersons[0]?.email && (
+                    {companyDetails.contactPersons?.[0]?.email && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Email</Label>
                         <div className="mt-1 flex items-center gap-2">
-                          <span>{companyDetails.contactPersons[0].email}</span>
+                          <span>{companyDetails.contactPersons?.[0]?.email}</span>
                           <Button variant="ghost" size="sm" className="p-1 h-6">
                             <Mail className="h-3 w-3" />
                           </Button>

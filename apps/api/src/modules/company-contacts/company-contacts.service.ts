@@ -106,18 +106,18 @@ export class CompanyContactsService {
   ): Promise<any> {
     const contact = this.contactRepository.create({
       companyId: createDto.companyId,
-      firstName: createDto.firstName,
-      lastName: createDto.lastName,
-      fullName:
-        createDto.fullName ||
-        `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim() ||
-        null,
-      title: createDto.title,
-      department: createDto.department,
-      seniorityLevel: createDto.seniorityLevel,
-      email: createDto.email,
-      phone: createDto.phone,
-      linkedinUrl: createDto.linkedinUrl,
+      firstName: createDto.firstName || null,
+      lastName: createDto.lastName || null,
+      // fullName:
+      //   createDto.fullName ||
+      //   `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim() ||
+      //   null,
+      title: createDto.title || null,
+      department: createDto.department || null,
+      seniorityLevel: createDto.seniorityLevel || null,
+      email: createDto.email || null,
+      phone: createDto.phone || null,
+      linkedinUrl: createDto.linkedinUrl || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -151,14 +151,34 @@ export class CompanyContactsService {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
 
-    Object.assign(contact, {
-      ...updateDto,
-      fullName:
-        updateDto.fullName ||
-        `${updateDto.firstName || contact.firstName || ''} ${updateDto.lastName || contact.lastName || ''}`.trim() ||
-        null,
-      updatedAt: new Date(),
-    });
+    // Only update fields that are provided (not undefined)
+    if (updateDto.companyId !== undefined)
+      contact.companyId = updateDto.companyId;
+    if (updateDto.firstName !== undefined)
+      contact.firstName = updateDto.firstName || null;
+    if (updateDto.lastName !== undefined)
+      contact.lastName = updateDto.lastName || null;
+    if (updateDto.title !== undefined) contact.title = updateDto.title || null;
+    if (updateDto.department !== undefined)
+      contact.department = updateDto.department || null;
+    if (updateDto.seniorityLevel !== undefined)
+      contact.seniorityLevel = updateDto.seniorityLevel || null;
+    if (updateDto.email !== undefined) contact.email = updateDto.email || null;
+    if (updateDto.phone !== undefined) contact.phone = updateDto.phone || null;
+    if (updateDto.linkedinUrl !== undefined)
+      contact.linkedinUrl = updateDto.linkedinUrl || null;
+    if (updateDto.isOptedOut !== undefined)
+      contact.isOptedOut = updateDto.isOptedOut;
+    if (updateDto.optOutDate !== undefined)
+      contact.optOutDate = updateDto.optOutDate;
+
+    // Update fullName based on firstName and lastName
+    // contact.fullName =
+    //   updateDto.fullName ||
+    //   `${contact.firstName || ''} ${contact.lastName || ''}`.trim() ||
+    //   null;
+
+    contact.updatedAt = new Date();
 
     const savedContact = await this.contactRepository.save(contact);
 

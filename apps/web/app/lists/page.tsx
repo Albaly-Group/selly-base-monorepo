@@ -71,25 +71,19 @@ function ListManagementPage() {
 
       try {
         const response = await apiClient.getCompanyListItems(selectedListId)
-        console.log('Fetched companies for list:', response);
+        console.log('Fetched list items:', response);
         
-        // Handle different response formats
-        let items = response
+        // The API returns an array of list items directly, not wrapped
+        // Each item has a company property
+        const items = Array.isArray(response) ? response : []
         
-        // Check if response is wrapped in a data property
-        if (response && typeof response === 'object' && 'data' in response) {
-          items = response.data
-        }
-        
-        // Transform list items to extract companies
-        // Ensure we always set an array, even if items is null/undefined
-        const companies = Array.isArray(items) 
-          ? items.map((item: any) => item?.company).filter(Boolean)
-          : []
+        // Extract companies from list items
+        const companies = items
+          .map((item: any) => item?.company)
+          .filter((company) => company != null)
         
         console.log('Extracted companies:', companies);
-        // Ensure we're always setting an array
-        setListCompanies(Array.isArray(companies) ? companies : [])
+        setListCompanies(companies)
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])
