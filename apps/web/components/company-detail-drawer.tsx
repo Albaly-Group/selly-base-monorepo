@@ -380,15 +380,17 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     if (!company?.id || !editingActivity) return
 
     // Build activity data, only including non-empty fields
+    // Note: companyId should NOT be included in update payload
     const activityData: any = {
-      companyId: company.id,
       activityType: activityFormData.activityType,
     }
     
     if (activityFormData.outcome.trim()) activityData.outcome = activityFormData.outcome.trim()
     if (activityFormData.content.trim()) activityData.content = activityFormData.content.trim()
 
-    if (!activityValidation.validate(activityData)) {
+    // For validation, we need to include companyId temporarily
+    const validationData = { ...activityData, companyId: company.id }
+    if (!activityValidation.validate(validationData)) {
       alert('Please fix validation errors before saving')
       return
     }
