@@ -369,8 +369,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       setEditingActivity(activity)
       setActivityFormData({
         activityType: activity.activityType || "",
-        outcome: activity.outcome || "",
-        content: activity.content || "",
+        outcome: activity.details?.outcome || "",
+        content: activity.details?.content || "",
       })
       setShowEditActivity(true)
     }
