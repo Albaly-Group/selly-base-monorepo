@@ -372,6 +372,28 @@ export class UpdateCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
+    description: 'District',
+    example: 'Watthana',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  @Transform(({ value }) => value?.trim())
+  district?: string;
+
+  @ApiPropertyOptional({
+    description: 'Sub-district',
+    example: 'Khlong Toei Nuea',
+    maxLength: 100,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  @Transform(({ value }) => value?.trim())
+  subdistrict?: string;
+
+  @ApiPropertyOptional({
     description: 'Province',
     example: 'Bangkok',
     maxLength: 100,
@@ -381,6 +403,17 @@ export class UpdateCompanyDto {
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
   province?: string;
+
+  @ApiPropertyOptional({
+    description: 'Postal code',
+    example: '10110',
+    maxLength: 20,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
+  postalCode?: string;
 
   @ApiPropertyOptional({
     description: 'Country code (ISO 3166-1 alpha-2)',

@@ -108,7 +108,10 @@ export class CompanyContactsService {
       companyId: createDto.companyId,
       firstName: createDto.firstName,
       lastName: createDto.lastName,
-      // fullName:  createDto.fullName || `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim(),
+      fullName:
+        createDto.fullName ||
+        `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim() ||
+        null,
       title: createDto.title,
       department: createDto.department,
       seniorityLevel: createDto.seniorityLevel,
@@ -121,7 +124,21 @@ export class CompanyContactsService {
 
     const savedContact = await this.contactRepository.save(contact);
 
-    return { savedContact };
+    return {
+      id: savedContact.id,
+      companyId: savedContact.companyId,
+      firstName: savedContact.firstName,
+      lastName: savedContact.lastName,
+      fullName: savedContact.fullName,
+      title: savedContact.title,
+      department: savedContact.department,
+      seniorityLevel: savedContact.seniorityLevel,
+      email: savedContact.email,
+      phone: savedContact.phone,
+      linkedinUrl: savedContact.linkedinUrl,
+      createdAt: savedContact.createdAt,
+      updatedAt: savedContact.updatedAt,
+    };
   }
 
   async updateContact(
@@ -136,22 +153,30 @@ export class CompanyContactsService {
 
     Object.assign(contact, {
       ...updateDto,
-      companyId: updateDto.companyId,
-      firstName: updateDto.firstName,
-      lastName: updateDto.lastName,
-      // fullName:  updateDto.fullName || `${updateDto.firstName || ''} ${updateDto.lastName || ''}`.trim(),
-      title: updateDto.title,
-      department: updateDto.department,
-      seniorityLevel: updateDto.seniorityLevel,
-      email: updateDto.email,
-      phone: updateDto.phone,
-      linkedinUrl: updateDto.linkedinUrl,
+      fullName:
+        updateDto.fullName ||
+        `${updateDto.firstName || contact.firstName || ''} ${updateDto.lastName || contact.lastName || ''}`.trim() ||
+        null,
       updatedAt: new Date(),
     });
 
     const savedContact = await this.contactRepository.save(contact);
 
-    return { savedContact };
+    return {
+      id: savedContact.id,
+      companyId: savedContact.companyId,
+      firstName: savedContact.firstName,
+      lastName: savedContact.lastName,
+      fullName: savedContact.fullName,
+      title: savedContact.title,
+      department: savedContact.department,
+      seniorityLevel: savedContact.seniorityLevel,
+      email: savedContact.email,
+      phone: savedContact.phone,
+      linkedinUrl: savedContact.linkedinUrl,
+      createdAt: savedContact.createdAt,
+      updatedAt: savedContact.updatedAt,
+    };
   }
 
   async deleteContact(id: string, user: any): Promise<{ message: string }> {

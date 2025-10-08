@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import { CheckCircle2, AlertCircle } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
+import { createCompanySchema } from "@/lib/validation-schemas"
+import { useFormValidation } from "@/hooks/use-form-validation"
 
 interface CompanyCreateDialogProps {
   open: boolean
@@ -27,25 +30,46 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   const [formData, setFormData] = useState({
     companyNameEn: "",
     companyNameTh: "",
+    primaryRegistrationNo: "",
     businessDescription: "",
+    addressLine1: "",
+    addressLine2: "",
+    district: "",
+    subdistrict: "",
     province: "",
+    postalCode: "",
+    countryCode: "TH",
     websiteUrl: "",
     primaryEmail: "",
     primaryPhone: "",
+    companySize: "small",
+    employeeCountEstimate: undefined as number | undefined,
+    dataSensitivity: "standard",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const { errors, validate, clearError, getError, hasError } = useFormValidation(createCompanySchema)
 
   const resetForm = () => {
     setFormData({
       companyNameEn: "",
       companyNameTh: "",
+      primaryRegistrationNo: "",
       businessDescription: "",
+      addressLine1: "",
+      addressLine2: "",
+      district: "",
+      subdistrict: "",
       province: "",
+      postalCode: "",
+      countryCode: "TH",
       websiteUrl: "",
       primaryEmail: "",
       primaryPhone: "",
+      companySize: "small",
+      employeeCountEstimate: undefined,
+      dataSensitivity: "standard",
     })
     setError(null)
     setSuccess(false)
@@ -59,9 +83,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   }
 
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.companyNameEn.trim()) {
-      setError("Company name (English) is required")
+    // Validate all fields using Zod schema
+    if (!validate(formData)) {
+      setError("Please fix the validation errors before submitting")
       return
     }
 
@@ -71,16 +95,28 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
     try {
       // Call the actual API to create company
-      const createData = {
+      // Map frontend field names to backend DTO field names
+      const createData: any = {
         companyNameEn: formData.companyNameEn.trim(),
-        companyNameTh: formData.companyNameTh.trim() || undefined,
-        businessDescription: formData.businessDescription.trim() || undefined,
-        province: formData.province.trim() || undefined,
-        websiteUrl: formData.websiteUrl.trim() || undefined,
-        primaryEmail: formData.primaryEmail.trim() || undefined,
-        primaryPhone: formData.primaryPhone.trim() || undefined,
         dataSource: 'customer_input' as const,
       }
+      
+      if (formData.companyNameTh.trim()) createData.companyNameTh = formData.companyNameTh.trim()
+      if (formData.primaryRegistrationNo.trim()) createData.primaryRegistrationNo = formData.primaryRegistrationNo.trim()
+      if (formData.businessDescription.trim()) createData.businessDescription = formData.businessDescription.trim()
+      if (formData.addressLine1.trim()) createData.addressLine1 = formData.addressLine1.trim()
+      if (formData.addressLine2.trim()) createData.addressLine2 = formData.addressLine2.trim()
+      if (formData.district.trim()) createData.district = formData.district.trim()
+      if (formData.subdistrict.trim()) createData.subdistrict = formData.subdistrict.trim()
+      if (formData.province.trim()) createData.province = formData.province.trim()
+      if (formData.postalCode.trim()) createData.postalCode = formData.postalCode.trim()
+      if (formData.countryCode.trim()) createData.countryCode = formData.countryCode.trim()
+      if (formData.websiteUrl.trim()) createData.websiteUrl = formData.websiteUrl.trim()
+      if (formData.primaryEmail.trim()) createData.primaryEmail = formData.primaryEmail.trim()
+      if (formData.primaryPhone.trim()) createData.primaryPhone = formData.primaryPhone.trim()
+      if (formData.companySize) createData.companySize = formData.companySize
+      if (formData.employeeCountEstimate) createData.employeeCountEstimate = formData.employeeCountEstimate
+      if (formData.dataSensitivity) createData.dataSensitivity = formData.dataSensitivity
 
       const newCompany = await apiClient.createCompany(createData)
       
@@ -107,6 +143,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     setError(null)
+    clearError(field)
   }
 
   return (
@@ -117,55 +154,105 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
           <DialogDescription>Add a new company to your organization&apos;s database.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="companyNameEn">
+                  Company Name (EN) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="companyNameEn"
+                  value={formData.companyNameEn}
+                  onChange={(e) => updateField("companyNameEn", e.target.value)}
+                  placeholder="Acme Corporation"
+                  disabled={isLoading}
+                  className={hasError("companyNameEn") ? "border-red-500" : ""}
+                />
+                {hasError("companyNameEn") && (
+                  <p className="text-sm text-red-500">{getError("companyNameEn")}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyNameTh">Company Name (TH)</Label>
+                <Input
+                  id="companyNameTh"
+                  value={formData.companyNameTh}
+                  onChange={(e) => updateField("companyNameTh", e.target.value)}
+                  placeholder="บริษัท อัคมี"
+                  disabled={isLoading}
+                  className={hasError("companyNameTh") ? "border-red-500" : ""}
+                />
+                {hasError("companyNameTh") && (
+                  <p className="text-sm text-red-500">{getError("companyNameTh")}</p>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="companyNameEn">
-                Company Name (EN) <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="primaryRegistrationNo">Registration Number</Label>
               <Input
-                id="companyNameEn"
-                value={formData.companyNameEn}
-                onChange={(e) => updateField("companyNameEn", e.target.value)}
-                placeholder="Acme Corporation"
+                id="primaryRegistrationNo"
+                value={formData.primaryRegistrationNo}
+                onChange={(e) => updateField("primaryRegistrationNo", e.target.value)}
+                placeholder="0105562174634"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyNameTh">Company Name (TH)</Label>
-              <Input
-                id="companyNameTh"
-                value={formData.companyNameTh}
-                onChange={(e) => updateField("companyNameTh", e.target.value)}
-                placeholder="บริษัท อัคมี"
+              <Label htmlFor="businessDescription">Business Description</Label>
+              <Textarea
+                id="businessDescription"
+                value={formData.businessDescription}
+                onChange={(e) => updateField("businessDescription", e.target.value)}
+                placeholder="Brief description of the company's business..."
                 disabled={isLoading}
+                rows={3}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="businessDescription">Business Description</Label>
-            <Textarea
-              id="businessDescription"
-              value={formData.businessDescription}
-              onChange={(e) => updateField("businessDescription", e.target.value)}
-              placeholder="Brief description of the company's business..."
-              disabled={isLoading}
-              rows={3}
-            />
-          </div>
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900">Contact Information</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="primaryEmail">Primary Email</Label>
+                <Input
+                  id="primaryEmail"
+                  type="email"
+                  value={formData.primaryEmail}
+                  onChange={(e) => updateField("primaryEmail", e.target.value)}
+                  placeholder="contact@example.com"
+                  disabled={isLoading}
+                  className={hasError("primaryEmail") ? "border-red-500" : ""}
+                />
+                {hasError("primaryEmail") && (
+                  <p className="text-sm text-red-500">{getError("primaryEmail")}</p>
+                )}
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="province">Province</Label>
-              <Input
-                id="province"
-                value={formData.province}
-                onChange={(e) => updateField("province", e.target.value)}
-                placeholder="Bangkok"
-                disabled={isLoading}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="primaryPhone">Primary Phone</Label>
+                <Input
+                  id="primaryPhone"
+                  type="tel"
+                  value={formData.primaryPhone}
+                  onChange={(e) => updateField("primaryPhone", e.target.value)}
+                  placeholder="+66 2 123 4567"
+                  disabled={isLoading}
+                  className={hasError("primaryPhone") ? "border-red-500" : ""}
+                />
+                {hasError("primaryPhone") && (
+                  <p className="text-sm text-red-500">{getError("primaryPhone")}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -177,33 +264,148 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                 onChange={(e) => updateField("websiteUrl", e.target.value)}
                 placeholder="https://example.com"
                 disabled={isLoading}
+                className={hasError("websiteUrl") ? "border-red-500" : ""}
               />
+              {hasError("websiteUrl") && (
+                <p className="text-sm text-red-500">{getError("websiteUrl")}</p>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Address Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900">Address Information</h3>
+
             <div className="space-y-2">
-              <Label htmlFor="primaryEmail">Primary Email</Label>
+              <Label htmlFor="addressLine1">Address Line 1</Label>
               <Input
-                id="primaryEmail"
-                type="email"
-                value={formData.primaryEmail}
-                onChange={(e) => updateField("primaryEmail", e.target.value)}
-                placeholder="contact@example.com"
+                id="addressLine1"
+                value={formData.addressLine1}
+                onChange={(e) => updateField("addressLine1", e.target.value)}
+                placeholder="123 Sukhumvit Road"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="primaryPhone">Primary Phone</Label>
+              <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
-                id="primaryPhone"
-                type="tel"
-                value={formData.primaryPhone}
-                onChange={(e) => updateField("primaryPhone", e.target.value)}
-                placeholder="+66 2 123 4567"
+                id="addressLine2"
+                value={formData.addressLine2}
+                onChange={(e) => updateField("addressLine2", e.target.value)}
+                placeholder="Floor 15, Tower A"
                 disabled={isLoading}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="district">District</Label>
+                <Input
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) => updateField("district", e.target.value)}
+                  placeholder="Watthana"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subdistrict">Sub-district</Label>
+                <Input
+                  id="subdistrict"
+                  value={formData.subdistrict}
+                  onChange={(e) => updateField("subdistrict", e.target.value)}
+                  placeholder="Khlong Toei Nuea"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="province">Province</Label>
+                <Input
+                  id="province"
+                  value={formData.province}
+                  onChange={(e) => updateField("province", e.target.value)}
+                  placeholder="Bangkok"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  value={formData.postalCode}
+                  onChange={(e) => updateField("postalCode", e.target.value)}
+                  placeholder="10110"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="countryCode">Country</Label>
+                <Input
+                  id="countryCode"
+                  value={formData.countryCode}
+                  onChange={(e) => updateField("countryCode", e.target.value)}
+                  maxLength={2}
+                  placeholder="TH"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Company Details */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900">Company Details</h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="companySize">Company Size</Label>
+                <Select value={formData.companySize} onValueChange={(value) => updateField("companySize", value)} disabled={isLoading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select size..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="micro">Micro</SelectItem>
+                    <SelectItem value="small">Small</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="large">Large</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
+                <Input
+                  id="employeeCountEstimate"
+                  type="number"
+                  value={formData.employeeCountEstimate || ""}
+                  onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
+                  placeholder="50"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+              <Select value={formData.dataSensitivity} onValueChange={(value) => updateField("dataSensitivity", value)} disabled={isLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sensitivity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="confidential">Confidential</SelectItem>
+                  <SelectItem value="restricted">Restricted</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

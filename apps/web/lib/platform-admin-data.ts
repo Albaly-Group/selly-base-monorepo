@@ -66,16 +66,17 @@ export async function getTotalDataRecords(): Promise<number> {
 
 export async function getActiveTenants(): Promise<number> {
   try {
-    if (analyticsCache && Date.now() - analyticsCache.timestamp < CACHE_DURATION) {
-      return analyticsCache.data.activeUsers || 0
+    if (tenantsCache && Date.now() - tenantsCache.timestamp < CACHE_DURATION) {
+      return tenantsCache.data.filter(t => t.status === 'active').length
     }
     
-    const response = await apiClient.getDashboardAnalytics()
-    analyticsCache = { data: response, timestamp: Date.now() }
-    return response.activeUsers || 0
+    const response = await apiClient.getPlatformTenants()
+    const tenants = response.data || []
+    tenantsCache = { data: tenants, timestamp: Date.now() }
+    return tenants.filter((t: any) => t.status === 'active').length
   } catch (error) {
-    console.error('Failed to fetch analytics from backend:', error)
-    throw new Error('Unable to fetch analytics. Please ensure the backend is running.')
+    console.error('Failed to fetch tenants from backend:', error)
+    throw new Error('Unable to fetch active tenants. Please ensure the backend is running.')
   }
 }
 
@@ -102,29 +103,25 @@ export function getTenantUsageLevel(dataCount: number): "high" | "medium" | "low
 }
 
 // Function to ensure organization data consistency across components
-export function validateOrganizationData(org: TenantData): boolean {
+export function validateOrganizationData(org: any): org is TenantData {
   return !!(
+    org &&
     org.id &&
     org.name &&
     org.status &&
-    org.subscription_tier &&
     typeof org.user_count === "number" &&
-    typeof org.data_count === "number" &&
-    org.created_at &&
-    org.updated_at
+    typeof org.data_count === "number"
   )
 }
 
 // Function to ensure user data consistency
-export function validateUserData(user: PlatformUser): boolean {
+export function validateUserData(user: any): user is PlatformUser {
   return !!(
+    user &&
     user.id &&
     user.name &&
     user.email &&
-    user.role &&
     user.status &&
-    user.created_at &&
-    user.updated_at &&
     typeof user.loginCount === "number"
   )
 }
@@ -192,5 +189,176 @@ export async function getSharedCompanies(): Promise<SharedCompany[]> {
     console.error('Failed to fetch shared companies from backend:', error)
     // Return empty array on error to prevent component crashes
     return []
+  }
+}
+
+// ===== CRUD Functions for Tenants =====
+
+/**
+ * Create a new tenant organization
+ */
+export async function createTenant(data: {
+  name: string
+  slug: string
+  domain?: string
+  status?: string
+  subscriptionTier?: string
+  adminEmail?: string
+  adminName?: string
+  adminPassword?: string
+}): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.createTenant(data)
+    // Invalidate cache
+    tenantsCache = null
+    return { success: true, data: response.data }
+  } catch (error: any) {
+    console.error('Failed to create tenant:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to create tenant'
+    }
+  }
+}
+
+/**
+ * Update a tenant organization
+ */
+export async function updateTenant(
+  id: string,
+  data: {
+    name?: string
+    domain?: string
+    status?: string
+    subscriptionTier?: string
+  }
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.updateTenant(id, data)
+    // Invalidate cache
+    tenantsCache = null
+    return { success: true, data: response.data }
+  } catch (error: any) {
+    console.error('Failed to update tenant:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to update tenant'
+    }
+  }
+}
+
+/**
+ * Delete a tenant organization (soft delete)
+ */
+export async function deleteTenant(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiClient.deleteTenant(id)
+    // Invalidate cache
+    tenantsCache = null
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to delete tenant:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to delete tenant'
+    }
+  }
+}
+
+// ===== CRUD Functions for Platform Users =====
+
+/**
+ * Create a new platform user
+ */
+export async function createPlatformUser(data: {
+  name: string
+  email: string
+  password: string
+  organizationId: string
+  roleId?: string
+  status?: string
+  avatarUrl?: string
+}): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.createPlatformUser(data)
+    // Invalidate cache
+    platformUsersCache = null
+    return { success: true, data: response.data }
+  } catch (error: any) {
+    console.error('Failed to create platform user:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to create user'
+    }
+  }
+}
+
+/**
+ * Update a platform user
+ */
+export async function updatePlatformUser(
+  id: string,
+  data: {
+    name?: string
+    status?: string
+    avatarUrl?: string
+    roleId?: string
+  }
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.updatePlatformUser(id, data)
+    // Invalidate cache
+    platformUsersCache = null
+    return { success: true, data: response.data }
+  } catch (error: any) {
+    console.error('Failed to update platform user:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to update user'
+    }
+  }
+}
+
+/**
+ * Delete a platform user (soft delete)
+ */
+export async function deletePlatformUser(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiClient.deletePlatformUser(id)
+    // Invalidate cache
+    platformUsersCache = null
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to delete platform user:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to delete user'
+    }
+  }
+}
+
+// ===== CRUD Functions for Shared Companies =====
+
+/**
+ * Update a shared company
+ */
+export async function updateSharedCompany(
+  id: string,
+  data: {
+    isSharedData?: boolean
+    verificationStatus?: string
+  }
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await apiClient.updateSharedCompany(id, data)
+    // Invalidate cache
+    sharedCompaniesCache = null
+    return { success: true, data: response.data }
+  } catch (error: any) {
+    console.error('Failed to update shared company:', error)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message || 'Failed to update company'
+    }
   }
 }

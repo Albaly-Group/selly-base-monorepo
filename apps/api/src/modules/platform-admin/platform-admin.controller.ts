@@ -1,14 +1,34 @@
 import {
   Controller,
   Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Body,
+  Param,
   Query,
   UseGuards,
   Request,
   ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { PlatformAdminService } from './platform-admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  CreateTenantDto,
+  UpdateTenantDto,
+  CreatePlatformUserDto,
+  UpdatePlatformUserDto,
+  UpdateSharedCompanyDto,
+} from '../../dtos/platform-admin.dto';
 
 @ApiTags('platform-admin')
 @Controller('platform-admin')
@@ -127,5 +147,212 @@ export class PlatformAdminController {
       parseInt(page || '1', 10),
       parseInt(limit || '50', 10),
     );
+  }
+
+  // ===== CREATE OPERATIONS =====
+
+  @Post('tenants')
+  @ApiOperation({
+    summary: 'Create a new tenant organization (Platform Admin only)',
+  })
+  @ApiResponse({ status: 201, description: 'Tenant created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Organization with slug already exists',
+  })
+  @ApiBody({ type: CreateTenantDto })
+  async createTenant(
+    @Request() req: any,
+    @Body() createTenantDto: CreateTenantDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'tenants:manage');
+    return this.platformAdminService.createTenant(createTenantDto);
+  }
+
+  @Post('users')
+  @ApiOperation({ summary: 'Create a new platform user (Platform Admin only)' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 409, description: 'User with email already exists' })
+  @ApiBody({ type: CreatePlatformUserDto })
+  async createPlatformUser(
+    @Request() req: any,
+    @Body() createUserDto: CreatePlatformUserDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'users:manage');
+    return this.platformAdminService.createPlatformUser(createUserDto);
+  }
+
+  // ===== UPDATE OPERATIONS =====
+
+  // PATCH endpoint for partial updates
+  @Patch('tenants/:id')
+  @ApiOperation({
+    summary: 'Update a tenant organization (Platform Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Tenant updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  @ApiParam({ name: 'id', description: 'Tenant ID', type: 'string' })
+  @ApiBody({ type: UpdateTenantDto })
+  async patchTenant(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateTenantDto: UpdateTenantDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'tenants:manage');
+    return this.platformAdminService.updateTenant(id, updateTenantDto);
+  }
+
+  // PUT endpoint for full updates
+  @Put('tenants/:id')
+  @ApiOperation({
+    summary: 'Update a tenant organization (Platform Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Tenant updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  @ApiParam({ name: 'id', description: 'Tenant ID', type: 'string' })
+  @ApiBody({ type: UpdateTenantDto })
+  async updateTenant(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateTenantDto: UpdateTenantDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'tenants:manage');
+    return this.platformAdminService.updateTenant(id, updateTenantDto);
+  }
+
+  // PATCH endpoint for partial user updates
+  @Patch('users/:id')
+  @ApiOperation({ summary: 'Update a platform user (Platform Admin only)' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
+  @ApiBody({ type: UpdatePlatformUserDto })
+  async patchPlatformUser(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdatePlatformUserDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'users:manage');
+    return this.platformAdminService.updatePlatformUser(id, updateUserDto);
+  }
+
+  // PUT endpoint for full user updates
+  @Put('users/:id')
+  @ApiOperation({ summary: 'Update a platform user (Platform Admin only)' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
+  @ApiBody({ type: UpdatePlatformUserDto })
+  async updatePlatformUser(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdatePlatformUserDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'users:manage');
+    return this.platformAdminService.updatePlatformUser(id, updateUserDto);
+  }
+
+  // PATCH endpoint for partial shared company updates
+  @Patch('shared-companies/:id')
+  @ApiOperation({ summary: 'Update a shared company (Platform Admin only)' })
+  @ApiResponse({ status: 200, description: 'Company updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'Company not found' })
+  @ApiParam({ name: 'id', description: 'Company ID', type: 'string' })
+  @ApiBody({ type: UpdateSharedCompanyDto })
+  async patchSharedCompany(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateCompanyDto: UpdateSharedCompanyDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'shared-data:manage');
+    return this.platformAdminService.updateSharedCompany(id, updateCompanyDto);
+  }
+
+  // PUT endpoint for full shared company updates
+  @Put('shared-companies/:id')
+  @ApiOperation({ summary: 'Update a shared company (Platform Admin only)' })
+  @ApiResponse({ status: 200, description: 'Company updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'Company not found' })
+  @ApiParam({ name: 'id', description: 'Company ID', type: 'string' })
+  @ApiBody({ type: UpdateSharedCompanyDto })
+  async updateSharedCompany(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() updateCompanyDto: UpdateSharedCompanyDto,
+  ) {
+    this.checkPlatformAdminPermission(req.user, 'shared-data:manage');
+    return this.platformAdminService.updateSharedCompany(id, updateCompanyDto);
+  }
+
+  // ===== DELETE OPERATIONS =====
+
+  @Delete('tenants/:id')
+  @ApiOperation({
+    summary: 'Delete a tenant organization (Platform Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Tenant deactivated successfully' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  @ApiParam({ name: 'id', description: 'Tenant ID', type: 'string' })
+  async deleteTenant(@Request() req: any, @Param('id') id: string) {
+    this.checkPlatformAdminPermission(req.user, 'tenants:manage');
+    return this.platformAdminService.deleteTenant(id);
+  }
+
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Delete a platform user (Platform Admin only)' })
+  @ApiResponse({ status: 200, description: 'User deactivated successfully' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied. Platform admin privileges required.',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
+  async deletePlatformUser(@Request() req: any, @Param('id') id: string) {
+    this.checkPlatformAdminPermission(req.user, 'users:manage');
+    return this.platformAdminService.deletePlatformUser(id);
   }
 }

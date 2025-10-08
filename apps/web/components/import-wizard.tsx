@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, FileText, CheckCircle, AlertTriangle, X } from "lucide-react"
+import { apiClient } from "@/lib/api-client"
+import { useAuth } from "@/lib/auth"
 
 interface ImportWizardProps {
   open: boolean
@@ -26,6 +28,7 @@ interface ImportWizardProps {
 type ImportStep = "upload" | "mapping" | "validation" | "processing" | "complete"
 
 export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWizardProps) {
+  const { user } = useAuth()
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)
@@ -92,7 +95,7 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
         // First, create an import job
         const importJob = await apiClient.createImportJob({
           filename: uploadedFile.name,
-          uploadedBy: 'current-user', // TODO: Get from auth context
+          uploadedBy: user?.id || user?.email || 'unknown',
         })
         
         // Then validate the import data using the job ID

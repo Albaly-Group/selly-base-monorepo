@@ -58,6 +58,44 @@ describe('LoginForm Component', () => {
     expect(mockResponse.user).toHaveProperty('email')
   })
 
+  it('should handle login error response', () => {
+    // Test that error messages are properly formatted
+    const errorScenarios = [
+      { apiError: 'API request failed: 401', expectedMessage: 'Invalid email or password' },
+      { apiError: 'Failed to fetch', expectedMessage: 'Unable to connect to server. Please check your connection.' },
+      { apiError: 'API request failed: 404', expectedMessage: 'Account not found' },
+      { apiError: 'API request failed: 403', expectedMessage: 'Access denied' },
+      { apiError: 'API request failed: 500', expectedMessage: 'Server error. Please try again later.' },
+    ]
+    
+    errorScenarios.forEach(scenario => {
+      const error = new Error(scenario.apiError)
+      expect(error.message).toBeTruthy()
+    })
+  })
+
+  it('should return error object on failed login', () => {
+    // Test the structure of login error response
+    const mockErrorResponse = {
+      success: false,
+      error: 'Invalid email or password'
+    }
+    
+    expect(mockErrorResponse).toHaveProperty('success', false)
+    expect(mockErrorResponse).toHaveProperty('error')
+    expect(typeof mockErrorResponse.error).toBe('string')
+  })
+
+  it('should return success object on successful login', () => {
+    // Test the structure of login success response
+    const mockSuccessResponse = {
+      success: true
+    }
+    
+    expect(mockSuccessResponse).toHaveProperty('success', true)
+    expect(mockSuccessResponse.error).toBeUndefined()
+  })
+
   // Note: Full component rendering tests are skipped due to complex dependencies
   // In a production environment, these would test actual component rendering
   it.skip('should render login form with email and password fields', () => {

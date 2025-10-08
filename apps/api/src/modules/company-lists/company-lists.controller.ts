@@ -363,11 +363,11 @@ export class CompanyListsController {
       organizationId: organizationId ?? '',
     };
 
-    console.log("Id", listId);
-    console.log("body", body);
-    console.log("User", user);
-    console.log("Organization", organizationId);
-    console.log("UserWithOrg", userWithOrg);
+    console.log('Id', listId);
+    console.log('body', body);
+    console.log('User', user);
+    console.log('Organization', organizationId);
+    console.log('UserWithOrg', userWithOrg);
 
     if (!userWithOrg.organizationId) {
       throw new Error('organizationId is required for UserContext');

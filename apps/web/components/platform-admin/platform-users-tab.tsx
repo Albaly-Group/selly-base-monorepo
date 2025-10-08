@@ -26,33 +26,70 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Users, Plus, MoreHorizontal, Shield, Building, Search, Filter, Eye, Edit, UserX } from "lucide-react"
-import { getPlatformUsers, type PlatformUser, validateUserData } from "@/lib/platform-admin-data"
+import { 
+  getPlatformUsers, 
+  getTenants, 
+  createPlatformUser,
+  updatePlatformUser,
+  deletePlatformUser,
+  type PlatformUser, 
+  validateUserData 
+} from "@/lib/platform-admin-data"
 import { useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export function PlatformUsersTab() {
   const { user } = useAuth()
+  const { toast } = useToast()
   const [users, setUsers] = useState<PlatformUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
   const [showAddUser, setShowAddUser] = useState(false)
+  const [editingUser, setEditingUser] = useState<PlatformUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [organizations, setOrganizations] = useState<any[]>([])
+  
+  // Form state for add/edit
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    organizationId: "",
+    status: "active",
+    roleId: "",
+  })
 
-  // Fetch platform users from backend
+  // Calculate stats from real data
+  const totalUsers = users.length
+  const platformAdmins = users.filter(u => u.role === "platform_admin").length
+  const customerAdmins = users.filter(u => u.role === "customer_admin").length
+  const today = new Date().toDateString()
+  const activeToday = users.filter(u => {
+    const lastLogin = new Date(u.lastLogin).toDateString()
+    return lastLogin === today
+  }).length
+
+  // Fetch platform users and organizations from backend
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       setIsLoading(true)
       try {
-        const data = await getPlatformUsers()
-        setUsers(data.filter(validateUserData))
+        const [usersData, tenantsData] = await Promise.all([
+          getPlatformUsers(),
+          getTenants()
+        ])
+        setUsers(usersData.filter(validateUserData))
+        setOrganizations(tenantsData)
       } catch (error) {
-        console.error('Error fetching platform users:', error)
+        console.error('Error fetching platform data:', error)
       } finally {
         setIsLoading(false)
       }
     }
     
-    fetchUsers()
+    fetchData()
   }, [])
 
   // Check permissions
@@ -100,8 +137,112 @@ export function PlatformUsersTab() {
     return matchesSearch && matchesStatus && matchesRole
   })
 
-  const handleAddUser = () => {
-    setShowAddUser(false)
+  const refreshUsers = async () => {
+    try {
+      const data = await getPlatformUsers()
+      setUsers(data.filter(validateUserData))
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const handleAddUser = async () => {
+    if (!formData.name || !formData.email || !formData.password || !formData.organizationId) {
+      toast({
+        title: "Validation Error",
+        description: "Name, email, password, and organization are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    const result = await createPlatformUser(formData)
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      })
+      setShowAddUser(false)
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        organizationId: "",
+        status: "active",
+        roleId: "",
+      })
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to create user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEditUser = (user: PlatformUser) => {
+    setEditingUser(user)
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: "",
+      organizationId: user.organization_id || "",
+      status: user.status,
+      roleId: "",
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return
+
+    setIsSaving(true)
+    const result = await updatePlatformUser(editingUser.id, {
+      name: formData.name,
+      status: formData.status,
+      roleId: formData.roleId || undefined,
+    })
+    setIsSaving(false)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      })
+      setEditingUser(null)
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to deactivate this user? This will set their status to inactive.")) {
+      return
+    }
+
+    const result = await deletePlatformUser(userId)
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "User deactivated successfully",
+      })
+      await refreshUsers()
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to deactivate user",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -130,45 +271,65 @@ export function PlatformUsersTab() {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Full Name</Label>
-                <Input placeholder="John Smith" />
+                <Label>Full Name *</Label>
+                <Input 
+                  placeholder="John Smith" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input placeholder="john@company.com" type="email" />
+                <Label>Email *</Label>
+                <Input 
+                  placeholder="john@company.com" 
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="platform_admin">Platform Admin</SelectItem>
-                    <SelectItem value="customer_admin">Customer Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Password *</Label>
+                <Input 
+                  placeholder="Minimum 8 characters" 
+                  type="password" 
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Organization</Label>
-                <Select>
+                <Label>Organization *</Label>
+                <Select value={formData.organizationId} onValueChange={(value) => setFormData({ ...formData, organizationId: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select organization" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No Organization (Platform Admin)</SelectItem>
-                    <SelectItem value="org_customer1">Customer Company 1</SelectItem>
-                    <SelectItem value="org_customer2">Global Manufacturing Inc</SelectItem>
-                    <SelectItem value="org_customer3">Tech Solutions Ltd</SelectItem>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddUser(false)}>Cancel</Button>
-              <Button onClick={handleAddUser}>Create User</Button>
+              <Button onClick={handleAddUser} disabled={isSaving}>
+                {isSaving ? "Creating..." : "Create User"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -182,7 +343,7 @@ export function PlatformUsersTab() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,247</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : totalUsers.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Across all tenants
             </p>
@@ -195,7 +356,7 @@ export function PlatformUsersTab() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : platformAdmins}</div>
             <p className="text-xs text-muted-foreground">
               System administrators
             </p>
@@ -208,7 +369,7 @@ export function PlatformUsersTab() {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : customerAdmins}</div>
             <p className="text-xs text-muted-foreground">
               Organization admins
             </p>
@@ -221,7 +382,7 @@ export function PlatformUsersTab() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : activeToday}</div>
             <p className="text-xs text-muted-foreground">
               Users logged in today
             </p>
@@ -343,13 +504,13 @@ export function PlatformUsersTab() {
                           <Eye className="h-3 w-3 mr-2" />
                           View Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditUser(filteredUser)}>
                           <Edit className="h-3 w-3 mr-2" />
                           Edit User
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteUser(filteredUser.id)}>
                           <UserX className="h-3 w-3 mr-2" />
-                          Suspend User
+                          Deactivate User
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -361,6 +522,56 @@ export function PlatformUsersTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Platform User</DialogTitle>
+            <DialogDescription>
+              Update user account details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name *</Label>
+              <Input 
+                placeholder="John Smith" 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email (read-only)</Label>
+              <Input 
+                placeholder="john@company.com" 
+                type="email" 
+                value={formData.email}
+                disabled
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
