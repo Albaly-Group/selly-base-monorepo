@@ -441,7 +441,7 @@ export class CompaniesService {
     try {
       const existingCompany = await this.getCompanyById(
         id,
-        user.organizationId,
+        user.organizationId || undefined,
         user,
       );
 
