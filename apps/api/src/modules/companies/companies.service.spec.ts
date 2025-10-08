@@ -158,6 +158,45 @@ describe('CompaniesService', () => {
       expect(result.pagination.limit).toBe(1);
       expect(result.data.length).toBeLessThanOrEqual(1);
     });
+
+    it('should filter by attributes without searchTerm', async () => {
+      const mockCompanies = [
+        {
+          id: '1',
+          nameEn: 'Manufacturing Company',
+          nameTh: 'บริษัทผลิต',
+          province: 'Bangkok',
+          companySize: 'medium',
+          industryClassification: ['Manufacturing'],
+          organization: { id: 'org1', name: 'Test Org' },
+        },
+      ];
+
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockCompanies, 1]),
+      };
+
+      mockCompanyRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+      const result = await service.searchCompanies({
+        industrial: 'Manufacturing',
+        province: 'Bangkok',
+        companySize: 'medium',
+        page: 1,
+        limit: 10,
+      });
+
+      expect(result.data.length).toBe(1);
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalled();
+      expect(result.data[0].nameEn).toBe('Manufacturing Company');
+    });
   });
 
   describe('getCompanyById', () => {
