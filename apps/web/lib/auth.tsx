@@ -269,6 +269,11 @@ export function canManageSharedData(user: User): boolean {
   return hasPermission(user, 'shared-data:manage') || hasPermission(user, '*')
 }
 
+export function canEditSharedData(user: User): boolean {
+  // Platform admins with shared-data:manage or wildcard can edit shared data
+  return hasPermission(user, 'shared-data:manage') || hasPermission(user, '*')
+}
+
 // Organization Admin permissions - RBAC Standard
 export function canManageOrganizationUsers(user: User): boolean {
   return hasPermission(user, 'users:manage') || hasPermission(user, 'users:*') || hasPermission(user, '*')

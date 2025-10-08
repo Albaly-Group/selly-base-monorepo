@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CompanyEditDialog } from "@/components/company-edit-dialog"
 import { AddToListDialog } from "@/components/add-to-list-dialog"
 import { apiClient } from "@/lib/api-client"
+import { useAuth, canEditSharedData } from "@/lib/auth"
 import { 
   Building, 
   Users, 
@@ -52,6 +53,7 @@ interface CompanyDetailDrawerProps {
 }
 
 export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpdated }: CompanyDetailDrawerProps) {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState("overview")
   const [showAddContact, setShowAddContact] = useState(false)
   const [showAddActivity, setShowAddActivity] = useState(false)
@@ -476,7 +478,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               </DialogDescription>
             </div>
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-              {!company.isSharedData ? (
+              {!company.isSharedData || (user && canEditSharedData(user)) ? (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -492,7 +494,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                   size="sm" 
                   className="text-xs sm:text-sm"
                   disabled
-                  title="Cannot edit shared reference data"
+                  title="Cannot edit shared reference data. Only platform admins can edit shared data."
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   <span className="hidden sm:inline">Edit</span>
