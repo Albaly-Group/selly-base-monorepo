@@ -152,24 +152,32 @@ export class CompanyContactsService {
     }
 
     // Only update fields that are provided (not undefined)
-    if (updateDto.companyId !== undefined) contact.companyId = updateDto.companyId;
-    if (updateDto.firstName !== undefined) contact.firstName = updateDto.firstName || null;
-    if (updateDto.lastName !== undefined) contact.lastName = updateDto.lastName || null;
+    if (updateDto.companyId !== undefined)
+      contact.companyId = updateDto.companyId;
+    if (updateDto.firstName !== undefined)
+      contact.firstName = updateDto.firstName || null;
+    if (updateDto.lastName !== undefined)
+      contact.lastName = updateDto.lastName || null;
     if (updateDto.title !== undefined) contact.title = updateDto.title || null;
-    if (updateDto.department !== undefined) contact.department = updateDto.department || null;
-    if (updateDto.seniorityLevel !== undefined) contact.seniorityLevel = updateDto.seniorityLevel || null;
+    if (updateDto.department !== undefined)
+      contact.department = updateDto.department || null;
+    if (updateDto.seniorityLevel !== undefined)
+      contact.seniorityLevel = updateDto.seniorityLevel || null;
     if (updateDto.email !== undefined) contact.email = updateDto.email || null;
     if (updateDto.phone !== undefined) contact.phone = updateDto.phone || null;
-    if (updateDto.linkedinUrl !== undefined) contact.linkedinUrl = updateDto.linkedinUrl || null;
-    if (updateDto.isOptedOut !== undefined) contact.isOptedOut = updateDto.isOptedOut;
-    if (updateDto.optOutDate !== undefined) contact.optOutDate = updateDto.optOutDate;
-    
+    if (updateDto.linkedinUrl !== undefined)
+      contact.linkedinUrl = updateDto.linkedinUrl || null;
+    if (updateDto.isOptedOut !== undefined)
+      contact.isOptedOut = updateDto.isOptedOut;
+    if (updateDto.optOutDate !== undefined)
+      contact.optOutDate = updateDto.optOutDate;
+
     // Update fullName based on firstName and lastName
     // contact.fullName =
     //   updateDto.fullName ||
     //   `${contact.firstName || ''} ${contact.lastName || ''}`.trim() ||
     //   null;
-    
+
     contact.updatedAt = new Date();
 
     const savedContact = await this.contactRepository.save(contact);

@@ -24,7 +24,10 @@ import {
   CurrentUser,
   CurrentOrganization,
 } from '../auth/current-user.decorator';
-import { CreateCompanyActivityDto, UpdateCompanyActivityDto } from '../../dtos/company-activity.dto';
+import {
+  CreateCompanyActivityDto,
+  UpdateCompanyActivityDto,
+} from '../../dtos/company-activity.dto';
 
 @ApiTags('company-activities')
 @Controller('company-activities')
