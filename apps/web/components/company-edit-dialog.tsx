@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Company, ContactPerson } from "@/lib/types"
+import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,8 +14,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react"
+import { CheckCircle2, AlertCircle } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
+import { useAuth, canEditSharedData } from "@/lib/auth"
 
 interface CompanyEditDialogProps {
   company: Company | null
@@ -25,10 +26,19 @@ interface CompanyEditDialogProps {
 }
 
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
+  const { user } = useAuth()
   const [formData, setFormData] = useState<Partial<Company>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  
+  // Check if user can edit this company
+  const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
+  const isOwner = user?.organizationId && company?.organizationId === user.organizationId
+  // Verification status rules:
+  // - For non-shared data (isSharedData = false): always allow editing
+  // - For shared data (isSharedData = true): only platform admins can edit
+  const canSetVerificationStatus = !company?.isSharedData || (user && canEditSharedData(user))
 
   useEffect(() => {
     if (company) {
@@ -68,6 +78,11 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       if (formData.employeeCountEstimate !== undefined) updateData.employeeCountEstimate = formData.employeeCountEstimate
       if (formData.tags !== undefined) updateData.tags = formData.tags
       if (formData.dataSensitivity !== undefined) updateData.dataSensitivity = formData.dataSensitivity
+      
+      // Allow organization owners and platform admins (on shared data) to update verification status
+      if (canSetVerificationStatus && formData.verificationStatus !== undefined) {
+        updateData.verificationStatus = formData.verificationStatus
+      }
 
       const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
       
@@ -90,24 +105,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   }
 
   const updateField = (field: keyof Company, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const addContactPerson = () => {
-    const newContact: ContactPerson = { name: "", phone: "", email: "" }
-    updateField("contactPersons", [...(formData.contactPersons || []), newContact])
-  }
-
-  const updateContactPerson = (index: number, field: keyof ContactPerson, value: string) => {
-    const contacts = [...(formData.contactPersons || [])]
-    contacts[index] = { ...contacts[index], [field]: value }
-    updateField("contactPersons", contacts)
-  }
-
-  const removeContactPerson = (index: number) => {
-    const contacts = [...(formData.contactPersons || [])]
-    contacts.splice(index, 1)
-    updateField("contactPersons", contacts)
+    setFormData((prev: Partial<Company>) => ({ ...prev, [field]: value }))
   }
 
   if (!company) return null
@@ -120,13 +118,25 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           <DialogDescription>Update company information and contact details.</DialogDescription>
         </DialogHeader>
 
-        {company?.isSharedData && (
+        {company?.isSharedData && !canEdit && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-red-800">
               <p className="font-medium">Cannot Edit Shared Data</p>
               <p className="text-red-700 mt-1">
-                This company is from a shared data source and cannot be edited. Please close this dialog.
+                This company is from a shared data source and cannot be edited. Only platform admins can edit shared data.
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {company?.isSharedData && canEdit && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">Editing Shared Data</p>
+              <p className="text-blue-700 mt-1">
+                You have platform admin privileges to edit this shared data. Changes will affect all organizations using this data.
               </p>
             </div>
           </div>
@@ -144,7 +154,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   id="companyName"
                   value={formData.companyNameEn || ""}
                   onChange={(e) => updateField("companyNameEn", e.target.value)}
-                  disabled={company?.isSharedData}
+                  disabled={!canEdit}
                 />
               </div>
 
@@ -154,7 +164,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   id="registrationId"
                   value={formData.registrationId || ""}
                   onChange={(e) => updateField("registrationId", e.target.value)}
-                  disabled={company?.isSharedData}
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -165,7 +175,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 id="companyNameTh"
                 value={formData.companyNameTh || ""}
                 onChange={(e) => updateField("companyNameTh", e.target.value)}
-                disabled={company?.isSharedData}
+                disabled={!canEdit}
               />
             </div>
 
@@ -175,7 +185,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 id="businessDescription"
                 value={formData.businessDescription || ""}
                 onChange={(e) => updateField("businessDescription", e.target.value)}
-                disabled={company?.isSharedData}
+                disabled={!canEdit}
               />
             </div>
           </div>
@@ -192,7 +202,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   type="email"
                   value={formData.primaryEmail || ""}
                   onChange={(e) => updateField("primaryEmail", e.target.value)}
-                  disabled={company?.isSharedData}
+                  disabled={!canEdit}
                 />
               </div>
 
@@ -202,6 +212,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   id="primaryPhone"
                   value={formData.primaryPhone || ""}
                   onChange={(e) => updateField("primaryPhone", e.target.value)}
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -332,6 +343,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Select
                 value={formData.dataSensitivity || ""}
                 onValueChange={(value) => updateField("dataSensitivity", value)}
+                disabled={!canEdit}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select sensitivity..." />
@@ -346,55 +358,36 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             </div>
           </div>
 
-          {/* Contact Persons */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Contact Persons</h3>
-              <Button type="button" variant="outline" size="sm" onClick={addContactPerson}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Contact
-              </Button>
-            </div>
-
-            {formData.contactPersons?.map((contact, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Contact {index + 1}</h4>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => removeContactPerson(index)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input value={contact.name} onChange={(e) => updateContactPerson(index, "name", e.target.value)} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input
-                      value={contact.phone || ""}
-                      onChange={(e) => updateContactPerson(index, "phone", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      value={contact.email || ""}
-                      onChange={(e) => updateContactPerson(index, "email", e.target.value)}
-                    />
-                  </div>
-                </div>
+          {/* Verification Status - For data owners and platform admins on shared data */}
+          {canSetVerificationStatus && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Data Verification</h3>
+              <div className="space-y-2">
+                <Label htmlFor="verificationStatus">Verification Status</Label>
+                <Select
+                  value={formData.verificationStatus || ""}
+                  onValueChange={(value) => updateField("verificationStatus", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="unverified">Unverified</SelectItem>
+                    <SelectItem value="disputed">Disputed</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  {isOwner 
+                    ? "As the data owner, you can set the verification status for this company."
+                    : "As a platform admin, you can set the verification status for this shared data."}
+                </p>
               </div>
-            ))}
+            </div>
+          )}
 
-            {(!formData.contactPersons || formData.contactPersons.length === 0) && (
-              <div className="text-center py-6 text-gray-500">No contact persons added yet.</div>
-            )}
-          </div>
+          {/* Contact Persons - Removed per requirement #2: Contacts have their own CRUD box */}
         </div>
 
         {error && (
@@ -413,9 +406,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            {company?.isSharedData ? "Close" : "Cancel"}
+            {!canEdit ? "Close" : "Cancel"}
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || success || company?.isSharedData}>
+          <Button onClick={handleSubmit} disabled={isLoading || success || !canEdit}>
             {isLoading ? "Saving..." : success ? "Saved!" : "Save Changes"}
           </Button>
         </DialogFooter>
