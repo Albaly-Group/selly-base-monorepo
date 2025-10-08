@@ -108,10 +108,10 @@ export class CompanyContactsService {
       companyId: createDto.companyId,
       firstName: createDto.firstName || null,
       lastName: createDto.lastName || null,
-      fullName:
-        createDto.fullName ||
-        `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim() ||
-        null,
+      // fullName:
+      //   createDto.fullName ||
+      //   `${createDto.firstName || ''} ${createDto.lastName || ''}`.trim() ||
+      //   null,
       title: createDto.title || null,
       department: createDto.department || null,
       seniorityLevel: createDto.seniorityLevel || null,
@@ -165,10 +165,10 @@ export class CompanyContactsService {
     if (updateDto.optOutDate !== undefined) contact.optOutDate = updateDto.optOutDate;
     
     // Update fullName based on firstName and lastName
-    contact.fullName =
-      updateDto.fullName ||
-      `${contact.firstName || ''} ${contact.lastName || ''}`.trim() ||
-      null;
+    // contact.fullName =
+    //   updateDto.fullName ||
+    //   `${contact.firstName || ''} ${contact.lastName || ''}`.trim() ||
+    //   null;
     
     contact.updatedAt = new Date();
 
