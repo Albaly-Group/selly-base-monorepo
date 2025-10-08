@@ -22,6 +22,11 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
+import { useAuth, canEditSharedData } from "@/lib/auth";
+
+interface ExtendedCompany extends Company {
+  postalCode?: string | null;
+}
 
 interface CompanyEditDialogProps {
   company: Company | null;
@@ -39,7 +44,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   
   // Check if user can edit this company
   const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
-  const isOwner = user?.organizationId && company?.organizationId === user.organizationId
+  const isOwner = user?.organization_id && company?.organization_id === user.organization_id
   // Verification status rules:
   // - For non-shared data (isSharedData = false): always allow editing
   // - For shared data (isSharedData = true): only platform admins can edit
@@ -243,8 +248,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine1">Address Line 1</Label>
               <Input
                 id="addressLine1"
-                value={formData.address1 || ""}
+                value={formData.addressLine1 || ""}
                 onChange={(e) => updateField("addressLine1", e.target.value)}
+                disabled={!canEdit}
               />
             </div>
 
@@ -252,8 +258,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
                 id="addressLine2"
-                value={formData.address2 || ""}
+                value={formData.addressLine2 || ""}
                 onChange={(e) => updateField("addressLine2", e.target.value)}
+                disabled={!canEdit}
               />
             </div>
 
