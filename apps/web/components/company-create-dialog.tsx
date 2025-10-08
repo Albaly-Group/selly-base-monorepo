@@ -98,7 +98,6 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       // Map frontend field names to backend DTO field names
       const createData: any = {
         companyNameEn: formData.companyNameEn.trim(),
-        dataSource: 'customer_input' as const,
       }
       
       if (formData.companyNameTh.trim()) createData.companyNameTh = formData.companyNameTh.trim()

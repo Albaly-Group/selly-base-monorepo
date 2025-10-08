@@ -25,7 +25,7 @@ export interface ContactPerson {
 export interface UserList {
   id: string
   name: string
-  companyIds: string[]
+  companyListItems: string[]
   createdAt: string
   status: "Active" | "Inactive"
   owner: string

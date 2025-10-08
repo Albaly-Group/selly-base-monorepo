@@ -60,10 +60,10 @@ export class Companies {
   dunsNumber: string | null;
 
   @Column('text', { name: 'address_line_1', nullable: true })
-  addressLine_1: string | null;
+  addressLine1: string | null;
 
   @Column('text', { name: 'address_line_2', nullable: true })
-  addressLine_2: string | null;
+  addressLine2: string | null;
 
   @Column('text', { name: 'district', nullable: true })
   district: string | null;

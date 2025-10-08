@@ -104,7 +104,10 @@ export function ListTable({
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
                 ref={(el) => {
-                  if (el) el.indeterminate = someSelected
+                  if (el) {
+                    const checkbox = el as HTMLButtonElement & { indeterminate?: boolean }
+                    checkbox.indeterminate = someSelected
+                  }
                 }}
               />
             </TableHead>
@@ -128,14 +131,14 @@ export function ListTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {/* {companies.map((companys) => {
-            const leadScore = getLeadScore(companys.id)
+          {companies.map((company) => {
+            const leadScore = getLeadScore(company.id)
             return (
-              <TableRow key={companys.id}>
+              <TableRow key={company.id}>
                 <TableCell>
                   <Checkbox
-                    checked={selectedCompanies.includes(companys.id)}
-                    onCheckedChange={(checked) => onSelectCompany(companys.id, checked as boolean)}
+                    checked={selectedCompanies.includes(company.id)}
+                    onCheckedChange={(checked) => onSelectCompany(company.id, checked as boolean)}
                   />
                 </TableCell>
                 {showLeadScores && (
@@ -147,30 +150,30 @@ export function ListTable({
                       <div className="text-xs text-gray-500">
                         {leadScore ? `${leadScore.score}/${leadScore.maxPossibleScore}` : '0/0'}
                       </div>
-                      {getMatchingSummary(companys.id)}
+                      {getMatchingSummary(company.id)}
                     </div>
                   </TableCell>
                 )}
                 <TableCell className="font-medium">
                   <button 
                     className="text-left hover:text-blue-600 transition-colors"
-                    onClick={() => onViewCompany?.(companys)}
+                    onClick={() => onViewCompany?.(company)}
                   >
                     <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
-                    {companys.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
+                    {company.registrationId && <div className="text-sm text-gray-500">Reg: {company.registrationId}</div>}
                   </button>
                 </TableCell>
-                <TableCell>{companys.industrialName}</TableCell>
-                <TableCell>{companys.province}</TableCell>
+                <TableCell>{company.industrialName}</TableCell>
+                <TableCell>{company.province}</TableCell>
                 <TableCell>
-                  {companys.contactPersons.length > 0 ? (
+                  {company.contactPersons && Array.isArray(company.contactPersons) && company.contactPersons.length > 0 ? (
                     <div>
-                      <div className="font-medium">{companys.contactPersons}</div>
-                      {companys.contactPersons[0].phone && (
-                        <div className="text-sm text-gray-500">{companys.contactPersons[0].phone}</div>
+                      <div className="font-medium">{company.contactPersons[0]?.name || company.contactPersons[0]}</div>
+                      {company.contactPersons[0]?.phone && (
+                        <div className="text-sm text-gray-500">{company.contactPersons[0].phone}</div>
                       )}
-                      {companys.contactPersons[0].email && (
-                        <div className="text-sm text-gray-500">{companys.contactPersons[0].email}</div>
+                      {company.contactPersons[0]?.email && (
+                        <div className="text-sm text-gray-500">{company.contactPersons[0].email}</div>
                       )}
                     </div>
                   ) : (
@@ -178,20 +181,22 @@ export function ListTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(companys.verificationStatus)}>{companys.verificationStatus}</Badge>
+                  <Badge className={getStatusColor(company.verificationStatus)}>{company.verificationStatus}</Badge>
                 </TableCell>
                 <TableCell>
-                  <span className={`font-medium ${getCompletenessColor(companys.dataCompleteness)}`}>
-                    {companys.dataCompleteness}%
+                  <span className={`font-medium ${getCompletenessColor(company.dataCompleteness)}`}>
+                    {company.dataCompleteness}%
                   </span>
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">{companys.updatedAt}</TableCell>
-                <TableCell className="text-sm text-gray-500">{companys.createdBy}</TableCell>
+                <TableCell className="text-sm text-gray-500">
+                  {company.updatedAt ? new Date(company.updatedAt).toLocaleDateString() : '-'}
+                </TableCell>
+                <TableCell className="text-sm text-gray-500">{company.createdBy || '-'}</TableCell>
                 <TableCell>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onViewCompany?.(companys)}
+                    onClick={() => onViewCompany?.(company)}
                     className="h-8 w-8 p-0"
                   >
                     <Eye className="h-4 w-4" />
@@ -199,7 +204,7 @@ export function ListTable({
                 </TableCell>
               </TableRow>
             )
-          })} */}
+          })}
         </TableBody>
       </Table>
 
