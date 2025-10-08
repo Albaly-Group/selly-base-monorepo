@@ -26,6 +26,7 @@ interface ListSelectorProps {
 
 // Enhanced component using new CompanyList types
 export function EnhancedListSelector({ lists, selectedListId, onSelectList, onListCreated }: EnhancedListSelectorProps) {
+  console.log("lists", lists);
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   const getVisibilityIcon = (visibility: string) => {
@@ -118,17 +119,16 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
       <CreateCompanyListDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        onSuccess={handleListCreated}
+        onSuccess={(newList) => handleListCreated(newList as any)}
       />
     </>
   )
 }
 
-// Backward compatible component for existing code
 export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdate }: ListSelectorProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-  console.log(lists)
+  console.log("List", lists)
 
   const handleListCreated = () => {
     setShowCreateDialog(false)
@@ -157,7 +157,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {list.companyListItems.length}
+                    {(list as any).totalCompanyCount ?? 0} items
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -189,7 +189,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
       <CreateCompanyListDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        onSuccess={handleListCreated}
+        onSuccess={() => handleListCreated()}
       />
     </>
   )

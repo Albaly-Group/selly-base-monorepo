@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { Company } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import type { Company, ContactPerson } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,17 +12,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle2, AlertCircle } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useAuth, canEditSharedData } from "@/lib/auth"
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 interface CompanyEditDialogProps {
-  company: Company | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (company: Company) => void
+  company: Company | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (company: Company) => void;
 }
 
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
@@ -41,19 +46,20 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   const canSetVerificationStatus = !company?.isSharedData || (user && canEditSharedData(user))
 
   useEffect(() => {
+    console.log("Company prop changed:", company);
     if (company) {
-      setFormData({ ...company })
-      setError(null)
-      setSuccess(false)
+      setFormData({ ...company });
+      setError(null);
+      setSuccess(false);
     }
-  }, [company])
+  }, [company]);
 
   const handleSubmit = async () => {
-    if (!formData.id) return
+    if (!formData.id) return;
 
-    setIsLoading(true)
-    setError(null)
-    setSuccess(false)
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
 
     try {
       // Call the actual API to update company
@@ -87,22 +93,21 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
       
       if (updatedCompany) {
-        setSuccess(true)
-        // Wait a moment to show success message
+        setSuccess(true);
         setTimeout(() => {
-          onSave(updatedCompany as Company)
-          onOpenChange(false)
-        }, 1000)
+          onSave(updatedCompany as Company);
+          onOpenChange(false);
+        }, 1000);
       } else {
-        throw new Error("Failed to update company")
+        throw new Error("Failed to update company");
       }
     } catch (error: any) {
-      console.error("Error updating company:", error)
-      setError(error.message || "Failed to update company. Please try again.")
+      console.error("Error updating company:", error);
+      setError(error.message || "Failed to update company. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const updateField = (field: keyof Company, value: any) => {
     setFormData((prev: Partial<Company>) => ({ ...prev, [field]: value }))
@@ -115,7 +120,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Company Record</DialogTitle>
-          <DialogDescription>Update company information and contact details.</DialogDescription>
+          <DialogDescription>
+            Update company information and contact details.
+          </DialogDescription>
         </DialogHeader>
 
         {company?.isSharedData && !canEdit && (
@@ -193,7 +200,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           {/* Contact Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Contact Information</h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="primaryEmail">Primary Email</Label>
@@ -236,7 +243,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine1">Address Line 1</Label>
               <Input
                 id="addressLine1"
-                value={formData.addressLine1 || ""}
+                value={formData.address1 || ""}
                 onChange={(e) => updateField("addressLine1", e.target.value)}
               />
             </div>
@@ -245,7 +252,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
                 id="addressLine2"
-                value={formData.addressLine2 || ""}
+                value={formData.address2 || ""}
                 onChange={(e) => updateField("addressLine2", e.target.value)}
               />
             </div>
@@ -278,7 +285,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 <Input
                   id="provinceDetected"
                   value={formData.provinceDetected || ""}
-                  onChange={(e) => updateField("provinceDetected", e.target.value)}
+                  onChange={(e) =>
+                    updateField("provinceDetected", e.target.value)
+                  }
                   placeholder="Bangkok"
                 />
               </div>
@@ -309,12 +318,14 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           {/* Company Details */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Company Details</h3>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="companySize">Company Size</Label>
-                <Select value={formData.companySize || ""} onValueChange={(value) => updateField("companySize", value)}>
-                  <SelectTrigger>
+                <Select
+                  value={formData.companySize || ""}
+                  onValueChange={(value) => updateField("companySize", value)}
+                >
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select size..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -326,18 +337,24 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
-                <Input
-                  id="employeeCountEstimate"
-                  type="number"
-                  value={formData.employeeCountEstimate || ""}
-                  onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
-                />
+                <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+                <Select
+                  value={formData.dataSensitivity || ""}
+                  onValueChange={(value) => updateField("dataSensitivity", value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sensitivity..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="confidential">Confidential</SelectItem>
+                    <SelectItem value="restricted">Restricted</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
               <Select
@@ -414,5 +431,5 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -29,16 +29,17 @@ export function ListTable({
   onViewCompany,
   sortable = false,
 }: ListTableProps) {
+  console.log("Company", companies)
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case "verified":
         return "bg-green-100 text-green-800"
       case "Needs Verification":
         return "bg-yellow-100 text-yellow-800"
-      case "Invalid":
+      case "unverified":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -159,7 +160,7 @@ export function ListTable({
                     className="text-left hover:text-blue-600 transition-colors"
                     onClick={() => onViewCompany?.(company)}
                   >
-                    <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
+                    <div className="font-semibold hover:underline cursor-pointer">{company.nameEn}</div>
                     {company.registrationId && <div className="text-sm text-gray-500">Reg: {company.registrationId}</div>}
                   </button>
                 </TableCell>
