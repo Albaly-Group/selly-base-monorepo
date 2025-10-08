@@ -214,7 +214,7 @@ export class PlatformAdminService {
         if (company.websiteUrl) filledFields++;
         if (company.primaryPhone) filledFields++;
         if (company.primaryEmail) filledFields++;
-        if (company.addressLine_1) filledFields++;
+        if (company.addressLine1) filledFields++;
         if (company.companySize) filledFields++;
         if (company.verificationStatus) filledFields++;
 
@@ -635,9 +635,9 @@ export class PlatformAdminService {
       if (updateCompanyDto.primaryPhone !== undefined)
         company.primaryPhone = updateCompanyDto.primaryPhone;
       if (updateCompanyDto.addressLine1 !== undefined)
-        company.addressLine_1 = updateCompanyDto.addressLine1;
+        company.addressLine1 = updateCompanyDto.addressLine1;
       if (updateCompanyDto.addressLine2 !== undefined)
-        company.addressLine_2 = updateCompanyDto.addressLine2;
+        company.addressLine2 = updateCompanyDto.addressLine2;
       if (updateCompanyDto.district !== undefined)
         company.district = updateCompanyDto.district;
       if (updateCompanyDto.subdistrict !== undefined)
@@ -674,8 +674,8 @@ export class PlatformAdminService {
           websiteUrl: savedCompany.websiteUrl,
           primaryEmail: savedCompany.primaryEmail,
           primaryPhone: savedCompany.primaryPhone,
-          addressLine1: savedCompany.addressLine_1,
-          addressLine2: savedCompany.addressLine_2,
+          addressLine1: savedCompany.addressLine1,
+          addressLine2: savedCompany.addressLine2,
           district: savedCompany.district,
           subdistrict: savedCompany.subdistrict,
           province: savedCompany.province,

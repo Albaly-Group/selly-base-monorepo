@@ -121,7 +121,7 @@ export class LeadScoringService {
       company.nameTh,
       company.primaryRegistrationNo,
       company.businessDescription,
-      company.addressLine_1,
+      company.addressLine1,
       company.province,
       company.primaryEmail,
       company.primaryPhone,
