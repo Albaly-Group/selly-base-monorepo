@@ -43,9 +43,16 @@ function ListManagementPage() {
         const response = await apiClient.getCompanyLists()
 
         if (response && response.data && Array.isArray(response.data)) {
-          setUserLists(response.data)
-          if (response.data.length > 0 && !selectedListId) {
-            setSelectedListId(response.data[0].id)
+          const normalizedLists = response.data.map((list: any) => ({
+            ...list,
+            companyListItems: list.companyIds || [],
+            totalCompanyCount: (list.companyIds || []).length
+          }))
+          console.log('Normalized lists:', normalizedLists)
+          setUserLists(normalizedLists)
+          
+          if (normalizedLists.length > 0 && !selectedListId) {
+            setSelectedListId(normalizedLists[0].id)
           }
         } else {
           console.warn('Unexpected response format from getCompanyLists:', response)
@@ -73,17 +80,72 @@ function ListManagementPage() {
         const response = await apiClient.getCompanyListItems(selectedListId)
         console.log('Fetched list items:', response);
         
-        // The API returns an array of list items directly, not wrapped
-        // Each item has a company property
         const items = Array.isArray(response) ? response : []
-        
-        // Extract companies from list items
-        const companies = items
+        const rawCompanies = items
           .map((item: any) => item?.company)
           .filter((company) => company != null)
         
-        console.log('Extracted companies:', companies);
-        setListCompanies(companies)
+        // Normalize company data to match the same format as lookup page
+        const normalizedCompanies = rawCompanies.map((item: any) => {
+          // Handle industry_classification which can be JSONB array or object
+          let industrialName = 'N/A';
+          if (item.industryClassification) {
+            if (Array.isArray(item.industryClassification)) {
+              industrialName = item.industryClassification[0] || 'N/A';
+            } else if (typeof item.industryClassification === 'object' && item.industryClassification.name) {
+              industrialName = item.industryClassification.name;
+            } else if (typeof item.industryClassification === 'string') {
+              industrialName = item.industryClassification;
+            }
+          }
+
+          // Calculate data completeness percentage from quality score (0.0-1.0 to 0-100)
+          const qualityScore = parseFloat(item.dataQualityScore) || 0;
+          const dataCompleteness = Math.round(qualityScore * 100);
+
+          return {
+            id: item.id,
+            organizationId: item.organizationId,
+            companyNameEn: item.nameEn || item.companyNameEn,
+            companyNameTh: item.nameTh || item.companyNameTh,
+            companyNameLocal: item.nameLocal || item.companyNameLocal,
+            displayName: item.displayName,
+            nameEn: item.nameEn || item.companyNameEn, // For list-table compatibility
+            primaryRegistrationNo: item.primaryRegistrationNo,
+            registrationId: item.registrationId || item.primaryRegistrationNo,
+            registeredNo: item.primaryRegistrationNo,
+            registrationDate: item.establishedDate,
+            industrialName: industrialName,
+            province: item.province || 'N/A',
+            websiteUrl: item.websiteUrl,
+            primaryEmail: item.primaryEmail,
+            primaryPhone: item.primaryPhone,
+            address1: item.addressLine1,
+            address2: item.addressLine2,
+            district: item.district, 
+            employeeCountEstimate: item.employeeCountEstimate || 0,
+            dataSource: item.dataSource,
+            verificationStatus: item.verificationStatus || 'unverified',
+            qualityScore: qualityScore,
+            contactPersons: item.companyContacts || item.contactPersons || [],
+            companySize: item.companySize,
+            businessDescription: item.businessDescription,
+            dataQualityScore: qualityScore,
+            dataSensitivity: item.dataSensitivity,
+            dataCompleteness: dataCompleteness,
+            isSharedData: item.isSharedData,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            createdBy: item.createdBy,
+            lastUpdated: item.updatedAt,
+          } as any; // Use 'as any' to bypass strict type checking for mixed type compatibility
+        });
+        
+        console.log('Normalized companies:', normalizedCompanies);
+        setListCompanies(normalizedCompanies)
+        
+        // Don't update the count in ListSelector - keep it fixed to show total items in list
+        // Only store the actual loaded companies count separately if needed for the main content
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])
@@ -106,7 +168,7 @@ function ListManagementPage() {
       }
     }
 
-    const scoredResults = searchAndScoreCompanies(safeListCompanies, smartFiltering)
+    const scoredResults = searchAndScoreCompanies(safeListCompanies as any, smartFiltering)
     const companies = Array.isArray(scoredResults) 
       ? scoredResults.map(result => result.company).filter(Boolean)
       : []
@@ -174,10 +236,10 @@ function ListManagementPage() {
       [
         "Company Name", "Industry", "Province", "Contact Person", "Phone", "Email", "Status", "Data Completeness", "Lead Score",
       ],
-      ...exportData.map((company) => {
-        const score = leadScores[company.id]?.totalScore || 0
+      ...exportData.map((company: any) => {
+        const score = leadScores[company.id]?.score || 0
         return [
-          company.companyNameEn,
+          company.companyNameEn || company.nameEn,
           company.industrialName,
           company.province,
           company.contactPersons,
@@ -232,7 +294,7 @@ function ListManagementPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <ListSelector 
-              lists={userLists} 
+              lists={userLists as any} 
               selectedListId={selectedListId} 
               onSelectList={setSelectedListId}
               onListsUpdate={() => setRefreshKey(prev => prev + 1)}
@@ -248,7 +310,7 @@ function ListManagementPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>{selectedList.name}</span>
-                      <span className="text-sm font-normal text-gray-500">{listCompanies.length} companies</span>
+                      <span className="text-sm font-normal text-gray-500">{displayCompanies.length} companies</span>
                     </CardTitle>
                     <CardDescription>
                       Created on {new Date(selectedList.createdAt).toLocaleDateString()} • Status: {selectedList.status || 'Active'}
@@ -320,7 +382,7 @@ function ListManagementPage() {
 
                 {/* Companies Table */}
                 <ListTable
-                  companies={displayCompanies}
+                  companies={displayCompanies as any}
                   selectedCompanies={selectedCompanies}
                   onSelectCompany={handleSelectCompany}
                   onSelectAll={handleSelectAll}

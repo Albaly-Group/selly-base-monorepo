@@ -116,8 +116,8 @@ function CompanyLookupPage() {
           websiteUrl: item.websiteUrl,
           primaryEmail: item.primaryEmail,
           primaryPhone: item.primaryPhone,
-          address1: item.addressLine_1,
-          address2: item.addressLine_2,
+          address1: item.addressLine1,
+          address2: item.addressLine2,
           district: item.district, 
           employeeCountEstimate: item.employeeCountEstimate || 0,
           dataSource: item.dataSource,
@@ -237,6 +237,7 @@ function CompanyLookupPage() {
   }
 
   const ViewCompany = (company: Company) => {
+    console.log("Compay", company)
     setSelectedCompany(company)
     setShowCompanyDetail(true)
   }

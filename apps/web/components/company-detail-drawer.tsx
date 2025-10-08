@@ -443,11 +443,6 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     }
   }
 
-  const onAddContact = async() => {
-    console.log('Add contact')
-    
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[1000px] w-[95vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0">
