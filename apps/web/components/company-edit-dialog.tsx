@@ -30,16 +30,20 @@ interface CompanyEditDialogProps {
   onSave: (company: Company) => void;
 }
 
-export function CompanyEditDialog({
-  company,
-  open,
-  onOpenChange,
-  onSave,
-}: CompanyEditDialogProps) {
-  const [formData, setFormData] = useState<Partial<Company>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
+  const { user } = useAuth()
+  const [formData, setFormData] = useState<Partial<Company>>({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  
+  // Check if user can edit this company
+  const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
+  const isOwner = user?.organizationId && company?.organizationId === user.organizationId
+  // Verification status rules:
+  // - For non-shared data (isSharedData = false): always allow editing
+  // - For shared data (isSharedData = true): only platform admins can edit
+  const canSetVerificationStatus = !company?.isSharedData || (user && canEditSharedData(user))
 
   useEffect(() => {
     console.log("Company prop changed:", company);
@@ -58,50 +62,36 @@ export function CompanyEditDialog({
     setSuccess(false);
 
     try {
-      console.log("Form ", formData);
-      const updateData: any = {};
+      // Call the actual API to update company
+      // Map frontend field names to backend DTO field names
+      const updateData: any = {}
+      
+      if (formData.companyNameEn !== undefined) updateData.companyNameEn = formData.companyNameEn
+      if (formData.companyNameTh !== undefined) updateData.companyNameTh = formData.companyNameTh
+      if (formData.registrationId !== undefined) updateData.primaryRegistrationNo = formData.registrationId
+      if (formData.businessDescription !== undefined) updateData.businessDescription = formData.businessDescription
+      if (formData.addressLine1 !== undefined) updateData.addressLine1 = formData.addressLine1
+      if (formData.addressLine2 !== undefined) updateData.addressLine2 = formData.addressLine2
+      if (formData.district !== undefined) updateData.district = formData.district
+      if (formData.subdistrict !== undefined) updateData.subdistrict = formData.subdistrict
+      if (formData.provinceDetected !== undefined) updateData.province = formData.provinceDetected
+      if (formData.postalCode !== undefined) updateData.postalCode = formData.postalCode
+      if (formData.countryCode !== undefined) updateData.countryCode = formData.countryCode
+      if (formData.websiteUrl !== undefined) updateData.websiteUrl = formData.websiteUrl
+      if (formData.primaryEmail !== undefined) updateData.primaryEmail = formData.primaryEmail
+      if (formData.primaryPhone !== undefined) updateData.primaryPhone = formData.primaryPhone
+      if (formData.companySize !== undefined) updateData.companySize = formData.companySize
+      if (formData.employeeCountEstimate !== undefined) updateData.employeeCountEstimate = formData.employeeCountEstimate
+      if (formData.tags !== undefined) updateData.tags = formData.tags
+      if (formData.dataSensitivity !== undefined) updateData.dataSensitivity = formData.dataSensitivity
+      
+      // Allow organization owners and platform admins (on shared data) to update verification status
+      if (canSetVerificationStatus && formData.verificationStatus !== undefined) {
+        updateData.verificationStatus = formData.verificationStatus
+      }
 
-      if (formData.companyNameEn !== undefined)
-        updateData.companyNameEn = formData.companyNameEn;
-      if (formData.companyNameTh !== undefined)
-        updateData.companyNameTh = formData.companyNameTh;
-      if (formData.registrationId !== undefined)
-        updateData.primaryRegistrationNo = formData.registrationId;
-      if (formData.businessDescription !== undefined)
-        updateData.businessDescription = formData.businessDescription;
-      if (formData.address1 !== undefined)
-        updateData.addressLine1 = formData.address1;
-      if (formData.address2 !== undefined)
-        updateData.addressLine2 = formData.address2;
-      if (formData.district !== undefined)
-        updateData.district = formData.district;
-      if (formData.subdistrict !== undefined)
-        updateData.subdistrict = formData.subdistrict;
-      if (formData.provinceDetected !== undefined)
-        updateData.province = formData.provinceDetected;
-      if (formData.postalCode !== undefined)
-        updateData.postalCode = formData.postalCode;
-      if (formData.countryCode !== undefined)
-        updateData.countryCode = formData.countryCode;
-      if (formData.websiteUrl !== undefined)
-        updateData.websiteUrl = formData.websiteUrl;
-      if (formData.primaryEmail !== undefined)
-        updateData.primaryEmail = formData.primaryEmail;
-      if (formData.primaryPhone !== undefined)
-        updateData.primaryPhone = formData.primaryPhone;
-      if (formData.companySize !== undefined)
-        updateData.companySize = formData.companySize;
-      if (formData.employeeCountEstimate !== undefined)
-        updateData.employeeCountEstimate = formData.employeeCountEstimate;
-      if (formData.tags !== undefined) updateData.tags = formData.tags;
-      if (formData.dataSensitivity !== undefined)
-        updateData.dataSensitivity = formData.dataSensitivity;
-
-      const updatedCompany = await apiClient.updateCompany(
-        formData.id,
-        updateData
-      );
-
+      const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
+      
       if (updatedCompany) {
         setSuccess(true);
         setTimeout(() => {
@@ -120,10 +110,10 @@ export function CompanyEditDialog({
   };
 
   const updateField = (field: keyof Company, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+    setFormData((prev: Partial<Company>) => ({ ...prev, [field]: value }))
+  }
 
-  if (!company) return null;
+  if (!company) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,14 +125,25 @@ export function CompanyEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {company?.isSharedData && (
+        {company?.isSharedData && !canEdit && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-red-800">
               <p className="font-medium">Cannot Edit Shared Data</p>
               <p className="text-red-700 mt-1">
-                This company is from a shared data source and cannot be edited.
-                Please close this dialog.
+                This company is from a shared data source and cannot be edited. Only platform admins can edit shared data.
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {company?.isSharedData && canEdit && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">Editing Shared Data</p>
+              <p className="text-blue-700 mt-1">
+                You have platform admin privileges to edit this shared data. Changes will affect all organizations using this data.
               </p>
             </div>
           </div>
@@ -160,7 +161,7 @@ export function CompanyEditDialog({
                   id="companyName"
                   value={formData.companyNameEn || ""}
                   onChange={(e) => updateField("companyNameEn", e.target.value)}
-                  disabled={company?.isSharedData}
+                  disabled={!canEdit}
                 />
               </div>
 
@@ -169,10 +170,8 @@ export function CompanyEditDialog({
                 <Input
                   id="registrationId"
                   value={formData.registrationId || ""}
-                  onChange={(e) =>
-                    updateField("registrationId", e.target.value)
-                  }
-                  disabled={company?.isSharedData}
+                  onChange={(e) => updateField("registrationId", e.target.value)}
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -183,7 +182,7 @@ export function CompanyEditDialog({
                 id="companyNameTh"
                 value={formData.companyNameTh || ""}
                 onChange={(e) => updateField("companyNameTh", e.target.value)}
-                disabled={company?.isSharedData}
+                disabled={!canEdit}
               />
             </div>
 
@@ -192,10 +191,8 @@ export function CompanyEditDialog({
               <Input
                 id="businessDescription"
                 value={formData.businessDescription || ""}
-                onChange={(e) =>
-                  updateField("businessDescription", e.target.value)
-                }
-                disabled={company?.isSharedData}
+                onChange={(e) => updateField("businessDescription", e.target.value)}
+                disabled={!canEdit}
               />
             </div>
           </div>
@@ -212,7 +209,7 @@ export function CompanyEditDialog({
                   type="email"
                   value={formData.primaryEmail || ""}
                   onChange={(e) => updateField("primaryEmail", e.target.value)}
-                  disabled={company?.isSharedData}
+                  disabled={!canEdit}
                 />
               </div>
 
@@ -222,6 +219,7 @@ export function CompanyEditDialog({
                   id="primaryPhone"
                   value={formData.primaryPhone || ""}
                   onChange={(e) => updateField("primaryPhone", e.target.value)}
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -358,20 +356,55 @@ export function CompanyEditDialog({
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="employeeCountEstimate">Employee Count</Label>
-              <Input
-                id="employeeCountEstimate"
-                type="number"
-                value={formData.employeeCountEstimate || ""}
-                onChange={(e) =>
-                  updateField(
-                    "employeeCountEstimate",
-                    parseInt(e.target.value)
-                  )
-                }
-              />
+              <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+              <Select
+                value={formData.dataSensitivity || ""}
+                onValueChange={(value) => updateField("dataSensitivity", value)}
+                disabled={!canEdit}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sensitivity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="confidential">Confidential</SelectItem>
+                  <SelectItem value="restricted">Restricted</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          {/* Verification Status - For data owners and platform admins on shared data */}
+          {canSetVerificationStatus && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Data Verification</h3>
+              <div className="space-y-2">
+                <Label htmlFor="verificationStatus">Verification Status</Label>
+                <Select
+                  value={formData.verificationStatus || ""}
+                  onValueChange={(value) => updateField("verificationStatus", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="unverified">Unverified</SelectItem>
+                    <SelectItem value="disputed">Disputed</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  {isOwner 
+                    ? "As the data owner, you can set the verification status for this company."
+                    : "As a platform admin, you can set the verification status for this shared data."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Contact Persons - Removed per requirement #2: Contacts have their own CRUD box */}
         </div>
 
         {error && (
@@ -388,18 +421,11 @@ export function CompanyEditDialog({
           </div>
         )}
 
-        <DialogFooter className="pt-4">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            {company?.isSharedData ? "Close" : "Cancel"}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+            {!canEdit ? "Close" : "Cancel"}
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading || success || company?.isSharedData}
-          >
+          <Button onClick={handleSubmit} disabled={isLoading || success || !canEdit}>
             {isLoading ? "Saving..." : success ? "Saved!" : "Save Changes"}
           </Button>
         </DialogFooter>

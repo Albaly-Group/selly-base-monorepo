@@ -313,7 +313,17 @@ export class CompaniesService {
   }
 
   async createCompany(createDto: CreateCompanyDto, user: User): Promise<any> {
-    if (!user || !user.organizationId) {
+    if (!user) {
+      throw new BadRequestException('User information is required');
+    }
+
+    // Check if user is platform admin
+    const isPlatformAdmin = (user as any).permissions?.some(
+      (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+    );
+
+    // For non-platform admins, organization ID is required
+    if (!isPlatformAdmin && !user.organizationId) {
       throw new BadRequestException(
         'User organization information is required',
       );
@@ -326,7 +336,7 @@ export class CompaniesService {
         nameTh: createDto.companyNameTh || null,
         // Don't set displayName - it's a GENERATED column in the database
         primaryRegistrationNo: createDto.primaryRegistrationNo || null,
-        organizationId: user.organizationId,
+        organizationId: user.organizationId || null,
         businessDescription: createDto.businessDescription || null,
         websiteUrl: createDto.websiteUrl || null,
         primaryEmail: createDto.primaryEmail || null,
@@ -422,7 +432,17 @@ export class CompaniesService {
       throw new BadRequestException('Company ID is required');
     }
 
-    if (!user || !user.organizationId) {
+    if (!user) {
+      throw new BadRequestException('User information is required');
+    }
+
+    // Check if user is platform admin with shared data permissions
+    const isPlatformAdmin = (user as any).permissions?.some(
+      (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+    );
+
+    // For non-platform admins, organization ID is required
+    if (!isPlatformAdmin && !user.organizationId) {
       throw new BadRequestException(
         'User organization information is required',
       );
@@ -431,22 +451,28 @@ export class CompaniesService {
     try {
       const existingCompany = await this.getCompanyById(
         id,
-        user.organizationId,
+        user.organizationId || undefined,
         user,
       );
 
       // Enhanced authorization check
-      if (
-        existingCompany.organizationId !== user.organizationId &&
-        !existingCompany.isSharedData
-      ) {
-        throw new ForbiddenException(
-          'Cannot update this company - insufficient permissions',
-        );
-      }
-
       if (existingCompany.isSharedData) {
-        throw new ForbiddenException('Cannot update shared data companies');
+        // For shared data, only platform admins can update
+        if (!isPlatformAdmin) {
+          throw new ForbiddenException(
+            'Cannot update shared data companies - requires shared-data:manage permission',
+          );
+        }
+      } else {
+        // For non-shared data, user must own the company
+        if (
+          existingCompany.organizationId !== user.organizationId &&
+          !isPlatformAdmin
+        ) {
+          throw new ForbiddenException(
+            'Cannot update this company - insufficient permissions',
+          );
+        }
       }
 
       const oldValues = { ...existingCompany };
@@ -520,6 +546,10 @@ export class CompaniesService {
           updateDto.dataSensitivity !== undefined
             ? updateDto.dataSensitivity
             : existingCompany.dataSensitivity,
+        verificationStatus:
+          updateDto.verificationStatus !== undefined
+            ? updateDto.verificationStatus
+            : existingCompany.verificationStatus,
         dataQualityScore: this.calculateDataQualityScore(
           updateDto,
           existingCompany,
@@ -566,24 +596,38 @@ export class CompaniesService {
       throw new BadRequestException('Company ID is required');
     }
 
-    if (!user || !user.organizationId) {
+    if (!user) {
+      throw new BadRequestException('User information is required');
+    }
+
+    // Check if user is platform admin
+    const isPlatformAdmin = (user as any).permissions?.some(
+      (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+    );
+
+    // For non-platform admins, organization ID is required
+    if (!isPlatformAdmin && !user.organizationId) {
       throw new BadRequestException(
         'User organization information is required',
       );
     }
 
     try {
-      const company = await this.getCompanyById(id, user.organizationId, user);
+      const company = await this.getCompanyById(id, user.organizationId || undefined, user);
 
       // Enhanced authorization
-      if (company.organizationId !== user.organizationId) {
-        throw new ForbiddenException(
-          'Cannot delete this company - insufficient permissions',
-        );
-      }
-
       if (company.isSharedData) {
-        throw new ForbiddenException('Cannot delete shared data companies');
+        // For shared data, only platform admins can delete
+        if (!isPlatformAdmin) {
+          throw new ForbiddenException('Cannot delete shared data companies - requires shared-data:manage permission');
+        }
+      } else {
+        // For non-shared data, user must own the company (or be platform admin)
+        if (company.organizationId !== user.organizationId && !isPlatformAdmin) {
+          throw new ForbiddenException(
+            'Cannot delete this company - insufficient permissions',
+          );
+        }
       }
 
       // Check for dependencies (lists, etc.)
