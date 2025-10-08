@@ -10,7 +10,7 @@ import { CompanyCreateDialog } from "@/components/company-create-dialog"
 import { SmartFilteringPanel, type SmartFilteringCriteria } from "@/components/smart-filtering-panel"
 import { requireAuth } from "@/lib/auth"
 import { useCompaniesSearch } from "@/lib/hooks/api-hooks"
-import { searchAndScoreCompanies, type WeightedLeadScore } from "@/lib/types"
+import { searchAndScoreCompanies, type WeightedLeadScore, calculateWeightedLeadScore } from "@/lib/types"
 import type { Company } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -135,7 +135,16 @@ function CompanyLookupPage() {
         };
       });
 
-      return { filteredCompanies: companies, leadScores: {}, isLoading: false };
+      // Calculate lead scores when smart filtering is applied
+      let calculatedLeadScores: { [companyId: string]: WeightedLeadScore } = {};
+      if (hasAppliedFiltering && smartFiltering) {
+        companies.forEach(company => {
+          const score = calculateWeightedLeadScore(company, smartFiltering);
+          calculatedLeadScores[company.id] = score;
+        });
+      }
+
+      return { filteredCompanies: companies, leadScores: calculatedLeadScores, isLoading: false };
     }
 
     if (hasApiError) {
@@ -143,7 +152,7 @@ function CompanyLookupPage() {
     }
     
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
-  }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError]);
+  }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError, hasAppliedFiltering, smartFiltering]);
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
