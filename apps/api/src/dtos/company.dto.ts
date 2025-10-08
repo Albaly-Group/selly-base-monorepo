@@ -199,4 +199,14 @@ export class UpdateCompanyDto {
   })
   @IsOptional()
   tags?: string[];
+
+  @ApiProperty({
+    description: 'Verification status (optional)',
+    example: 'verified',
+    required: false,
+    enum: ['verified', 'unverified', 'disputed', 'inactive'],
+  })
+  @IsOptional()
+  @IsString()
+  verificationStatus?: string;
 }
