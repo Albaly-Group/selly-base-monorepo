@@ -350,6 +350,8 @@ export class CompaniesService {
         companySize: createDto.companySize || 'small',
         employeeCountEstimate: createDto.employeeCountEstimate || null,
         tags: createDto.tags || [],
+        primaryIndustryId: createDto.primaryIndustryId || null,
+        primaryRegionId: createDto.primaryRegionId || null,
         dataSensitivity: createDto.dataSensitivity || 'standard',
         dataSource: 'customer_input',
         isSharedData: false,
@@ -379,6 +381,8 @@ export class CompaniesService {
         province: companyData.province || undefined,
         postalCode: companyData.postalCode || undefined,
         employeeCountEstimate: companyData.employeeCountEstimate || undefined,
+        primaryIndustryId: companyData.primaryIndustryId || undefined,
+        primaryRegionId: companyData.primaryRegionId || undefined,
       };
 
       const company = this.companyRepository.create(cleanedData);
@@ -541,6 +545,14 @@ export class CompaniesService {
             : existingCompany.employeeCountEstimate,
         tags:
           updateDto.tags !== undefined ? updateDto.tags : existingCompany.tags,
+        primaryIndustryId:
+          updateDto.primaryIndustryId !== undefined
+            ? updateDto.primaryIndustryId
+            : existingCompany.primaryIndustryId,
+        primaryRegionId:
+          updateDto.primaryRegionId !== undefined
+            ? updateDto.primaryRegionId
+            : existingCompany.primaryRegionId,
         dataSensitivity:
           updateDto.dataSensitivity !== undefined
             ? updateDto.dataSensitivity
