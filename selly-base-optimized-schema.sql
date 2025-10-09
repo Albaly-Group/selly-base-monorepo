@@ -452,12 +452,10 @@ SELECT
   c.name_th,
   c.display_name,
   c.primary_registration_no,
-  c.province,
-  c.country_code,
+  c.registration_country_code,
   c.business_description,
   c.website_url,
   c.company_size,
-  c.tags,
   c.verification_status,
   c.data_quality_score,
   c.data_source,
@@ -465,6 +463,8 @@ SELECT
   c.is_shared_data,
   c.data_sensitivity,
   c.search_vector,
+  c.primary_industry_id,
+  c.primary_region_id,
   COALESCE(cc.contact_count, 0) as contact_count,
   pr.registration_no as primary_registration_no_full,
   pr.authority_code,
@@ -502,7 +502,6 @@ CREATE INDEX idx_companies_org_source ON companies(organization_id, data_source)
 CREATE INDEX idx_companies_shared_data ON companies(is_shared_data) WHERE is_shared_data = true;
 CREATE INDEX idx_companies_name_trgm ON companies USING gin(name_en gin_trgm_ops);
 CREATE INDEX idx_companies_search_vector ON companies USING gin(search_vector);
-CREATE INDEX idx_companies_province ON companies(province) WHERE province IS NOT NULL;
 CREATE INDEX idx_companies_size ON companies(company_size) WHERE company_size IS NOT NULL;
 CREATE INDEX idx_companies_verification ON companies(verification_status);
 CREATE INDEX idx_companies_registration_no ON companies(primary_registration_no) WHERE primary_registration_no IS NOT NULL;
