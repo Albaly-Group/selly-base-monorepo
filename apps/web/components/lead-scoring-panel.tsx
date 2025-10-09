@@ -5,6 +5,7 @@ import type { FilterOptions } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { Badge } from "@/components/ui/badge"
 import { Target, X, Zap } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
@@ -134,42 +135,38 @@ export function LeadScoringPanel({ isActive, criteria, onApplyScoring, onClearSc
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Industrial Name</label>
-            <Select
+            <Combobox
+              options={[
+                { value: "Any Industry", label: "Any Industry" },
+                ...industrialOptions.map((option) => ({
+                  value: option,
+                  label: option,
+                })),
+              ]}
               value={tempCriteria.industrial || "Any Industry"}
               onValueChange={(value) => updateCriteria("industrial", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select industry..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any Industry">Any Industry</SelectItem>
-                {industrialOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Search industries..."
+              searchPlaceholder="Search industries..."
+              emptyText="No industry found."
+            />
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Province</label>
-            <Select
+            <Combobox
+              options={[
+                { value: "Any Province", label: "Any Province" },
+                ...provinceOptions.map((option) => ({
+                  value: option,
+                  label: option,
+                })),
+              ]}
               value={tempCriteria.province || "Any Province"}
               onValueChange={(value) => updateCriteria("province", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select province..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any Province">Any Province</SelectItem>
-                {provinceOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Search provinces..."
+              searchPlaceholder="Search provinces..."
+              emptyText="No province found."
+            />
           </div>
 
           <div className="space-y-2">
