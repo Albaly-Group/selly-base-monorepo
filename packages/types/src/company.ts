@@ -12,10 +12,9 @@ export interface CompanyCore {
   dunsNumber?: string | null
   addressLine1?: string | null
   addressLine2?: string | null
-  district?: string | null
-  subdistrict?: string | null
-  provinceDetected?: string | null
-  countryCode?: string | null
+  postalCode?: string | null
+  primaryIndustryId?: string | null
+  primaryRegionId?: string | null
   businessDescription?: string | null
   establishedDate?: string | null
   employeeCountEstimate?: number | null
@@ -150,8 +149,8 @@ export interface LeadScore {
 
 // Filter and search types
 export interface FilterOptions {
-  industrial?: string
-  province?: string
+  primaryIndustryId?: string
+  primaryRegionId?: string
   companySize?: 'micro' | 'small' | 'medium' | 'large' | 'enterprise'
   contactStatus?: "Active" | "Needs Verification" | "Invalid"
   dataSensitivity?: 'public' | 'standard' | 'confidential' | 'restricted'

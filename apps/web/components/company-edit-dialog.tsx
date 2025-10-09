@@ -39,6 +39,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   console.log(company)
   const { user } = useAuth()
   const [formData, setFormData] = useState<Partial<Company>>({})
+  const [industries, setIndustries] = useState<Array<{ id: string; title_en: string; title_th: string | null }>>([])
+  const [regions, setRegions] = useState<Array<{ id: string; name_en: string; name_th: string | null }>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -60,6 +62,25 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     }
   }, [company]);
 
+  // Load reference data when dialog opens
+  useEffect(() => {
+    if (open) {
+      const loadReferenceData = async () => {
+        try {
+          const [industriesData, regionsData] = await Promise.all([
+            apiClient.getIndustries({ active: true }),
+            apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }),
+          ])
+          setIndustries(industriesData.data || [])
+          setRegions(regionsData.data || [])
+        } catch (err) {
+          console.error('Failed to load reference data:', err)
+        }
+      }
+      loadReferenceData()
+    }
+  }, [open]);
+
   const handleSubmit = async () => {
     if (!formData.id) return;
 
@@ -78,11 +99,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       if (formData.businessDescription !== undefined) updateData.businessDescription = formData.businessDescription
       if (formData.addressLine1 !== undefined) updateData.addressLine1 = formData.addressLine1
       if (formData.addressLine2 !== undefined) updateData.addressLine2 = formData.addressLine2
-      if (formData.district !== undefined) updateData.district = formData.district
-      if (formData.subdistrict !== undefined) updateData.subdistrict = formData.subdistrict
-      if (formData.provinceDetected !== undefined) updateData.province = formData.provinceDetected
       if (formData.postalCode !== undefined) updateData.postalCode = formData.postalCode
-      if (formData.countryCode !== undefined) updateData.countryCode = formData.countryCode
+      if (formData.primaryIndustryId !== undefined) updateData.primaryIndustryId = formData.primaryIndustryId
+      if (formData.primaryRegionId !== undefined) updateData.primaryRegionId = formData.primaryRegionId
       if (formData.websiteUrl !== undefined) updateData.websiteUrl = formData.websiteUrl
       if (formData.primaryEmail !== undefined) updateData.primaryEmail = formData.primaryEmail
       if (formData.primaryPhone !== undefined) updateData.primaryPhone = formData.primaryPhone
@@ -267,37 +286,23 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="district">District</Label>
-                <Input
-                  id="district"
-                  value={formData.district || ""}
-                  onChange={(e) => updateField("district", e.target.value)}
-                  placeholder="Watthana"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="subdistrict">Sub-district</Label>
-                <Input
-                  id="subdistrict"
-                  value={formData.subdistrict || ""}
-                  onChange={(e) => updateField("subdistrict", e.target.value)}
-                  placeholder="Khlong Toei Nuea"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="provinceDetected">Province</Label>
-                <Input
-                  id="provinceDetected"
-                  value={formData.provinceDetected || ""}
-                  onChange={(e) =>
-                    updateField("provinceDetected", e.target.value)
-                  }
-                  placeholder="Bangkok"
-                />
+                <Label htmlFor="primaryRegionId">Region</Label>
+                <Select 
+                  value={formData.primaryRegionId || ""} 
+                  onValueChange={(value) => updateField("primaryRegionId", value)}
+                  disabled={!canEdit}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select region..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {regions.map((region) => (
+                      <SelectItem key={region.id} value={region.id}>
+                        {region.name_en} {region.name_th && `(${region.name_th})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -307,17 +312,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   value={formData.postalCode || ""}
                   onChange={(e) => updateField("postalCode", e.target.value)}
                   placeholder="10110"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="countryCode">Country</Label>
-                <Input
-                  id="countryCode"
-                  value={formData.countryCode || ""}
-                  onChange={(e) => updateField("countryCode", e.target.value)}
-                  maxLength={2}
-                  placeholder="TH"
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -326,6 +321,26 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           {/* Company Details */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Company Details</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="primaryIndustryId">Industry</Label>
+              <Select 
+                value={formData.primaryIndustryId || ""} 
+                onValueChange={(value) => updateField("primaryIndustryId", value)}
+                disabled={!canEdit}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry.id} value={industry.id}>
+                      {industry.title_en} {industry.title_th && `(${industry.title_th})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -333,6 +348,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 <Select
                   value={formData.companySize || ""}
                   onValueChange={(value) => updateField("companySize", value)}
+                  disabled={!canEdit}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select size..." />

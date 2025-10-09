@@ -1,4 +1,5 @@
 "use client"
+import { useState, useEffect } from "react"
 import { Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,24 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import type { FilterOptions } from "@/lib/types"
+import { apiClient } from "@/lib/api-client"
 
 interface CompanyFiltersProps {
   filters: FilterOptions
   onFiltersChange: (filters: FilterOptions) => void
   onClearFilters: () => void
 }
-
-const industrialOptions = [
-  "Manufacturing",
-  "Logistics",
-  "Automotive",
-  "Tourism",
-  "Agriculture",
-  "Technology",
-  "Healthcare",
-]
-
-const provinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
 
 const companySizeOptions = [
   { value: "small", label: "Small (S)" },
@@ -39,7 +29,26 @@ const companySizeOptions = [
 const contactStatusOptions = ["Active", "Needs Verification", "Invalid"]
 
 export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: CompanyFiltersProps) {
+  const [industries, setIndustries] = useState<Array<{ id: string; title_en: string }>>([])
+  const [regions, setRegions] = useState<Array<{ id: string; name_en: string }>>([])
   const activeFiltersCount = Object.values(filters).filter(Boolean).length
+  
+  // Load reference data on mount
+  useEffect(() => {
+    const loadReferenceData = async () => {
+      try {
+        const [industriesData, regionsData] = await Promise.all([
+          apiClient.getIndustries({ active: true }),
+          apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }),
+        ])
+        setIndustries(industriesData.data || [])
+        setRegions(regionsData.data || [])
+      } catch (err) {
+        console.error('Failed to load reference data:', err)
+      }
+    }
+    loadReferenceData()
+  }, [])
 
   const updateFilter = (key: keyof FilterOptions, value: string | undefined) => {
     onFiltersChange({
@@ -69,26 +78,26 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>Industrial Name</DropdownMenuLabel>
-          {industrialOptions.map((option) => (
+          <DropdownMenuLabel>Industry</DropdownMenuLabel>
+          {industries.map((industry) => (
             <DropdownMenuItem
-              key={option}
-              onClick={() => updateFilter("industrial", option)}
-              className={filters.industrial === option ? "bg-accent" : ""}
+              key={industry.id}
+              onClick={() => updateFilter("primaryIndustryId", industry.id)}
+              className={filters.primaryIndustryId === industry.id ? "bg-accent" : ""}
             >
-              {option}
+              {industry.title_en}
             </DropdownMenuItem>
           ))}
 
           <DropdownMenuSeparator />
-          <DropdownMenuLabel>Province</DropdownMenuLabel>
-          {provinceOptions.map((option) => (
+          <DropdownMenuLabel>Region</DropdownMenuLabel>
+          {regions.map((region) => (
             <DropdownMenuItem
-              key={option}
-              onClick={() => updateFilter("province", option)}
-              className={filters.province === option ? "bg-accent" : ""}
+              key={region.id}
+              onClick={() => updateFilter("primaryRegionId", region.id)}
+              className={filters.primaryRegionId === region.id ? "bg-accent" : ""}
             >
-              {option}
+              {region.name_en}
             </DropdownMenuItem>
           ))}
 
@@ -123,11 +132,15 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
         ([key, value]) =>
           value && (
             <Badge key={key} variant="secondary" className="gap-1">
-              {key === "industrial" && "Industry: "}
-              {key === "province" && "Province: "}
+              {key === "primaryIndustryId" && "Industry: "}
+              {key === "primaryRegionId" && "Region: "}
               {key === "companySize" && "Size: "}
               {key === "contactStatus" && "Status: "}
-              {value}
+              {key === "primaryIndustryId" 
+                ? industries.find(i => i.id === value)?.title_en || value
+                : key === "primaryRegionId" 
+                ? regions.find(r => r.id === value)?.name_en || value
+                : value}
               <Button
                 variant="ghost"
                 size="sm"
