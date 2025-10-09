@@ -15,11 +15,11 @@ backend:
         # Copy node_modules to dist for deployment
         - cp -r node_modules apps/api/dist/
   artifacts:
-    # Output directory after build
-    baseDirectory: apps/api/dist
+    # Output directory after build (relative to appRoot when used in monorepo)
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
     paths:
-      # Cache node_modules at repository root
-      - node_modules/**/*
+      # Cache node_modules at repository root (relative to repo root)
+      - ../../node_modules/**/*
