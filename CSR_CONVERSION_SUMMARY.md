@@ -29,25 +29,31 @@ Deleted `apps/web/app/api/` directory containing:
 
 ### 3. AWS Amplify Configuration Updates
 
-#### `apps/web/amplify.yml`
+#### Root `amplify.yml`
+Updated the frontend configuration in the monorepo root amplify.yml with `baseDirectory: out`.
+
 **Before:**
 ```yaml
-postBuild:
-  commands:
-    - cp -r apps/web/public apps/web/.next/standalone/apps/web/public || true
-    - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
-artifacts:
-  baseDirectory: .next/standalone
+applications:
+  - appRoot: apps/web
+    frontend:
+      # ... other config
+      artifacts:
+        baseDirectory: .next/standalone
 ```
 
 **After:**
 ```yaml
-artifacts:
-  baseDirectory: out  # Static export output directory
+applications:
+  - appRoot: apps/web
+    frontend:
+      # ... other config
+      artifacts:
+        baseDirectory: out  # Static export output directory
 ```
 
-#### Root `amplify.yml`
-Updated the frontend configuration to match the app-specific config with `baseDirectory: out`.
+#### Removed App-Specific Configuration Files
+Deleted redundant `apps/web/amplify.yml` and `apps/api/amplify.yml` files. When using a monorepo structure with the root `amplify.yml` that defines `applications` with `appRoot`, AWS Amplify uses only the root configuration file. The app-specific files were not being read and caused potential confusion.
 
 ## Technical Details
 
