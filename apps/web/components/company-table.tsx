@@ -1,5 +1,5 @@
 "use client"
-import type { Company } from "@/lib/types"
+import type { Company } from "@/lib/mock-data"
 import type { WeightedLeadScore } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -118,7 +118,9 @@ export function CompanyTable({
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
                 ref={(el) => {
-                  if (el) el.indeterminate = someSelected
+                  if (el && el instanceof HTMLInputElement) {
+                    el.indeterminate = someSelected
+                  }
                 }}
               />
             </TableHead>

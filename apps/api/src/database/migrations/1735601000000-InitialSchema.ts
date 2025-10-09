@@ -84,7 +84,7 @@ export class InitialSchema1735601000000 implements MigrationInterface {
         "is_shared_data" boolean DEFAULT false,
         "data_sensitivity" text DEFAULT 'standard' CHECK (data_sensitivity IN ('public', 'standard', 'confidential', 'restricted')),
         "last_enriched_at" TIMESTAMPTZ,
-        "verification_status" text DEFAULT 'unverified' CHECK (verification_status IN ('verified', 'unverified', 'disputed', 'inactive')),
+        "verification_status" text DEFAULT 'unverified' CHECK (verification_status IN ('verified', 'unverified', 'need_verified', 'disputed', 'inactive')),
         "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         "created_by" uuid,

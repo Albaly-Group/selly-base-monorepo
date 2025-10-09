@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 // Validation messages that match backend
 const VALIDATION_MESSAGES = {
-  EMAIL_INVALID: 'Please provide a valid email address',
+  EMAIL_INVALID: 'Please provide a valid email',
   STRING_REQUIRED: 'This field is required',
   UUID_INVALID: 'Please provide a valid UUID',
   URL_INVALID: 'Please provide a valid URL',

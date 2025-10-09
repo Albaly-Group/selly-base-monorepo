@@ -87,7 +87,8 @@ export class CompanyListsService {
       .leftJoinAndSelect('list.organization', 'organization')
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
       .leftJoinAndSelect('list.companyListItems', 'items')
-      .leftJoinAndSelect('items.company', 'company');
+      .leftJoinAndSelect('items.company', 'company')
+      .leftJoinAndSelect('company.companyContacts', 'companyContacts');
 
     // Scope-based filtering with access control
     if (scope === 'mine' && user) {
@@ -187,6 +188,7 @@ export class CompanyListsService {
       .leftJoinAndSelect('list.ownerUser', 'ownerUser')
       .leftJoinAndSelect('list.companyListItems', 'items')
       .leftJoinAndSelect('items.company', 'company')
+      .leftJoinAndSelect('company.companyContacts', 'companyContacts')
       .leftJoinAndSelect('items.addedByUser', 'addedByUser')
       .where('list.id = :id', { id });
 
@@ -425,7 +427,7 @@ export class CompanyListsService {
   async getListItems(listId: string): Promise<any> {
     const Listitems = await this.companyListItemRepository.find({
       where: { listId },
-      relations: ['company', 'addedByUser'],
+      relations: ['company', 'company.companyContacts', 'addedByUser'],
       order: { position: 'ASC', addedAt: 'DESC' },
     });
 

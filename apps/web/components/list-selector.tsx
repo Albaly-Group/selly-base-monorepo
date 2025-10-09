@@ -6,8 +6,10 @@ import type { CompanyList } from "@/lib/types/company-lists"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, List, Eye, Users, Globe } from "lucide-react"
+import { Plus, List, Eye, Users, Globe, Trash2 } from "lucide-react"
 import { CreateCompanyListDialog } from "@/components/create-company-list-dialog"
+import { apiClient } from "@/lib/api-client"
+import { useDeleteCompanyList } from "@/lib/hooks/api-hooks"
 
 interface EnhancedListSelectorProps {
   lists: CompanyList[]
@@ -56,8 +58,10 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <List className="h-5 w-5" />
-            My Lists
+            <div>
+              <button><List className="h-5 w-5" /></button>
+              My Lists
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -127,8 +131,40 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
 
 export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdate }: ListSelectorProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const deleteCompanyListMutation = useDeleteCompanyList()
+  console.log(lists);
+  console.log(selectedListId);
 
-  console.log("List", lists)
+  const handleDeleteList = async() => {
+    if(!selectedListId) {
+      return;
+    }
+  
+    try {
+      await deleteCompanyListMutation.mutateAsync(selectedListId);
+      console.log("Delete Successful");
+      setShowDeleteConfirm(false);
+
+      // Clear selection first
+      try {
+        onSelectList("")
+      } catch (err) {
+        console.warn('onSelectList threw an error', err)
+      }
+
+      // Then refresh the list
+      if (onListsUpdate) {
+        try {
+          onListsUpdate()
+        } catch (err) {
+          console.warn('onListsUpdate threw an error', err)
+        }
+      }
+    } catch(error: any) {
+      console.error("Delete Failed", error);
+    }
+  }
 
   const handleListCreated = () => {
     setShowCreateDialog(false)
@@ -140,9 +176,21 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <List className="h-5 w-5" />
-            My Lists
+          <CardTitle className="flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <button><List className="h-5 w-5" /></button>
+              My Lists
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={!selectedListId || deleteCompanyListMutation.isPending}
+                className={`${!selectedListId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'} p-1 rounded`}
+                title={!selectedListId ? "Select a list to delete" : "Delete selected list"}
+              >
+                <Trash2 className="h-5 w-5 text-red-500" />
+              </button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -183,6 +231,51 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
             <Plus className="h-4 w-4 mr-2" />
             Create New List
           </Button>
+          {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Delete</h3>
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to delete this list? This action cannot be undone and all companies in this list will be removed.
+              </p>
+              
+              {deleteCompanyListMutation.error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-700">
+                    {(deleteCompanyListMutation.error as any)?.message || "Failed to delete list. Please try again."}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    deleteCompanyListMutation.reset();
+                  }}
+                  disabled={deleteCompanyListMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteList}
+                  disabled={deleteCompanyListMutation.isPending}
+                >
+                  {deleteCompanyListMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         </CardContent>
       </Card>
 

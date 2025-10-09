@@ -102,7 +102,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
             const filteredLists = response.data.map((list: any) => ({
               id: list.id,
               name: list.name,
-              status: list.status,
+              status: list.ownerUser?.status,
               owner: list.ownerUser?.name,
               addedDate: list.createdAt
             }))
@@ -169,7 +169,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
     if (contactFormData.email.trim()) contactData.email = contactFormData.email.trim()
 
     if (!contactValidation.validate(contactData)) {
-      alert('Please fix validation errors before saving')
+      // alert('Please fix validation errors before saving')
       return
     }
 
@@ -204,7 +204,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
       console.log('Contact added successfully')
     } catch (error) {
       console.error('Failed to add contact:', error)
-      alert('Failed to add contact. Please try again.')
+      // alert('Failed to add contact. Please try again.')
     } finally {
       setIsSavingContact(false)
     }
@@ -423,9 +423,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "verified":
+      case "active":
         return "font-bold bg-green-100 text-green-800"
-      case "unverified":
+      case "pending":
         return "font-bold bg-red-100 text-red-800"
       default:
         return "font-bold bg-gray-100 text-gray-800"
@@ -695,7 +695,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               ) : (
                 contacts.map((contact) => (
                   <Card key={contact.id}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                         <div className="space-y-2 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -775,13 +775,13 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
               ) : (
                 activities.map((activity) => (
                   <Card key={activity.id}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2">
                       <div className="flex gap-3">
                         <div className="p-2 rounded-full bg-gray-100">
                           {getActivityIcon(activity.activityType)}
                         </div>
                         <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap pb-2">
                             <Badge variant="outline">{activity.activityType}</Badge>
                             {activity.details?.outcome && (
                               <Badge variant="secondary">{activity.details.outcome}</Badge>
@@ -971,6 +971,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     type="email"
                     placeholder="contact@company.com"
                     value={contactFormData.email}
+                    required={true}
                     onChange={(e) => {
                       setContactFormData({ ...contactFormData, email: e.target.value })
                       contactValidation.clearError('email')

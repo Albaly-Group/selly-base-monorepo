@@ -97,14 +97,14 @@ export function CustomerDashboard() {
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
-    {
-      title: "Lead Scoring",
-      description: "Use intelligent filtering to prioritize your prospects",
-      icon: Target,
-      href: "/lists",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
+    // {
+    //   title: "Lead Scoring",
+    //   description: "Use intelligent filtering to prioritize your prospects",
+    //   icon: Target,
+    //   href: "/lists",
+    //   color: "text-purple-600",
+    //   bgColor: "bg-purple-50",
+    // },
   ]
 
   const staffFeatures = [
@@ -236,8 +236,8 @@ export function CustomerDashboard() {
 
             <Button variant="outline" asChild>
               <Link href="/lists">
-                <Target className="h-4 w-4 mr-2" />
-                Apply Lead Scoring
+                <Users className="h-4 w-4 mr-2" />
+                Apply My Lists
               </Link>
             </Button>
           </div>

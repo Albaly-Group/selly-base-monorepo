@@ -122,8 +122,7 @@ export class CompaniesService {
 
     const query = this.companyRepository
       .createQueryBuilder('company')
-      // Note: contacts relation not yet defined in entity
-      // .leftJoinAndSelect('company.contacts', 'contacts')
+      .leftJoinAndSelect('company.companyContacts', 'companyContacts')
       .leftJoinAndSelect('company.organization', 'organization');
 
     // Multi-tenant filtering with enhanced security

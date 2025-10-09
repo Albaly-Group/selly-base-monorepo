@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThan, Between } from 'typeorm';
 import { Users, Organizations, AuditLogs } from '../../entities';
@@ -79,13 +79,36 @@ export class AdminService {
     role?: string;
   }) {
     try {
+      // Validate required fields
+      if (!userData.name?.trim()) {
+        throw new BadRequestException('Name is required');
+      }
+      if (!userData.email?.trim()) {
+        throw new BadRequestException('Email is required');
+      }
+      if (!userData.password?.trim()) {
+        throw new BadRequestException('Password is required');
+      }
+      if (!userData.organizationId) {
+        throw new BadRequestException('Organization ID is required');
+      }
+
+      // Check if user with this email already exists
+      const existingUser = await this.usersRepo.findOne({
+        where: { email: userData.email.toLowerCase().trim() },
+      });
+
+      if (existingUser) {
+        throw new ConflictException(`User with email '${userData.email}' already exists`);
+      }
+
       // Hash the password
       const passwordHash = await bcrypt.hash(userData.password, 10);
 
       // Create the user
       const user = this.usersRepo.create({
-        name: userData.name,
-        email: userData.email,
+        name: userData.name.trim(),
+        email: userData.email.toLowerCase().trim(),
         passwordHash,
         organizationId: userData.organizationId,
         status: 'active',

@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Check, X, ArrowUpDown, Eye } from "lucide-react"
 
 interface ListTableProps {
-  companies: Company[]
+  companies: any[]
   selectedCompanies: string[]
   onSelectCompany: (companyId: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
   showLeadScores?: boolean
   leadScores?: { [companyId: string]: WeightedLeadScore }
-  onViewCompany?: (company: Company) => void
+  onViewCompany?: (company: any) => void
   sortable?: boolean
 }
 
@@ -67,7 +67,7 @@ export function ListTable({
     if (matchingSummary.industrial) matches.push({ label: "Industry", score: matchingSummary.industrialScore })
     if (matchingSummary.province) matches.push({ label: "Province", score: matchingSummary.provinceScore })
     if (matchingSummary.companySize) matches.push({ label: "Size", score: matchingSummary.companySizeScore })
-    if (matchingSummary.contactStatus) matches.push({ label: "Status", score: matchingSummary.contactStatusScore })
+    if (matchingSummary.verificationStatus) matches.push({ label: "Status", score: matchingSummary.verificationStatusScore })
 
     return (
       <div className="flex gap-1 mt-1 flex-wrap">
@@ -127,7 +127,7 @@ export function ListTable({
             <TableHead>Status</TableHead>
             <TableHead>Data Completeness</TableHead>
             <TableHead>Last Updated</TableHead>
-            <TableHead>Owner</TableHead>
+            {/* <TableHead>Owner</TableHead> */}
             <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -192,7 +192,7 @@ export function ListTable({
                 <TableCell className="text-sm text-gray-500">
                   {company.updatedAt ? new Date(company.updatedAt).toLocaleDateString() : '-'}
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">{company.createdBy || '-'}</TableCell>
+                {/* <TableCell className="text-sm text-gray-500">{company.createdBy || '-'}</TableCell> */}
                 <TableCell>
                   <Button 
                     variant="outline" 

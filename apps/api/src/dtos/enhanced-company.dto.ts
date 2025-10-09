@@ -53,9 +53,8 @@ export enum DataSource {
 
 export enum VerificationStatus {
   VERIFIED = 'verified',
+  NEED_VERIFIED = 'need_verified',
   UNVERIFIED = 'unverified',
-  DISPUTED = 'disputed',
-  INACTIVE = 'inactive',
 }
 
 export enum DataSensitivity {

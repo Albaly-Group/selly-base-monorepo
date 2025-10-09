@@ -156,11 +156,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
         <div className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
+            <h3 className="text-base font-medium text-gray-900">Basic Information</h3>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companyNameEn">
+                <Label htmlFor="companyNameEn" className="text-sm font-medium">
                   Company Name (EN) <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -177,7 +177,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyNameTh">Company Name (TH)</Label>
+                <Label htmlFor="companyNameTh" className="text-sm font-medium">Company Name (TH)</Label>
                 <Input
                   id="companyNameTh"
                   value={formData.companyNameTh}
@@ -193,7 +193,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="primaryRegistrationNo">Registration Number</Label>
+              <Label htmlFor="primaryRegistrationNo" className="text-sm font-medium">Registration Number</Label>
               <Input
                 id="primaryRegistrationNo"
                 value={formData.primaryRegistrationNo}
@@ -204,7 +204,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessDescription">Business Description</Label>
+              <Label htmlFor="businessDescription" className="text-sm font-medium">Business Description</Label>
               <Textarea
                 id="businessDescription"
                 value={formData.businessDescription}
@@ -218,11 +218,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
           {/* Contact Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Contact Information</h3>
+            <h3 className="text-base font-medium text-gray-900">Contact Information</h3>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="primaryEmail">Primary Email</Label>
+                <Label htmlFor="primaryEmail" className="text-sm font-medium">Primary Email</Label>
                 <Input
                   id="primaryEmail"
                   type="email"
@@ -238,7 +238,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="primaryPhone">Primary Phone</Label>
+                <Label htmlFor="primaryPhone" className="text-sm font-medium">Primary Phone</Label>
                 <Input
                   id="primaryPhone"
                   type="tel"
@@ -255,7 +255,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="websiteUrl">Website URL</Label>
+              <Label htmlFor="websiteUrl" className="text-sm font-medium">Website URL</Label>
               <Input
                 id="websiteUrl"
                 type="url"
@@ -273,10 +273,10 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
           {/* Address Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Address Information</h3>
+            <h3 className="text-base font-medium text-gray-900">Address Information</h3>
 
             <div className="space-y-2">
-              <Label htmlFor="addressLine1">Address Line 1</Label>
+              <Label htmlFor="addressLine1" className="text-sm font-medium">Address Line 1</Label>
               <Input
                 id="addressLine1"
                 value={formData.addressLine1}
@@ -287,7 +287,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="addressLine2">Address Line 2</Label>
+              <Label htmlFor="addressLine2" className="text-sm font-medium">Address Line 2</Label>
               <Input
                 id="addressLine2"
                 value={formData.addressLine2}
@@ -299,7 +299,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="district">District</Label>
+                <Label htmlFor="district" className="text-sm font-medium">District</Label>
                 <Input
                   id="district"
                   value={formData.district}
@@ -310,7 +310,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subdistrict">Sub-district</Label>
+                <Label htmlFor="subdistrict" className="text-sm font-medium">Sub-district</Label>
                 <Input
                   id="subdistrict"
                   value={formData.subdistrict}
@@ -323,7 +323,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="province">Province</Label>
+                <Label htmlFor="province" className="text-sm font-medium">Province</Label>
                 <Input
                   id="province"
                   value={formData.province}
@@ -334,7 +334,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code</Label>
+                <Label htmlFor="postalCode" className="text-sm font-medium">Postal Code</Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
@@ -345,7 +345,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="countryCode">Country</Label>
+                <Label htmlFor="countryCode" className="text-sm font-medium">Country</Label>
                 <Input
                   id="countryCode"
                   value={formData.countryCode}
@@ -360,11 +360,11 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
           {/* Company Details */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Company Details</h3>
+            <h3 className="text-base font-medium text-gray-900">Company Details</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size</Label>
+                <Label htmlFor="companySize" className="text-sm font-medium">Company Size</Label>
                 <Select value={formData.companySize} onValueChange={(value) => updateField("companySize", value)} disabled={isLoading}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select size..." />
@@ -380,7 +380,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
+                <Label htmlFor="employeeCountEstimate" className="text-sm font-medium">
+                  Employee Count <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="employeeCountEstimate"
                   type="number"
@@ -393,7 +395,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+              <Label htmlFor="dataSensitivity" className="text-sm font-medium">Data Sensitivity</Label>
               <Select value={formData.dataSensitivity} onValueChange={(value) => updateField("dataSensitivity", value)} disabled={isLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select sensitivity..." />

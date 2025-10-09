@@ -110,14 +110,9 @@ export class ReferenceDataService {
   async getContactStatuses(): Promise<any[]> {
     // Contact statuses are standard categories, not stored in database yet
     return [
-      { value: 'active', label: 'Active', color: 'green' },
-      {
-        value: 'needs_verification',
-        label: 'Needs Verification',
-        color: 'yellow',
-      },
-      { value: 'invalid', label: 'Invalid', color: 'red' },
-      { value: 'opted_out', label: 'Opted Out', color: 'gray' },
+      { value: 'verified', label: 'Verified', color: 'green' },
+      { value: 'need_verified', label: 'Need Verified', color: 'yellow' },
+      { value: 'unverified', label: 'Unverified', color: 'red' },
     ];
   }
 

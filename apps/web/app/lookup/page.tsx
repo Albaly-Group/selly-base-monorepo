@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { Navigation } from "@/components/navigation"
 import { CompanySearch } from "@/components/company-search"
 import { CompanyTable } from "@/components/company-table"
@@ -29,11 +29,13 @@ function CompanyLookupPage() {
   const [hasAppliedFiltering, setHasAppliedFiltering] = useState(false)
   const [isSimpleSearch, setIsSimpleSearch] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const apiSearchFilters = useMemo(() => {
     const filters: any = {
       page: currentPage,
       limit: 25,
+      _refresh: refreshTrigger, // Add refresh trigger to force re-fetch
     };
 
     if (isSimpleSearch) {
@@ -63,8 +65,8 @@ function CompanyLookupPage() {
       if (smartFiltering.companySize) {
         filters.companySize = smartFiltering.companySize;
       }
-      if (smartFiltering.contactStatus){
-        filters.contactStatus = smartFiltering.contactStatus;
+      if (smartFiltering.verificationStatus){
+        filters.verificationStatus = smartFiltering.verificationStatus;
       }
 
       // Note: weights are used for client-side scoring, not sent to backend
@@ -72,7 +74,7 @@ function CompanyLookupPage() {
     }
 
     return filters;
-  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, currentPage]);
+  }, [searchTerm, smartFiltering, hasAppliedFiltering, isSimpleSearch, currentPage, refreshTrigger]);
 
   const shouldSearch = isSimpleSearch && searchTerm.trim() || hasAppliedFiltering;
   const { data: apiSearchResult, isLoading: isApiLoading, isError: hasApiError } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
@@ -123,7 +125,11 @@ function CompanyLookupPage() {
           dataSource: item.dataSource,
           verificationStatus: item.verificationStatus || 'unverified',
           qualityScore: qualityScore,
-          contactPersons: item.companyContacts || item.contactPersons || [],
+          contactPersons: (item.companyContacts || []).map((contact: any) => ({
+            name: contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'N/A',
+            phone: contact.phone,
+            email: contact.email
+          })),
           companySize: item.companySize,
           businessDescription: item.businessDescription,
           dataQualityScore: qualityScore,
@@ -132,10 +138,11 @@ function CompanyLookupPage() {
           isSharedData: item.isSharedData,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
+          lastUpdated: item.updatedAt, // Add this for Company type compatibility
+          createdBy: item.createdBy || 'system', // Add this for Company type compatibility
         };
       });
 
-      // Calculate lead scores when smart filtering is applied
       let calculatedLeadScores: { [companyId: string]: WeightedLeadScore } = {};
       if (hasAppliedFiltering && smartFiltering) {
         companies.forEach(company => {
@@ -153,6 +160,13 @@ function CompanyLookupPage() {
     
     return { filteredCompanies: [], leadScores: {}, isLoading: false };
   }, [shouldSearch, isApiLoading, apiSearchResult, hasApiError, hasAppliedFiltering, smartFiltering]);
+
+  // Function to refresh data
+  const refreshData = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1)
+    // Clear selections when refreshing
+    setSelectedCompanies([])
+  }, [])
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
     if (selected) {
@@ -243,10 +257,28 @@ function CompanyLookupPage() {
   }
 
   const handleCreateSuccess = (newCompany: Company) => {
-    // Optionally refresh the search results or show a success message
-    // For now, just close the dialog (handled by the dialog component)
     console.log("Company created successfully:", newCompany)
+    // Refresh the data to show new company
+    refreshData()
   }
+
+  // Handle company edit/update success
+  const handleCompanyUpdate = useCallback((updatedCompany: Company) => {
+    console.log("Company updated successfully:", updatedCompany)
+    // Refresh the data to show updated company
+    refreshData()
+    
+    // Close any open dialogs
+    setShowCompanyDetail(false)
+  }, [refreshData])
+
+  // Handle list operations success
+  const handleAddToListSuccess = useCallback(() => {
+    setSelectedCompanies([])
+    setShowAddToListDialog(false)
+    // Optionally refresh if list operations affect company data
+    // refreshData()
+  }, [])
 
   const hasResults = isSimpleSearch || hasAppliedFiltering
 
@@ -340,7 +372,7 @@ function CompanyLookupPage() {
                         {smartFiltering.companySize && (
                           <span className="text-xs bg-blue-100 px-2 py-1 rounded">Size</span>
                         )}
-                        {smartFiltering.contactStatus && (
+                        {smartFiltering.verificationStatus && (
                           <span className="text-xs bg-blue-100 px-2 py-1 rounded">Status</span>
                         )}
                         <button
@@ -452,7 +484,18 @@ function CompanyLookupPage() {
           company={selectedCompany}
           open={showCompanyDetail}
           onOpenChange={setShowCompanyDetail}
+          onCompanyUpdated={handleCompanyUpdate}
         />
+
+        {/* Loading overlay during refresh */}
+        {isLoading && (
+          <div className="fixed inset-0 bg-white bg-opacity-20 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Refreshing data...</span>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
