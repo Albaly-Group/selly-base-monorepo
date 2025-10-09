@@ -125,7 +125,9 @@ export class CompaniesService {
       .leftJoinAndSelect('company.companyContacts', 'companyContacts')
       .leftJoinAndSelect('company.organization', 'organization')
       .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
-      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion');
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
+      .leftJoin('company.companyTags', 'companyTags')
+      .leftJoin('companyTags.tag', 'tag');
 
     // Multi-tenant filtering with enhanced security
     if (organizationId) {
@@ -166,7 +168,8 @@ export class CompaniesService {
           company.displayName ILIKE :searchTerm OR 
           company.businessDescription ILIKE :searchTerm OR
           company.primaryEmail ILIKE :searchTerm OR
-          :searchTerm = ANY(company.tags)
+          tag.key ILIKE :searchTerm OR
+          tag.name ILIKE :searchTerm
         )`,
         { searchTerm: `%${searchTerm}%` },
       );
@@ -194,10 +197,13 @@ export class CompaniesService {
     }
 
     if (industrial) {
-      // Search in JSONB array for industry classification (legacy support)
-      query.andWhere(`company.industryClassification::text ILIKE :industrial`, {
-        industrial: `%${industrial}%`,
-      });
+      // Search in industry classification via the primaryIndustry relation
+      query.andWhere(
+        '(primaryIndustry.code ILIKE :industrial OR primaryIndustry.titleEn ILIKE :industrial)',
+        {
+          industrial: `%${industrial}%`,
+        },
+      );
     }
 
     if (primaryIndustryId) {
