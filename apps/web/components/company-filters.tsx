@@ -29,8 +29,8 @@ const companySizeOptions = [
 const contactStatusOptions = ["Active", "Needs Verification", "Invalid"]
 
 export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: CompanyFiltersProps) {
-  const [industries, setIndustries] = useState<Array<{ id: string; title_en: string }>>([])
-  const [regions, setRegions] = useState<Array<{ id: string; name_en: string }>>([])
+  const [industries, setIndustries] = useState<Array<{ id: string; titleEn: string }>>([])
+  const [regions, setRegions] = useState<Array<{ id: string; nameEn: string }>>([])
   const activeFiltersCount = Object.values(filters).filter(Boolean).length
   
   // Load reference data on mount
@@ -85,7 +85,7 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
               onClick={() => updateFilter("primaryIndustryId", industry.id)}
               className={filters.primaryIndustryId === industry.id ? "bg-accent" : ""}
             >
-              {industry.title_en}
+              {industry.titleEn}
             </DropdownMenuItem>
           ))}
 
@@ -97,7 +97,7 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
               onClick={() => updateFilter("primaryRegionId", region.id)}
               className={filters.primaryRegionId === region.id ? "bg-accent" : ""}
             >
-              {region.name_en}
+              {region.nameEn}
             </DropdownMenuItem>
           ))}
 
@@ -137,9 +137,9 @@ export function CompanyFilters({ filters, onFiltersChange, onClearFilters }: Com
               {key === "companySize" && "Size: "}
               {key === "contactStatus" && "Status: "}
               {key === "primaryIndustryId" 
-                ? industries.find(i => i.id === value)?.title_en || value
+                ? industries.find(i => i.id === value)?.titleEn || value
                 : key === "primaryRegionId" 
-                ? regions.find(r => r.id === value)?.name_en || value
+                ? regions.find(r => r.id === value)?.nameEn || value
                 : value}
               <Button
                 variant="ghost"

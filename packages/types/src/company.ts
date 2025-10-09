@@ -4,25 +4,29 @@
 export interface IndustryCode {
   id: string
   code: string
-  title_en: string
-  title_th?: string | null
+  titleEn: string
+  titleTh?: string | null
   description?: string | null
-  classification_system: string
+  classificationSystem: string
   level: number
-  is_active?: boolean | null
-  effective_date?: string | null
-  end_date?: string | null
+  isActive?: boolean | null
+  effectiveDate?: string | null
+  endDate?: string | null
+  createdAt?: string | null
+  updatedAt?: string | null
 }
 
 export interface Region {
   id: string
   code: string
-  name_en: string
-  name_th?: string | null
-  region_type: 'country' | 'province' | 'district' | 'subdistrict'
-  country_code: string
-  parent_region_id?: string | null
-  is_active?: boolean | null
+  nameEn: string
+  nameTh?: string | null
+  regionType: 'country' | 'province' | 'district' | 'subdistrict'
+  countryCode: string
+  parentRegionId?: string | null
+  isActive?: boolean | null
+  createdAt?: string | null
+  updatedAt?: string | null
 }
 
 // Core entity types matching DB schema v2.0

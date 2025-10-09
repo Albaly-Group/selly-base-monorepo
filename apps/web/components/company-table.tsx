@@ -58,12 +58,12 @@ export function CompanyTable({
         bValue = b.companyNameEn.toLowerCase()
         break
       case 'industry':
-        aValue = (a.industrialName || a.primaryIndustry?.title_en || a.primaryIndustryId || '').toLowerCase()
-        bValue = (b.industrialName || b.primaryIndustry?.title_en || b.primaryIndustryId || '').toLowerCase()
+        aValue = (a.industrialName || a.primaryIndustry?.titleEn || a.primaryIndustryId || '').toLowerCase()
+        bValue = (b.industrialName || b.primaryIndustry?.titleEn || b.primaryIndustryId || '').toLowerCase()
         break
       case 'province':
-        aValue = (a.province || a.primaryRegion?.name_en || a.primaryRegionId || '').toLowerCase()
-        bValue = (b.province || b.primaryRegion?.name_en || b.primaryRegionId || '').toLowerCase()
+        aValue = (a.province || a.primaryRegion?.nameEn || a.primaryRegionId || '').toLowerCase()
+        bValue = (b.province || b.primaryRegion?.nameEn || b.primaryRegionId || '').toLowerCase()
         break
       case 'status':
         aValue = a.verificationStatus.toLowerCase()
@@ -217,8 +217,8 @@ export function CompanyTable({
                     company.industrialName.join(', ')
                   ) : company.industrialName ? (
                     company.industrialName
-                  ) : company.primaryIndustry?.title_en ? (
-                    company.primaryIndustry.title_en
+                  ) : company.primaryIndustry?.titleEn ? (
+                    company.primaryIndustry.titleEn
                   ) : company.primaryIndustryId ? (
                     <span className="text-xs text-gray-400">ID: {company.primaryIndustryId.substring(0, 8)}...</span>
                   ) : (
@@ -226,7 +226,7 @@ export function CompanyTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  {company.province || company.primaryRegion?.name_en || (company.primaryRegionId ? (
+                  {company.province || company.primaryRegion?.nameEn || (company.primaryRegionId ? (
                     <span className="text-xs text-gray-400">ID: {company.primaryRegionId.substring(0, 8)}...</span>
                   ) : '-')}
                 </TableCell>

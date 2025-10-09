@@ -44,8 +44,8 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
     employeeCountEstimate: undefined as number | undefined,
     dataSensitivity: "standard",
   })
-  const [industries, setIndustries] = useState<Array<{ id: string; title_en: string; title_th: string | null }>>([])
-  const [regions, setRegions] = useState<Array<{ id: string; name_en: string; name_th: string | null }>>([])
+  const [industries, setIndustries] = useState<Array<{ id: string; titleEn: string; titleTh: string | null }>>([])
+  const [regions, setRegions] = useState<Array<{ id: string; nameEn: string; nameTh: string | null }>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -327,7 +327,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   <SelectContent>
                     {regions.map((region) => (
                       <SelectItem key={region.id} value={region.id}>
-                        {region.name_en} {region.name_th && `(${region.name_th})`}
+                        {region.nameEn} {region.nameTh && `(${region.nameTh})`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -364,7 +364,7 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                 <SelectContent>
                   {industries.map((industry) => (
                     <SelectItem key={industry.id} value={industry.id}>
-                      {industry.title_en} {industry.title_th && `(${industry.title_th})`}
+                      {industry.titleEn} {industry.titleTh && `(${industry.titleTh})`}
                     </SelectItem>
                   ))}
                 </SelectContent>

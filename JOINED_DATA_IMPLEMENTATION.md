@@ -29,8 +29,8 @@ Updated display components to show resolved names:
 
 **Files Modified:**
 1. `apps/web/components/company-table.tsx`
-   - Industry column shows `primaryIndustry.title_en`
-   - Region column shows `primaryRegion.name_en`
+   - Industry column shows `primaryIndustry.titleEn`
+   - Region column shows `primaryRegion.nameEn`
    - Updated sorting to use resolved names
 
 2. `apps/web/components/company-detail-drawer.tsx`
@@ -63,21 +63,21 @@ Updated display components to show resolved names:
   "primaryIndustry": {
     "id": "industry-uuid",
     "code": "62",
-    "title_en": "Computer programming",
-    "title_th": "การเขียนโปรแกรมคอมพิวเตอร์",
-    "classification_system": "ISIC",
+    "titleEn": "Computer programming",
+    "titleTh": "การเขียนโปรแกรมคอมพิวเตอร์",
+    "classificationSystem": "ISIC",
     "level": 2,
-    "is_active": true
+    "isActive": true
   },
   "primaryRegionId": "region-uuid",
   "primaryRegion": {
     "id": "region-uuid",
     "code": "TH-10",
-    "name_en": "Bangkok",
-    "name_th": "กรุงเทพมหานคร",
-    "region_type": "province",
-    "country_code": "TH",
-    "is_active": true
+    "nameEn": "Bangkok",
+    "nameTh": "กรุงเทพมหานคร",
+    "regionType": "province",
+    "countryCode": "TH",
+    "isActive": true
   }
 }
 ```
@@ -90,25 +90,29 @@ Updated display components to show resolved names:
 export interface IndustryCode {
   id: string
   code: string
-  title_en: string
-  title_th?: string | null
+  titleEn: string
+  titleTh?: string | null
   description?: string | null
-  classification_system: string
+  classificationSystem: string
   level: number
-  is_active?: boolean | null
-  effective_date?: string | null
-  end_date?: string | null
+  isActive?: boolean | null
+  effectiveDate?: string | null
+  endDate?: string | null
+  createdAt?: string | null
+  updatedAt?: string | null
 }
 
 export interface Region {
   id: string
   code: string
-  name_en: string
-  name_th?: string | null
-  region_type: 'country' | 'province' | 'district' | 'subdistrict'
-  country_code: string
-  parent_region_id?: string | null
-  is_active?: boolean | null
+  nameEn: string
+  nameTh?: string | null
+  regionType: 'country' | 'province' | 'district' | 'subdistrict'
+  countryCode: string
+  parentRegionId?: string | null
+  isActive?: boolean | null
+  createdAt?: string | null
+  updatedAt?: string | null
 }
 ```
 
@@ -131,13 +135,13 @@ Components use a fallback chain for maximum compatibility:
 
 ### Industry Display
 1. Check `company.industrialName` (legacy)
-2. Check `company.primaryIndustry?.title_en` (joined data)
+2. Check `company.primaryIndustry?.titleEn` (joined data)
 3. Fallback to truncated `company.primaryIndustryId`
 4. Show "-" if nothing available
 
 ### Region Display
 1. Check `company.province` (legacy)
-2. Check `company.primaryRegion?.name_en` (joined data)
+2. Check `company.primaryRegion?.nameEn` (joined data)
 3. Fallback to truncated `company.primaryRegionId`
 4. Show "-" if nothing available
 
@@ -172,17 +176,17 @@ Components use a fallback chain for maximum compatibility:
 
 ```tsx
 // Simple display
-{company.primaryIndustry?.title_en}
+{company.primaryIndustry?.titleEn}
 
 // With fallback
-{company.primaryIndustry?.title_en || 'Unknown Industry'}
+{company.primaryIndustry?.titleEn || 'Unknown Industry'}
 
 // Bilingual display
-{company.primaryRegion?.name_en}
-{company.primaryRegion?.name_th && ` (${company.primaryRegion.name_th})`}
+{company.primaryRegion?.nameEn}
+{company.primaryRegion?.nameTh && ` (${company.primaryRegion.nameTh})`}
 
 // Full fallback chain
-{company.primaryIndustry?.title_en || 
+{company.primaryIndustry?.titleEn || 
  (company.primaryIndustryId ? `ID: ${company.primaryIndustryId.substring(0, 8)}...` : '-')}
 ```
 
@@ -191,8 +195,8 @@ Components use a fallback chain for maximum compatibility:
 ```typescript
 // Sort by industry name
 companies.sort((a, b) => {
-  const aName = a.primaryIndustry?.title_en || '';
-  const bName = b.primaryIndustry?.title_en || '';
+  const aName = a.primaryIndustry?.titleEn || '';
+  const bName = b.primaryIndustry?.titleEn || '';
   return aName.localeCompare(bName);
 });
 ```
@@ -224,11 +228,11 @@ Recommended pattern:
 
 ```typescript
 // Always check for nested object first
-const industryName = company.primaryIndustry?.title_en || 
+const industryName = company.primaryIndustry?.titleEn || 
                      company.industrialName || 
                      'Not specified';
 
-const regionName = company.primaryRegion?.name_en || 
+const regionName = company.primaryRegion?.nameEn || 
                    company.province || 
                    'Not specified';
 ```
