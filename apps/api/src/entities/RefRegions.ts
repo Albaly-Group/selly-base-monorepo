@@ -51,6 +51,13 @@ export class RefRegions {
   })
   createdAt: Date | null;
 
+  @Column('timestamp with time zone', {
+    name: 'updated_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date | null;
+
   @ManyToOne(() => RefRegions, (refRegions) => refRegions.refRegions)
   @JoinColumn([{ name: 'parent_region_id', referencedColumnName: 'id' }])
   parentRegion: RefRegions;
