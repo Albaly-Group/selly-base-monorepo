@@ -13,8 +13,8 @@ const nextConfig = {
     // Enable CSS optimization for proper Vercel deployment
     optimizeCss: true,
   },
-  // Enable standalone output for Docker builds and AWS Amplify
-  output: 'standalone',
+  // Enable static export for CSR deployment on AWS Amplify
+  output: 'export',
 }
 
 export default nextConfig
