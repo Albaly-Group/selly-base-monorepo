@@ -388,6 +388,10 @@ export class CompaniesService {
         relations: ['primaryIndustry', 'primaryRegion'],
       });
 
+      if (!companyWithRelations) {
+        throw new Error('Failed to reload created company');
+      }
+
       // Log creation
       if (this.auditService) {
         await this.auditService.logCompanyOperation(

@@ -469,7 +469,22 @@ SELECT
   pr.registration_no as primary_registration_no_full,
   pr.authority_code,
   COALESCE(lm.list_count, 0) as list_membership_count,
-  c.updated_at
+  c.updated_at,
+  -- Add province and country_code from ref_regions via primary_region_id
+  reg_province.name_en as province,
+  reg_country.code as country_code,
+  -- Add tags array aggregated from company_tags junction table
+  COALESCE(ct.tags, ARRAY[]::text[]) as tags,
+  -- Add industry_classification JSON from ref_industry_codes via primary_industry_id
+  CASE 
+    WHEN c.primary_industry_id IS NOT NULL THEN 
+      jsonb_build_object(
+        'code', ic.code,
+        'name', ic.title_en,
+        'level', ic.level
+      )
+    ELSE '{}'::jsonb
+  END as industry_classification
 FROM companies c
 LEFT JOIN (
   SELECT company_id, COUNT(*) as contact_count
@@ -486,7 +501,17 @@ LEFT JOIN (
   SELECT company_id, COUNT(*) as list_count
   FROM company_list_items
   GROUP BY company_id
-) lm ON c.id = lm.company_id;
+) lm ON c.id = lm.company_id
+LEFT JOIN (
+  SELECT ct.company_id, array_agg(t.key ORDER BY t.key) as tags
+  FROM company_tags ct
+  JOIN ref_tags t ON ct.tag_id = t.id
+  WHERE t.is_active = true
+  GROUP BY ct.company_id
+) ct ON c.id = ct.company_id
+LEFT JOIN ref_regions reg_province ON c.primary_region_id = reg_province.id AND reg_province.region_type = 'province'
+LEFT JOIN ref_regions reg_country ON reg_province.parent_region_id = reg_country.id AND reg_country.region_type = 'country'
+LEFT JOIN ref_industry_codes ic ON c.primary_industry_id = ic.id;
 
 -- =========================================================
 -- INDEXES FOR PERFORMANCE
