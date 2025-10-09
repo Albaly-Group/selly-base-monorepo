@@ -69,21 +69,8 @@ export class Companies {
   @Column('text', { name: 'address_line_2', nullable: true })
   addressLine2: string | null;
 
-  @Column('text', { name: 'district', nullable: true })
-  district: string | null;
-
-  @Column('text', { name: 'subdistrict', nullable: true })
-  subdistrict: string | null;
-
   @Column('text', { name: 'postal_code', nullable: true })
   postalCode: string | null;
-
-  @Column('text', {
-    name: 'country_code',
-    nullable: true,
-    default: () => "'TH'",
-  })
-  countryCode: string | null;
 
   @Column('numeric', {
     name: 'latitude',

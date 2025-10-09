@@ -165,28 +165,6 @@ export class CreateCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
-    description: 'District',
-    example: 'Watthana',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  district?: string;
-
-  @ApiPropertyOptional({
-    description: 'Sub-district',
-    example: 'Khlong Toei Nuea',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  subdistrict?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -196,21 +174,6 @@ export class CreateCompanyDto {
   @MaxLength(20)
   @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
   postalCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH',
-    default: 'TH',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, {
-    message: 'Country code must be 2 uppercase letters',
-  })
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
@@ -361,28 +324,6 @@ export class UpdateCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
-    description: 'District',
-    example: 'Watthana',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  district?: string;
-
-  @ApiPropertyOptional({
-    description: 'Sub-district',
-    example: 'Khlong Toei Nuea',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  subdistrict?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -392,20 +333,6 @@ export class UpdateCompanyDto {
   @MaxLength(20)
   @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
   postalCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, {
-    message: 'Country code must be 2 uppercase letters',
-  })
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
@@ -561,18 +488,6 @@ export class CompanySearchDto {
   @MaxLength(200)
   @Transform(({ value }) => value?.trim())
   industrial?: string;
-
-  @ApiPropertyOptional({
-    description: 'Filter by country code',
-    example: 'TH',
-    maxLength: 2,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Filter by primary industry ID',

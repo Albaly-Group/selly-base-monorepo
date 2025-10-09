@@ -116,7 +116,6 @@ export class CompaniesService {
       verificationStatus,
       companySize,
       industrial,
-      countryCode,
       primaryIndustryId,
       primaryRegionId,
     } = searchDto;
@@ -209,10 +208,6 @@ export class CompaniesService {
       query.andWhere('company.primaryRegionId = :primaryRegionId', {
         primaryRegionId,
       });
-    }
-
-    if (countryCode) {
-      query.andWhere('company.countryCode = :countryCode', { countryCode });
     }
 
     // Enhanced pagination with validation
@@ -345,10 +340,7 @@ export class CompaniesService {
         primaryPhone: createDto.primaryPhone || null,
         addressLine1: createDto.addressLine1 || null,
         addressLine2: createDto.addressLine2 || null,
-        district: createDto.district || null,
-        subdistrict: createDto.subdistrict || null,
         postalCode: createDto.postalCode || null,
-        countryCode: createDto.countryCode || 'TH',
         companySize: createDto.companySize || 'small',
         employeeCountEstimate: createDto.employeeCountEstimate || null,
         primaryIndustryId: createDto.primaryIndustryId || null,
@@ -377,8 +369,6 @@ export class CompaniesService {
         primaryPhone: companyData.primaryPhone || undefined,
         addressLine1: companyData.addressLine1 || undefined,
         addressLine2: companyData.addressLine2 || undefined,
-        district: companyData.district || undefined,
-        subdistrict: companyData.subdistrict || undefined,
         postalCode: companyData.postalCode || undefined,
         employeeCountEstimate: companyData.employeeCountEstimate || undefined,
         primaryIndustryId: companyData.primaryIndustryId || undefined,
@@ -515,22 +505,10 @@ export class CompaniesService {
           updateDto.addressLine2 !== undefined
             ? updateDto.addressLine2
             : existingCompany.addressLine2,
-        district:
-          updateDto.district !== undefined
-            ? updateDto.district
-            : existingCompany.district,
-        subdistrict:
-          updateDto.subdistrict !== undefined
-            ? updateDto.subdistrict
-            : existingCompany.subdistrict,
         postalCode:
           updateDto.postalCode !== undefined
             ? updateDto.postalCode
             : existingCompany.postalCode,
-        countryCode:
-          updateDto.countryCode !== undefined
-            ? updateDto.countryCode
-            : existingCompany.countryCode,
         companySize:
           updateDto.companySize !== undefined
             ? updateDto.companySize
