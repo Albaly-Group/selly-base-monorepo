@@ -107,6 +107,24 @@ export class CreateCompanyDto {
   })
   @IsOptional()
   tags?: string[];
+
+  @ApiProperty({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryIndustryId?: string;
+
+  @ApiProperty({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryRegionId?: string;
 }
 
 export class UpdateCompanyDto {
@@ -209,4 +227,22 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   verificationStatus?: string;
+
+  @ApiProperty({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryIndustryId?: string;
+
+  @ApiProperty({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryRegionId?: string;
 }

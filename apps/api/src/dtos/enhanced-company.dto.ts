@@ -268,6 +268,22 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity level' })
   dataSensitivity?: DataSensitivity;
+
+  @ApiPropertyOptional({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class UpdateCompanyDto {
@@ -479,6 +495,22 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsEnum(VerificationStatus, { message: 'Invalid verification status' })
   verificationStatus?: VerificationStatus;
+
+  @ApiPropertyOptional({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class CompanySearchDto {
@@ -615,6 +647,22 @@ export class CompanySearchDto {
   @IsString({ each: true })
   @ArrayMaxSize(10, { message: 'Maximum 10 tags are allowed for filtering' })
   tags?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Filter by primary industry ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by primary region ID',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class BulkCompanyIdsDto {
