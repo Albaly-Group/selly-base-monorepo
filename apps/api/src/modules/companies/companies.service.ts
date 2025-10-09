@@ -197,10 +197,13 @@ export class CompaniesService {
     }
 
     if (industrial) {
-      // Search in JSONB array for industry classification (legacy support)
-      query.andWhere(`company.industryClassification::text ILIKE :industrial`, {
-        industrial: `%${industrial}%`,
-      });
+      // Search in industry classification via the primaryIndustry relation
+      query.andWhere(
+        '(primaryIndustry.code ILIKE :industrial OR primaryIndustry.titleEn ILIKE :industrial)',
+        {
+          industrial: `%${industrial}%`,
+        },
+      );
     }
 
     if (primaryIndustryId) {
