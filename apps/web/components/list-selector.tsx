@@ -6,7 +6,7 @@ import type { CompanyList } from "@/lib/types/company-lists"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, List, Eye, Users, Globe } from "lucide-react"
+import { Plus, List, Eye, Users, Globe, Trash2 } from "lucide-react"
 import { CreateCompanyListDialog } from "@/components/create-company-list-dialog"
 
 interface EnhancedListSelectorProps {
@@ -56,8 +56,10 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <List className="h-5 w-5" />
-            My Lists
+            <div>
+              <button><List className="h-5 w-5" /></button>
+              My Lists
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -140,9 +142,14 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <List className="h-5 w-5" />
-            My Lists
+          <CardTitle className="flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <button><List className="h-5 w-5" /></button>
+              My Lists
+            </div>
+            <div className="flex items-center gap-2">
+              <button><Trash2 className="h-5 w-5 text-red-500" /></button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">

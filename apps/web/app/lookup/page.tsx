@@ -125,7 +125,11 @@ function CompanyLookupPage() {
           dataSource: item.dataSource,
           verificationStatus: item.verificationStatus || 'unverified',
           qualityScore: qualityScore,
-          contactPersons: item.companyContacts || item.contactPersons || [],
+          contactPersons: (item.companyContacts || []).map((contact: any) => ({
+            name: contact.fullName || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'N/A',
+            phone: contact.phone,
+            email: contact.email
+          })),
           companySize: item.companySize,
           businessDescription: item.businessDescription,
           dataQualityScore: qualityScore,
