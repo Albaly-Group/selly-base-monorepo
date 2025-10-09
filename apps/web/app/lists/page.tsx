@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Navigation } from "@/components/navigation"
 import { ListSelector } from "@/components/list-selector"
 import { ListTable } from "@/components/list-table"
@@ -12,7 +12,8 @@ import { apiClient } from "@/lib/api-client"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Filter, Target } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Filter, Target, Loader2, CheckCircle, X } from "lucide-react"
 
 interface CompanyList {
   id: string
@@ -35,11 +36,43 @@ function ListManagementPage() {
   const [showCompanyDetail, setShowCompanyDetail] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error'
+    message: string
+    show: boolean
+  } | null>(null)
+
+  // Function to show notification
+  const showNotification = useCallback((type: 'success' | 'error', message: string) => {
+    setNotification({ type, message, show: true })
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification(prev => prev ? { ...prev, show: false } : null)
+      // Remove notification completely after fade animation
+      setTimeout(() => setNotification(null), 300)
+    }, 3000)
+  }, [])
+
+  // Function to hide notification immediately
+  const hideNotification = useCallback(() => {
+    setNotification(prev => prev ? { ...prev, show: false } : null)
+    setTimeout(() => setNotification(null), 300)
+  }, [])
+
+  // Function to refresh data - unified approach like lookup page
+  const refreshData = useCallback(() => {
+    setRefreshKey(prev => prev + 1)
+    // Clear selections when refreshing
+    setSelectedCompanies([])
+  }, [])
 
   useEffect(() => {
     const fetchLists = async () => {
       try {
         setIsLoading(true)
+        setIsRefreshing(true)
         const response = await apiClient.getCompanyLists()
 
         if (response && response.data && Array.isArray(response.data)) {
@@ -61,8 +94,10 @@ function ListManagementPage() {
       } catch (error) {
         console.error('Failed to fetch company lists:', error)
         setUserLists([])
+        showNotification('error', 'Failed to load company lists. Please refresh the page.')
       } finally {
         setIsLoading(false)
+        setIsRefreshing(false)
       }
     }
 
@@ -77,6 +112,7 @@ function ListManagementPage() {
       }
 
       try {
+        setIsRefreshing(true)
         const response = await apiClient.getCompanyListItems(selectedListId)
         console.log('Fetched list items:', response);
         
@@ -149,6 +185,9 @@ function ListManagementPage() {
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])
+        showNotification('error', 'Failed to load companies from the selected list. Please try again.')
+      } finally {
+        setIsRefreshing(false)
       }
     }
 
@@ -210,15 +249,19 @@ function ListManagementPage() {
   const handleRemoveFromList = async () => {
     if (selectedList && selectedCompanies.length > 0) {
       try {
+        setIsRemoving(true)
         await apiClient.removeCompaniesFromList(selectedList.id, selectedCompanies)
         
-        setRefreshKey(prev => prev + 1)
-        setSelectedCompanies([])
+        // Use the unified refresh function instead of setRefreshKey
+        refreshData()
         
-        alert(`Removed ${selectedCompanies.length} companies from list.`)
+        // Show success notification
+        showNotification('success', `Successfully removed ${selectedCompanies.length} companies from "${selectedList.name}".`)
       } catch (error) {
         console.error("Error removing companies:", error)
-        alert("Error removing companies from list.")
+        showNotification('error', "Failed to remove companies from list. Please try again.")
+      } finally {
+        setIsRemoving(false)
       }
     }
   }
@@ -227,7 +270,7 @@ function ListManagementPage() {
     // Ensure displayCompanies is an array before filtering
     if (!Array.isArray(displayCompanies)) {
       console.error('displayCompanies is not an array:', displayCompanies)
-      alert('Unable to export: No companies data available')
+      showNotification('error', 'Unable to export: No companies data available')
       return
     }
     
@@ -261,6 +304,9 @@ function ListManagementPage() {
     a.download = `${selectedList?.name || "list"}-export-${new Date().toISOString().split("T")[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
+    
+    // Show success notification for export
+    showNotification('success', `Successfully exported ${exportData.length} companies to CSV.`)
   }
 
 
@@ -281,6 +327,19 @@ function ListManagementPage() {
     setShowCompanyDetail(true)
   }
 
+  // Handle company edit/update success - add refresh like lookup page
+  const handleCompanyUpdate = useCallback((updatedCompany: Company) => {
+    console.log("Company updated successfully:", updatedCompany)
+    // Refresh the data to show updated company
+    refreshData()
+    
+    // Show success notification
+    showNotification('success', `Successfully updated company "${updatedCompany.companyNameEn || updatedCompany.displayName}".`)
+    
+    // Close any open dialogs
+    setShowCompanyDetail(false)
+  }, [refreshData, showNotification])
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -291,13 +350,51 @@ function ListManagementPage() {
           <p className="text-gray-600">Manage your saved company lists and apply smart filtering</p>
         </div>
 
+        {/* Notification Alert */}
+        {notification && (
+          <div className={`fixed top-4 right-4 z-50 w-96 transition-all duration-300 ease-in-out ${
+            notification.show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+          }`}>
+            <Alert className={`${
+              notification.type === 'success' 
+                ? 'border-green-200 bg-green-50' 
+                : 'border-red-200 bg-red-50'
+            } shadow-lg`}>
+              {notification.type === 'success' ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <X className="h-4 w-4 text-red-600" />
+              )}
+              <div className="flex items-start justify-between w-full">
+                <AlertDescription className={`${
+                  notification.type === 'success' 
+                    ? 'text-green-800' 
+                    : 'text-red-800'
+                } text-sm leading-relaxed pr-4`}>
+                  {notification.message}
+                </AlertDescription>
+                <button
+                  onClick={hideNotification}
+                  className={`${
+                    notification.type === 'success' 
+                      ? 'text-green-400 hover:text-green-600' 
+                      : 'text-red-400 hover:text-red-600'
+                  } transition-colors flex-shrink-0`}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </Alert>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <ListSelector 
               lists={userLists as any} 
               selectedListId={selectedListId} 
               onSelectList={setSelectedListId}
-              onListsUpdate={() => setRefreshKey(prev => prev + 1)}
+              onListsUpdate={() => refreshData()}
               isLoading={isLoading}
             />
           </div>
@@ -416,7 +513,18 @@ function ListManagementPage() {
           company={selectedCompany}
           open={showCompanyDetail}
           onOpenChange={setShowCompanyDetail}
+          onCompanyUpdated={handleCompanyUpdate}
         />
+
+        {/* Loading overlay during refresh */}
+        {isRefreshing && (
+          <div className="fixed inset-0 bg-white bg-opacity-20 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Refreshing data...</span>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

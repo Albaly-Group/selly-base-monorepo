@@ -263,8 +263,10 @@ export function SmartFilteringPanel({
                     <SelectContent>
                       <SelectItem value="any">Any Industry</SelectItem>
                       {industrialOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
+                        <SelectItem key={option} value={option} >
+                          <div className="truncate max-w-[120px]">
+                            {option}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -419,7 +421,7 @@ export function SmartFilteringPanel({
           </Card>
 
           {/* Scoring Profile */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Save className="h-4 w-4" />
@@ -442,7 +444,7 @@ export function SmartFilteringPanel({
                 Save this configuration as a reusable scoring profile (coming soon)
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 pt-4">

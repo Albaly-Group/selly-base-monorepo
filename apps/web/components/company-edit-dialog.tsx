@@ -36,6 +36,7 @@ interface CompanyEditDialogProps {
 }
 
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
+  console.log(company)
   const { user } = useAuth()
   const [formData, setFormData] = useState<Partial<Company>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -86,7 +87,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       if (formData.primaryEmail !== undefined) updateData.primaryEmail = formData.primaryEmail
       if (formData.primaryPhone !== undefined) updateData.primaryPhone = formData.primaryPhone
       if (formData.companySize !== undefined) updateData.companySize = formData.companySize
-      if (formData.employeeCountEstimate !== undefined) updateData.employeeCountEstimate = formData.employeeCountEstimate
+      if (formData.employeeCountEstimate !== undefined && formData.employeeCountEstimate !== null && formData.employeeCountEstimate > 0) updateData.employeeCountEstimate = formData.employeeCountEstimate
       if (formData.tags !== undefined) updateData.tags = formData.tags
       if (formData.dataSensitivity !== undefined) updateData.dataSensitivity = formData.dataSensitivity
       
@@ -325,6 +326,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           {/* Company Details */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Company Details</h3>
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="companySize">Company Size</Label>
@@ -344,24 +346,22 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
-                <Select
-                  value={formData.dataSensitivity || ""}
-                  onValueChange={(value) => updateField("dataSensitivity", value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select sensitivity..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="standard">Standard</SelectItem>
-                    <SelectItem value="confidential">Confidential</SelectItem>
-                    <SelectItem value="restricted">Restricted</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="employeeCountEstimate" className="text-sm font-medium">
+                  Employee Count
+                </Label>
+                <Input
+                  id="employeeCountEstimate"
+                  type="number"
+                  value={formData.employeeCountEstimate || ""}
+                  onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
+                  placeholder="50"
+                  disabled={isLoading}
+                />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
               <Select
@@ -397,9 +397,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="verified">Verified</SelectItem>
-                    <SelectItem value="unverified">Unverified</SelectItem>
-                    <SelectItem value="disputed">Disputed</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    {/* <SelectItem value="need_verified">Need Verification</SelectItem> */}
+                    <SelectItem value="unverified">Invalid</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500">

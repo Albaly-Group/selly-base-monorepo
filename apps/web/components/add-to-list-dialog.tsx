@@ -104,7 +104,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       
     } catch (error) {
       console.error('Error adding companies to list:', error)
-      setMessage({ type: 'error', text: 'Failed to add companies to list.' })
+      setMessage({ type: 'error', text: 'Cannot add. This item is already in the list.' })
     } finally {
       setIsLoading(false)
     }

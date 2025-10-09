@@ -127,7 +127,7 @@ export function ListTable({
             <TableHead>Status</TableHead>
             <TableHead>Data Completeness</TableHead>
             <TableHead>Last Updated</TableHead>
-            <TableHead>Owner</TableHead>
+            {/* <TableHead>Owner</TableHead> */}
             <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -192,7 +192,7 @@ export function ListTable({
                 <TableCell className="text-sm text-gray-500">
                   {company.updatedAt ? new Date(company.updatedAt).toLocaleDateString() : '-'}
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">{company.createdBy || '-'}</TableCell>
+                {/* <TableCell className="text-sm text-gray-500">{company.createdBy || '-'}</TableCell> */}
                 <TableCell>
                   <Button 
                     variant="outline" 
