@@ -88,13 +88,16 @@ frontend:
       commands:
         - npx turbo build --filter=web
   artifacts:
-    baseDirectory: apps/web/.next
+    # Note: baseDirectory is relative to appRoot (apps/web)
+    baseDirectory: .next
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
-      - apps/web/.next/cache/**/*
+      # Cache paths relative to repository root
+      - ../../node_modules/**/*
+      # Cache paths relative to appRoot
+      - .next/cache/**/*
 ```
 
 ### 3. Configure Environment Variables
@@ -169,12 +172,14 @@ backend:
       commands:
         - cp -r node_modules apps/api/dist/
   artifacts:
-    baseDirectory: apps/api/dist
+    # Note: baseDirectory is relative to appRoot (apps/api)
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      # Cache paths relative to repository root
+      - ../../node_modules/**/*
 ```
 
 ### 3. Configure Environment Variables

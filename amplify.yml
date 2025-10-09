@@ -13,16 +13,16 @@ applications:
             # Build frontend using Turbo with filter (builds web + types packages)
             - npx turbo build --filter=web
       artifacts:
-        # Output directory after build
-        baseDirectory: apps/web/.next
+        # Output directory after build (relative to appRoot)
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
         paths:
-          # Cache node_modules at repository root
-          - node_modules/**/*
-          # Cache Next.js build cache
-          - apps/web/.next/cache/**/*
+          # Cache node_modules at repository root (relative to repo root)
+          - ../../node_modules/**/*
+          # Cache Next.js build cache (relative to appRoot)
+          - .next/cache/**/*
   - appRoot: apps/api
     backend:
       phases:
@@ -40,11 +40,11 @@ applications:
             # Copy node_modules to dist for deployment
             - cp -r node_modules apps/api/dist/
       artifacts:
-        # Output directory after build
-        baseDirectory: apps/api/dist
+        # Output directory after build (relative to appRoot)
+        baseDirectory: dist
         files:
           - '**/*'
       cache:
         paths:
-          # Cache node_modules at repository root
-          - node_modules/**/*
+          # Cache node_modules at repository root (relative to repo root)
+          - ../../node_modules/**/*

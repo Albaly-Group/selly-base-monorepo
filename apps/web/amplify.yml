@@ -11,13 +11,13 @@ frontend:
         # Build frontend using Turbo with filter (builds web + types packages)
         - npx turbo build --filter=web
   artifacts:
-    # Output directory after build
-    baseDirectory: apps/web/.next
+    # Output directory after build (relative to appRoot when used in monorepo)
+    baseDirectory: .next
     files:
       - '**/*'
   cache:
     paths:
-      # Cache node_modules at repository root
-      - node_modules/**/*
-      # Cache Next.js build cache
-      - apps/web/.next/cache/**/*
+      # Cache node_modules at repository root (relative to repo root)
+      - ../../node_modules/**/*
+      # Cache Next.js build cache (relative to appRoot)
+      - .next/cache/**/*
