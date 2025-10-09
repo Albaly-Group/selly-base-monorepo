@@ -2,7 +2,32 @@
 
 ## Deployment Options
 
-### Option 1: Optimized Separate Vercel Deployments (Recommended)
+### Option 1: AWS Amplify Deployment
+
+Deploy both frontend and backend to AWS Amplify with native AWS integration.
+
+**Quick Start:**
+```bash
+# 1. Push your code to GitHub
+git push origin main
+
+# 2. Create two Amplify apps:
+# - Frontend app: Import repository, set root to `apps/web`
+# - Backend app: Import repository, set root to `apps/api`
+```
+
+**Complete Guide:** See [AWS_AMPLIFY_DEPLOYMENT.md](./AWS_AMPLIFY_DEPLOYMENT.md) for detailed instructions.
+
+**Benefits:**
+- **Native AWS Integration**: Direct integration with RDS, S3, CloudWatch, etc.
+- **Full Stack Deployment**: Both frontend and backend on same platform
+- **Optimized Builds**: Each deployment builds only necessary packages using Turbo filters
+- **Auto-scaling**: Automatic scaling based on traffic
+- Independent deployment cycles per app
+- Built-in monitoring with CloudWatch
+- Git-based continuous deployment
+
+### Option 2: Optimized Separate Vercel Deployments
 
 Deploy frontend and backend as separate Vercel projects with optimized build commands.
 
@@ -26,11 +51,11 @@ git push origin main
 - Team independence (frontend/backend teams)
 - Environment isolation
 
-### Option 2: Traditional Server Deployment
+### Option 3: Traditional Server Deployment
 
 Deploy backend to traditional hosting platforms (Railway, Heroku, etc.).
 
-**Frontend:** Deploy frontend using Option 1 approach to Vercel
+**Frontend:** Deploy frontend using Option 1 or 2 approach
 **Backend:** See [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
 
 ## Build Process Overview

@@ -1,0 +1,23 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Navigate to repository root and install dependencies
+        - cd ../..
+        - npm ci
+    build:
+      commands:
+        # Build frontend using Turbo with filter (builds web + types packages)
+        - npx turbo build --filter=web
+  artifacts:
+    # Output directory after build
+    baseDirectory: apps/web/.next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      # Cache node_modules at repository root
+      - node_modules/**/*
+      # Cache Next.js build cache
+      - apps/web/.next/cache/**/*
