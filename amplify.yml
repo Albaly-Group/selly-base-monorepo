@@ -12,6 +12,10 @@ applications:
           commands:
             # Build frontend using Turbo with filter (builds web + types packages)
             - npx turbo build --filter=web
+        postBuild:
+          commands:
+            # Copy required-server-files.json to output directory for AWS Amplify
+            - cp .next/required-server-files.json out/ || true
       artifacts:
         # Output directory after build (relative to appRoot)
         # For Next.js static export, use out directory
