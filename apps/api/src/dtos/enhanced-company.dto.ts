@@ -165,39 +165,6 @@ export class CreateCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
-    description: 'District',
-    example: 'Watthana',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  district?: string;
-
-  @ApiPropertyOptional({
-    description: 'Sub-district',
-    example: 'Khlong Toei Nuea',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  subdistrict?: string;
-
-  @ApiPropertyOptional({
-    description: 'Province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -207,21 +174,6 @@ export class CreateCompanyDto {
   @MaxLength(20)
   @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
   postalCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH',
-    default: 'TH',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, {
-    message: 'Country code must be 2 uppercase letters',
-  })
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
@@ -245,21 +197,6 @@ export class CreateCompanyDto {
   employeeCountEstimate?: number;
 
   @ApiPropertyOptional({
-    description: 'Company tags for categorization',
-    example: ['technology', 'software', 'digital'],
-    type: [String],
-    maxItems: 20,
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
-  @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) =>
-    value?.map((tag: string) => tag.trim().toLowerCase()),
-  )
-  tags?: string[];
-
-  @ApiPropertyOptional({
     description: 'Data sensitivity level',
     enum: DataSensitivity,
     example: DataSensitivity.STANDARD,
@@ -268,6 +205,22 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsEnum(DataSensitivity, { message: 'Invalid data sensitivity level' })
   dataSensitivity?: DataSensitivity;
+
+  @ApiPropertyOptional({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class UpdateCompanyDto {
@@ -371,39 +324,6 @@ export class UpdateCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
-    description: 'District',
-    example: 'Watthana',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  district?: string;
-
-  @ApiPropertyOptional({
-    description: 'Sub-district',
-    example: 'Khlong Toei Nuea',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  subdistrict?: string;
-
-  @ApiPropertyOptional({
-    description: 'Province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -413,20 +333,6 @@ export class UpdateCompanyDto {
   @MaxLength(20)
   @Matches(/^[0-9]+$/, { message: 'Postal code must contain only numbers' })
   postalCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, {
-    message: 'Country code must be 2 uppercase letters',
-  })
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
@@ -448,21 +354,6 @@ export class UpdateCompanyDto {
   employeeCountEstimate?: number;
 
   @ApiPropertyOptional({
-    description: 'Company tags for categorization',
-    example: ['technology', 'software', 'digital'],
-    type: [String],
-    maxItems: 20,
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
-  @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) =>
-    value?.map((tag: string) => tag.trim().toLowerCase()),
-  )
-  tags?: string[];
-
-  @ApiPropertyOptional({
     description: 'Data sensitivity level',
     enum: DataSensitivity,
     example: DataSensitivity.STANDARD,
@@ -479,6 +370,22 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsEnum(VerificationStatus, { message: 'Invalid verification status' })
   verificationStatus?: VerificationStatus;
+
+  @ApiPropertyOptional({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary region ID (foreign key to ref_regions)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class CompanySearchDto {
@@ -583,38 +490,20 @@ export class CompanySearchDto {
   industrial?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter by province',
-    example: 'Bangkok',
-    maxLength: 100,
+    description: 'Filter by primary industry ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryIndustryId?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter by country code',
-    example: 'TH',
-    maxLength: 2,
+    description: 'Filter by primary region ID',
+    example: '550e8400-e29b-41d4-a716-446655440002',
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Filter by tags (array of strings)',
-    example: ['technology', 'software'],
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @ArrayMaxSize(10, { message: 'Maximum 10 tags are allowed for filtering' })
-  tags?: string[];
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  primaryRegionId?: string;
 }
 
 export class BulkCompanyIdsDto {

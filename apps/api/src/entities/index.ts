@@ -10,6 +10,7 @@ export { CompanyLists } from './CompanyLists';
 export { CompanyListItems } from './CompanyListItems';
 export { CompanyContacts } from './CompanyContacts';
 export { CompanyRegistrations } from './CompanyRegistrations';
+export { CompanyTags } from './CompanyTags';
 
 // Audit & job tracking entities
 export { AuditLogs } from './AuditLogs';

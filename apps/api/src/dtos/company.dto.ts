@@ -82,31 +82,22 @@ export class CreateCompanyDto {
   addressLine1?: string;
 
   @ApiProperty({
-    description: 'Province (optional)',
-    example: 'Bangkok',
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
     required: false,
   })
   @IsOptional()
   @IsString()
-  province?: string;
+  primaryIndustryId?: string;
 
   @ApiProperty({
-    description: 'Country code (optional)',
-    example: 'TH',
+    description: 'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
     required: false,
   })
   @IsOptional()
   @IsString()
-  countryCode?: string;
-
-  @ApiProperty({
-    description: 'Company tags (optional)',
-    example: ['technology', 'software', 'digital'],
-    required: false,
-    type: [String],
-  })
-  @IsOptional()
-  tags?: string[];
+  primaryRegionId?: string;
 }
 
 export class UpdateCompanyDto {
@@ -174,15 +165,6 @@ export class UpdateCompanyDto {
   addressLine1?: string;
 
   @ApiProperty({
-    description: 'Province (optional)',
-    example: 'Bangkok',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  province?: string;
-
-  @ApiProperty({
     description: 'Country code (optional)',
     example: 'TH',
     required: false,
@@ -190,15 +172,6 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-
-  @ApiProperty({
-    description: 'Company tags (optional)',
-    example: ['technology', 'software', 'digital'],
-    required: false,
-    type: [String],
-  })
-  @IsOptional()
-  tags?: string[];
 
   @ApiProperty({
     description: 'Verification status (optional)',
@@ -209,4 +182,22 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   verificationStatus?: string;
+
+  @ApiProperty({
+    description: 'Primary industry ID (foreign key to ref_industry_codes)',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryIndustryId?: string;
+
+  @ApiProperty({
+    description: 'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  primaryRegionId?: string;
 }

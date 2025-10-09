@@ -11,6 +11,9 @@ import { CompanyContacts } from './CompanyContacts';
 import { CompanyListItems } from './CompanyListItems';
 import { CompanyRegistrations } from './CompanyRegistrations';
 import { LeadProjectCompanies } from './LeadProjectCompanies';
+import { RefIndustryCodes } from './RefIndustryCodes';
+import { RefRegions } from './RefRegions';
+import { CompanyTags } from './CompanyTags';
 
 @Index('idx_companies_size', ['companySize'], {})
 @Index('idx_companies_org_source', ['dataSource', 'organizationId'], {})
@@ -19,9 +22,10 @@ import { LeadProjectCompanies } from './LeadProjectCompanies';
 @Index('idx_companies_name_trgm', ['nameEn'], {})
 @Index('idx_companies_organization', ['organizationId'], {})
 @Index('idx_companies_registration_no', ['primaryRegistrationNo'], {})
-@Index('idx_companies_province', ['province'], {})
 @Index('idx_companies_search_vector', ['searchVector'], {})
 @Index('idx_companies_verification', ['verificationStatus'], {})
+@Index('idx_companies_primary_industry', ['primaryIndustryId'], {})
+@Index('idx_companies_primary_region', ['primaryRegionId'], {})
 @Entity('companies', { schema: 'public' })
 export class Companies {
   @Column('uuid', {
@@ -65,24 +69,8 @@ export class Companies {
   @Column('text', { name: 'address_line_2', nullable: true })
   addressLine2: string | null;
 
-  @Column('text', { name: 'district', nullable: true })
-  district: string | null;
-
-  @Column('text', { name: 'subdistrict', nullable: true })
-  subdistrict: string | null;
-
-  @Column('text', { name: 'province', nullable: true })
-  province: string | null;
-
   @Column('text', { name: 'postal_code', nullable: true })
   postalCode: string | null;
-
-  @Column('text', {
-    name: 'country_code',
-    nullable: true,
-    default: () => "'TH'",
-  })
-  countryCode: string | null;
 
   @Column('numeric', {
     name: 'latitude',
@@ -145,20 +133,11 @@ export class Companies {
   @Column('text', { name: 'logo_url', nullable: true })
   logoUrl: string | null;
 
-  @Column('jsonb', {
-    name: 'industry_classification',
-    nullable: true,
-    default: {},
-  })
-  industryClassification: object | null;
+  @Column('uuid', { name: 'primary_industry_id', nullable: true })
+  primaryIndustryId: string | null;
 
-  @Column('text', {
-    name: 'tags',
-    nullable: true,
-    array: true,
-    default: () => "'{}'[]",
-  })
-  tags: string[] | null;
+  @Column('uuid', { name: 'primary_region_id', nullable: true })
+  primaryRegionId: string | null;
 
   @Column('tsvector', { name: 'search_vector', nullable: true })
   searchVector: string | null;
@@ -234,6 +213,18 @@ export class Companies {
   @JoinColumn([{ name: 'organization_id', referencedColumnName: 'id' }])
   organization: Organizations;
 
+  @ManyToOne(() => RefIndustryCodes, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn([{ name: 'primary_industry_id', referencedColumnName: 'id' }])
+  primaryIndustry: RefIndustryCodes;
+
+  @ManyToOne(() => RefRegions, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn([{ name: 'primary_region_id', referencedColumnName: 'id' }])
+  primaryRegion: RefRegions;
+
   @OneToMany(
     () => CompanyContacts,
     (companyContacts) => companyContacts.company,
@@ -257,4 +248,7 @@ export class Companies {
     (leadProjectCompanies) => leadProjectCompanies.company,
   )
   leadProjectCompanies: LeadProjectCompanies[];
+
+  @OneToMany(() => CompanyTags, (companyTags) => companyTags.company)
+  companyTags: CompanyTags[];
 }

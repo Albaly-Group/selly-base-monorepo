@@ -87,6 +87,54 @@ CREATE TABLE user_roles (
 );
 
 -- =========================================================
+-- REFERENCE DATA (must be created before companies)
+-- =========================================================
+
+CREATE TABLE ref_industry_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL,
+  title_en TEXT NOT NULL,
+  title_th TEXT,
+  description TEXT,
+  classification_system TEXT NOT NULL,
+  level INTEGER NOT NULL,
+  parent_code TEXT,
+  is_active BOOLEAN DEFAULT true,
+  effective_date DATE,
+  end_date DATE,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(code, classification_system)
+);
+
+CREATE TABLE ref_regions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL,
+  name_en TEXT NOT NULL,
+  name_th TEXT,
+  region_type TEXT NOT NULL CHECK (region_type IN ('country', 'province', 'district', 'subdistrict')),
+  country_code TEXT NOT NULL,
+  parent_region_id UUID REFERENCES ref_regions(id),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(code, country_code, region_type)
+);
+
+CREATE TABLE ref_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  color TEXT,
+  icon TEXT,
+  category TEXT,
+  parent_tag_id UUID REFERENCES ref_tags(id),
+  is_system_tag BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
 -- CANONICAL COMPANY DATA
 -- =========================================================
 
@@ -105,11 +153,7 @@ CREATE TABLE companies (
   duns_number TEXT,
   address_line_1 TEXT,
   address_line_2 TEXT,
-  district TEXT,
-  subdistrict TEXT,
-  province TEXT,
   postal_code TEXT,
-  country_code TEXT DEFAULT 'TH',
   latitude DECIMAL(10,8),
   longitude DECIMAL(11,8),
   business_description TEXT,
@@ -124,8 +168,11 @@ CREATE TABLE companies (
   primary_email TEXT,
   primary_phone TEXT,
   logo_url TEXT,
-  industry_classification JSONB DEFAULT '{}',
-  tags TEXT[] DEFAULT '{}',
+  
+  -- Foreign key references to reference data tables
+  primary_industry_id UUID REFERENCES ref_industry_codes(id) ON DELETE SET NULL,
+  primary_region_id UUID REFERENCES ref_regions(id) ON DELETE SET NULL,
+  
   search_vector tsvector GENERATED ALWAYS AS (
     generate_search_vector(name_en, business_description)
   ) STORED,
@@ -162,6 +209,16 @@ CREATE TABLE companies (
     (is_shared_data = true AND organization_id IS NULL) OR 
     (is_shared_data = false AND organization_id IS NOT NULL)
   )
+);
+
+-- Company-Tag many-to-many relationship
+CREATE TABLE company_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  tag_id UUID NOT NULL REFERENCES ref_tags(id) ON DELETE CASCADE,
+  added_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  added_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(company_id, tag_id)
 );
 
 CREATE TABLE company_registrations (
@@ -295,54 +352,6 @@ CREATE TABLE lead_project_tasks (
   status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'completed', 'cancelled')),
   assigned_to_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   due_date TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
--- =========================================================
--- REFERENCE DATA
--- =========================================================
-
-CREATE TABLE ref_industry_codes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code TEXT NOT NULL,
-  title_en TEXT NOT NULL,
-  title_th TEXT,
-  description TEXT,
-  classification_system TEXT NOT NULL,
-  level INTEGER NOT NULL,
-  parent_code TEXT,
-  is_active BOOLEAN DEFAULT true,
-  effective_date DATE,
-  end_date DATE,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(code, classification_system)
-);
-
-CREATE TABLE ref_regions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code TEXT NOT NULL,
-  name_en TEXT NOT NULL,
-  name_th TEXT,
-  region_type TEXT NOT NULL CHECK (region_type IN ('country', 'province', 'district', 'subdistrict')),
-  country_code TEXT NOT NULL,
-  parent_region_id UUID REFERENCES ref_regions(id),
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(code, country_code, region_type)
-);
-
-CREATE TABLE ref_tags (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  key TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  color TEXT,
-  icon TEXT,
-  category TEXT,
-  parent_tag_id UUID REFERENCES ref_tags(id),
-  is_system_tag BOOLEAN DEFAULT false,
-  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -495,6 +504,10 @@ CREATE INDEX idx_companies_province ON companies(province) WHERE province IS NOT
 CREATE INDEX idx_companies_size ON companies(company_size) WHERE company_size IS NOT NULL;
 CREATE INDEX idx_companies_verification ON companies(verification_status);
 CREATE INDEX idx_companies_registration_no ON companies(primary_registration_no) WHERE primary_registration_no IS NOT NULL;
+CREATE INDEX idx_companies_primary_industry ON companies(primary_industry_id) WHERE primary_industry_id IS NOT NULL;
+CREATE INDEX idx_companies_primary_region ON companies(primary_region_id) WHERE primary_region_id IS NOT NULL;
+CREATE INDEX idx_company_tags_company ON company_tags(company_id);
+CREATE INDEX idx_company_tags_tag ON company_tags(tag_id);
 CREATE INDEX idx_company_lists_org_owner ON company_lists(organization_id, owner_user_id);
 CREATE INDEX idx_company_lists_visibility ON company_lists(visibility);
 CREATE INDEX idx_company_lists_smart ON company_lists(is_smart_list) WHERE is_smart_list = true;
@@ -694,63 +707,83 @@ INSERT INTO user_roles (user_id, role_id, organization_id, assigned_by, assigned
 -- Sample companies demonstrating different data sources and privacy levels
 -- 1. Shared Albaly reference data (available to all customers)
 INSERT INTO companies (
-  id, organization_id, name_en, name_th, province, business_description,
+  id, organization_id, name_en, name_th, business_description,
   data_source, source_reference, is_shared_data, data_sensitivity, 
-  verification_status, created_by, industry_classification, company_size, tags, data_quality_score
+  verification_status, created_by, company_size, data_quality_score,
+  primary_industry_id, primary_region_id
 ) VALUES 
 (
   '550e8400-e29b-41d4-a716-446655440030', NULL,
   'Siam Commercial Bank PCL', 'ธนาคารไทยพาณิชย์ จำกัด (มหาชน)',
-  'Bangkok', 'Leading commercial bank in Thailand',
+  'Leading commercial bank in Thailand',
   'albaly_list', 'Albaly-Fortune-500-Thailand-2024', 
   true, 'public', 'verified',
   '550e8400-e29b-41d4-a716-446655440001',
-  '["Financial and insurance activities"]'::jsonb,
   'large',
-  ARRAY['finance', 'banking', 'enterprise'],
-  0.95
+  0.95,
+  (SELECT id FROM ref_industry_codes WHERE code = '46' LIMIT 1),
+  (SELECT id FROM ref_regions WHERE code = 'TH-10' LIMIT 1)
 ),
 (
   '550e8400-e29b-41d4-a716-446655440031', NULL,
   'CP Foods PCL', 'บริษัท เจริญโภคภัณฑ์อาหาร จำกัด (มหาชน)',
-  'Bangkok', 'Food and agribusiness conglomerate',
+  'Food and agribusiness conglomerate',
   'dbd_registry', 'DBD-Public-Companies-2024-Q4',
   true, 'public', 'verified',
   '550e8400-e29b-41d4-a716-446655440001',
-  '["Manufacturing", "Agriculture, forestry and fishing"]'::jsonb,
   'enterprise',
-  ARRAY['food', 'agriculture', 'manufacturing'],
-  0.92
+  0.92,
+  (SELECT id FROM ref_industry_codes WHERE code = '46' LIMIT 1),
+  (SELECT id FROM ref_regions WHERE code = 'TH-10' LIMIT 1)
 );
 
 -- 2. Customer-specific private data 
 INSERT INTO companies (
-  id, organization_id, name_en, province, business_description,
+  id, organization_id, name_en, business_description,
   data_source, source_reference, is_shared_data, data_sensitivity,
-  verification_status, created_by, industry_classification, company_size, tags, data_quality_score
+  verification_status, created_by, company_size, data_quality_score,
+  primary_industry_id, primary_region_id
 ) VALUES
 (
   '550e8400-e29b-41d4-a716-446655440032', '550e8400-e29b-41d4-a716-446655440001',
-  'Local Bangkok Restaurant Chain', 'Bangkok', 'Restaurant franchise with 15 locations',
+  'Local Bangkok Restaurant Chain', 'Restaurant franchise with 15 locations',
   'customer_input', 'Customer manual entry - 2024-12-18',
   false, 'confidential', 'unverified',
   '550e8400-e29b-41d4-a716-446655440008',
-  '["Accommodation and food service activities"]'::jsonb,
   'medium',
-  ARRAY['restaurant', 'hospitality'],
-  0.65
+  0.65,
+  (SELECT id FROM ref_industry_codes WHERE code = '4610' LIMIT 1),
+  (SELECT id FROM ref_regions WHERE code = 'TH-10' LIMIT 1)
 ),
 (
   '550e8400-e29b-41d4-a716-446655440033', '550e8400-e29b-41d4-a716-446655440001', 
-  'Bangkok Tech Startup Ltd', 'Bangkok', 'AI/ML software development company',
+  'Bangkok Tech Startup Ltd', 'AI/ML software development company',
   'customer_input', 'Customer prospect research - 2024-12-18',
   false, 'standard', 'unverified',
   '550e8400-e29b-41d4-a716-446655440008',
-  '["Computer programming, consultancy", "Information and communication"]'::jsonb,
   'small',
-  ARRAY['technology', 'ai', 'software', 'startup'],
-  0.72
+  0.72,
+  (SELECT id FROM ref_industry_codes WHERE code = '62' LIMIT 1),
+  (SELECT id FROM ref_regions WHERE code = 'TH-10' LIMIT 1)
 );
+
+-- Sample company_tags relationships
+INSERT INTO company_tags (company_id, tag_id, added_by) VALUES
+((SELECT id FROM companies WHERE name_en = 'Siam Commercial Bank PCL'), 
+ (SELECT id FROM ref_tags WHERE key = 'enterprise'), 
+ (SELECT id FROM users WHERE email = 'platform@albaly.com')),
+((SELECT id FROM companies WHERE name_en = 'CP Foods PCL'), 
+ (SELECT id FROM ref_tags WHERE key = 'enterprise'), 
+ (SELECT id FROM users WHERE email = 'platform@albaly.com')),
+((SELECT id FROM companies WHERE name_en = 'Bangkok Tech Startup Ltd'), 
+ (SELECT id FROM ref_tags WHERE key = 'startup'), 
+ (SELECT id FROM users WHERE email = 'admin@democustomer.com')),
+((SELECT id FROM companies WHERE name_en = 'Bangkok Tech Startup Ltd'), 
+ (SELECT id FROM ref_tags WHERE key = 'saas'), 
+ (SELECT id FROM users WHERE email = 'admin@democustomer.com')),
+((SELECT id FROM companies WHERE name_en = 'Local Bangkok Restaurant Chain'), 
+ (SELECT id FROM ref_tags WHERE key = 'high_priority'), 
+ (SELECT id FROM users WHERE email = 'admin@democustomer.com'));
 
 COMMIT;
 
@@ -778,6 +811,8 @@ COMMENT ON TABLE export_jobs IS 'Export job tracking with file metadata';
 COMMENT ON TABLE import_jobs IS 'Import job tracking with validation and error handling';
 
 COMMENT ON COLUMN companies.organization_id IS 'NULL for shared reference data (Albaly/DBD), UUID for customer-specific private data';
+COMMENT ON COLUMN companies.primary_industry_id IS 'Foreign key to ref_industry_codes table - primary industry classification for the company';
+COMMENT ON COLUMN companies.primary_region_id IS 'Foreign key to ref_regions table - primary region/province where the company operates';
 COMMENT ON COLUMN companies.data_source IS 'Source of company data: albaly_list, dbd_registry, customer_input, data_enrichment, third_party';
 COMMENT ON COLUMN companies.source_reference IS 'Reference to original data source for provenance tracking';
 COMMENT ON COLUMN companies.is_shared_data IS 'True for Albaly/DBD shared data, False for customer-specific private data';
@@ -785,6 +820,11 @@ COMMENT ON COLUMN companies.data_sensitivity IS 'Data sensitivity level for acce
 COMMENT ON COLUMN companies.search_vector IS 'Generated tsvector for full-text search';
 COMMENT ON COLUMN companies.embedding_vector IS 'ML embedding vector for semantic search';
 COMMENT ON COLUMN companies.data_quality_score IS 'Computed data quality score 0.0-1.0';
+
+COMMENT ON TABLE company_tags IS 'Many-to-many relationship between companies and tags';
+COMMENT ON COLUMN company_tags.company_id IS 'Foreign key to companies table';
+COMMENT ON COLUMN company_tags.tag_id IS 'Foreign key to ref_tags table';
+COMMENT ON COLUMN company_tags.added_by IS 'User who added this tag to the company';
 
 COMMENT ON INDEX idx_companies_organization IS 'Organization scoping for SaaS multi-tenancy';
 COMMENT ON INDEX idx_companies_org_source IS 'Combined organization and data source filtering';
