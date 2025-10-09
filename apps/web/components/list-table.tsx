@@ -72,9 +72,9 @@ export function ListTable({
     return (
       <div className="flex gap-1 mt-1 flex-wrap">
         {matches.length > 0 ? (
-          matches.slice(0, 3).map((match, index) => (
+          matches.slice(0, 3).map((match) => (
             <div
-              key={index}
+              key={match.label}
               className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-green-100 text-green-700"
             >
               <Check className="h-3 w-3" />

@@ -490,6 +490,17 @@ export class CompanySearchDto {
   industrial?: string;
 
   @ApiPropertyOptional({
+    description: 'Filter by province name',
+    example: 'Bangkok',
+    maxLength: 200,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  @Transform(({ value }) => value?.trim())
+  province?: string;
+
+  @ApiPropertyOptional({
     description: 'Filter by primary industry ID',
     example: '550e8400-e29b-41d4-a716-446655440001',
   })

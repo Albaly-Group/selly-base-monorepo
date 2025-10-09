@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Search, Target, Save, Plus, Trash2 } from "lucide-react"
@@ -144,9 +145,13 @@ export function SmartFilteringPanel({
   }, [isOpen])
 
   const updateCriteria = (key: keyof SmartFilteringCriteria, value: any) => {
+    // Convert empty string selections to undefined for proper filtering
+    // This ensures "Any Industry", "Any Province", etc. don't get sent to the backend
+    const normalizedValue = value === "" ? undefined : value;
+    
     setTempCriteria((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: normalizedValue,
     }))
   }
 
@@ -253,24 +258,20 @@ export function SmartFilteringPanel({
                 {/* Industry */}
                 <div className="space-y-3">
                   <Label>Industry</Label>
-                  <Select
+                  <Combobox
+                    options={[
+                      { value: "", label: "Any Industry" },
+                      ...industrialOptions.map((option) => ({
+                        value: option,
+                        label: option,
+                      })),
+                    ]}
                     value={tempCriteria.industrial || ""}
-                    onValueChange={(value) => updateCriteria("industrial", value === "any" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any Industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any Industry</SelectItem>
-                      {industrialOptions.map((option) => (
-                        <SelectItem key={option} value={option} >
-                          <div className="truncate max-w-[120px]">
-                            {option}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onValueChange={(value) => updateCriteria("industrial", value)}
+                    placeholder="Search industries..."
+                    searchPlaceholder="Search industries..."
+                    emptyText="No industry found."
+                  />
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.industrialWeight}%</Label>
                     <Slider
@@ -286,22 +287,20 @@ export function SmartFilteringPanel({
                 {/* Province */}
                 <div className="space-y-3">
                   <Label>Province</Label>
-                  <Select
+                  <Combobox
+                    options={[
+                      { value: "", label: "Any Province" },
+                      ...provinceOptions.map((option) => ({
+                        value: option,
+                        label: option,
+                      })),
+                    ]}
                     value={tempCriteria.province || ""}
-                    onValueChange={(value) => updateCriteria("province", value === "any" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any Province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any Province</SelectItem>
-                      {provinceOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onValueChange={(value) => updateCriteria("province", value)}
+                    placeholder="Search provinces..."
+                    searchPlaceholder="Search provinces..."
+                    emptyText="No province found."
+                  />
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.provinceWeight}%</Label>
                     <Slider
