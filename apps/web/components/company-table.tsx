@@ -58,12 +58,12 @@ export function CompanyTable({
         bValue = b.companyNameEn.toLowerCase()
         break
       case 'industry':
-        aValue = a.industrialName.toLowerCase()
-        bValue = b.industrialName.toLowerCase()
+        aValue = (a.industrialName || a.primaryIndustryId || '').toLowerCase()
+        bValue = (b.industrialName || b.primaryIndustryId || '').toLowerCase()
         break
       case 'province':
-        aValue = a.province.toLowerCase()
-        bValue = b.province.toLowerCase()
+        aValue = (a.province || a.primaryRegionId || '').toLowerCase()
+        bValue = (b.province || b.primaryRegionId || '').toLowerCase()
         break
       case 'status':
         aValue = a.verificationStatus.toLowerCase()
@@ -215,11 +215,19 @@ export function CompanyTable({
                 <TableCell>
                   {Array.isArray(company.industrialName) ? (
                     company.industrialName.join(', ')
-                  ) : (
+                  ) : company.industrialName ? (
                     company.industrialName
+                  ) : company.primaryIndustryId ? (
+                    <span className="text-xs text-gray-400">ID: {company.primaryIndustryId.substring(0, 8)}...</span>
+                  ) : (
+                    '-'
                   )}
                 </TableCell>
-                <TableCell>{company.province}</TableCell>
+                <TableCell>
+                  {company.province || (company.primaryRegionId ? (
+                    <span className="text-xs text-gray-400">ID: {company.primaryRegionId.substring(0, 8)}...</span>
+                  ) : '-')}
+                </TableCell>
                 <TableCell>
                   {company.contactPersons.length > 0 ? (
                     <div>

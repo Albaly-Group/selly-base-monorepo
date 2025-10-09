@@ -461,10 +461,24 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     Shared Reference Data
                   </Badge>
                 )}
-                <Badge variant="outline">
-                  {company.industrialName}
-                </Badge>
-                <Badge variant="outline">{company.province}</Badge>
+                {company.industrialName && (
+                  <Badge variant="outline">
+                    {company.industrialName}
+                  </Badge>
+                )}
+                {company.primaryIndustryId && (
+                  <Badge variant="outline">
+                    Industry ID: {company.primaryIndustryId.substring(0, 8)}...
+                  </Badge>
+                )}
+                {company.province && (
+                  <Badge variant="outline">{company.province}</Badge>
+                )}
+                {company.primaryRegionId && (
+                  <Badge variant="outline">
+                    Region ID: {company.primaryRegionId.substring(0, 8)}...
+                  </Badge>
+                )}
               </div>
               <DialogDescription>
                 <span>Registration ID: {company.registrationId}</span>
@@ -605,14 +619,26 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <Label className="text-sm font-medium text-gray-600">Address</Label>
                       <div className="mt-1">{companyDetails.address1}</div>
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">District</Label>
-                      <div className="mt-1">{companyDetails.district}</div>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-600">Province</Label>
-                      <div className="mt-1">{companyDetails.province}</div>
-                    </div>
+                    {companyDetails.primaryRegionId && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">Region</Label>
+                        <div className="mt-1 text-xs text-gray-500">
+                          ID: {companyDetails.primaryRegionId}
+                        </div>
+                      </div>
+                    )}
+                    {companyDetails.district && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">District</Label>
+                        <div className="mt-1">{companyDetails.district}</div>
+                      </div>
+                    )}
+                    {companyDetails.province && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">Province</Label>
+                        <div className="mt-1">{companyDetails.province}</div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-3">
                     {companyDetails.contactPersons?.[0]?.phone && (
