@@ -145,9 +145,13 @@ export function SmartFilteringPanel({
   }, [isOpen])
 
   const updateCriteria = (key: keyof SmartFilteringCriteria, value: any) => {
+    // Convert empty string selections to undefined for proper filtering
+    // This ensures "Any Industry", "Any Province", etc. don't get sent to the backend
+    const normalizedValue = value === "" ? undefined : value;
+    
     setTempCriteria((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: normalizedValue,
     }))
   }
 

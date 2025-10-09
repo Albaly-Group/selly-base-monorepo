@@ -97,9 +97,17 @@ export function LeadScoringPanel({ isActive, criteria, onApplyScoring, onClearSc
   }, [])
 
   const updateCriteria = (key: keyof FilterOptions, value: string | undefined) => {
+    // Filter out "Any" selections - they should be treated as undefined
+    const isAnySelection = value && (
+      value === "Any Industry" || 
+      value === "Any Province" || 
+      value === "Any Size" || 
+      value === "Any Status"
+    );
+    
     setTempCriteria((prev) => ({
       ...prev,
-      [key]: value || undefined,
+      [key]: (value && !isAnySelection) ? value : undefined,
     }))
   }
 
