@@ -125,7 +125,9 @@ export class CompaniesService {
       .leftJoinAndSelect('company.companyContacts', 'companyContacts')
       .leftJoinAndSelect('company.organization', 'organization')
       .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
-      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion');
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
+      .leftJoin('company.companyTags', 'companyTags')
+      .leftJoin('companyTags.tag', 'tag');
 
     // Multi-tenant filtering with enhanced security
     if (organizationId) {
@@ -166,7 +168,8 @@ export class CompaniesService {
           company.displayName ILIKE :searchTerm OR 
           company.businessDescription ILIKE :searchTerm OR
           company.primaryEmail ILIKE :searchTerm OR
-          :searchTerm = ANY(company.tags)
+          tag.key ILIKE :searchTerm OR
+          tag.name ILIKE :searchTerm
         )`,
         { searchTerm: `%${searchTerm}%` },
       );
