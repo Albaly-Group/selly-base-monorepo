@@ -6,6 +6,9 @@
 ## Solution Overview
 Converted the Next.js application from **Server-Side Rendering (SSR)** to **Client-Side Rendering (CSR)** by switching to static export mode.
 
+### Latest Fix (2025-01-09)
+Added postBuild command to copy `required-server-files.json` from `.next/` to `out/` directory. This file is required by AWS Amplify's build process even in static export mode. The fix ensures Amplify can complete the deployment without errors while maintaining the CSR/static export configuration.
+
 ## Changes Made
 
 ### 1. Next.js Configuration (`apps/web/next.config.mjs`)
@@ -30,7 +33,7 @@ Deleted `apps/web/app/api/` directory containing:
 ### 3. AWS Amplify Configuration Updates
 
 #### Root `amplify.yml`
-Updated the frontend configuration in the monorepo root amplify.yml with `baseDirectory: out`.
+Updated the frontend configuration in the monorepo root amplify.yml with `baseDirectory: out` and added postBuild step.
 
 **Before:**
 ```yaml
@@ -48,9 +51,16 @@ applications:
   - appRoot: apps/web
     frontend:
       # ... other config
+      postBuild:
+        commands:
+          # Copy required-server-files.json to output directory for AWS Amplify
+          - cp .next/required-server-files.json out/ || true
       artifacts:
         baseDirectory: out  # Static export output directory
 ```
+
+**Why the postBuild step?**
+AWS Amplify's build process detects Next.js and looks for `required-server-files.json` in the build output directory. Even in static export mode, Next.js generates this file in `.next/` but not in `out/`. Copying it to `out/` satisfies Amplify's check while maintaining CSR deployment.
 
 #### Removed App-Specific Configuration Files
 Deleted redundant `apps/web/amplify.yml` and `apps/api/amplify.yml` files. When using a monorepo structure with the root `amplify.yml` that defines `applications` with `appRoot`, AWS Amplify uses only the root configuration file. The app-specific files were not being read and caused potential confusion.
