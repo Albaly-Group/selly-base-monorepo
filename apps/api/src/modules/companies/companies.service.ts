@@ -750,7 +750,7 @@ export class CompaniesService {
     checkField(combinedData.primaryEmail, 0.1);
     checkField(combinedData.primaryPhone, 0.1);
     checkField(combinedData.addressLine1, 0.1);
-    checkField(combinedData.province, 0.05);
+    checkField(combinedData.primaryRegionId, 0.05);
     checkField(combinedData.primaryRegistrationNo, 0.15);
     checkField(combinedData.tags && combinedData.tags.length > 0, 0.05);
 

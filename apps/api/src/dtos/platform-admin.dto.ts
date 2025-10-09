@@ -383,39 +383,6 @@ export class UpdateSharedCompanyDto {
   addressLine2?: string;
 
   @ApiPropertyOptional({
-    description: 'District',
-    example: 'Watthana',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  district?: string;
-
-  @ApiPropertyOptional({
-    description: 'Sub-district',
-    example: 'Khlong Toei Nuea',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  subdistrict?: string;
-
-  @ApiPropertyOptional({
-    description: 'Province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -427,18 +394,12 @@ export class UpdateSharedCompanyDto {
   postalCode?: string;
 
   @ApiPropertyOptional({
-    description: 'Country code (ISO 3166-1 alpha-2)',
-    example: 'TH',
+    description: 'Primary region ID (foreign key to ref_regions table)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(2)
-  @MinLength(2)
-  @Matches(/^[A-Z]{2}$/, {
-    message: 'Country code must be 2 uppercase letters',
-  })
-  @Transform(({ value }) => value?.toUpperCase())
-  countryCode?: string;
+  @IsUUID()
+  primaryRegionId?: string;
 
   @ApiPropertyOptional({
     description: 'Company size category',
