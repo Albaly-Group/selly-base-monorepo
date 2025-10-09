@@ -11,6 +11,24 @@ The monorepo contains two separate applications that can be deployed to AWS Ampl
 
 Both applications are configured with `amplify.yml` build specifications and optimized Turbo build commands.
 
+## Monorepo Configuration
+
+This repository uses a **root-level `amplify.yml`** that defines the monorepo structure with an `applications` array. This configuration is required for AWS Amplify to properly detect and build applications in a monorepo structure.
+
+**Root amplify.yml structure:**
+```yaml
+version: 1
+applications:
+  - appRoot: apps/web
+    frontend:
+      # Frontend build configuration
+  - appRoot: apps/api
+    backend:
+      # Backend build configuration
+```
+
+AWS Amplify will automatically detect this configuration and allow you to deploy both applications from the same repository. Each application can be deployed independently with its own environment variables and settings.
+
 ## Prerequisites
 
 - AWS Account with Amplify access
