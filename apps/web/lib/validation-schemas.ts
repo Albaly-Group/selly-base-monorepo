@@ -64,35 +64,20 @@ export const createCompanySchema = z.object({
     .transform((val) => val.trim())
     .optional()
     .or(z.literal('')),
-  district: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
-  subdistrict: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
-  province: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
   postalCode: z
     .string()
     .max(20)
     .regex(/^[0-9]*$/, 'Postal code must contain only numbers')
     .optional()
     .or(z.literal('')),
-  countryCode: z
+  primaryIndustryId: z
     .string()
-    .length(2, 'Country code must be 2 characters')
-    .regex(/^[A-Z]{2}$/, 'Country code must be 2 uppercase letters')
-    .transform((val) => val?.toUpperCase())
+    .uuid(VALIDATION_MESSAGES.UUID_INVALID)
+    .optional()
+    .or(z.literal('')),
+  primaryRegionId: z
+    .string()
+    .uuid(VALIDATION_MESSAGES.UUID_INVALID)
     .optional()
     .or(z.literal('')),
   companySize: z
@@ -167,35 +152,20 @@ export const updateCompanySchema = z.object({
     .transform((val) => val.trim())
     .optional()
     .or(z.literal('')),
-  district: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
-  subdistrict: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
-  province: z
-    .string()
-    .max(100)
-    .transform((val) => val.trim())
-    .optional()
-    .or(z.literal('')),
   postalCode: z
     .string()
     .max(20)
     .regex(/^[0-9]*$/, 'Postal code must contain only numbers')
     .optional()
     .or(z.literal('')),
-  countryCode: z
+  primaryIndustryId: z
     .string()
-    .length(2, 'Country code must be 2 characters')
-    .regex(/^[A-Z]{2}$/, 'Country code must be 2 uppercase letters')
-    .transform((val) => val?.toUpperCase())
+    .uuid(VALIDATION_MESSAGES.UUID_INVALID)
+    .optional()
+    .or(z.literal('')),
+  primaryRegionId: z
+    .string()
+    .uuid(VALIDATION_MESSAGES.UUID_INVALID)
     .optional()
     .or(z.literal('')),
   companySize: z

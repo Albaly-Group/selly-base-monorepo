@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,11 +34,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
     businessDescription: "",
     addressLine1: "",
     addressLine2: "",
-    district: "",
-    subdistrict: "",
-    province: "",
     postalCode: "",
-    countryCode: "TH",
+    primaryIndustryId: "",
+    primaryRegionId: "",
     websiteUrl: "",
     primaryEmail: "",
     primaryPhone: "",
@@ -46,6 +44,8 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
     employeeCountEstimate: undefined as number | undefined,
     dataSensitivity: "standard",
   })
+  const [industries, setIndustries] = useState<Array<{ id: string; title_en: string; title_th: string | null }>>([])
+  const [regions, setRegions] = useState<Array<{ id: string; name_en: string; name_th: string | null }>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -59,11 +59,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       businessDescription: "",
       addressLine1: "",
       addressLine2: "",
-      district: "",
-      subdistrict: "",
-      province: "",
       postalCode: "",
-      countryCode: "TH",
+      primaryIndustryId: "",
+      primaryRegionId: "",
       websiteUrl: "",
       primaryEmail: "",
       primaryPhone: "",
@@ -81,6 +79,26 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
     }
     onOpenChange(newOpen)
   }
+
+  // Load reference data when dialog opens
+  useEffect(() => {
+    if (open) {
+      const loadReferenceData = async () => {
+        try {
+          const [industriesData, regionsData] = await Promise.all([
+            apiClient.getIndustries({ active: true }),
+            apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }),
+          ])
+          setIndustries(industriesData.data || [])
+          setRegions(regionsData.data || [])
+        } catch (err) {
+          console.error('Failed to load reference data:', err)
+        }
+      }
+      loadReferenceData()
+    }
+  }, [open])
+
 
   const handleSubmit = async () => {
     // Validate all fields using Zod schema
@@ -105,11 +123,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
       if (formData.businessDescription.trim()) createData.businessDescription = formData.businessDescription.trim()
       if (formData.addressLine1.trim()) createData.addressLine1 = formData.addressLine1.trim()
       if (formData.addressLine2.trim()) createData.addressLine2 = formData.addressLine2.trim()
-      if (formData.district.trim()) createData.district = formData.district.trim()
-      if (formData.subdistrict.trim()) createData.subdistrict = formData.subdistrict.trim()
-      if (formData.province.trim()) createData.province = formData.province.trim()
       if (formData.postalCode.trim()) createData.postalCode = formData.postalCode.trim()
-      if (formData.countryCode.trim()) createData.countryCode = formData.countryCode.trim()
+      if (formData.primaryIndustryId.trim()) createData.primaryIndustryId = formData.primaryIndustryId.trim()
+      if (formData.primaryRegionId.trim()) createData.primaryRegionId = formData.primaryRegionId.trim()
       if (formData.websiteUrl.trim()) createData.websiteUrl = formData.websiteUrl.trim()
       if (formData.primaryEmail.trim()) createData.primaryEmail = formData.primaryEmail.trim()
       if (formData.primaryPhone.trim()) createData.primaryPhone = formData.primaryPhone.trim()
@@ -299,38 +315,23 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="district" className="text-sm font-medium">District</Label>
-                <Input
-                  id="district"
-                  value={formData.district}
-                  onChange={(e) => updateField("district", e.target.value)}
-                  placeholder="Watthana"
+                <Label htmlFor="primaryRegionId" className="text-sm font-medium">Region</Label>
+                <Select 
+                  value={formData.primaryRegionId} 
+                  onValueChange={(value) => updateField("primaryRegionId", value)}
                   disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="subdistrict" className="text-sm font-medium">Sub-district</Label>
-                <Input
-                  id="subdistrict"
-                  value={formData.subdistrict}
-                  onChange={(e) => updateField("subdistrict", e.target.value)}
-                  placeholder="Khlong Toei Nuea"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="province" className="text-sm font-medium">Province</Label>
-                <Input
-                  id="province"
-                  value={formData.province}
-                  onChange={(e) => updateField("province", e.target.value)}
-                  placeholder="Bangkok"
-                  disabled={isLoading}
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select region..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {regions.map((region) => (
+                      <SelectItem key={region.id} value={region.id}>
+                        {region.name_en} {region.name_th && `(${region.name_th})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -343,24 +344,32 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   disabled={isLoading}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="countryCode" className="text-sm font-medium">Country</Label>
-                <Input
-                  id="countryCode"
-                  value={formData.countryCode}
-                  onChange={(e) => updateField("countryCode", e.target.value)}
-                  maxLength={2}
-                  placeholder="TH"
-                  disabled={isLoading}
-                />
-              </div>
             </div>
           </div>
 
           {/* Company Details */}
           <div className="space-y-4">
             <h3 className="text-base font-medium text-gray-900">Company Details</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="primaryIndustryId" className="text-sm font-medium">Industry</Label>
+              <Select 
+                value={formData.primaryIndustryId} 
+                onValueChange={(value) => updateField("primaryIndustryId", value)}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry.id} value={industry.id}>
+                      {industry.title_en} {industry.title_th && `(${industry.title_th})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

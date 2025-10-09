@@ -1,5 +1,30 @@
 // Company and business entities types
 
+// Reference data types
+export interface IndustryCode {
+  id: string
+  code: string
+  title_en: string
+  title_th?: string | null
+  description?: string | null
+  classification_system: string
+  level: number
+  is_active?: boolean | null
+  effective_date?: string | null
+  end_date?: string | null
+}
+
+export interface Region {
+  id: string
+  code: string
+  name_en: string
+  name_th?: string | null
+  region_type: 'country' | 'province' | 'district' | 'subdistrict'
+  country_code: string
+  parent_region_id?: string | null
+  is_active?: boolean | null
+}
+
 // Core entity types matching DB schema v2.0
 export interface CompanyCore {
   id: string
@@ -12,10 +37,11 @@ export interface CompanyCore {
   dunsNumber?: string | null
   addressLine1?: string | null
   addressLine2?: string | null
-  district?: string | null
-  subdistrict?: string | null
-  provinceDetected?: string | null
-  countryCode?: string | null
+  postalCode?: string | null
+  primaryIndustryId?: string | null
+  primaryRegionId?: string | null
+  primaryIndustry?: IndustryCode | null
+  primaryRegion?: Region | null
   businessDescription?: string | null
   establishedDate?: string | null
   employeeCountEstimate?: number | null
@@ -150,8 +176,8 @@ export interface LeadScore {
 
 // Filter and search types
 export interface FilterOptions {
-  industrial?: string
-  province?: string
+  primaryIndustryId?: string
+  primaryRegionId?: string
   companySize?: 'micro' | 'small' | 'medium' | 'large' | 'enterprise'
   contactStatus?: "Active" | "Needs Verification" | "Invalid"
   dataSensitivity?: 'public' | 'standard' | 'confidential' | 'restricted'

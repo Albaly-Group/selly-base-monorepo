@@ -123,7 +123,9 @@ export class CompaniesService {
     const query = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.companyContacts', 'companyContacts')
-      .leftJoinAndSelect('company.organization', 'organization');
+      .leftJoinAndSelect('company.organization', 'organization')
+      .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion');
 
     // Multi-tenant filtering with enhanced security
     if (organizationId) {
@@ -283,6 +285,8 @@ export class CompaniesService {
     const query = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.organization', 'organization')
+      .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
       .where('company.id = :id', { id });
 
     if (organizationId) {
@@ -378,6 +382,12 @@ export class CompaniesService {
       const company = this.companyRepository.create(cleanedData);
       const savedCompany = await this.companyRepository.save(company);
 
+      // Reload with relations to include primaryIndustry and primaryRegion
+      const companyWithRelations = await this.companyRepository.findOne({
+        where: { id: savedCompany.id },
+        relations: ['primaryIndustry', 'primaryRegion'],
+      });
+
       // Log creation
       if (this.auditService) {
         await this.auditService.logCompanyOperation(
@@ -393,9 +403,9 @@ export class CompaniesService {
 
       // Transform response to match DTO field names
       return {
-        ...savedCompany,
-        companyNameEn: savedCompany.nameEn,
-        companyNameTh: savedCompany.nameTh,
+        ...companyWithRelations,
+        companyNameEn: companyWithRelations.nameEn,
+        companyNameTh: companyWithRelations.nameTh,
       };
     } catch (error) {
       // Log error
@@ -550,6 +560,7 @@ export class CompaniesService {
       await this.companyRepository.update(id, updateData);
       const savedCompany = await this.companyRepository.findOne({
         where: { id },
+        relations: ['primaryIndustry', 'primaryRegion'],
       });
 
       // Log update
@@ -666,6 +677,8 @@ export class CompaniesService {
         // Note: contacts relation not yet defined in entity
         // .leftJoinAndSelect('company.contacts', 'contacts')
         .leftJoinAndSelect('company.organization', 'organization')
+        .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+        .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
         .where('company.id IN (:...ids)', { ids });
 
       // Apply multi-tenant filtering
