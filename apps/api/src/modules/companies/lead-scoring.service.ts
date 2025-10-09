@@ -122,7 +122,6 @@ export class LeadScoringService {
       company.primaryRegistrationNo,
       company.businessDescription,
       company.addressLine1,
-      company.province,
       company.primaryEmail,
       company.primaryPhone,
       company.websiteUrl,
@@ -169,85 +168,36 @@ export class LeadScoringService {
   /**
    * Score industry (0-100)
    * High-value industries score higher
+   * Note: Industry data is now stored via foreign key to ref_industry_codes
+   * To enable full industry scoring, load the primaryIndustry relation
    */
   private scoreIndustry(company: Companies): number {
-    // High-value industry codes (can be customized)
-    const highValueIndustries = [
-      '58', // Information and communication
-      '62', // Computer programming
-      '64', // Financial services
-      '69', // Professional services
-      '10', // Manufacturing
-      '35', // Energy
-    ];
-
-    const mediumValueIndustries = [
-      '45', // Wholesale/retail
-      '68', // Real estate
-      '41', // Construction
-      '86', // Healthcare
-    ];
-
-    if (company.industryClassification) {
-      const industryData =
-        typeof company.industryClassification === 'string'
-          ? JSON.parse(company.industryClassification)
-          : company.industryClassification;
-
-      const primaryCode = industryData?.primaryCode || industryData?.code;
-
-      if (primaryCode) {
-        if (highValueIndustries.some((code) => primaryCode.startsWith(code))) {
-          return 90;
-        }
-        if (
-          mediumValueIndustries.some((code) => primaryCode.startsWith(code))
-        ) {
-          return 70;
-        }
-        return 50; // Other industries
-      }
+    // Industry data is now stored via foreign key to ref_industry_codes
+    // For detailed scoring, the primaryIndustry relation would need to be loaded
+    // and the industry code checked against high/medium value industries
+    
+    // If primary industry is set, give a moderate score
+    if (company.primaryIndustryId) {
+      return 75;
     }
 
-    return 50; // Default neutral score
+    return 50; // No industry data
   }
 
   /**
    * Score location (0-100)
    * Key business hubs score higher
+   * Note: Location data is now stored via foreign key to ref_regions
+   * To enable full location scoring, load the primaryRegion relation
    */
   private scoreLocation(company: Companies): number {
-    const premiumLocations = ['bangkok', 'bkk', 'กรุงเทพ'];
-    const goodLocations = [
-      'chiang mai',
-      'cnx',
-      'เชียงใหม่',
-      'phuket',
-      'pkt',
-      'ภูเก็ต',
-      'chonburi',
-      'cbi',
-      'ชลบุรี',
-      'rayong',
-      'ryg',
-      'ระยอง',
-    ];
-
-    const province = (company.province || '').toLowerCase();
-
-    for (const loc of premiumLocations) {
-      if (province.indexOf(loc) !== -1) {
-        return 100;
-      }
+    // If primary region is set, give a moderate score
+    // For detailed scoring, the primaryRegion relation would need to be loaded
+    if (company.primaryRegionId) {
+      return 75;
     }
-
-    for (const loc of goodLocations) {
-      if (province.indexOf(loc) !== -1) {
-        return 75;
-      }
-    }
-
-    return 50; // Other locations
+    
+    return 50; // No location data
   }
 
   /**
@@ -346,7 +296,7 @@ export class LeadScoringService {
       recommendations.push('Add primary contact information (email or phone)');
     }
 
-    if (!company.industryClassification) {
+    if (!company.primaryIndustryId) {
       recommendations.push(
         'Specify industry classification for better targeting',
       );

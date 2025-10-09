@@ -626,6 +626,73 @@ class ApiClient {
     return this.get<{ data: any[] }>('/api/v1/reference-data/contact-statuses');
   }
 
+  async getTags(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/tags', params);
+  }
+
+  // Industry Codes CRUD
+  async createIndustryCode(data: any): Promise<any> {
+    return this.post<any>('/api/v1/reference-data/industry-codes', data);
+  }
+
+  async getIndustryCodesHierarchical(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/industry-codes/hierarchical', params);
+  }
+
+  async getIndustryCodeById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/reference-data/industry-codes/${id}`);
+  }
+
+  async updateIndustryCode(id: string, data: any): Promise<any> {
+    return this.put<any>(`/api/v1/reference-data/industry-codes/${id}`, data);
+  }
+
+  async deleteIndustryCode(id: string): Promise<{ message: string }> {
+    return this.delete<{ message: string }>(`/api/v1/reference-data/industry-codes/${id}`);
+  }
+
+  // Regions CRUD
+  async createRegion(data: any): Promise<any> {
+    return this.post<any>('/api/v1/reference-data/regions', data);
+  }
+
+  async getRegionsHierarchical(params?: { active?: boolean; countryCode?: string }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/regions/hierarchical', params);
+  }
+
+  async getRegionById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/reference-data/regions/${id}`);
+  }
+
+  async updateRegion(id: string, data: any): Promise<any> {
+    return this.put<any>(`/api/v1/reference-data/regions/${id}`, data);
+  }
+
+  async deleteRegion(id: string): Promise<{ message: string }> {
+    return this.delete<{ message: string }>(`/api/v1/reference-data/regions/${id}`);
+  }
+
+  // Tags CRUD
+  async createTag(data: any): Promise<any> {
+    return this.post<any>('/api/v1/reference-data/tags', data);
+  }
+
+  async getTagsHierarchical(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/tags/hierarchical', params);
+  }
+
+  async getTagById(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/reference-data/tags/${id}`);
+  }
+
+  async updateTag(id: string, data: any): Promise<any> {
+    return this.put<any>(`/api/v1/reference-data/tags/${id}`, data);
+  }
+
+  async deleteTag(id: string): Promise<{ message: string }> {
+    return this.delete<{ message: string }>(`/api/v1/reference-data/tags/${id}`);
+  }
+
   // Company Contacts endpoints
   async getCompanyContacts(companyId?: string): Promise<{ data: any[] }> {
     return this.get<{ data: any[] }>('/api/v1/company-contacts', companyId ? { companyId } : undefined);

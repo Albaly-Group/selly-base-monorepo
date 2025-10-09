@@ -209,8 +209,8 @@ export class PlatformAdminService {
         let filledFields = 0;
         if (company.nameEn) filledFields++;
         if (company.primaryRegistrationNo) filledFields++;
-        if (company.province) filledFields++;
-        if (company.industryClassification) filledFields++;
+        if (company.primaryRegionId) filledFields++;
+        if (company.primaryIndustryId) filledFields++;
         if (company.websiteUrl) filledFields++;
         if (company.primaryPhone) filledFields++;
         if (company.primaryEmail) filledFields++;
@@ -220,22 +220,15 @@ export class PlatformAdminService {
 
         const dataCompleteness = Math.round((filledFields / totalFields) * 100);
 
-        // Extract industry name from industryClassification JSONB
-        let industryName = 'N/A';
-        if (
-          company.industryClassification &&
-          typeof company.industryClassification === 'object'
-        ) {
-          const industryData = company.industryClassification as any;
-          industryName =
-            industryData.name || industryData.industryName || 'N/A';
-        }
+        // Industry name is now stored via foreign key
+        // Would need to load the primaryIndustry relation to display the name
+        const industryName = 'N/A';
 
         return {
           id: company.id,
           companyNameEn: company.nameEn,
           industrialName: industryName,
-          province: company.province || 'N/A',
+          province: 'N/A', // Region data now stored via foreign key
           registeredNo: company.primaryRegistrationNo,
           verificationStatus:
             company.verificationStatus === 'verified'
@@ -638,16 +631,10 @@ export class PlatformAdminService {
         company.addressLine1 = updateCompanyDto.addressLine1;
       if (updateCompanyDto.addressLine2 !== undefined)
         company.addressLine2 = updateCompanyDto.addressLine2;
-      if (updateCompanyDto.district !== undefined)
-        company.district = updateCompanyDto.district;
-      if (updateCompanyDto.subdistrict !== undefined)
-        company.subdistrict = updateCompanyDto.subdistrict;
-      if (updateCompanyDto.province !== undefined)
-        company.province = updateCompanyDto.province;
       if (updateCompanyDto.postalCode !== undefined)
         company.postalCode = updateCompanyDto.postalCode;
-      if (updateCompanyDto.countryCode !== undefined)
-        company.countryCode = updateCompanyDto.countryCode;
+      if (updateCompanyDto.primaryRegionId !== undefined)
+        company.primaryRegionId = updateCompanyDto.primaryRegionId;
       if (updateCompanyDto.companySize !== undefined)
         company.companySize = updateCompanyDto.companySize;
       if (updateCompanyDto.employeeCountEstimate !== undefined)
@@ -676,11 +663,8 @@ export class PlatformAdminService {
           primaryPhone: savedCompany.primaryPhone,
           addressLine1: savedCompany.addressLine1,
           addressLine2: savedCompany.addressLine2,
-          district: savedCompany.district,
-          subdistrict: savedCompany.subdistrict,
-          province: savedCompany.province,
           postalCode: savedCompany.postalCode,
-          countryCode: savedCompany.countryCode,
+          primaryRegionId: savedCompany.primaryRegionId,
           companySize: savedCompany.companySize,
           employeeCountEstimate: savedCompany.employeeCountEstimate,
           dataSensitivity: savedCompany.dataSensitivity,

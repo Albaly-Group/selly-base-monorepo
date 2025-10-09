@@ -98,11 +98,12 @@ CREATE TABLE ref_industry_codes (
   description TEXT,
   classification_system TEXT NOT NULL,
   level INTEGER NOT NULL,
-  parent_code TEXT,
+  parent_id UUID REFERENCES ref_industry_codes(id),
   is_active BOOLEAN DEFAULT true,
   effective_date DATE,
   end_date DATE,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(code, classification_system)
 );
 
@@ -116,6 +117,7 @@ CREATE TABLE ref_regions (
   parent_region_id UUID REFERENCES ref_regions(id),
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(code, country_code, region_type)
 );
 
