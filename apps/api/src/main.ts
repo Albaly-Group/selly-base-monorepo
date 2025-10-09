@@ -31,6 +31,7 @@ async function bootstrap() {
       'http://localhost:3001',
       /\.vercel\.app$/,
       /\.albaly\.jp$/,
+      /\.amplifyapp\.com$/,
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [

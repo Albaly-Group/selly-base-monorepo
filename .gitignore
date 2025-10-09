@@ -32,6 +32,7 @@ e2e-test-logs/
 .env*
 !.env.example
 !.env.test
+!.env.amplify.example
 
 # vercel
 .vercel
