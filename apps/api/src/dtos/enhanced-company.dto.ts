@@ -187,17 +187,6 @@ export class CreateCompanyDto {
   subdistrict?: string;
 
   @ApiPropertyOptional({
-    description: 'Province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -243,21 +232,6 @@ export class CreateCompanyDto {
   @Min(1, { message: 'Employee count must be at least 1' })
   @Max(1000000, { message: 'Employee count must not exceed 1,000,000' })
   employeeCountEstimate?: number;
-
-  @ApiPropertyOptional({
-    description: 'Company tags for categorization',
-    example: ['technology', 'software', 'digital'],
-    type: [String],
-    maxItems: 20,
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
-  @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) =>
-    value?.map((tag: string) => tag.trim().toLowerCase()),
-  )
-  tags?: string[];
 
   @ApiPropertyOptional({
     description: 'Data sensitivity level',
@@ -409,17 +383,6 @@ export class UpdateCompanyDto {
   subdistrict?: string;
 
   @ApiPropertyOptional({
-    description: 'Province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Postal code',
     example: '10110',
     maxLength: 20,
@@ -462,21 +425,6 @@ export class UpdateCompanyDto {
   @Min(1, { message: 'Employee count must be at least 1' })
   @Max(1000000, { message: 'Employee count must not exceed 1,000,000' })
   employeeCountEstimate?: number;
-
-  @ApiPropertyOptional({
-    description: 'Company tags for categorization',
-    example: ['technology', 'software', 'digital'],
-    type: [String],
-    maxItems: 20,
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(20, { message: 'Maximum 20 tags are allowed' })
-  @IsString({ each: true, message: 'Each tag must be a string' })
-  @Transform(({ value }) =>
-    value?.map((tag: string) => tag.trim().toLowerCase()),
-  )
-  tags?: string[];
 
   @ApiPropertyOptional({
     description: 'Data sensitivity level',
@@ -615,17 +563,6 @@ export class CompanySearchDto {
   industrial?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter by province',
-    example: 'Bangkok',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  @Transform(({ value }) => value?.trim())
-  province?: string;
-
-  @ApiPropertyOptional({
     description: 'Filter by country code',
     example: 'TH',
     maxLength: 2,
@@ -636,17 +573,6 @@ export class CompanySearchDto {
   @MinLength(2)
   @Transform(({ value }) => value?.toUpperCase())
   countryCode?: string;
-
-  @ApiPropertyOptional({
-    description: 'Filter by tags (array of strings)',
-    example: ['technology', 'software'],
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @ArrayMaxSize(10, { message: 'Maximum 10 tags are allowed for filtering' })
-  tags?: string[];
 
   @ApiPropertyOptional({
     description: 'Filter by primary industry ID',

@@ -69,7 +69,8 @@ export class CompaniesService {
                 dataSource: searchDto.dataSource,
                 verificationStatus: searchDto.verificationStatus,
                 companySize: searchDto.companySize,
-                province: searchDto.province,
+                primaryIndustryId: searchDto.primaryIndustryId,
+                primaryRegionId: searchDto.primaryRegionId,
               },
               executionTime: Date.now() - startTime,
               page: searchDto.page,
@@ -115,9 +116,9 @@ export class CompaniesService {
       verificationStatus,
       companySize,
       industrial,
-      province,
       countryCode,
-      tags,
+      primaryIndustryId,
+      primaryRegionId,
     } = searchDto;
 
     const query = this.companyRepository
@@ -192,24 +193,26 @@ export class CompaniesService {
     }
 
     if (industrial) {
-      // Search in JSONB array for industry classification
+      // Search in JSONB array for industry classification (legacy support)
       query.andWhere(`company.industryClassification::text ILIKE :industrial`, {
         industrial: `%${industrial}%`,
       });
     }
 
-    if (province) {
-      query.andWhere('company.province ILIKE :province', {
-        province: `%${province}%`,
+    if (primaryIndustryId) {
+      query.andWhere('company.primaryIndustryId = :primaryIndustryId', {
+        primaryIndustryId,
+      });
+    }
+
+    if (primaryRegionId) {
+      query.andWhere('company.primaryRegionId = :primaryRegionId', {
+        primaryRegionId,
       });
     }
 
     if (countryCode) {
       query.andWhere('company.countryCode = :countryCode', { countryCode });
-    }
-
-    if (tags && tags.length > 0) {
-      query.andWhere('company.tags && :tags', { tags });
     }
 
     // Enhanced pagination with validation
@@ -344,12 +347,10 @@ export class CompaniesService {
         addressLine2: createDto.addressLine2 || null,
         district: createDto.district || null,
         subdistrict: createDto.subdistrict || null,
-        province: createDto.province || null,
         postalCode: createDto.postalCode || null,
         countryCode: createDto.countryCode || 'TH',
         companySize: createDto.companySize || 'small',
         employeeCountEstimate: createDto.employeeCountEstimate || null,
-        tags: createDto.tags || [],
         primaryIndustryId: createDto.primaryIndustryId || null,
         primaryRegionId: createDto.primaryRegionId || null,
         dataSensitivity: createDto.dataSensitivity || 'standard',
@@ -378,7 +379,6 @@ export class CompaniesService {
         addressLine2: companyData.addressLine2 || undefined,
         district: companyData.district || undefined,
         subdistrict: companyData.subdistrict || undefined,
-        province: companyData.province || undefined,
         postalCode: companyData.postalCode || undefined,
         employeeCountEstimate: companyData.employeeCountEstimate || undefined,
         primaryIndustryId: companyData.primaryIndustryId || undefined,
@@ -523,10 +523,6 @@ export class CompaniesService {
           updateDto.subdistrict !== undefined
             ? updateDto.subdistrict
             : existingCompany.subdistrict,
-        province:
-          updateDto.province !== undefined
-            ? updateDto.province
-            : existingCompany.province,
         postalCode:
           updateDto.postalCode !== undefined
             ? updateDto.postalCode
@@ -543,8 +539,6 @@ export class CompaniesService {
           updateDto.employeeCountEstimate !== undefined
             ? updateDto.employeeCountEstimate
             : existingCompany.employeeCountEstimate,
-        tags:
-          updateDto.tags !== undefined ? updateDto.tags : existingCompany.tags,
         primaryIndustryId:
           updateDto.primaryIndustryId !== undefined
             ? updateDto.primaryIndustryId

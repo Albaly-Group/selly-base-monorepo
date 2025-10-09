@@ -22,7 +22,6 @@ import { CompanyTags } from './CompanyTags';
 @Index('idx_companies_name_trgm', ['nameEn'], {})
 @Index('idx_companies_organization', ['organizationId'], {})
 @Index('idx_companies_registration_no', ['primaryRegistrationNo'], {})
-@Index('idx_companies_province', ['province'], {})
 @Index('idx_companies_search_vector', ['searchVector'], {})
 @Index('idx_companies_verification', ['verificationStatus'], {})
 @Index('idx_companies_primary_industry', ['primaryIndustryId'], {})
@@ -75,9 +74,6 @@ export class Companies {
 
   @Column('text', { name: 'subdistrict', nullable: true })
   subdistrict: string | null;
-
-  @Column('text', { name: 'province', nullable: true })
-  province: string | null;
 
   @Column('text', { name: 'postal_code', nullable: true })
   postalCode: string | null;
@@ -155,21 +151,6 @@ export class Companies {
 
   @Column('uuid', { name: 'primary_region_id', nullable: true })
   primaryRegionId: string | null;
-
-  @Column('jsonb', {
-    name: 'industry_classification',
-    nullable: true,
-    default: {},
-  })
-  industryClassification: object | null;
-
-  @Column('text', {
-    name: 'tags',
-    nullable: true,
-    array: true,
-    default: () => "'{}'[]",
-  })
-  tags: string[] | null;
 
   @Column('tsvector', { name: 'search_vector', nullable: true })
   searchVector: string | null;

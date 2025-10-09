@@ -82,15 +82,6 @@ export class CreateCompanyDto {
   addressLine1?: string;
 
   @ApiProperty({
-    description: 'Province (optional)',
-    example: 'Bangkok',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  province?: string;
-
-  @ApiProperty({
     description: 'Country code (optional)',
     example: 'TH',
     required: false,
@@ -98,15 +89,6 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-
-  @ApiProperty({
-    description: 'Company tags (optional)',
-    example: ['technology', 'software', 'digital'],
-    required: false,
-    type: [String],
-  })
-  @IsOptional()
-  tags?: string[];
 
   @ApiProperty({
     description: 'Primary industry ID (foreign key to ref_industry_codes)',
@@ -192,15 +174,6 @@ export class UpdateCompanyDto {
   addressLine1?: string;
 
   @ApiProperty({
-    description: 'Province (optional)',
-    example: 'Bangkok',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  province?: string;
-
-  @ApiProperty({
     description: 'Country code (optional)',
     example: 'TH',
     required: false,
@@ -208,15 +181,6 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-
-  @ApiProperty({
-    description: 'Company tags (optional)',
-    example: ['technology', 'software', 'digital'],
-    required: false,
-    type: [String],
-  })
-  @IsOptional()
-  tags?: string[];
 
   @ApiProperty({
     description: 'Verification status (optional)',
