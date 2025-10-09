@@ -69,6 +69,8 @@ export class CompaniesService {
                 dataSource: searchDto.dataSource,
                 verificationStatus: searchDto.verificationStatus,
                 companySize: searchDto.companySize,
+                industrial: searchDto.industrial,
+                province: searchDto.province,
                 primaryIndustryId: searchDto.primaryIndustryId,
                 primaryRegionId: searchDto.primaryRegionId,
               },
@@ -116,6 +118,7 @@ export class CompaniesService {
       verificationStatus,
       companySize,
       industrial,
+      province,
       primaryIndustryId,
       primaryRegionId,
     } = searchDto;
@@ -210,6 +213,16 @@ export class CompaniesService {
       query.andWhere('company.primaryIndustryId = :primaryIndustryId', {
         primaryIndustryId,
       });
+    }
+
+    if (province) {
+      // Search in province via the primaryRegion relation
+      query.andWhere(
+        '(primaryRegion.nameEn ILIKE :province OR primaryRegion.nameTh ILIKE :province)',
+        {
+          province: `%${province}%`,
+        },
+      );
     }
 
     if (primaryRegionId) {
