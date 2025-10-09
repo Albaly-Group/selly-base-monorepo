@@ -1,6 +1,10 @@
 # AWS Amplify baseDirectory Fix for Monorepo
 
-## Problem
+## Update (Latest)
+
+**Next.js Standalone Mode Added**: The frontend is now configured with `output: 'standalone'` in next.config.mjs, which is required for AWS Amplify to properly host the Next.js SSR application. The baseDirectory has been updated to `.next/standalone` to point to the standalone build artifacts.
+
+## Problem (Original)
 
 AWS Amplify deployment was failing with the error:
 ```
@@ -27,25 +31,26 @@ AWS Amplify interprets this as:
 - `baseDirectory` = `apps/web/.next` (relative to appRoot)
 - Actual path searched: `apps/web/apps/web/.next` ❌ (does not exist)
 
-### Correct Configuration
+### Correct Configuration (Current)
 ```yaml
 applications:
   - appRoot: apps/web
     frontend:
       artifacts:
-        baseDirectory: .next  # ✅ CORRECT - Relative to appRoot (apps/web)
+        baseDirectory: .next/standalone  # ✅ CORRECT - Relative to appRoot, using standalone mode
 ```
 
 AWS Amplify interprets this as:
 - `appRoot` = `apps/web` (sets the app root context)
-- `baseDirectory` = `.next` (relative to appRoot)
-- Actual path searched: `apps/web/.next` ✅ (exists after build)
+- `baseDirectory` = `.next/standalone` (relative to appRoot)
+- Actual path searched: `apps/web/.next/standalone` ✅ (exists after build with standalone mode)
 
 ## Changes Made
 
 ### 1. Root amplify.yml
 **Frontend artifacts:**
-- Changed `baseDirectory: apps/web/.next` → `baseDirectory: .next`
+- Changed `baseDirectory: apps/web/.next` → `baseDirectory: .next/standalone` (for standalone mode)
+- Added postBuild commands to copy static assets to standalone directory
 - Updated cache paths to use `../../node_modules/**/*` (relative to appRoot)
 - Updated cache path to use `.next/cache/**/*` (relative to appRoot)
 
@@ -54,7 +59,8 @@ AWS Amplify interprets this as:
 - Updated cache paths to use `../../node_modules/**/*` (relative to appRoot)
 
 ### 2. apps/web/amplify.yml
-- Changed `baseDirectory: apps/web/.next` → `baseDirectory: .next`
+- Changed `baseDirectory: apps/web/.next` → `baseDirectory: .next/standalone` (for standalone mode)
+- Added postBuild commands to copy static assets to standalone directory
 - Updated cache paths to use `../../node_modules/**/*` and `.next/cache/**/*`
 
 ### 3. apps/api/amplify.yml

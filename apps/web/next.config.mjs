@@ -13,8 +13,8 @@ const nextConfig = {
     // Enable CSS optimization for proper Vercel deployment
     optimizeCss: true,
   },
-  // Enable standalone output for Docker builds
-  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
+  // Enable standalone output for Docker builds and AWS Amplify
+  output: 'standalone',
 }
 
 export default nextConfig
