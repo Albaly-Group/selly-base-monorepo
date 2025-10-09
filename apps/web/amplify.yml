@@ -10,9 +10,15 @@ frontend:
       commands:
         # Build frontend using Turbo with filter (builds web + types packages)
         - npx turbo build --filter=web
+    postBuild:
+      commands:
+        # Copy static assets and public files to standalone directory for Next.js standalone mode
+        - cp -r apps/web/public apps/web/.next/standalone/apps/web/public || true
+        - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
   artifacts:
     # Output directory after build (relative to appRoot when used in monorepo)
-    baseDirectory: .next
+    # For Next.js standalone mode, use .next/standalone as base
+    baseDirectory: .next/standalone
     files:
       - '**/*'
   cache:

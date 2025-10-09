@@ -113,6 +113,12 @@ open https://your-backend-app.amplifyapp.com/docs
 - Verify `npm ci` completes
 - Review build logs in Amplify Console
 
+**Build passes but page not found (404)?**
+- The frontend is configured with Next.js standalone mode
+- Ensure postBuild commands copy static files correctly
+- Check Amplify Console build logs for postBuild phase
+- This is fixed in the latest version (standalone output enabled)
+
 **API not accessible?**
 - Verify backend PORT=3000
 - Check CORS settings

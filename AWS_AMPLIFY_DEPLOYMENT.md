@@ -87,9 +87,15 @@ frontend:
     build:
       commands:
         - npx turbo build --filter=web
+    postBuild:
+      commands:
+        # Copy static assets and public files to standalone directory
+        - cp -r apps/web/public apps/web/.next/standalone/apps/web/public || true
+        - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
   artifacts:
     # Note: baseDirectory is relative to appRoot (apps/web)
-    baseDirectory: .next
+    # Using .next/standalone for Next.js standalone mode (required for AWS Amplify SSR)
+    baseDirectory: .next/standalone
     files:
       - '**/*'
   cache:
@@ -99,6 +105,8 @@ frontend:
       # Cache paths relative to appRoot
       - .next/cache/**/*
 ```
+
+**Important:** The Next.js app is configured with `output: 'standalone'` mode, which is required for AWS Amplify to properly host the SSR application. The postBuild commands copy the necessary static assets and public files into the standalone directory.
 
 ### 3. Configure Environment Variables
 
@@ -377,6 +385,13 @@ Amplify automatically sets up CI/CD:
 - Verify Node version compatibility (18+)
 - Check Turbo build command: `npx turbo build --filter=web`
 - Review build logs for missing dependencies
+- Verify standalone mode is enabled in next.config.mjs: `output: 'standalone'`
+
+**Frontend build passes but page not accessible (404):**
+- Ensure `output: 'standalone'` is set in next.config.mjs
+- Verify postBuild commands copy static assets to standalone directory
+- Check that baseDirectory in amplify.yml is set to `.next/standalone`
+- Verify the standalone/apps/web/server.js file exists after build
 
 **Backend build fails:**
 - Check if `npm ci` completes successfully
