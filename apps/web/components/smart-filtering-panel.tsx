@@ -22,8 +22,8 @@ export interface SmartFilteringCriteria {
   provinceWeight?: number
   companySize?: string
   companySizeWeight?: number
-  contactStatus?: string
-  contactStatusWeight?: number
+  verificationStatus?: string
+  verificationStatusWeight?: number
   minimumScore?: number
   profileName?: string
 }
@@ -57,7 +57,11 @@ const fallbackCompanySizeOptions = [
   { value: "large", label: "Large (L)" },
 ]
 
-const fallbackContactStatusOptions = ["Active", "Needs Verification", "Invalid"]
+const fallbackContactStatusOptions = [
+  { value: 'verified', label: 'Verified' },
+  { value: 'need_verified', label: 'Need Verified' },
+  { value: 'unverified', label: 'Unverified' }
+]
 
 export function SmartFilteringPanel({
   isOpen,
@@ -74,14 +78,14 @@ export function SmartFilteringPanel({
     industrialWeight: criteria.industrialWeight || 25,
     provinceWeight: criteria.provinceWeight || 20,
     companySizeWeight: criteria.companySizeWeight || 15,
-    contactStatusWeight: criteria.contactStatusWeight || 15,
+    verificationStatusWeight: criteria.verificationStatusWeight || 15,
     minimumScore: criteria.minimumScore || 0,
   })
 
   const [industrialOptions, setIndustrialOptions] = useState<string[]>(fallbackIndustrialOptions)
   const [provinceOptions, setProvinceOptions] = useState<string[]>(fallbackProvinceOptions)
   const [companySizeOptions, setCompanySizeOptions] = useState<any[]>(fallbackCompanySizeOptions)
-  const [contactStatusOptions, setContactStatusOptions] = useState<string[]>(fallbackContactStatusOptions)
+  const [contactStatusOptions, setContactStatusOptions] = useState<{value: string, label: string}[]>(fallbackContactStatusOptions)
 
   useEffect(() => {
     const fetchReferenceData = async () => {
@@ -111,7 +115,7 @@ export function SmartFilteringPanel({
         if (sizesResponse.data && sizesResponse.data.length > 0) {
           setCompanySizeOptions(
             sizesResponse.data.map((item: any) => ({
-              value: item.value, // Use 'value' (e.g., 'small') not 'code' (e.g., 'S') to match database
+              value: item.value,
               label: item.displayName || item.label,
             }))
           )
@@ -124,7 +128,10 @@ export function SmartFilteringPanel({
         // Fetch contact statuses
         const statusesResponse = await apiClient.getContactStatuses()
         if (statusesResponse.data && statusesResponse.data.length > 0) {
-          setContactStatusOptions(statusesResponse.data.map((item: any) => item.label))
+          setContactStatusOptions(statusesResponse.data.map((item: any) => ({
+            value: item.value, // Use value for API calls
+            label: item.label  // Use label for display
+          })))
         }
       } catch (error) {
         console.error('Failed to fetch contact statuses, using fallback:', error)
@@ -154,7 +161,7 @@ export function SmartFilteringPanel({
       industrialWeight: 25,
       provinceWeight: 20,
       companySizeWeight: 15,
-      contactStatusWeight: 15,
+      verificationStatusWeight: 15,
       minimumScore: 0,
     })
     onClearFiltering()
@@ -166,7 +173,7 @@ export function SmartFilteringPanel({
     (tempCriteria.industrial ? (tempCriteria.industrialWeight || 0) : 0) + 
     (tempCriteria.province ? (tempCriteria.provinceWeight || 0) : 0) + 
     (tempCriteria.companySize ? (tempCriteria.companySizeWeight || 0) : 0) + 
-    (tempCriteria.contactStatus ? (tempCriteria.contactStatusWeight || 0) : 0)
+    (tempCriteria.verificationStatus ? (tempCriteria.verificationStatusWeight || 0) : 0)
 
   const hasActiveCriteria = Object.values(tempCriteria).some((value, index) => {
     const keys = Object.keys(tempCriteria)
@@ -340,8 +347,8 @@ export function SmartFilteringPanel({
                 <div className="space-y-3">
                   <Label>Contact Status</Label>
                   <Select
-                    value={tempCriteria.contactStatus || ""}
-                    onValueChange={(value) => updateCriteria("contactStatus", value === "any" ? "" : value)}
+                    value={tempCriteria.verificationStatus || ""}
+                    onValueChange={(value) => updateCriteria("verificationStatus", value === "any" ? "" : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Any Status" />
@@ -349,17 +356,17 @@ export function SmartFilteringPanel({
                     <SelectContent>
                       <SelectItem value="any">Any Status</SelectItem>
                       {contactStatusOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <div>
-                    <Label className="text-sm">Weight: {tempCriteria.contactStatusWeight}%</Label>
+                    <Label className="text-sm">Weight: {tempCriteria.verificationStatusWeight}%</Label>
                     <Slider
-                      value={[tempCriteria.contactStatusWeight ?? 15]}
-                      onValueChange={(value) => updateCriteria("contactStatusWeight", value[0])}
+                      value={[tempCriteria.verificationStatusWeight ?? 15]}
+                      onValueChange={(value) => updateCriteria("verificationStatusWeight", value[0])}
                       max={50}
                       step={5}
                       className="mt-1"

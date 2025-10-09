@@ -108,8 +108,8 @@ export interface WeightedLeadScore {
     provinceScore: number
     companySize: boolean
     companySizeScore: number
-    contactStatus: boolean
-    contactStatusScore: number
+    verificationStatus: boolean
+    verificationStatusScore: number
   }
 }
 
@@ -125,8 +125,8 @@ export const calculateWeightedLeadScore = (
     provinceWeight?: number
     companySize?: string
     companySizeWeight?: number
-    contactStatus?: string
-    contactStatusWeight?: number
+    verificationStatus?: string
+    verificationStatusWeight?: number
     minimumScore?: number
   },
 ): WeightedLeadScore => {
@@ -141,8 +141,8 @@ export const calculateWeightedLeadScore = (
     provinceScore: 0,
     companySize: false,
     companySizeScore: 0,
-    contactStatus: false,
-    contactStatusScore: 0,
+    verificationStatus: false,
+    verificationStatusScore: 0,
   }
 
   // Keyword match
@@ -190,13 +190,13 @@ export const calculateWeightedLeadScore = (
     }
   }
 
-  // Contact status match
-  if (criteria.contactStatus && criteria.contactStatusWeight) {
-    maxPossibleScore += criteria.contactStatusWeight
-    if (company.verificationStatus === criteria.contactStatus) {
-      matchingSummary.contactStatus = true
-      matchingSummary.contactStatusScore = criteria.contactStatusWeight
-      totalScore += criteria.contactStatusWeight
+  // Verification status match
+  if (criteria.verificationStatus && criteria.verificationStatusWeight) {
+    maxPossibleScore += criteria.verificationStatusWeight
+    if (company.verificationStatus === criteria.verificationStatus) {
+      matchingSummary.verificationStatus = true
+      matchingSummary.verificationStatusScore = criteria.verificationStatusWeight
+      totalScore += criteria.verificationStatusWeight
     }
   }
 
@@ -224,8 +224,8 @@ export const searchAndScoreCompanies = (
     provinceWeight?: number
     companySize?: string
     companySizeWeight?: number
-    contactStatus?: string
-    contactStatusWeight?: number
+    verificationStatus?: string
+    verificationStatusWeight?: number
     minimumScore?: number
   },
 ): { company: Company; score: WeightedLeadScore }[] => {
