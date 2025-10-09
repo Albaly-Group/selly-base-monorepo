@@ -466,12 +466,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     {company.industrialName}
                   </Badge>
                 )}
-                {company.primaryIndustry?.title_en && (
+                {company.primaryIndustry?.titleEn && (
                   <Badge variant="outline">
-                    {company.primaryIndustry.title_en}
+                    {company.primaryIndustry.titleEn}
                   </Badge>
                 )}
-                {!company.industrialName && !company.primaryIndustry?.title_en && company.primaryIndustryId && (
+                {!company.industrialName && !company.primaryIndustry?.titleEn && company.primaryIndustryId && (
                   <Badge variant="outline">
                     Industry ID: {company.primaryIndustryId.substring(0, 8)}...
                   </Badge>
@@ -479,10 +479,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 {company.province && (
                   <Badge variant="outline">{company.province}</Badge>
                 )}
-                {company.primaryRegion?.name_en && (
-                  <Badge variant="outline">{company.primaryRegion.name_en}</Badge>
+                {company.primaryRegion?.nameEn && (
+                  <Badge variant="outline">{company.primaryRegion.nameEn}</Badge>
                 )}
-                {!company.province && !company.primaryRegion?.name_en && company.primaryRegionId && (
+                {!company.province && !company.primaryRegion?.nameEn && company.primaryRegionId && (
                   <Badge variant="outline">
                     Region ID: {company.primaryRegionId.substring(0, 8)}...
                   </Badge>
@@ -627,24 +627,24 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <Label className="text-sm font-medium text-gray-600">Address</Label>
                       <div className="mt-1">{companyDetails.address1}</div>
                     </div>
-                    {(companyDetails.primaryRegion?.name_en || companyDetails.primaryRegionId) && (
+                    {(companyDetails.primaryRegion?.nameEn || companyDetails.primaryRegionId) && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Region</Label>
                         <div className="mt-1">
-                          {companyDetails.primaryRegion?.name_en || `ID: ${companyDetails.primaryRegionId}`}
-                          {companyDetails.primaryRegion?.name_th && (
-                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryRegion.name_th})</span>
+                          {companyDetails.primaryRegion?.nameEn || `ID: ${companyDetails.primaryRegionId}`}
+                          {companyDetails.primaryRegion?.nameTh && (
+                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryRegion.nameTh})</span>
                           )}
                         </div>
                       </div>
                     )}
-                    {companyDetails.primaryIndustry?.title_en && (
+                    {companyDetails.primaryIndustry?.titleEn && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Industry</Label>
                         <div className="mt-1">
-                          {companyDetails.primaryIndustry.title_en}
-                          {companyDetails.primaryIndustry.title_th && (
-                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryIndustry.title_th})</span>
+                          {companyDetails.primaryIndustry.titleEn}
+                          {companyDetails.primaryIndustry.titleTh && (
+                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryIndustry.titleTh})</span>
                           )}
                         </div>
                       </div>
