@@ -466,7 +466,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                     {company.industrialName}
                   </Badge>
                 )}
-                {company.primaryIndustryId && (
+                {company.primaryIndustry?.title_en && (
+                  <Badge variant="outline">
+                    {company.primaryIndustry.title_en}
+                  </Badge>
+                )}
+                {!company.industrialName && !company.primaryIndustry?.title_en && company.primaryIndustryId && (
                   <Badge variant="outline">
                     Industry ID: {company.primaryIndustryId.substring(0, 8)}...
                   </Badge>
@@ -474,7 +479,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                 {company.province && (
                   <Badge variant="outline">{company.province}</Badge>
                 )}
-                {company.primaryRegionId && (
+                {company.primaryRegion?.name_en && (
+                  <Badge variant="outline">{company.primaryRegion.name_en}</Badge>
+                )}
+                {!company.province && !company.primaryRegion?.name_en && company.primaryRegionId && (
                   <Badge variant="outline">
                     Region ID: {company.primaryRegionId.substring(0, 8)}...
                   </Badge>
@@ -619,11 +627,25 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpda
                       <Label className="text-sm font-medium text-gray-600">Address</Label>
                       <div className="mt-1">{companyDetails.address1}</div>
                     </div>
-                    {companyDetails.primaryRegionId && (
+                    {(companyDetails.primaryRegion?.name_en || companyDetails.primaryRegionId) && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">Region</Label>
-                        <div className="mt-1 text-xs text-gray-500">
-                          ID: {companyDetails.primaryRegionId}
+                        <div className="mt-1">
+                          {companyDetails.primaryRegion?.name_en || `ID: ${companyDetails.primaryRegionId}`}
+                          {companyDetails.primaryRegion?.name_th && (
+                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryRegion.name_th})</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {companyDetails.primaryIndustry?.title_en && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">Industry</Label>
+                        <div className="mt-1">
+                          {companyDetails.primaryIndustry.title_en}
+                          {companyDetails.primaryIndustry.title_th && (
+                            <span className="text-xs text-gray-500 ml-2">({companyDetails.primaryIndustry.title_th})</span>
+                          )}
                         </div>
                       </div>
                     )}
