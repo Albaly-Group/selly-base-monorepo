@@ -1,5 +1,11 @@
 # E2E Testing - Quick Start Guide
 
+## 📊 Test Suite Overview
+
+**Total**: 109 unique tests × 3 browsers (Chromium, Firefox, WebKit) = **327 test executions**
+
+**Coverage**: 12 test suites covering authentication, CRUD operations, data consistency, imports/exports, reports, and admin functions.
+
 ## TL;DR - Just Run The Tests
 
 ```bash
@@ -9,9 +15,11 @@ npm run test:e2e:docker
 
 That's it! The script will:
 1. ✅ Setup Docker environment (database, backend, frontend)
-2. ✅ Run all E2E tests
+2. ✅ Run all 327 E2E tests
 3. ✅ Generate HTML report
 4. ✅ Clean up everything
+
+**Expected time**: 3-8 minutes
 
 ## View Results
 
