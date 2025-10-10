@@ -74,10 +74,10 @@ describe('Combobox Component', () => {
     ]
 
     const keys = options.map((option, index) => 
-      option.value || `option-${index}`
+      option.value ? `${option.value}-${index}` : `option-${index}`
     )
 
-    expect(keys).toEqual(['tech', 'mfg'])
+    expect(keys).toEqual(['tech-0', 'mfg-1'])
     expect(new Set(keys).size).toBe(keys.length) // All keys are unique
   })
 
@@ -88,7 +88,27 @@ describe('Combobox Component', () => {
     ]
 
     // Test key generation for empty value
-    const key = options[0].value || 'option-0'
+    const key = options[0].value ? `${options[0].value}-0` : 'option-0'
     expect(key).toBe('option-0')
+  })
+
+  it('should generate unique keys for duplicate values', () => {
+    const options = [
+      { value: 'การขายส่งเครื่องจักรอุปกรณ์และเครื่องใช้ทางการเกษตร', label: 'Agricultural Machinery Wholesale' },
+      { value: 'การขายส่งเครื่องจักรอุปกรณ์และเครื่องใช้ทางการเกษตร', label: 'Agricultural Equipment Wholesale' },
+      { value: 'tech', label: 'Technology' },
+    ]
+
+    const keys = options.map((option, index) => 
+      option.value ? `${option.value}-${index}` : `option-${index}`
+    )
+
+    expect(keys).toHaveLength(3)
+    expect(new Set(keys).size).toBe(keys.length) // All keys are unique even with duplicate values
+    expect(keys).toEqual([
+      'การขายส่งเครื่องจักรอุปกรณ์และเครื่องใช้ทางการเกษตร-0',
+      'การขายส่งเครื่องจักรอุปกรณ์และเครื่องใช้ทางการเกษตร-1',
+      'tech-2'
+    ])
   })
 })

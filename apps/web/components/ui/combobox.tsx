@@ -145,7 +145,7 @@ export function Combobox({
               const isHighlighted = highlight === idx
               return (
                 <li
-                  key={opt.value || `option-${idx}`}
+                  key={opt.value ? `${opt.value}-${idx}` : `option-${idx}`}
                   role="option"
                   aria-selected={isSelected}
                   onMouseEnter={() => setHighlight(idx)}
