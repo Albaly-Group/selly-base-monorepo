@@ -113,9 +113,7 @@ function CompanyLookupPage() {
           registrationId: item.registrationId || item.primaryRegistrationNo,
           registeredNo: item.primaryRegistrationNo,
           registrationDate: item.establishedDate,
-          industrialName: industrialName,
-          // Keep raw objects for downstream components (CompanyTable expects these shapes)
-          primaryIndustry: item.primaryIndustry || null,
+          industrialName: (item.primaryIndustry && (item.primaryIndustry.titleEn || item.primaryIndustry.titleTh || item.primaryIndustry.code)) || industrialName,
           primaryIndustryDisplay: (item.primaryIndustry && (item.primaryIndustry.titleEn || item.primaryIndustry.titleTh || item.primaryIndustry.code)) || 'N/A',
           primaryRegion: item.primaryRegion || null,
           primaryRegionDisplay: (item.primaryRegion && (item.primaryRegion.nameEn || item.primaryRegion.nameTh || item.primaryRegion.code)) || 'N/A',

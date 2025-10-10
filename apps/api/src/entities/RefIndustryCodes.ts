@@ -26,7 +26,7 @@ export class RefIndustryCodes {
   code: string;
 
   @Column('text', { name: 'title_en' })
-  titleEn: string;
+  titleEn: string | null;
 
   @Column('text', { name: 'title_th', nullable: true })
   titleTh: string | null;
