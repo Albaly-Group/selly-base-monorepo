@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth, canEditSharedData } from "@/lib/auth";
@@ -326,22 +327,18 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
             <div className="space-y-2">
               <Label htmlFor="primaryIndustryId">Industry</Label>
-              <Select 
-                value={formData.primaryIndustryId || ""} 
+              <Combobox
+                options={industries.map((industry) => ({
+                  value: industry.id,
+                  label: `${industry.titleEn}${industry.titleTh ? ` (${industry.titleTh})` : ''}`,
+                }))}
+                value={formData.primaryIndustryId || ""}
                 onValueChange={(value) => updateField("primaryIndustryId", value)}
+                placeholder="Select industry..."
+                searchPlaceholder="Search industries..."
+                emptyText="No industry found."
                 disabled={!canEdit}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select industry..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {industries.map((industry) => (
-                    <SelectItem key={industry.id} value={industry.id}>
-                      {industry.titleEn} {industry.titleTh && `(${industry.titleTh})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
