@@ -114,7 +114,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-full p-2" align="start">
+      <PopoverContent className="w-[var(--radix-popper-anchor-width)] p-2" align="start">
         <div>
           <input
             ref={inputRef}
