@@ -328,9 +328,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             <div className="space-y-2">
               <Label htmlFor="primaryIndustryId">Industry</Label>
               <Combobox
-                options={industries.map((industry) => ({
+                options={industries.map((industry: any) => ({
                   value: industry.id,
-                  label: `${industry.titleEn}${industry.titleTh ? ` (${industry.titleTh})` : ''}`,
+                  label: industry.nameTh,
                 }))}
                 value={formData.primaryIndustryId || ""}
                 onValueChange={(value) => updateField("primaryIndustryId", value)}

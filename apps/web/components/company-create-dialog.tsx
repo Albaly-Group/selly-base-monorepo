@@ -355,9 +355,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
             <div className="space-y-2">
               <Label htmlFor="primaryIndustryId" className="text-sm font-medium">Industry</Label>
               <Combobox
-                options={industries.map((industry) => ({
+                options={industries.map((industry: any) => ({
                   value: industry.id,
-                  label: `${industry.titleEn}${industry.titleTh ? ` (${industry.titleTh})` : ''}`,
+                  label: industry.nameTh,
                 }))}
                 value={formData.primaryIndustryId}
                 onValueChange={(value) => updateField("primaryIndustryId", value)}
@@ -370,9 +370,9 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companySize" className="text-sm font-medium">Company Size</Label>
+                <Label htmlFor="companySize">Company Size</Label>
                 <Select value={formData.companySize} onValueChange={(value) => updateField("companySize", value)} disabled={isLoading}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select size..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -384,9 +384,8 @@ export function CompanyCreateDialog({ open, onOpenChange, onSuccess }: CompanyCr
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate" className="text-sm font-medium">
+                <Label htmlFor="employeeCountEstimate">
                   Employee Count <span className="text-red-500">*</span>
                 </Label>
                 <Input
