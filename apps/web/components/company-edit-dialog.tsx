@@ -26,6 +26,8 @@ import { useAuth, canEditSharedData } from "@/lib/auth";
 
 interface ExtendedCompany extends Company {
   postalCode?: string | null;
+  primaryRegionId?: string | null;
+  primaryIndustryId?: string | null;
 }
 
 interface CompanyEditDialogProps {
@@ -38,7 +40,7 @@ interface CompanyEditDialogProps {
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
   console.log(company)
   const { user } = useAuth()
-  const [formData, setFormData] = useState<Partial<Company>>({})
+  const [formData, setFormData] = useState<Partial<ExtendedCompany>>({})
   const [industries, setIndustries] = useState<Array<{ id: string; titleEn: string; titleTh: string | null }>>([])
   const [regions, setRegions] = useState<Array<{ id: string; nameEn: string; nameTh: string | null }>>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -134,8 +136,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     }
   };
 
-  const updateField = (field: keyof Company, value: any) => {
-    setFormData((prev: Partial<Company>) => ({ ...prev, [field]: value }))
+  const updateField = (field: keyof ExtendedCompany, value: any) => {
+    setFormData((prev: Partial<ExtendedCompany>) => ({ ...prev, [field]: value }))
   }
 
   if (!company) return null
@@ -292,7 +294,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   onValueChange={(value) => updateField("primaryRegionId", value)}
                   disabled={!canEdit}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select region..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,7 +331,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 onValueChange={(value) => updateField("primaryIndustryId", value)}
                 disabled={!canEdit}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select industry..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -362,18 +364,15 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate" className="text-sm font-medium">
-                  Employee Count
-                </Label>
+                <Label htmlFor="employeeCountEstimate">Employee Coun</Label>
                 <Input
-                  id="employeeCountEstimate"
+                  id="postalCode"
                   type="number"
                   value={formData.employeeCountEstimate || ""}
                   onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
-                  placeholder="50"
-                  disabled={isLoading}
+                  placeholder="10110"
+                  disabled={!canEdit}
                 />
               </div>
             </div>
@@ -385,7 +384,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 onValueChange={(value) => updateField("dataSensitivity", value)}
                 disabled={!canEdit}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select sensitivity..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -408,7 +407,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   value={formData.verificationStatus || ""}
                   onValueChange={(value) => updateField("verificationStatus", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select status..." />
                   </SelectTrigger>
                   <SelectContent>

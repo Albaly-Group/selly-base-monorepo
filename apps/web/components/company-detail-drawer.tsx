@@ -53,6 +53,7 @@ interface CompanyDetailDrawerProps {
 }
 
 export function CompanyDetailDrawer({ company, open, onOpenChange, onCompanyUpdated }: CompanyDetailDrawerProps) {
+  console.log("List company", company)
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState("overview")
   const [showAddContact, setShowAddContact] = useState(false)
