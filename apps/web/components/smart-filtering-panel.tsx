@@ -94,7 +94,7 @@ export function SmartFilteringPanel({
         // Fetch industries
         const industriesResponse = await apiClient.getIndustries()
         if (industriesResponse.data && industriesResponse.data.length > 0) {
-          setIndustrialOptions(industriesResponse.data.map((item: any) => item.nameTh || item.nameEn))
+          setIndustrialOptions(industriesResponse.data.map((item: any) => item.nameEn || item.nameTh))
         }
       } catch (error) {
         console.error('Failed to fetch industries, using fallback:', error)
