@@ -35,7 +35,7 @@ function CompanyLookupPage() {
     const filters: any = {
       page: currentPage,
       limit: 25,
-      _refresh: refreshTrigger, // Add refresh trigger to force re-fetch
+      _refresh: refreshTrigger,
     };
 
     if (isSimpleSearch) {
@@ -57,6 +57,7 @@ function CompanyLookupPage() {
 
       // Apply attribute filters
       if (smartFiltering.industrial){
+        console.log("Smart", smartFiltering.industrial)
         filters.industrial = smartFiltering.industrial;
       }
       if (smartFiltering.province) {
@@ -68,9 +69,6 @@ function CompanyLookupPage() {
       if (smartFiltering.verificationStatus){
         filters.verificationStatus = smartFiltering.verificationStatus;
       }
-
-      // Note: weights are used for client-side scoring, not sent to backend
-      // Backend filtering is done on the attributes themselves
     }
 
     return filters;

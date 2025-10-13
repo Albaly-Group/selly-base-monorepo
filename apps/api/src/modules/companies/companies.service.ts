@@ -578,9 +578,34 @@ export class CompaniesService {
       const changes = this.calculateChanges(oldValues, updatedCompany);
 
       // Save to database
-      // Remove GENERATED columns from update data (displayName, searchVector)
-      const { displayName, searchVector, ...updateData } = updatedCompany;
-      await this.companyRepository.update(id, updateData);
+      // Build DB update payload: remove GENERATED columns and relation objects
+      const {
+        displayName,
+        searchVector,
+        primaryIndustry,
+        primaryRegion,
+        ...rest
+      } = updatedCompany as any;
+
+      const dbUpdate: any = {
+        ...rest,
+        // prefer values from incoming DTO when provided (allow null)
+        primaryIndustryId:
+          updateDto.primaryIndustryId !== undefined
+            ? updateDto.primaryIndustryId
+            : existingCompany.primaryIndustryId,
+        primaryRegionId:
+          updateDto.primaryRegionId !== undefined
+            ? updateDto.primaryRegionId
+            : existingCompany.primaryRegionId,
+        // keep consistency with createCompany where score was stored as string
+        dataQualityScore: this.calculateDataQualityScore(
+          updateDto,
+          existingCompany,
+        ).toString(),
+      };
+
+      await this.companyRepository.update(id, dbUpdate);
       const savedCompany = await this.companyRepository.findOne({
         where: { id },
         relations: ['primaryIndustry', 'primaryRegion'],

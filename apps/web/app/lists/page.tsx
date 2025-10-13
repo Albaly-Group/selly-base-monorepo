@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Filter, Target, Loader2, CheckCircle, X } from "lucide-react"
+import { any } from "zod"
 
 interface CompanyList {
   id: string
@@ -135,6 +136,11 @@ function ListManagementPage() {
             }
           }
 
+          // If industryClassification is not present, try primaryIndustry relation (singular object)
+          if ((industrialName === 'N/A' || !industrialName) && item.primaryIndustry) {
+            industrialName = item.primaryIndustry.titleEn || item.primaryIndustry.titleTh || industrialName;
+          }
+
           // Calculate data completeness percentage from quality score (0.0-1.0 to 0-100)
           const qualityScore = parseFloat(item.dataQualityScore) || 0;
           const dataCompleteness = Math.round(qualityScore * 100);
@@ -146,13 +152,13 @@ function ListManagementPage() {
             companyNameTh: item.nameTh || item.companyNameTh,
             companyNameLocal: item.nameLocal || item.companyNameLocal,
             displayName: item.displayName,
-            nameEn: item.nameEn || item.companyNameEn, // For list-table compatibility
+            nameEn: item.nameEn || item.companyNameEn,
             primaryRegistrationNo: item.primaryRegistrationNo,
             registrationId: item.registrationId || item.primaryRegistrationNo,
             registeredNo: item.primaryRegistrationNo,
             registrationDate: item.establishedDate,
             industrialName: industrialName,
-            province: item.province || 'N/A',
+            province: item.province || (item.primaryRegion ? item.primaryRegion.nameEn : (item.primaryRegionId || 'N/A')),
             websiteUrl: item.websiteUrl,
             primaryEmail: item.primaryEmail,
             primaryPhone: item.primaryPhone,
@@ -168,6 +174,18 @@ function ListManagementPage() {
               phone: contact.phone,
               email: contact.email
             })),
+            primaryIndustry: item.primaryIndustry ? {
+              id: item.primaryIndustry.id,
+              nameEn: item.primaryIndustry.titleEn || 'N/A',
+              nameTh: item.primaryIndustry.titleTh || 'N/A',
+              code: item.primaryIndustry.code || 'N/A',
+            } : null,
+            primaryRegion: item.primaryRegion ? {
+              id: item.primaryRegion.id,
+              nameEn: item.primaryRegion.nameEn ||  'N/A',
+              nameTh: item.primaryRegion.nameTh || 'N/A',
+              code: item.primaryRegion.code || 'N/A',
+            } : null,
             companySize: item.companySize,
             businessDescription: item.businessDescription,
             dataQualityScore: qualityScore,
@@ -178,14 +196,11 @@ function ListManagementPage() {
             updatedAt: item.updatedAt,
             createdBy: item.createdBy,
             lastUpdated: item.updatedAt,
-          } as any; // Use 'as any' to bypass strict type checking for mixed type compatibility
+          } as any;
         });
         
-        console.log('Normalized companies:', normalizedCompanies);
         setListCompanies(normalizedCompanies)
-        
-        // Don't update the count in ListSelector - keep it fixed to show total items in list
-        // Only store the actual loaded companies count separately if needed for the main content
+
       } catch (error) {
         console.error('Failed to fetch list companies:', error)
         setListCompanies([])

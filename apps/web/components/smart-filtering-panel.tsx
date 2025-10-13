@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,7 +83,7 @@ export function SmartFilteringPanel({
     minimumScore: criteria.minimumScore || 0,
   })
 
-  const [industrialOptions, setIndustrialOptions] = useState<string[]>(fallbackIndustrialOptions)
+  const [industrialOptions, setIndustrialOptions] = useState<{value: string; label: string}[]>([])
   const [provinceOptions, setProvinceOptions] = useState<string[]>(fallbackProvinceOptions)
   const [companySizeOptions, setCompanySizeOptions] = useState<any[]>(fallbackCompanySizeOptions)
   const [contactStatusOptions, setContactStatusOptions] = useState<{value: string, label: string}[]>(fallbackContactStatusOptions)
@@ -93,8 +93,17 @@ export function SmartFilteringPanel({
       try {
         // Fetch industries
         const industriesResponse = await apiClient.getIndustries()
+        const list = industriesResponse.data || []
+
         if (industriesResponse.data && industriesResponse.data.length > 0) {
-          setIndustrialOptions(industriesResponse.data.map((item: any) => item.nameEn || item.nameTh))
+          const options = list
+            .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
+            .map(it => ({
+              value: String(it.id), 
+              label: it.nameEn!.trim(), 
+            }));
+
+          setIndustrialOptions(options);
         }
       } catch (error) {
         console.error('Failed to fetch industries, using fallback:', error)
@@ -145,8 +154,7 @@ export function SmartFilteringPanel({
   }, [isOpen])
 
   const updateCriteria = (key: keyof SmartFilteringCriteria, value: any) => {
-    // Convert empty string selections to undefined for proper filtering
-    // This ensures "Any Industry", "Any Province", etc. don't get sent to the backend
+    console.log("Value", value);
     const normalizedValue = value === "" ? undefined : value;
     
     setTempCriteria((prev) => ({
@@ -258,20 +266,23 @@ export function SmartFilteringPanel({
                 {/* Industry */}
                 <div className="space-y-3">
                   <Label>Industry</Label>
-                  <Combobox
-                    options={[
-                      { value: "", label: "Any Industry" },
-                      ...industrialOptions.map((option) => ({
-                        value: option,
-                        label: option,
-                      })),
-                    ]}
-                    value={tempCriteria.industrial || ""}
-                    onValueChange={(value) => updateCriteria("industrial", value)}
-                    placeholder="Search industries..."
-                    searchPlaceholder="Search industries..."
-                    emptyText="No industry found."
-                  />
+                    <Combobox
+                      options={[{ value: "", label: "Any Industry" }, ...industrialOptions]}
+                      value={
+                        useMemo(() => {
+                          const opt = industrialOptions.find(o => o.label === (tempCriteria.industrial || ""));
+                          return opt?.value ?? "";
+                        }, [industrialOptions, tempCriteria.industrial])
+                      }
+                      onValueChange={(val) => {
+                        const opt = industrialOptions.find(o => o.value === val);
+                        updateCriteria("industrial", opt?.label ?? undefined);
+                      }}
+                      placeholder="Search industries..."
+                      searchPlaceholder="Search industries..."
+                      emptyText="No industry found."
+                    />
+
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.industrialWeight}%</Label>
                     <Slider

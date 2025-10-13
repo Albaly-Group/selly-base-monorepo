@@ -74,7 +74,12 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             apiClient.getIndustries({ active: true }),
             apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }),
           ])
-          setIndustries(industriesData.data || [])
+
+          const cleanIndustries = (industriesData.data || []).filter(
+            (it: any) => typeof it.nameEn === 'string' && it.nameEn.trim() !== ''
+          )
+          
+          setIndustries(cleanIndustries)
           setRegions(regionsData.data || [])
         } catch (err) {
           console.error('Failed to load reference data:', err)
@@ -330,7 +335,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Combobox
                 options={industries.map((industry: any) => ({
                   value: industry.id,
-                  label: industry.nameTh,
+                  label: industry.nameEn,
                 }))}
                 value={formData.primaryIndustryId || ""}
                 onValueChange={(value) => updateField("primaryIndustryId", value)}
