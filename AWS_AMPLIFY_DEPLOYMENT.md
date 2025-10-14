@@ -106,7 +106,11 @@ frontend:
       - .next/cache/**/*
 ```
 
-**Important:** The Next.js app is configured with `output: 'standalone'` mode, which is required for AWS Amplify to properly host the SSR application. The postBuild commands copy the necessary static assets and public files into the standalone directory.
+**Important:** 
+- The Next.js app is configured to use `output: 'standalone'` mode when `AWS_AMPLIFY=true` is set
+- Standalone mode is required for AWS Amplify to properly host SSR applications  
+- The postBuild commands copy the necessary static assets and public files into the standalone directory
+- Make sure to set `AWS_AMPLIFY=true` in the environment variables (see step 3)
 
 ### 3. Configure Environment Variables
 
@@ -114,6 +118,9 @@ Navigate to **App Settings → Environment variables** and add:
 
 **Required:**
 ```bash
+# Enable static export mode for AWS Amplify
+AWS_AMPLIFY=true
+
 # API URL - Set this after deploying the backend
 NEXT_PUBLIC_API_URL=https://your-api-app.amplifyapp.com
 
@@ -126,6 +133,14 @@ NODE_ENV=production
 # Leave NEXT_PUBLIC_API_URL empty to use mock data
 NEXT_PUBLIC_API_URL=
 ```
+
+**Important:** The `AWS_AMPLIFY=true` environment variable enables standalone output mode in `next.config.mjs`. This is required for AWS Amplify SSR deployments and should NOT be set for Vercel deployments.
+
+**About Standalone Mode:**
+- Creates a self-contained server bundle with `server.js` entry point
+- Includes all necessary dependencies
+- Supports full Next.js SSR features
+- Required for AWS Amplify hosting
 
 ### 4. Advanced Settings
 

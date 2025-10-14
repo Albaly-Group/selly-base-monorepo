@@ -37,7 +37,8 @@ selly-base-monorepo/
 **Frontend Configuration (`apps/web/vercel.json`)**:
 - Optimized build command that builds only the web app and its dependencies
 - Uses Turbo's `--filter=web` to avoid building unnecessary packages
-- Outputs to `out` directory (static export mode)
+- Outputs to `.next` directory (standard Next.js output with routes-manifest.json)
+- Note: Static export mode (`out` directory) is only used for AWS Amplify deployments
 
 **Backend Configuration (`apps/api/vercel.json`)**:
 - Optimized build command that builds only the API and its dependencies  
@@ -57,8 +58,9 @@ selly-base-monorepo/
 
 2. **Configure Frontend Settings**:
    - **Build Command**: Optimized to build only web app: `cd ../.. && npm install && npx turbo build --filter=web`
-   - **Output Directory**: `out` (from vercel.json - static export mode)
+   - **Output Directory**: `.next` (from vercel.json - standard Next.js output)
    - **Install Command**: `npm install` (at repository root)
+   - **Important**: Do NOT set `AWS_AMPLIFY` environment variable in Vercel
 
 3. **Environment Variables**:
    ```bash
@@ -351,6 +353,21 @@ cd apps/web && npm run build
 # 2. Check build command: "cd ../.. && npm ci && npx turbo build --filter=web"  
 # 3. Verify output directory: ".next"
 # 4. Install command should be: "npm ci"
+```
+
+**Missing routes-manifest.json Error:**
+```bash
+# Error: "The file '/vercel/path0/apps/web/out/routes-manifest.json' couldn't be found"
+# This occurs when output: 'export' is set in next.config.mjs for Vercel deployments
+
+# Fix: The configuration now uses conditional output mode
+# - For Vercel: Uses default Next.js output (.next directory with routes-manifest.json)
+# - For AWS Amplify: Uses static export (out directory) when AWS_AMPLIFY=true
+
+# Verify configuration:
+# 1. Check next.config.mjs has: output: process.env.AWS_AMPLIFY === 'true' ? 'export' : undefined
+# 2. Check vercel.json has: "outputDirectory": ".next"
+# 3. Ensure AWS_AMPLIFY environment variable is NOT set in Vercel
 ```
 
 **CSS Build Issues on Vercel:**
