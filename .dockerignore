@@ -41,3 +41,25 @@ logs
 tmp
 temp
 *.tmp
+
+# Production specific
+.env.prod
+backups/
+traefik-certificates/
+
+# Documentation (not needed in containers)
+*.md
+!README.md
+
+# E2E and test files (not needed in production)
+e2e/
+test/
+**/__tests__/
+**/*.spec.ts
+**/*.test.ts
+playwright-report*/
+test-results/
+
+# Scripts (not needed in containers)
+*.sh
+!start*.sh
