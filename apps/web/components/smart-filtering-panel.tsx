@@ -217,7 +217,7 @@ export function SmartFilteringPanel({
 
         <div className="space-y-6">
           {/* Keyword Search Section */}
-          <Card className="mt-4">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Search className="h-4 w-4" />
@@ -225,12 +225,12 @@ export function SmartFilteringPanel({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-4">
+              <div className="mb-2">
                 <Label className="mb-2" htmlFor="keyword">Search Keyword</Label>
                 <Input
                   id="keyword"
                   className="shadow-sm "
-                  placeholder="Optional: Company name, registration number, or keywords..."
+                  placeholder="Company name, registration number, or keywords..."
                   value={tempCriteria.keyword || ""}
                   onChange={(e) => updateCriteria("keyword", e.target.value)}
                 />

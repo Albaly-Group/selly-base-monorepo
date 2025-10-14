@@ -473,9 +473,9 @@ export function CompanyDetailDrawer({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case "verified":
         return "font-bold bg-green-100 text-green-800";
-      case "pending":
+      case "unverified":
         return "font-bold bg-red-100 text-red-800";
       default:
         return "font-bold bg-gray-100 text-gray-800";
@@ -543,7 +543,7 @@ export function CompanyDetailDrawer({
             </div>
 
             {/* แถว Badges */}
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
               <Badge
                 variant="secondary"
                 className={getStatusColor(company.verificationStatus)}
@@ -861,7 +861,7 @@ export function CompanyDetailDrawer({
                 </Card>
 
                 {/* Quick Actions */}
-                <Card>
+                {/* <Card>
                   <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
@@ -881,7 +881,7 @@ export function CompanyDetailDrawer({
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </TabsContent>
 
               <TabsContent value="contacts" className="space-y-6">
