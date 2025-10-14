@@ -84,6 +84,7 @@ describe('CompaniesService', () => {
 
       mockCompanyRepository.createQueryBuilder.mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
@@ -118,6 +119,7 @@ describe('CompaniesService', () => {
 
       mockCompanyRepository.createQueryBuilder.mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
@@ -140,6 +142,7 @@ describe('CompaniesService', () => {
     it('should handle pagination correctly', async () => {
       mockCompanyRepository.createQueryBuilder.mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
@@ -174,6 +177,7 @@ describe('CompaniesService', () => {
 
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),

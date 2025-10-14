@@ -1,5 +1,21 @@
 "use client"
 import type { Company } from "@/lib/mock-data"
+
+// Table expects some additional optional fields when showing joined data from the API
+type TableCompany = Company & Partial<{
+  primaryIndustry: { titleEn?: string; title_en?: string; titleTh?: string; title_th?: string; code?: string }
+  primaryIndustryId: string
+  primaryRegion: { nameEn?: string; name_en?: string; nameTh?: string; name_th?: string; code?: string }
+  primaryRegionId: string
+  province: string
+  industrialName: string | string[]
+  dataCompleteness: number
+  contactPersons: Array<{ name: string; phone?: string; email?: string }>
+  registeredNo?: string
+  verificationStatus?: string
+  isSharedData?: boolean
+  dataSensitivity?: string
+}>
 import type { WeightedLeadScore } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -9,11 +25,11 @@ import { Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { useState } from "react"
 
 interface CompanyTableProps {
-  companies: Company[]
+  companies: TableCompany[]
   selectedCompanies: string[]
   onSelectCompany: (companyId: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
-  onViewCompany?: (company: Company) => void
+  onViewCompany?: (company: TableCompany) => void
   showLeadScores?: boolean
   leadScores?: { [companyId: string]: WeightedLeadScore }
   sortable?: boolean
@@ -32,6 +48,7 @@ export function CompanyTable({
   leadScores = {},
   sortable = false
 }: CompanyTableProps) {
+  console.log("Comapany Table", companies)
   const [sortField, setSortField] = useState<SortField>('score')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -58,12 +75,12 @@ export function CompanyTable({
         bValue = b.companyNameEn.toLowerCase()
         break
       case 'industry':
-        aValue = a.industrialName.toLowerCase()
-        bValue = b.industrialName.toLowerCase()
+        aValue = (a.industrialName || a.primaryIndustry?.titleEn || a.primaryIndustryId || '').toLowerCase()
+        bValue = (b.industrialName || b.primaryIndustry?.titleEn || b.primaryIndustryId || '').toLowerCase()
         break
       case 'province':
-        aValue = a.province.toLowerCase()
-        bValue = b.province.toLowerCase()
+        aValue = (a.province || a.primaryRegion?.nameEn || a.primaryRegionId || '').toLowerCase()
+        bValue = (b.province || b.primaryRegion?.nameEn || b.primaryRegionId || '').toLowerCase()
         break
       case 'status':
         aValue = a.verificationStatus.toLowerCase()
@@ -215,11 +232,21 @@ export function CompanyTable({
                 <TableCell>
                   {Array.isArray(company.industrialName) ? (
                     company.industrialName.join(', ')
-                  ) : (
+                  ) : company.industrialName ? (
                     company.industrialName
+                  ) : company.primaryIndustry?.titleEn ? (
+                    company.primaryIndustry.titleEn
+                  ) : company.primaryIndustryId ? (
+                    <span className="text-xs text-gray-400">ID: {company.primaryIndustryId.substring(0, 8)}...</span>
+                  ) : (
+                    '-'
                   )}
                 </TableCell>
-                <TableCell>{company.province}</TableCell>
+                <TableCell>
+                  {company.province || company.primaryRegion?.nameEn || (company.primaryRegionId ? (
+                    <span className="text-xs text-gray-400">ID: {company.primaryRegionId.substring(0, 8)}...</span>
+                  ) : '-')}
+                </TableCell>
                 <TableCell>
                   {company.contactPersons.length > 0 ? (
                     <div>

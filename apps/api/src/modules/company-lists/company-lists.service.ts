@@ -427,7 +427,14 @@ export class CompanyListsService {
   async getListItems(listId: string): Promise<any> {
     const Listitems = await this.companyListItemRepository.find({
       where: { listId },
-      relations: ['company', 'company.companyContacts', 'addedByUser'],
+      // include company relations for industry and region so frontend can display them
+      relations: [
+        'company',
+        'company.companyContacts',
+        'company.primaryIndustry',
+        'company.primaryRegion',
+        'addedByUser',
+      ],
       order: { position: 'ASC', addedAt: 'DESC' },
     });
 

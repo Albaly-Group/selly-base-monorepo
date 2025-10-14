@@ -1,0 +1,61 @@
+version: 1
+applications:
+  - appRoot: apps/web
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            # Navigate to repository root and install dependencies
+            - cd ../..
+            - npm ci
+        build:
+          commands:
+            # Set AWS_AMPLIFY environment variable to enable standalone mode
+            - export AWS_AMPLIFY=true
+            # Build frontend using Turbo with filter (builds web + types packages)
+            - npx turbo build --filter=web
+        postBuild:
+          commands:
+            # Copy static assets and public files to standalone directory for AWS Amplify
+            # These are required for Next.js standalone mode to work properly
+            - mkdir -p apps/web/.next/standalone/apps/web/public
+            - mkdir -p apps/web/.next/standalone/apps/web/.next
+            - cp -r apps/web/public/* apps/web/.next/standalone/apps/web/public/ 2>/dev/null || true
+            - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
+      artifacts:
+        # Output directory after build (relative to appRoot)
+        # For Next.js standalone mode (SSR support on AWS Amplify)
+        baseDirectory: .next/standalone
+        files:
+          - '**/*'
+      cache:
+        paths:
+          # Cache node_modules at repository root (relative to repo root)
+          - ../../node_modules/**/*
+          # Cache Next.js build cache (relative to appRoot)
+          - .next/cache/**/*
+  - appRoot: apps/api
+    backend:
+      phases:
+        preBuild:
+          commands:
+            # Navigate to repository root and install dependencies
+            - cd ../..
+            - npm ci
+        build:
+          commands:
+            # Build backend using Turbo with filter (builds api + types packages)
+            - npx turbo build --filter=api
+        postBuild:
+          commands:
+            # Copy node_modules to dist for deployment
+            - cp -r node_modules apps/api/dist/
+      artifacts:
+        # Output directory after build (relative to appRoot)
+        baseDirectory: dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          # Cache node_modules at repository root (relative to repo root)
+          - ../../node_modules/**/*

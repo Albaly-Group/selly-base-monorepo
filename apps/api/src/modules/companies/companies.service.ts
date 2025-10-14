@@ -69,7 +69,10 @@ export class CompaniesService {
                 dataSource: searchDto.dataSource,
                 verificationStatus: searchDto.verificationStatus,
                 companySize: searchDto.companySize,
+                industrial: searchDto.industrial,
                 province: searchDto.province,
+                primaryIndustryId: searchDto.primaryIndustryId,
+                primaryRegionId: searchDto.primaryRegionId,
               },
               executionTime: Date.now() - startTime,
               page: searchDto.page,
@@ -116,14 +119,18 @@ export class CompaniesService {
       companySize,
       industrial,
       province,
-      countryCode,
-      tags,
+      primaryIndustryId,
+      primaryRegionId,
     } = searchDto;
 
     const query = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.companyContacts', 'companyContacts')
-      .leftJoinAndSelect('company.organization', 'organization');
+      .leftJoinAndSelect('company.organization', 'organization')
+      .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
+      .leftJoin('company.companyTags', 'companyTags')
+      .leftJoin('companyTags.tag', 'tag');
 
     // Multi-tenant filtering with enhanced security
     if (organizationId) {
@@ -164,7 +171,8 @@ export class CompaniesService {
           company.displayName ILIKE :searchTerm OR 
           company.businessDescription ILIKE :searchTerm OR
           company.primaryEmail ILIKE :searchTerm OR
-          :searchTerm = ANY(company.tags)
+          tag.key ILIKE :searchTerm OR
+          tag.name ILIKE :searchTerm
         )`,
         { searchTerm: `%${searchTerm}%` },
       );
@@ -192,24 +200,35 @@ export class CompaniesService {
     }
 
     if (industrial) {
-      // Search in JSONB array for industry classification
-      query.andWhere(`company.industryClassification::text ILIKE :industrial`, {
-        industrial: `%${industrial}%`,
+      // Search in industry classification via the primaryIndustry relation
+      query.andWhere(
+        '(primaryIndustry.code ILIKE :industrial OR primaryIndustry.titleEn ILIKE :industrial)',
+        {
+          industrial: `%${industrial}%`,
+        },
+      );
+    }
+
+    if (primaryIndustryId) {
+      query.andWhere('company.primaryIndustryId = :primaryIndustryId', {
+        primaryIndustryId,
       });
     }
 
     if (province) {
-      query.andWhere('company.province ILIKE :province', {
-        province: `%${province}%`,
+      // Search in province via the primaryRegion relation
+      query.andWhere(
+        '(primaryRegion.nameEn ILIKE :province OR primaryRegion.nameTh ILIKE :province)',
+        {
+          province: `%${province}%`,
+        },
+      );
+    }
+
+    if (primaryRegionId) {
+      query.andWhere('company.primaryRegionId = :primaryRegionId', {
+        primaryRegionId,
       });
-    }
-
-    if (countryCode) {
-      query.andWhere('company.countryCode = :countryCode', { countryCode });
-    }
-
-    if (tags && tags.length > 0) {
-      query.andWhere('company.tags && :tags', { tags });
     }
 
     // Enhanced pagination with validation
@@ -285,6 +304,8 @@ export class CompaniesService {
     const query = this.companyRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.organization', 'organization')
+      .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
       .where('company.id = :id', { id });
 
     if (organizationId) {
@@ -342,14 +363,11 @@ export class CompaniesService {
         primaryPhone: createDto.primaryPhone || null,
         addressLine1: createDto.addressLine1 || null,
         addressLine2: createDto.addressLine2 || null,
-        district: createDto.district || null,
-        subdistrict: createDto.subdistrict || null,
-        province: createDto.province || null,
         postalCode: createDto.postalCode || null,
-        countryCode: createDto.countryCode || 'TH',
         companySize: createDto.companySize || 'small',
         employeeCountEstimate: createDto.employeeCountEstimate || null,
-        tags: createDto.tags || [],
+        primaryIndustryId: createDto.primaryIndustryId || null,
+        primaryRegionId: createDto.primaryRegionId || null,
         dataSensitivity: createDto.dataSensitivity || 'standard',
         dataSource: 'customer_input',
         isSharedData: false,
@@ -374,15 +392,24 @@ export class CompaniesService {
         primaryPhone: companyData.primaryPhone || undefined,
         addressLine1: companyData.addressLine1 || undefined,
         addressLine2: companyData.addressLine2 || undefined,
-        district: companyData.district || undefined,
-        subdistrict: companyData.subdistrict || undefined,
-        province: companyData.province || undefined,
         postalCode: companyData.postalCode || undefined,
         employeeCountEstimate: companyData.employeeCountEstimate || undefined,
+        primaryIndustryId: companyData.primaryIndustryId || undefined,
+        primaryRegionId: companyData.primaryRegionId || undefined,
       };
 
       const company = this.companyRepository.create(cleanedData);
       const savedCompany = await this.companyRepository.save(company);
+
+      // Reload with relations to include primaryIndustry and primaryRegion
+      const companyWithRelations = await this.companyRepository.findOne({
+        where: { id: savedCompany.id },
+        relations: ['primaryIndustry', 'primaryRegion'],
+      });
+
+      if (!companyWithRelations) {
+        throw new Error('Failed to reload created company');
+      }
 
       // Log creation
       if (this.auditService) {
@@ -399,9 +426,9 @@ export class CompaniesService {
 
       // Transform response to match DTO field names
       return {
-        ...savedCompany,
-        companyNameEn: savedCompany.nameEn,
-        companyNameTh: savedCompany.nameTh,
+        ...companyWithRelations,
+        companyNameEn: companyWithRelations.nameEn,
+        companyNameTh: companyWithRelations.nameTh,
       };
     } catch (error) {
       // Log error
@@ -511,26 +538,10 @@ export class CompaniesService {
           updateDto.addressLine2 !== undefined
             ? updateDto.addressLine2
             : existingCompany.addressLine2,
-        district:
-          updateDto.district !== undefined
-            ? updateDto.district
-            : existingCompany.district,
-        subdistrict:
-          updateDto.subdistrict !== undefined
-            ? updateDto.subdistrict
-            : existingCompany.subdistrict,
-        province:
-          updateDto.province !== undefined
-            ? updateDto.province
-            : existingCompany.province,
         postalCode:
           updateDto.postalCode !== undefined
             ? updateDto.postalCode
             : existingCompany.postalCode,
-        countryCode:
-          updateDto.countryCode !== undefined
-            ? updateDto.countryCode
-            : existingCompany.countryCode,
         companySize:
           updateDto.companySize !== undefined
             ? updateDto.companySize
@@ -539,8 +550,14 @@ export class CompaniesService {
           updateDto.employeeCountEstimate !== undefined
             ? updateDto.employeeCountEstimate
             : existingCompany.employeeCountEstimate,
-        tags:
-          updateDto.tags !== undefined ? updateDto.tags : existingCompany.tags,
+        primaryIndustryId:
+          updateDto.primaryIndustryId !== undefined
+            ? updateDto.primaryIndustryId
+            : existingCompany.primaryIndustryId,
+        primaryRegionId:
+          updateDto.primaryRegionId !== undefined
+            ? updateDto.primaryRegionId
+            : existingCompany.primaryRegionId,
         dataSensitivity:
           updateDto.dataSensitivity !== undefined
             ? updateDto.dataSensitivity
@@ -561,11 +578,37 @@ export class CompaniesService {
       const changes = this.calculateChanges(oldValues, updatedCompany);
 
       // Save to database
-      // Remove GENERATED columns from update data (displayName, searchVector)
-      const { displayName, searchVector, ...updateData } = updatedCompany;
-      await this.companyRepository.update(id, updateData);
+      // Build DB update payload: remove GENERATED columns and relation objects
+      const {
+        displayName,
+        searchVector,
+        primaryIndustry,
+        primaryRegion,
+        ...rest
+      } = updatedCompany as any;
+
+      const dbUpdate: any = {
+        ...rest,
+        // prefer values from incoming DTO when provided (allow null)
+        primaryIndustryId:
+          updateDto.primaryIndustryId !== undefined
+            ? updateDto.primaryIndustryId
+            : existingCompany.primaryIndustryId,
+        primaryRegionId:
+          updateDto.primaryRegionId !== undefined
+            ? updateDto.primaryRegionId
+            : existingCompany.primaryRegionId,
+        // keep consistency with createCompany where score was stored as string
+        dataQualityScore: this.calculateDataQualityScore(
+          updateDto,
+          existingCompany,
+        ).toString(),
+      };
+
+      await this.companyRepository.update(id, dbUpdate);
       const savedCompany = await this.companyRepository.findOne({
         where: { id },
+        relations: ['primaryIndustry', 'primaryRegion'],
       });
 
       // Log update
@@ -682,6 +725,8 @@ export class CompaniesService {
         // Note: contacts relation not yet defined in entity
         // .leftJoinAndSelect('company.contacts', 'contacts')
         .leftJoinAndSelect('company.organization', 'organization')
+        .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+        .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
         .where('company.id IN (:...ids)', { ids });
 
       // Apply multi-tenant filtering
@@ -766,7 +811,7 @@ export class CompaniesService {
     checkField(combinedData.primaryEmail, 0.1);
     checkField(combinedData.primaryPhone, 0.1);
     checkField(combinedData.addressLine1, 0.1);
-    checkField(combinedData.province, 0.05);
+    checkField(combinedData.primaryRegionId, 0.05);
     checkField(combinedData.primaryRegistrationNo, 0.15);
     checkField(combinedData.tags && combinedData.tags.length > 0, 0.05);
 

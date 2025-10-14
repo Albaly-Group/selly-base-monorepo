@@ -35,7 +35,7 @@ function CompanyLookupPage() {
     const filters: any = {
       page: currentPage,
       limit: 25,
-      _refresh: refreshTrigger, // Add refresh trigger to force re-fetch
+      _refresh: refreshTrigger,
     };
 
     if (isSimpleSearch) {
@@ -57,6 +57,7 @@ function CompanyLookupPage() {
 
       // Apply attribute filters
       if (smartFiltering.industrial){
+        console.log("Smart", smartFiltering.industrial)
         filters.industrial = smartFiltering.industrial;
       }
       if (smartFiltering.province) {
@@ -68,9 +69,6 @@ function CompanyLookupPage() {
       if (smartFiltering.verificationStatus){
         filters.verificationStatus = smartFiltering.verificationStatus;
       }
-
-      // Note: weights are used for client-side scoring, not sent to backend
-      // Backend filtering is done on the attributes themselves
     }
 
     return filters;
@@ -113,8 +111,11 @@ function CompanyLookupPage() {
           registrationId: item.registrationId || item.primaryRegistrationNo,
           registeredNo: item.primaryRegistrationNo,
           registrationDate: item.establishedDate,
-          industrialName: industrialName,
-          province: item.province || 'N/A',
+          industrialName: (item.primaryIndustry && (item.primaryIndustry.titleEn || item.primaryIndustry.titleTh || item.primaryIndustry.code)) || industrialName,
+          primaryIndustryDisplay: (item.primaryIndustry && (item.primaryIndustry.titleEn || item.primaryIndustry.titleTh || item.primaryIndustry.code)) || 'N/A',
+          primaryRegion: item.primaryRegion || null,
+          primaryRegionDisplay: (item.primaryRegion && (item.primaryRegion.nameEn || item.primaryRegion.nameTh || item.primaryRegion.code)) || 'N/A',
+          province: (item.primaryRegion && (item.primaryRegion.nameEn || item.primaryRegion.nameTh || item.primaryRegion.code)) || item.province || 'N/A',
           websiteUrl: item.websiteUrl,
           primaryEmail: item.primaryEmail,
           primaryPhone: item.primaryPhone,
@@ -250,7 +251,7 @@ function CompanyLookupPage() {
     setSelectedCompanies([])
   }
 
-  const ViewCompany = (company: Company) => {
+  const ViewCompany = (company: any) => {
     console.log("Compay", company)
     setSelectedCompany(company)
     setShowCompanyDetail(true)

@@ -1,4 +1,11 @@
-import { Column, Entity, Index } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
 @Index(
   'ref_industry_codes_code_classification_system_key',
@@ -19,7 +26,7 @@ export class RefIndustryCodes {
   code: string;
 
   @Column('text', { name: 'title_en' })
-  titleEn: string;
+  titleEn: string | null;
 
   @Column('text', { name: 'title_th', nullable: true })
   titleTh: string | null;
@@ -32,9 +39,6 @@ export class RefIndustryCodes {
 
   @Column('integer', { name: 'level' })
   level: number;
-
-  @Column('text', { name: 'parent_code', nullable: true })
-  parentCode: string | null;
 
   @Column('boolean', {
     name: 'is_active',
@@ -55,4 +59,24 @@ export class RefIndustryCodes {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date | null;
+
+  @Column('timestamp with time zone', {
+    name: 'updated_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date | null;
+
+  @ManyToOne(
+    () => RefIndustryCodes,
+    (refIndustryCodes) => refIndustryCodes.refIndustryCodes,
+  )
+  @JoinColumn([{ name: 'parent_id', referencedColumnName: 'id' }])
+  parent: RefIndustryCodes;
+
+  @OneToMany(
+    () => RefIndustryCodes,
+    (refIndustryCodes) => refIndustryCodes.parent,
+  )
+  refIndustryCodes: RefIndustryCodes[];
 }

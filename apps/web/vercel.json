@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd ../.. && npm ci && npx turbo build --filter=web",
-  "outputDirectory": ".next",
   "devCommand": "npm run dev",
   "installCommand": "npm ci",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "outputDirectory": ".next"
 }

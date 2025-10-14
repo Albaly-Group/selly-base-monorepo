@@ -209,6 +209,40 @@ JWT_SECRET=your-production-secret
 
 > **Note**: You can use either `DATABASE_URL` (recommended) or individual database environment variables (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`). If `DATABASE_URL` is provided, it takes precedence. For cloud databases, include SSL parameters like `?sslmode=require` or `?ssl=true`.
 
+## 🐳 Production Deployment
+
+### Docker Compose + Traefik (Recommended) ⭐
+
+Complete production setup with SSL/TLS, load balancing, and works on both AWS and traditional servers:
+
+```bash
+# Quick start (5 minutes)
+cp .env.prod.example .env.prod
+nano .env.prod  # Configure: DOMAIN, POSTGRES_PASSWORD, JWT_SECRET
+./deploy-production.sh
+
+# Access
+Frontend: https://sellybase.albaly.jp
+API: https://api.sellybase.albaly.jp
+Docs: https://api.sellybase.albaly.jp/docs
+```
+
+**Features**:
+- ✅ Automatic SSL/TLS (Let's Encrypt)
+- ✅ Traefik reverse proxy & load balancer
+- ✅ Security headers & rate limiting
+- ✅ Health checks & zero-downtime updates
+- ✅ Automated backups & maintenance
+- ✅ Works on AWS EC2, DigitalOcean, Linode, any VPS
+
+**Documentation**: [Quick Start Guide](./DOCKER_PRODUCTION_QUICKSTART.md) | [Full Guide](./DOCKER_COMPOSE_PRODUCTION.md) | [All Options](./DEPLOYMENT_SUMMARY.md)
+
+### Other Deployment Options
+
+- **AWS Amplify**: Serverless deployment - [Guide](./AWS_AMPLIFY_DEPLOYMENT.md)
+- **Vercel**: Fast Next.js deployment - [Guide](./VERCEL_DEPLOYMENT.md)
+- **Traditional**: Railway, Heroku, etc. - [Guide](./DEPLOYMENT.md)
+
 ## 📊 Current Implementation Status
 
 ### ✅ **Production Ready**
@@ -322,8 +356,11 @@ npm run test:all                # Run comprehensive test suite
 - **API Documentation**: http://localhost:3001/api/docs (when running)
 - **Company Lists**: [docs/COMPANY_LISTS_IMPLEMENTATION.md](./docs/COMPANY_LISTS_IMPLEMENTATION.md)
 - **Deployment Guides**:
-  - **Full-Stack Vercel Deployment**: [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) ⭐ **Recommended**
-  - **Separate Deployments**: [DEPLOYMENT.md](./DEPLOYMENT.md) | [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
+  - **Docker Compose Production (Traefik)**: [DOCKER_PRODUCTION_QUICKSTART.md](./DOCKER_PRODUCTION_QUICKSTART.md) ⭐ **New - Production Ready**
+  - **Full-Stack Vercel Deployment**: [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
+  - **AWS Amplify Deployment**: [AWS_AMPLIFY_DEPLOYMENT.md](./AWS_AMPLIFY_DEPLOYMENT.md)
+  - **Deployment Options Summary**: [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)
+  - **Traditional Deployments**: [DEPLOYMENT.md](./DEPLOYMENT.md) | [BACKEND_DEPLOYMENT.md](./BACKEND_DEPLOYMENT.md)
 
 ## 🤝 Contributing
 

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Search, Target, Save, Plus, Trash2 } from "lucide-react"
@@ -82,7 +83,7 @@ export function SmartFilteringPanel({
     minimumScore: criteria.minimumScore || 0,
   })
 
-  const [industrialOptions, setIndustrialOptions] = useState<string[]>(fallbackIndustrialOptions)
+  const [industrialOptions, setIndustrialOptions] = useState<{value: string; label: string}[]>([])
   const [provinceOptions, setProvinceOptions] = useState<string[]>(fallbackProvinceOptions)
   const [companySizeOptions, setCompanySizeOptions] = useState<any[]>(fallbackCompanySizeOptions)
   const [contactStatusOptions, setContactStatusOptions] = useState<{value: string, label: string}[]>(fallbackContactStatusOptions)
@@ -92,8 +93,17 @@ export function SmartFilteringPanel({
       try {
         // Fetch industries
         const industriesResponse = await apiClient.getIndustries()
+        const list = industriesResponse.data || []
+
         if (industriesResponse.data && industriesResponse.data.length > 0) {
-          setIndustrialOptions(industriesResponse.data.map((item: any) => item.name || item.nameEn))
+          const options = list
+            .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
+            .map(it => ({
+              value: String(it.id), 
+              label: it.nameEn!.trim(), 
+            }));
+
+          setIndustrialOptions(options);
         }
       } catch (error) {
         console.error('Failed to fetch industries, using fallback:', error)
@@ -144,9 +154,12 @@ export function SmartFilteringPanel({
   }, [isOpen])
 
   const updateCriteria = (key: keyof SmartFilteringCriteria, value: any) => {
+    console.log("Value", value);
+    const normalizedValue = value === "" ? undefined : value;
+    
     setTempCriteria((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: normalizedValue,
     }))
   }
 
@@ -253,24 +266,23 @@ export function SmartFilteringPanel({
                 {/* Industry */}
                 <div className="space-y-3">
                   <Label>Industry</Label>
-                  <Select
-                    value={tempCriteria.industrial || ""}
-                    onValueChange={(value) => updateCriteria("industrial", value === "any" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any Industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any Industry</SelectItem>
-                      {industrialOptions.map((option) => (
-                        <SelectItem key={option} value={option} >
-                          <div className="truncate max-w-[120px]">
-                            {option}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Combobox
+                      options={[{ value: "", label: "Any Industry" }, ...industrialOptions]}
+                      value={
+                        useMemo(() => {
+                          const opt = industrialOptions.find(o => o.label === (tempCriteria.industrial || ""));
+                          return opt?.value ?? "";
+                        }, [industrialOptions, tempCriteria.industrial])
+                      }
+                      onValueChange={(val) => {
+                        const opt = industrialOptions.find(o => o.value === val);
+                        updateCriteria("industrial", opt?.label ?? undefined);
+                      }}
+                      placeholder="Search industries..."
+                      searchPlaceholder="Search industries..."
+                      emptyText="No industry found."
+                    />
+
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.industrialWeight}%</Label>
                     <Slider
@@ -286,22 +298,20 @@ export function SmartFilteringPanel({
                 {/* Province */}
                 <div className="space-y-3">
                   <Label>Province</Label>
-                  <Select
+                  <Combobox
+                    options={[
+                      { value: "", label: "Any Province" },
+                      ...provinceOptions.map((option) => ({
+                        value: option,
+                        label: option,
+                      })),
+                    ]}
                     value={tempCriteria.province || ""}
-                    onValueChange={(value) => updateCriteria("province", value === "any" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any Province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any Province</SelectItem>
-                      {provinceOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onValueChange={(value) => updateCriteria("province", value)}
+                    placeholder="Search provinces..."
+                    searchPlaceholder="Search provinces..."
+                    emptyText="No province found."
+                  />
                   <div>
                     <Label className="text-sm">Weight: {tempCriteria.provinceWeight}%</Label>
                     <Slider

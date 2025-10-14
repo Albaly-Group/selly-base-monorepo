@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
+import { CompanyTags } from './CompanyTags';
 
 @Index('ref_tags_pkey', ['id'], { unique: true })
 @Index('ref_tags_key_key', ['key'], { unique: true })
@@ -70,4 +71,7 @@ export class RefTags {
 
   @OneToMany(() => RefTags, (refTags) => refTags.parentTag)
   refTags: RefTags[];
+
+  @OneToMany(() => CompanyTags, (companyTags) => companyTags.tag)
+  companyTags: CompanyTags[];
 }

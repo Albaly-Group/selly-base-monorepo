@@ -1,0 +1,60 @@
+# Docker Compose for Local Production Testing
+# This file overrides docker-compose.prod.yml for local testing without real domain/SSL
+
+version: '3.8'
+
+services:
+  # Traefik - Local configuration (no SSL)
+  traefik:
+    command:
+      # Override Traefik command for local testing
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      # Only HTTP for local testing
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      # Don't mount traefik.yml for local testing
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+  # Backend API - Local configuration
+  api:
+    environment:
+      # Override for local testing
+      CORS_ORIGINS: http://localhost,http://localhost:3000,http://api.localhost
+    labels:
+      - "traefik.enable=true"
+      # HTTP only, no TLS
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
+      # No TLS or security headers for local testing
+      - "traefik.http.routers.api.middlewares=api-compress"
+      - "traefik.http.middlewares.api-compress.compress=true"
+
+  # Frontend Web - Local configuration
+  web:
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: http://api.localhost
+    environment:
+      NEXT_PUBLIC_API_URL: http://api.localhost
+    labels:
+      - "traefik.enable=true"
+      # HTTP only, no TLS
+      - "traefik.http.routers.web.rule=Host(`localhost`) || Host(`www.localhost`)"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+      # No TLS or security headers for local testing
+      - "traefik.http.routers.web.middlewares=web-compress"
+      - "traefik.http.middlewares.web-compress.compress=true"
