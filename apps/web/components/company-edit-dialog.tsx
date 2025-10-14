@@ -293,7 +293,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <Label htmlFor="primaryRegionId">Region</Label>
                 <Select 
                   value={formData.primaryRegionId || ""} 
@@ -330,7 +330,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Company Details</h3>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2 min-w-0">
               <Label htmlFor="primaryIndustryId">Industry</Label>
               <Combobox
                 options={industries.map((industry: any) => ({
@@ -345,6 +346,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 disabled={!canEdit}
               />
             </div>
+          </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
