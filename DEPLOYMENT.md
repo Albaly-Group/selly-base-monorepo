@@ -75,7 +75,7 @@ When using the optimized separate deployments (Option 1):
 - **Optimized Builds**: Each deployment builds only necessary packages using Turbo filters
 - **Dependency Management**: Turbo automatically builds required dependencies (shared types)
 - **Faster Deployments**: Avoids building unnecessary packages
-- Build artifacts (`.next/`, `dist/`) are excluded from Git
+- Build artifacts (`.next/`, `out/`, `dist/`) are excluded from Git
 - All dependencies are managed at the workspace root level
 
 ## Environment Variables

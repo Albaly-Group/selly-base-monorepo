@@ -37,7 +37,7 @@ selly-base-monorepo/
 **Frontend Configuration (`apps/web/vercel.json`)**:
 - Optimized build command that builds only the web app and its dependencies
 - Uses Turbo's `--filter=web` to avoid building unnecessary packages
-- Outputs to `.next` directory
+- Outputs to `out` directory (static export mode)
 
 **Backend Configuration (`apps/api/vercel.json`)**:
 - Optimized build command that builds only the API and its dependencies  
@@ -57,7 +57,7 @@ selly-base-monorepo/
 
 2. **Configure Frontend Settings**:
    - **Build Command**: Optimized to build only web app: `cd ../.. && npm install && npx turbo build --filter=web`
-   - **Output Directory**: `.next` (from vercel.json)
+   - **Output Directory**: `out` (from vercel.json - static export mode)
    - **Install Command**: `npm install` (at repository root)
 
 3. **Environment Variables**:
