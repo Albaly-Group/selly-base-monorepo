@@ -1,0 +1,94 @@
+# Traefik Dynamic Middlewares Configuration
+# Additional security and processing middlewares
+
+http:
+  middlewares:
+    # Security Headers Middleware
+    securityHeaders:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          X-Frame-Options: "SAMEORIGIN"
+          X-Content-Type-Options: "nosniff"
+          X-XSS-Protection: "1; mode=block"
+          Referrer-Policy: "strict-origin-when-cross-origin"
+          Permissions-Policy: "geolocation=(), microphone=(), camera=()"
+          X-Robots-Tag: "none"
+    
+    # Rate Limiting - General
+    rateLimit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1s
+    
+    # Rate Limiting - Strict (for sensitive endpoints)
+    rateLimitStrict:
+      rateLimit:
+        average: 20
+        burst: 10
+        period: 1s
+    
+    # CORS Headers (if needed)
+    corsHeaders:
+      headers:
+        accessControlAllowOriginList:
+          - "https://sellybase.albaly.jp"
+          - "https://www.sellybase.albaly.jp"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "PATCH"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+          - "X-Requested-With"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 3600
+    
+    # Compression
+    compression:
+      compress: {}
+    
+    # IP Whitelist (example - restrict access to specific IPs)
+    # ipWhitelist:
+    #   ipWhiteList:
+    #     sourceRange:
+    #       - "127.0.0.1/32"
+    #       - "192.168.1.0/24"
+    
+    # Basic Auth (example)
+    # basicAuth:
+    #   basicAuth:
+    #     users:
+    #       - "admin:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"  # admin:admin
+    
+    # Redirect to HTTPS
+    redirectToHTTPS:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    
+    # Remove www prefix
+    removeWWW:
+      redirectRegex:
+        regex: "^https://www\\.(.+)"
+        replacement: "https://${1}"
+        permanent: true
+    
+    # Strip prefix (example for API versioning)
+    # stripApiPrefix:
+    #   stripPrefix:
+    #     prefixes:
+    #       - "/api/v1"

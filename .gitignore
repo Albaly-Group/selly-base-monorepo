@@ -33,6 +33,8 @@ e2e-test-logs/
 !.env.example
 !.env.test
 !.env.amplify.example
+!.env.prod.example
+!.env.docker
 
 # vercel
 .vercel
@@ -53,3 +55,10 @@ next-env.d.ts
 /test-results
 playwright-report
 .lighthouseci
+
+# Docker production
+backups/
+traefik-certificates/
+
+# Traefik logs (if mounted locally)
+/var/log/traefik/

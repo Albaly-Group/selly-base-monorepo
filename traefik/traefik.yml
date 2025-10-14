@@ -1,0 +1,94 @@
+# Traefik Static Configuration
+# This file defines the core Traefik configuration
+
+# API and Dashboard
+api:
+  dashboard: true
+  insecure: false  # Dashboard only accessible via HTTPS with authentication
+
+# Entry Points - Where Traefik listens for incoming connections
+entryPoints:
+  # HTTP entry point (port 80)
+  web:
+    address: ":80"
+    # Redirect HTTP to HTTPS
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  # HTTPS entry point (port 443)
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "sellybase.albaly.jp"
+            sans:
+              - "*.sellybase.albaly.jp"
+              - "www.sellybase.albaly.jp"
+
+# Certificate Resolvers - Automatic SSL/TLS certificate management
+certificatesResolvers:
+  # Let's Encrypt certificate resolver
+  letsencrypt:
+    acme:
+      # Email for Let's Encrypt notifications
+      email: "admin@albaly.jp"
+      # Certificate storage
+      storage: /letsencrypt/acme.json
+      # Use TLS-ALPN-01 challenge (recommended for cloud)
+      tlsChallenge: {}
+      # Alternative: HTTP-01 challenge (good for simple setups)
+      # httpChallenge:
+      #   entryPoint: web
+      # Alternative: DNS-01 challenge (best for wildcard certificates)
+      # Available if you set CF_API_EMAIL and CF_DNS_API_TOKEN or AWS credentials
+      # dnsChallenge:
+      #   provider: cloudflare  # or route53 for AWS
+      #   delayBeforeCheck: 0
+
+# Providers - How Traefik discovers services
+providers:
+  # Docker provider - Automatically discover services from Docker
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: selly-network
+    watch: true
+
+  # File provider - Load additional configuration from files
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+# Logging
+log:
+  level: INFO  # DEBUG, INFO, WARN, ERROR, FATAL, PANIC
+  filePath: /var/log/traefik/traefik.log
+  format: json
+
+# Access Logs
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: json
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "400-499"
+      - "500-599"
+
+# Metrics (optional, for monitoring)
+# metrics:
+#   prometheus:
+#     addEntryPointsLabels: true
+#     addServicesLabels: true
+#     entryPoint: metrics
+
+# Global settings
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
