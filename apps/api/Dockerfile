@@ -1,10 +1,9 @@
 # Backend API Dockerfile for E2E Testing
 
-FROM node:18-alpine AS base
+FROM node:20-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
@@ -27,8 +26,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 --gid nodejs nestjs
 
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
