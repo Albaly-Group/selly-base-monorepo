@@ -367,13 +367,13 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate">Employee Coun</Label>
+                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
                 <Input
-                  id="postalCode"
+                  id="employeeCountEstimate"
                   type="number"
                   value={formData.employeeCountEstimate || ""}
                   onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
-                  placeholder="10110"
+                  placeholder="50"
                   disabled={!canEdit}
                 />
               </div>
