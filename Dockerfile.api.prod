@@ -1,0 +1,59 @@
+# Production Dockerfile for Backend API (NestJS)
+# Build from repository root context
+
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy package files from monorepo root
+COPY package*.json ./
+COPY apps/api/package*.json ./apps/api/
+
+# Install dependencies
+RUN npm ci
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+
+# Copy monorepo configuration
+COPY package*.json ./
+COPY turbo.json ./
+
+# Copy API source code
+COPY apps/api ./apps/api
+
+# Build the NestJS application
+WORKDIR /app/apps/api
+RUN npm run build
+
+# Production image, copy all the files and run nest
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+# Copy built application and dependencies
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@nestjs ./node_modules/@nestjs
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package*.json ./
+
+USER nestjs
+
+EXPOSE 3001
+
+ENV PORT=3001
+
+CMD ["node", "dist/main.js"]

@@ -1,0 +1,69 @@
+# Production Dockerfile for Frontend Web (Next.js)
+# Build from repository root context
+
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy package files from monorepo root
+COPY package*.json ./
+COPY apps/web/package*.json ./apps/web/
+
+# Install dependencies
+RUN npm ci
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+
+# Copy monorepo configuration
+COPY package*.json ./
+COPY turbo.json ./
+
+# Copy web source code
+COPY apps/web ./apps/web
+
+# Build the Next.js application
+WORKDIR /app/apps/web
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build argument for API URL
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+RUN npm run build
+
+# Production image, run with next start
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy necessary files
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/next.config.mjs ./
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Use next start which is simpler than standalone
+CMD ["npm", "start"]
