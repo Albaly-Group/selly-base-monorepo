@@ -10,16 +10,22 @@ applications:
             - npm ci
         build:
           commands:
+            # Set AWS_AMPLIFY environment variable to enable standalone mode
+            - export AWS_AMPLIFY=true
             # Build frontend using Turbo with filter (builds web + types packages)
             - npx turbo build --filter=web
         postBuild:
           commands:
-            # Copy required-server-files.json to output directory for AWS Amplify
-            - cp .next/required-server-files.json out/ || true
+            # Copy static assets and public files to standalone directory for AWS Amplify
+            # These are required for Next.js standalone mode to work properly
+            - mkdir -p apps/web/.next/standalone/apps/web/public
+            - mkdir -p apps/web/.next/standalone/apps/web/.next
+            - cp -r apps/web/public/* apps/web/.next/standalone/apps/web/public/ 2>/dev/null || true
+            - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
       artifacts:
         # Output directory after build (relative to appRoot)
-        # For Next.js static export, use out directory
-        baseDirectory: out
+        # For Next.js standalone mode (SSR support on AWS Amplify)
+        baseDirectory: .next/standalone
         files:
           - '**/*'
       cache:
