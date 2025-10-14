@@ -48,7 +48,8 @@ applications:
             - npx turbo build --filter=api
         postBuild:
           commands:
-            # Copy node_modules to dist for deployment
+            # Ensure dist directory exists and copy runtime dependencies for deployment
+            - mkdir -p apps/api/dist
             - cp -r node_modules apps/api/dist/
       artifacts:
         # Output directory after build (relative to appRoot)
