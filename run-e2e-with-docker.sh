@@ -47,12 +47,12 @@ print_header() {
 
 print_success() {
     log "${GREEN}✓ $1${NC}"
-    ((TESTS_PASSED++))
+    ((TESTS_PASSED++)) || true
 }
 
 print_error() {
     log "${RED}✗ $1${NC}"
-    ((TESTS_FAILED++))
+    ((TESTS_FAILED++)) || true
 }
 
 print_info() {
