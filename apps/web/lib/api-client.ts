@@ -488,12 +488,14 @@ class ApiClient {
   }
 
   // Reports & Analytics endpoints (to be implemented in backend)
-  async getDashboardAnalytics(): Promise<any> {
-    return this.get<any>('/api/v1/reports/dashboard');
+  async getDashboardAnalytics(organizationId?: string): Promise<any> {
+    const params = organizationId ? { organizationId } : undefined;
+    return this.get<any>('/api/v1/reports/dashboard', params);
   }
 
-  async getDataQualityMetrics(): Promise<any> {
-    return this.get<any>('/api/v1/reports/data-quality');
+  async getDataQualityMetrics(organizationId?: string): Promise<any> {
+    const params = organizationId ? { organizationId } : undefined;
+    return this.get<any>('/api/v1/reports/data-quality', params);
   }
 
   async getUserActivityReports(params?: { startDate?: string; endDate?: string }): Promise<any> {

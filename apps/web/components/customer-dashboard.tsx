@@ -31,8 +31,8 @@ export function CustomerDashboard() {
       try {
         setError(null)
         const [analyticsData, listsData] = await Promise.all([
-          apiClient.getDashboardAnalytics(),
-          apiClient.getCompanyLists().catch(() => ({ data: [] }))
+          apiClient.getDashboardAnalytics(user.organizationId),
+          apiClient.getCompanyLists({ organizationId: user.organizationId }).catch(() => ({ data: [] }))
         ])
         
         setStats({
