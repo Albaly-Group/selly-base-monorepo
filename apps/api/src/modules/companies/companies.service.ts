@@ -585,7 +585,7 @@ export class CompaniesService {
         primaryIndustry,
         primaryRegion,
         ...rest
-      } = updatedCompany as any;
+      } = updatedCompany;
 
       const dbUpdate: any = {
         ...rest,
@@ -655,17 +655,26 @@ export class CompaniesService {
     }
 
     try {
-      const company = await this.getCompanyById(id, user.organizationId || undefined, user);
+      const company = await this.getCompanyById(
+        id,
+        user.organizationId || undefined,
+        user,
+      );
 
       // Enhanced authorization
       if (company.isSharedData) {
         // For shared data, only platform admins can delete
         if (!isPlatformAdmin) {
-          throw new ForbiddenException('Cannot delete shared data companies - requires shared-data:manage permission');
+          throw new ForbiddenException(
+            'Cannot delete shared data companies - requires shared-data:manage permission',
+          );
         }
       } else {
         // For non-shared data, user must own the company (or be platform admin)
-        if (company.organizationId !== user.organizationId && !isPlatformAdmin) {
+        if (
+          company.organizationId !== user.organizationId &&
+          !isPlatformAdmin
+        ) {
           throw new ForbiddenException(
             'Cannot delete this company - insufficient permissions',
           );

@@ -13,7 +13,10 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateOrganizationUserDto, UpdateOrganizationUserDto } from '../../dtos/admin.dto';
+import {
+  CreateOrganizationUserDto,
+  UpdateOrganizationUserDto,
+} from '../../dtos/admin.dto';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -47,7 +50,10 @@ export class AdminController {
     status: 201,
     description: 'Organization user created successfully',
   })
-  async createOrganizationUser(@Request() req: any, @Body() userData: CreateOrganizationUserDto) {
+  async createOrganizationUser(
+    @Request() req: any,
+    @Body() userData: CreateOrganizationUserDto,
+  ) {
     const organizationId = req.user?.organizationId;
     return this.adminService.createOrganizationUser({
       ...userData,

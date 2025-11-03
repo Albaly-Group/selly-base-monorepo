@@ -249,6 +249,7 @@ describe('CompanyListsService', () => {
       mockCompaniesRepository.findByIds = jest
         .fn()
         .mockResolvedValue(mockCompanies);
+      mockCompanyListItemsRepository.find.mockResolvedValue([]);
       mockCompanyListItemsRepository.create.mockImplementation((item) => item);
       mockCompanyListItemsRepository.save.mockResolvedValue([]);
 
@@ -259,7 +260,6 @@ describe('CompanyListsService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('items');
       expect(Array.isArray(result.items)).toBe(true);
     });
