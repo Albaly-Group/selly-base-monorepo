@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-11-03T20:20:00.000Z",
+  "totalFeatures": 49,
+  "documentedFeatures": 44,
+  "missingFeatures": 5,
+  "coveragePercentage": 89.8,
+  "summary": {
+    "Authentication": "100% (4/4)",
+    "Dashboard": "100% (4/4)",
+    "Company Management": "100% (5/5)",
+    "List Management": "100% (8/8)",
+    "Data Import": "100% (5/5)",
+    "Data Export": "100% (5/5)",
+    "Reports & Analytics": "100% (4/4)",
+    "Staff Management": "100% (4/4)",
+    "Organization Admin": "100% (4/4)",
+    "Platform Administration": "80% (4/5)",
+    "Developer Tools": "0% (0/1)"
+  },
+  "newlyDocumented": [
+    "Data Import - Upload Import File",
+    "Data Import - Map Import Columns",
+    "Data Import - Validate Import Data",
+    "Data Import - Execute Import",
+    "Data Import - View Import History",
+    "Data Export - Create Export Request",
+    "Data Export - Configure Export Fields",
+    "Data Export - Download Export",
+    "Data Export - View Export History",
+    "Data Export - Cancel Export",
+    "Reports & Analytics - View Reports",
+    "Reports & Analytics - Generate Custom Report",
+    "Reports & Analytics - Export Report Data",
+    "Reports & Analytics - Schedule Reports",
+    "Staff Management - View Staff Members",
+    "Staff Management - Add Staff Member",
+    "Staff Management - Edit Staff Details",
+    "Staff Management - Remove Staff Member",
+    "Organization Admin - Manage Organization Users",
+    "Organization Admin - Configure Data Policies",
+    "Organization Admin - Manage User Roles",
+    "Organization Admin - Organization Settings",
+    "Platform Administration - Manage Tenants"
+  ],
+  "stillMissing": [
+    "Platform Administration - Upload Shared Companies (partial)",
+    "Platform Administration - Cross-Tenant User Management (partial)",
+    "Platform Administration - Platform Analytics (partial)",
+    "Platform Administration - Audit Logs (partial)",
+    "Developer Tools - API Test Interface"
+  ]
+}
