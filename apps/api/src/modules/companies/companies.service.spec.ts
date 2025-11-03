@@ -267,6 +267,7 @@ describe('CompaniesService', () => {
 
       mockCompanyRepository.create.mockReturnValue(mockCompany);
       mockCompanyRepository.save.mockResolvedValue(mockCompany);
+      mockCompanyRepository.findOne.mockResolvedValue(mockCompany);
 
       const result = await service.createCompany(createDto, mockUser);
 
