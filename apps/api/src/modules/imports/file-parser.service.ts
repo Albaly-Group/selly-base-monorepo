@@ -20,7 +20,7 @@ export class FileParserService {
   async parseCSV(buffer: Buffer): Promise<ParsedData> {
     return new Promise((resolve, reject) => {
       const text = buffer.toString('utf-8');
-      
+
       Papa.parse(text, {
         header: true,
         skipEmptyLines: true,
@@ -33,10 +33,10 @@ export class FileParserService {
             );
             return;
           }
-          
+
           const columns = results.meta.fields || [];
           const rows = results.data;
-          
+
           resolve({
             rows,
             columns,
@@ -44,7 +44,9 @@ export class FileParserService {
           });
         },
         error: (error: any) => {
-          reject(new BadRequestException(`CSV parsing failed: ${error.message}`));
+          reject(
+            new BadRequestException(`CSV parsing failed: ${error.message}`),
+          );
         },
       });
     });
@@ -56,37 +58,37 @@ export class FileParserService {
   async parseXLSX(buffer: Buffer): Promise<ParsedData> {
     try {
       const workbook = XLSX.read(buffer, { type: 'buffer' });
-      
+
       // Get the first sheet (skip Instructions sheet if present)
       const sheetNames = workbook.SheetNames.filter(
         (name) => name.toLowerCase() !== 'instructions',
       );
-      
+
       if (sheetNames.length === 0) {
         throw new BadRequestException('No data sheets found in the Excel file');
       }
-      
+
       const firstSheetName = sheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
-      
+
       // Convert to JSON
       const jsonData = XLSX.utils.sheet_to_json(worksheet, {
         header: 1,
         defval: '',
         blankrows: false,
       });
-      
+
       if (jsonData.length === 0) {
         throw new BadRequestException('Excel file is empty');
       }
-      
+
       // First row is headers
       const headers = jsonData[0] as string[];
       const columns = headers.map((h) => String(h).trim());
-      
+
       // Remaining rows are data
       const dataRows = jsonData.slice(1);
-      
+
       // Convert array rows to objects
       const rows = dataRows.map((row: any[]) => {
         const obj: any = {};
@@ -95,7 +97,7 @@ export class FileParserService {
         });
         return obj;
       });
-      
+
       return {
         rows,
         columns,
@@ -105,9 +107,7 @@ export class FileParserService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(
-        `Excel parsing failed: ${error.message}`,
-      );
+      throw new BadRequestException(`Excel parsing failed: ${error.message}`);
     }
   }
 
@@ -116,7 +116,7 @@ export class FileParserService {
    */
   async parseFile(buffer: Buffer, filename: string): Promise<ParsedData> {
     const extension = filename.split('.').pop()?.toLowerCase();
-    
+
     switch (extension) {
       case 'csv':
         return this.parseCSV(buffer);
@@ -140,11 +140,11 @@ export class FileParserService {
   ): ImportValidationError[] {
     const errors: ImportValidationError[] = [];
     const mapping = this.templateService.getColumnMapping(entityType);
-    
+
     mapping.forEach((column) => {
       if (column.required) {
         const value = row[column.label] || row[column.field];
-        
+
         if (!value || String(value).trim() === '') {
           errors.push({
             row: rowIndex,
@@ -156,7 +156,7 @@ export class FileParserService {
         }
       }
     });
-    
+
     return errors;
   }
 
@@ -219,10 +219,10 @@ export class FileParserService {
   ): ImportValidationError[] {
     const errors: ImportValidationError[] = [];
     const warnings: ImportValidationError[] = [];
-    
+
     // Check required fields first
     errors.push(...this.validateRequiredFields(row, rowIndex, entityType));
-    
+
     // Entity-specific validations
     switch (entityType) {
       case ImportEntityType.COMPANIES:
@@ -235,7 +235,7 @@ export class FileParserService {
         this.validateActivityRow(row, rowIndex, errors, warnings);
         break;
     }
-    
+
     return [...errors, ...warnings];
   }
 
@@ -259,7 +259,7 @@ export class FileParserService {
         severity: 'error',
       });
     }
-    
+
     // Website validation
     const website = row['Website'] || row['websiteUrl'];
     if (website && !this.validateUrl(website)) {
@@ -271,7 +271,7 @@ export class FileParserService {
         severity: 'warning',
       });
     }
-    
+
     // LinkedIn validation
     const linkedin = row['LinkedIn URL'] || row['linkedinUrl'];
     if (linkedin && !this.validateUrl(linkedin)) {
@@ -283,7 +283,7 @@ export class FileParserService {
         severity: 'warning',
       });
     }
-    
+
     // Phone validation
     const phone = row['Phone'] || row['primaryPhone'];
     if (phone && !this.validatePhone(phone)) {
@@ -295,7 +295,7 @@ export class FileParserService {
         severity: 'warning',
       });
     }
-    
+
     // Employee count validation
     const employeeCount = row['Employee Count'] || row['employeeCountEstimate'];
     if (employeeCount && !this.validateNumeric(employeeCount)) {
@@ -307,7 +307,7 @@ export class FileParserService {
         severity: 'error',
       });
     }
-    
+
     // Revenue validation
     const revenue = row['Annual Revenue'] || row['annualRevenueEstimate'];
     if (revenue && !this.validateNumeric(revenue)) {
@@ -341,7 +341,7 @@ export class FileParserService {
         severity: 'error',
       });
     }
-    
+
     // Phone validation
     const phone = row['Phone'] || row['phone'];
     if (phone && !this.validatePhone(phone)) {
@@ -383,16 +383,16 @@ export class FileParserService {
   mapRowToEntity(row: any, entityType: ImportEntityType): any {
     const mapping = this.templateService.getColumnMapping(entityType);
     const entity: any = {};
-    
+
     mapping.forEach((column) => {
       // Try to find value using both label and field name
       const value = row[column.label] || row[column.field];
-      
+
       if (value !== undefined && value !== null && value !== '') {
         entity[column.field] = value;
       }
     });
-    
+
     return entity;
   }
 }

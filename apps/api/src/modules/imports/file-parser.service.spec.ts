@@ -2,11 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FileParserService } from './file-parser.service';
 import { TemplateService } from './template.service';
 import { ImportEntityType } from '../../dtos/import.dto';
-import { BadRequestException } from '@nestjs/common';
 
 describe('FileParserService', () => {
   let service: FileParserService;
-  let templateService: TemplateService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -14,7 +12,6 @@ describe('FileParserService', () => {
     }).compile();
 
     service = module.get<FileParserService>(FileParserService);
-    templateService = module.get<TemplateService>(TemplateService);
   });
 
   it('should be defined', () => {
@@ -23,7 +20,8 @@ describe('FileParserService', () => {
 
   describe('parseCSV', () => {
     it('should parse valid CSV data', async () => {
-      const csvData = 'Name,Email,Phone\nJohn Doe,john@example.com,123-456-7890\nJane Smith,jane@example.com,098-765-4321';
+      const csvData =
+        'Name,Email,Phone\nJohn Doe,john@example.com,123-456-7890\nJane Smith,jane@example.com,098-765-4321';
       const buffer = Buffer.from(csvData, 'utf-8');
 
       const result = await service.parseCSV(buffer);
@@ -138,7 +136,7 @@ describe('FileParserService', () => {
     it('should return errors for missing required fields', () => {
       const row = {
         'Company Name (Thai)': 'Test',
-        'Email': 'test@example.com',
+        Email: 'test@example.com',
       };
 
       const errors = service.validateRequiredFields(
@@ -171,8 +169,8 @@ describe('FileParserService', () => {
     it('should map row data to entity fields', () => {
       const row = {
         'Company Name (English)': 'ABC Company',
-        'Email': 'contact@abc.com',
-        'Phone': '+66-2-123-4567',
+        Email: 'contact@abc.com',
+        Phone: '+66-2-123-4567',
       };
 
       const entity = service.mapRowToEntity(row, ImportEntityType.COMPANIES);
@@ -186,8 +184,8 @@ describe('FileParserService', () => {
     it('should skip empty values', () => {
       const row = {
         'Company Name (English)': 'ABC Company',
-        'Email': '',
-        'Phone': null,
+        Email: '',
+        Phone: null,
       };
 
       const entity = service.mapRowToEntity(row, ImportEntityType.COMPANIES);

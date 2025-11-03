@@ -11,7 +11,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ImportsService } from './imports.service';
 import { TemplateService } from './template.service';
@@ -164,7 +170,8 @@ export class ImportsController {
       filename: importJob.filename,
       status: importJob.status,
       totalRecords: importJob.totalRecords,
-      message: 'File uploaded successfully. You can now validate and preview the data.',
+      message:
+        'File uploaded successfully. You can now validate and preview the data.',
     };
   }
 
@@ -176,7 +183,10 @@ export class ImportsController {
     @Res() res: Response,
   ) {
     const csv = this.templateService.generateCSVTemplate(entityType);
-    const filename = this.templateService.getTemplateFilename(entityType, 'csv');
+    const filename = this.templateService.getTemplateFilename(
+      entityType,
+      'csv',
+    );
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -191,7 +201,10 @@ export class ImportsController {
     @Res() res: Response,
   ) {
     const buffer = this.templateService.generateXLSXTemplate(entityType);
-    const filename = this.templateService.getTemplateFilename(entityType, 'xlsx');
+    const filename = this.templateService.getTemplateFilename(
+      entityType,
+      'xlsx',
+    );
 
     res.setHeader(
       'Content-Type',
@@ -203,7 +216,10 @@ export class ImportsController {
 
   @Get(':id/preview')
   @ApiOperation({ summary: 'Preview import data with validation' })
-  @ApiResponse({ status: 200, description: 'Import preview retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Import preview retrieved successfully',
+  })
   async getImportPreview(
     @Param('id') id: string,
     @Query('organizationId') organizationId?: string,

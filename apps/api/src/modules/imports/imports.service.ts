@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -22,7 +26,8 @@ import {
 @Injectable()
 export class ImportsService {
   // In-memory storage for uploaded file data (in production, use file storage service)
-  private fileDataCache: Map<string, { buffer: Buffer; parsedData: any }> = new Map();
+  private fileDataCache: Map<string, { buffer: Buffer; parsedData: any }> =
+    new Map();
 
   constructor(
     @InjectRepository(ImportJobs)
@@ -97,14 +102,14 @@ export class ImportsService {
         importData.filename,
       );
       totalRecords = parsedData.totalRows;
-      
+
       // Store parsed data temporarily
       const tempId = `temp_${Date.now()}_${Math.random()}`;
       this.fileDataCache.set(tempId, {
         buffer: fileBuffer,
         parsedData,
       });
-      
+
       // Create import job
       const importJob = this.importJobRepository.create({
         filename: importData.filename,
@@ -117,15 +122,15 @@ export class ImportsService {
           tempId,
         },
       });
-      
+
       const saved = await this.importJobRepository.save(importJob);
-      
+
       // Update cache with actual job ID
       const cacheData = this.fileDataCache.get(tempId);
       if (cacheData) {
         this.fileDataCache.set(saved.id, cacheData);
         this.fileDataCache.delete(tempId);
-        
+
         // Update metadata with actual ID
         await this.importJobRepository.update(saved.id, {
           metadata: {
@@ -133,7 +138,7 @@ export class ImportsService {
           },
         });
       }
-      
+
       return saved;
     }
 
@@ -177,7 +182,7 @@ export class ImportsService {
 
   async validateImportData(id: string, organizationId?: string) {
     const importJob = await this.getImportJobById(id, organizationId);
-    
+
     // Get cached data
     const cacheData = this.fileDataCache.get(id);
     if (!cacheData) {
@@ -185,36 +190,37 @@ export class ImportsService {
         'File data not found. Please re-upload the file.',
       );
     }
-    
+
     const { parsedData } = cacheData;
-    const entityType = (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
-    
+    const entityType =
+      (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
+
     // Validate all rows
     const allErrors: ImportValidationError[] = [];
     const allWarnings: ImportValidationError[] = [];
     let validCount = 0;
     let errorCount = 0;
-    
+
     parsedData.rows.forEach((row: any, index: number) => {
       const rowErrors = this.fileParserService.validateRow(
         row,
         index + 2, // +2 because row 1 is header, so data starts at row 2
         entityType,
       );
-      
+
       const errors = rowErrors.filter((e) => e.severity === 'error');
       const warnings = rowErrors.filter((e) => e.severity === 'warning');
-      
+
       if (errors.length > 0) {
         errorCount++;
         allErrors.push(...errors);
       } else {
         validCount++;
       }
-      
+
       allWarnings.push(...warnings);
     });
-    
+
     // Update import job with validation results
     await this.importJobRepository.update(id, {
       status: 'validated',
@@ -247,7 +253,7 @@ export class ImportsService {
     },
   ): Promise<ImportPreviewResponse> {
     const importJob = await this.getImportJobById(id, organizationId);
-    
+
     // Get cached data
     const cacheData = this.fileDataCache.get(id);
     if (!cacheData) {
@@ -255,55 +261,63 @@ export class ImportsService {
         'File data not found. Please re-upload the file.',
       );
     }
-    
+
     const { parsedData } = cacheData;
-    const entityType = (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
-    
+    const entityType =
+      (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
+
     // Apply pagination
     const page = options?.page || 1;
     const limit = Math.min(options?.limit || 50, 100);
     const skip = (page - 1) * limit;
-    
+
     // Get validation results
     let allRows = parsedData.rows;
-    
+
     // Apply filters if provided
     if (options?.filters && Object.keys(options.filters).length > 0) {
       allRows = allRows.filter((row: any) => {
         return Object.entries(options.filters!).every(([key, value]) => {
-          return row[key]?.toString().toLowerCase().includes(value.toString().toLowerCase());
+          return row[key]
+            ?.toString()
+            .toLowerCase()
+            .includes(value.toString().toLowerCase());
         });
       });
     }
-    
+
     // Get paginated rows
     const paginatedRows = allRows.slice(skip, skip + limit);
-    
+
     // Validate and prepare preview rows
-    const previewRows: ImportPreviewRow[] = paginatedRows.map((row: any, index: number) => {
-      const actualRowIndex = skip + index + 2; // +2 for header row
-      const validationErrors = this.fileParserService.validateRow(
-        row,
-        actualRowIndex,
-        entityType,
-      );
-      
-      const errors = validationErrors.filter((e) => e.severity === 'error');
-      const warnings = validationErrors.filter((e) => e.severity === 'warning');
-      
-      return {
-        rowIndex: actualRowIndex,
-        data: row,
-        errors,
-        warnings,
-        isValid: errors.length === 0,
-      };
-    });
-    
+    const previewRows: ImportPreviewRow[] = paginatedRows.map(
+      (row: any, index: number) => {
+        const actualRowIndex = skip + index + 2; // +2 for header row
+        const validationErrors = this.fileParserService.validateRow(
+          row,
+          actualRowIndex,
+          entityType,
+        );
+
+        const errors = validationErrors.filter((e) => e.severity === 'error');
+        const warnings = validationErrors.filter(
+          (e) => e.severity === 'warning',
+        );
+
+        return {
+          rowIndex: actualRowIndex,
+          data: row,
+          errors,
+          warnings,
+          isValid: errors.length === 0,
+        };
+      },
+    );
+
     // Count valid/invalid rows
     const validRows = previewRows.filter((r) => r.isValid).length;
     const invalidRows = previewRows.filter((r) => !r.isValid).length;
-    
+
     return {
       rows: previewRows,
       totalRows: allRows.length,
@@ -316,12 +330,16 @@ export class ImportsService {
     };
   }
 
-  async executeImportJob(id: string, organizationId?: string, options?: {
-    rowIndices?: number[];
-    skipErrors?: boolean;
-  }) {
+  async executeImportJob(
+    id: string,
+    organizationId?: string,
+    options?: {
+      rowIndices?: number[];
+      skipErrors?: boolean;
+    },
+  ) {
     const importJob = await this.getImportJobById(id, organizationId);
-    
+
     // Get cached data
     const cacheData = this.fileDataCache.get(id);
     if (!cacheData) {
@@ -329,11 +347,12 @@ export class ImportsService {
         'File data not found. Please re-upload the file.',
       );
     }
-    
+
     const { parsedData } = cacheData;
-    const entityType = (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
+    const entityType =
+      (importJob.metadata as any)?.entityType || ImportEntityType.COMPANIES;
     const skipErrors = options?.skipErrors !== false; // Default to true
-    
+
     // Update status to processing
     await this.importJobRepository.update(id, {
       status: 'processing',
@@ -341,23 +360,23 @@ export class ImportsService {
 
     // Process rows in background
     // In production, this should be moved to a queue system
-    setTimeout(async () => {
+    void setTimeout(async () => {
       try {
         let processedCount = 0;
         let errorCount = 0;
         const importErrors: ImportValidationError[] = [];
-        
+
         // Determine which rows to process
         let rowsToProcess = parsedData.rows;
         if (options?.rowIndices && options.rowIndices.length > 0) {
           rowsToProcess = options.rowIndices.map((idx) => parsedData.rows[idx]);
         }
-        
+
         // Process each row
         for (let i = 0; i < rowsToProcess.length; i++) {
           const row = rowsToProcess[i];
           const rowIndex = i + 2; // +2 for header
-          
+
           try {
             // Validate row
             const validationErrors = this.fileParserService.validateRow(
@@ -365,28 +384,35 @@ export class ImportsService {
               rowIndex,
               entityType,
             );
-            
-            const hasErrors = validationErrors.some((e) => e.severity === 'error');
-            
+
+            const hasErrors = validationErrors.some(
+              (e) => e.severity === 'error',
+            );
+
             if (hasErrors && skipErrors) {
               errorCount++;
-              importErrors.push(...validationErrors.filter((e) => e.severity === 'error'));
+              importErrors.push(
+                ...validationErrors.filter((e) => e.severity === 'error'),
+              );
               continue;
             }
-            
+
             if (hasErrors && !skipErrors) {
               throw new Error(`Row ${rowIndex} has validation errors`);
             }
-            
+
             // Map and save entity
-            const entity = this.fileParserService.mapRowToEntity(row, entityType);
-            
+            const entity = this.fileParserService.mapRowToEntity(
+              row,
+              entityType,
+            );
+
             // Save based on entity type
             if (entityType === ImportEntityType.COMPANIES) {
               await this.saveCompany(entity, organizationId);
             }
             // Add other entity types as needed
-            
+
             processedCount++;
           } catch (error) {
             errorCount++;
@@ -396,13 +422,13 @@ export class ImportsService {
               message: error.message,
               severity: 'error',
             });
-            
+
             if (!skipErrors) {
               break;
             }
           }
         }
-        
+
         // Update job status
         await this.importJobRepository.update(id, {
           status: errorCount > 0 ? 'completed_with_errors' : 'completed',
@@ -411,7 +437,7 @@ export class ImportsService {
           errorRecords: errorCount,
           errors: importErrors.slice(0, 100),
         });
-        
+
         // Clear cache
         this.fileDataCache.delete(id);
       } catch (error) {
@@ -426,7 +452,7 @@ export class ImportsService {
             },
           ],
         });
-        
+
         // Clear cache
         this.fileDataCache.delete(id);
       }
@@ -438,7 +464,7 @@ export class ImportsService {
       message: 'Import job execution started',
     };
   }
-  
+
   private async saveCompany(data: any, organizationId?: string) {
     // Create company record
     const company = this.companyRepository.create({
@@ -447,7 +473,7 @@ export class ImportsService {
       dataSource: 'import',
       verificationStatus: 'unverified',
     });
-    
+
     await this.companyRepository.save(company);
   }
 }

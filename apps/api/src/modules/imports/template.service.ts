@@ -216,19 +216,16 @@ export class TemplateService {
    */
   generateCSVTemplate(entityType: ImportEntityType): string {
     const columns = this.templates[entityType];
-    
+
     // Create header row with labels
     const headers = columns.map((col) => col.label);
-    
+
     // Create example row
     const examples = columns.map((col) => col.example);
-    
+
     // Convert to CSV format
-    const csvRows = [
-      headers.join(','),
-      examples.join(','),
-    ];
-    
+    const csvRows = [headers.join(','), examples.join(',')];
+
     return csvRows.join('\n');
   }
 
@@ -237,7 +234,7 @@ export class TemplateService {
    */
   generateXLSXTemplate(entityType: ImportEntityType): Buffer {
     const columns = this.templates[entityType];
-    
+
     // Create worksheet data
     const wsData = [
       // Header row
@@ -245,18 +242,18 @@ export class TemplateService {
       // Example row
       columns.map((col) => col.example),
     ];
-    
+
     // Create worksheet
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    
+
     // Set column widths
     ws['!cols'] = columns.map(() => ({ width: 20 }));
-    
+
     // Add data validation/comments for required fields
     columns.forEach((col, index) => {
       const cellAddress = XLSX.utils.encode_cell({ r: 0, c: index });
       if (!ws[cellAddress]) return;
-      
+
       // Add comment with description
       if (col.description) {
         ws[cellAddress].c = ws[cellAddress].c || [];
@@ -266,11 +263,11 @@ export class TemplateService {
         });
       }
     });
-    
+
     // Create workbook
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, entityType);
-    
+
     // Add instructions sheet
     const instructionsData = [
       ['Import Instructions'],
@@ -289,11 +286,11 @@ export class TemplateService {
         col.description || '',
       ]),
     ];
-    
+
     const instructionsWs = XLSX.utils.aoa_to_sheet(instructionsData);
     instructionsWs['!cols'] = [{ width: 30 }, { width: 15 }, { width: 50 }];
     XLSX.utils.book_append_sheet(wb, instructionsWs, 'Instructions');
-    
+
     // Generate buffer
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
   }
@@ -308,7 +305,10 @@ export class TemplateService {
   /**
    * Get template filename
    */
-  getTemplateFilename(entityType: ImportEntityType, format: 'csv' | 'xlsx'): string {
+  getTemplateFilename(
+    entityType: ImportEntityType,
+    format: 'csv' | 'xlsx',
+  ): string {
     return `${entityType}_import_template.${format}`;
   }
 }

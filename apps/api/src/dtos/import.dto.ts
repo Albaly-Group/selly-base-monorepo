@@ -22,7 +22,10 @@ export class CreateImportJobDto {
   @IsUUID()
   organizationId?: string;
 
-  @ApiProperty({ description: 'User ID who uploaded the file', required: false })
+  @ApiProperty({
+    description: 'User ID who uploaded the file',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   uploadedBy?: string;
@@ -75,7 +78,10 @@ export class PreviewImportDto {
 }
 
 export class ExecuteImportDto {
-  @ApiProperty({ description: 'Row indices to import (empty = all)', required: false })
+  @ApiProperty({
+    description: 'Row indices to import (empty = all)',
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   rowIndices?: number[];
