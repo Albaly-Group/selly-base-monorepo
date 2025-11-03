@@ -105,9 +105,15 @@ export class ImportsService {
   }
 
   async validateImportData(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
     const importJob = await this.getImportJobById(id, organizationId);
 
+    // NOTE: Current implementation returns mock validation results
+    // TODO: Implement actual file parsing and validation logic
+    // - Parse CSV/Excel file from storage
+    // - Validate each row against schema (required fields, email format, etc.)
+    // - Return actual validation errors and warnings
+    // See CODE_IMPLEMENTATION_ANALYSIS.md for detailed implementation guide
+    
     // Update status to validating
     await this.importJobRepository.update(id, {
       status: 'validating',
@@ -159,7 +165,15 @@ export class ImportsService {
   }
 
   async executeImportJob(id: string, organizationId?: string) {
-    // Database implementation only - no mock data fallback
+    // NOTE: Current implementation simulates import with setTimeout
+    // TODO: Implement actual import processing logic
+    // - Read validated file from storage
+    // - Parse company data from rows
+    // - Create/update company records in database
+    // - Track progress and errors per record
+    // - Use proper async processing (queue/background job)
+    // See CODE_IMPLEMENTATION_ANALYSIS.md for detailed implementation guide
+    
     await this.importJobRepository.update(id, {
       status: 'processing',
     });
