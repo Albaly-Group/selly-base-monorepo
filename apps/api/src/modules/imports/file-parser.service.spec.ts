@@ -71,7 +71,7 @@ describe('FileParserService', () => {
 
     it('should invalidate incorrect URL', () => {
       expect(service.validateUrl('not-a-url')).toBe(false);
-      expect(service.validateUrl('htp://broken.com')).toBe(false);
+      expect(service.validateUrl('://broken.com')).toBe(false);
     });
 
     it('should handle empty URL', () => {

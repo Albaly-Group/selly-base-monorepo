@@ -268,9 +268,9 @@ export class ImportsService {
     let allRows = parsedData.rows;
     
     // Apply filters if provided
-    if (options?.filters) {
+    if (options?.filters && Object.keys(options.filters).length > 0) {
       allRows = allRows.filter((row: any) => {
-        return Object.entries(options.filters).every(([key, value]) => {
+        return Object.entries(options.filters!).every(([key, value]) => {
           return row[key]?.toString().toLowerCase().includes(value.toString().toLowerCase());
         });
       });

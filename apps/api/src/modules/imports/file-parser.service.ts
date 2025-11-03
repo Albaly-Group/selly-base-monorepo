@@ -43,7 +43,7 @@ export class FileParserService {
             totalRows: rows.length,
           });
         },
-        error: (error) => {
+        error: (error: any) => {
           reject(new BadRequestException(`CSV parsing failed: ${error.message}`));
         },
       });
@@ -187,9 +187,9 @@ export class FileParserService {
    */
   validatePhone(phone: string): boolean {
     if (!phone) return true; // Skip validation if empty
-    // Basic phone validation - at least 7 digits
-    const phoneRegex = /\d{7,}/;
-    return phoneRegex.test(phone);
+    // Basic phone validation - extract digits and check if at least 7
+    const digits = phone.replace(/\D/g, '');
+    return digits.length >= 7;
   }
 
   /**

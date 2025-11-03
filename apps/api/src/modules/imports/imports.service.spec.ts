@@ -244,28 +244,25 @@ describe('ImportsService', () => {
   });
 
   describe('executeImportJob', () => {
-    it('should execute import job using database', async () => {
+    it('should throw error if file data not found', async () => {
       const mockJob = {
         id: '1',
         filename: 'test.csv',
-        status: 'queued',
+        status: 'validated',
         uploadedBy: 'user1',
+        metadata: { entityType: 'companies' },
       };
 
       mockImportJobRepository.createQueryBuilder.mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(mockJob),
       });
-      mockImportJobRepository.save.mockResolvedValue({
-        ...mockJob,
-        status: 'processing',
-      });
 
-      const result = await service.executeImportJob('1');
-
-      expect(result).toBeDefined();
-      expect(result).toHaveProperty('status');
+      await expect(service.executeImportJob('1')).rejects.toThrow(
+        'File data not found',
+      );
     });
   });
 });

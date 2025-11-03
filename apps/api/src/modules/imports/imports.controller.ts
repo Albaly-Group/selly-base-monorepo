@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ImportsService } from './imports.service';
 import { TemplateService } from './template.service';
 import {
