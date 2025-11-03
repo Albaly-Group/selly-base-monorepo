@@ -25,7 +25,11 @@ import {
 
 @Injectable()
 export class ImportsService {
-  // In-memory storage for uploaded file data (in production, use file storage service)
+  // PRODUCTION NOTE: In-memory storage is not suitable for production use:
+  // - Data is lost on service restart
+  // - Can cause memory exhaustion with large files or many concurrent uploads
+  // - Not suitable for multi-instance deployments
+  // TODO: Replace with persistent storage solution (S3, Azure Blob, local file system with shared volume)
   private fileDataCache: Map<string, { buffer: Buffer; parsedData: any }> =
     new Map();
 
@@ -358,8 +362,12 @@ export class ImportsService {
       status: 'processing',
     });
 
-    // Process rows in background
-    // In production, this should be moved to a queue system
+    // PRODUCTION NOTE: setTimeout is not suitable for production use:
+    // - No retry mechanism on failure
+    // - Cannot monitor or track job progress
+    // - Fire-and-forget operation that's not gracefully handled on service shutdown
+    // - No distributed processing support
+    // TODO: Replace with proper job queue system (Bull, BullMQ, etc.)
     void setTimeout(async () => {
       try {
         let processedCount = 0;

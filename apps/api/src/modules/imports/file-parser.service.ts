@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as XLSX from 'xlsx';
-import * as Papa from 'papaparse';
+import Papa from 'papaparse';
 import { ImportEntityType, ImportValidationError } from '../../dtos/import.dto';
 import { TemplateService } from './template.service';
 
@@ -162,9 +162,14 @@ export class FileParserService {
 
   /**
    * Validate email format
+   * NOTE: This is a basic email validation. For production, consider using
+   * a library like 'validator.js' for RFC 5322 compliant validation or
+   * integrate with an email verification service.
    */
   validateEmail(email: string): boolean {
     if (!email) return true; // Skip validation if empty
+    // Basic email validation - checks for basic email pattern
+    // This catches most common errors but doesn't handle all edge cases
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
