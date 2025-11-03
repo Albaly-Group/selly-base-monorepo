@@ -187,7 +187,9 @@ describe('CompaniesService', () => {
         getManyAndCount: jest.fn().mockResolvedValue([mockCompanies, 1]),
       };
 
-      mockCompanyRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      mockCompanyRepository.createQueryBuilder.mockReturnValue(
+        mockQueryBuilder,
+      );
 
       const result = await service.searchCompanies({
         industrial: 'Manufacturing',

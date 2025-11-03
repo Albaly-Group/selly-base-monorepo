@@ -91,7 +91,8 @@ export class CreateCompanyDto {
   primaryIndustryId?: string;
 
   @ApiProperty({
-    description: 'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
+    description:
+      'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
     example: '550e8400-e29b-41d4-a716-446655440002',
     required: false,
   })
@@ -193,7 +194,8 @@ export class UpdateCompanyDto {
   primaryIndustryId?: string;
 
   @ApiProperty({
-    description: 'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
+    description:
+      'Primary region ID (foreign key to ref_regions - can be country, province, district, or subdistrict level)',
     example: '550e8400-e29b-41d4-a716-446655440002',
     required: false,
   })

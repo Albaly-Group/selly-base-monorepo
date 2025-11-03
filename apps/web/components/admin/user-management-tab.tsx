@@ -80,7 +80,7 @@ export function UserManagementTab() {
       console.log('No organization ID found, skipping fetch')
       setIsLoading(false)
     }
-  }, [currentUser?.organization_id, currentUser?.organization?.id])
+  }, [currentUser])
 
   const refreshUsers = async () => {
     try {

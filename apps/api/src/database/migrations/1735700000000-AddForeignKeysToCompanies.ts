@@ -113,12 +113,8 @@ export class AddForeignKeysToCompanies1735700000000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_company_tags_tag"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_company_tags_company"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_company_tags_tag"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_company_tags_company"`);
     await queryRunner.query(
       `DROP INDEX IF EXISTS "IDX_companies_primary_region"`,
     );
