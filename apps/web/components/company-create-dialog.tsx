@@ -497,7 +497,7 @@ export function CompanyCreateDialog({
                   onChange={(e) =>
                     updateField(
                       "employeeCountEstimate",
-                      parseInt(e.target.value) || undefined
+                      parseInt(e.target.value).toString(),
                     )
                   }
                   placeholder="50"

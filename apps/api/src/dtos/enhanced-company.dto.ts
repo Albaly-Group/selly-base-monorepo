@@ -542,3 +542,26 @@ export class BulkCompanyIdsDto {
   @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
   organizationId?: string;
 }
+
+export class BulkCreateCompaniesDto {
+  @ApiProperty({
+    description: 'Array of companies to create',
+    type: [CreateCompanyDto],
+  })
+  @IsArray()
+  @ArrayMinSize(1, { message: 'At least one company is required' })
+  @ArrayMaxSize(200, {
+    message: 'Maximum 200 companies are allowed per request',
+  })
+  @ValidateNested({ each: true })
+  @Type(() => CreateCompanyDto)
+  companies: CreateCompanyDto[];
+
+  @ApiPropertyOptional({
+    description: 'Optional organization ID to scope creation (server will enforce permissions)',
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
+  organizationId?: string;
+}

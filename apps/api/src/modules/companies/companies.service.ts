@@ -796,6 +796,54 @@ export class CompaniesService {
     }
   }
 
+  async bulkCreateCompanies(
+    companies: CreateCompanyDto[],
+    user?: User,
+  ): Promise<{ results: Array<any> }> {
+    if (!user) {
+      throw new BadRequestException('User information is required');
+    }
+
+    const isPlatformAdmin = (user as any).permissions?.some(
+      (p: any) => p.key === 'shared-data:manage' || p.key === '*',
+    );
+
+    if (!isPlatformAdmin && !user.organizationId) {
+      throw new BadRequestException('User organization information is required');
+    }
+
+    const results: Array<any> = [];
+
+    for (let i = 0; i < companies.length; i++) {
+      const companyDto = companies[i];
+      try {
+        const created = await this.createCompany(companyDto as CreateCompanyDto, user as User);
+        results.push({ index: i, success: true, id: created.id });
+      } catch (error) {
+        // Capture error message(s) for the row; preserve as array
+        const message = error?.message || 'Unknown error';
+        results.push({ index: i, success: false, errors: [message] });
+      }
+    }
+
+    // Log aggregate bulk create operation
+    if (this.auditService && user) {
+      const successCount = results.filter((r) => r.success).length;
+      const failedCount = results.length - successCount;
+      await this.auditService.logUserAction(user, 'CREATE', 'CompanyBulk', undefined, {
+        resourceType: 'bulk_companies_create',
+        resourcePath: '/api/companies/bulk',
+        metadata: {
+          requested: results.length,
+          successes: successCount,
+          failures: failedCount,
+        },
+      });
+    }
+
+    return { results };
+  }
+
   // Helper methods
   private calculateDataQualityScore(
     data: CreateCompanyDto | UpdateCompanyDto,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, ChangeEvent } from "react"
+import { useState, useMemo, useCallback, ChangeEvent, useRef } from "react"
 import { Navigation } from "@/components/navigation"
 import { CompanySearch } from "@/components/company-search"
 import { CompanyTable } from "@/components/company-table"
@@ -92,8 +92,26 @@ function CompanyLookupPage() {
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
+
   const [importFile, setImportFile] = useState<File | null>(null)
   const [importUploading, setImportUploading] = useState(false)
+  const [parsedImportRows, setParsedImportRows] = useState<any[]>([])
+  const [importPreviewCols, setImportPreviewCols] = useState<string[]>([])
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  const closeImportModal = () => {
+    setShowImportModal(false)
+    setImportFile(null)
+    setParsedImportRows([])
+    setImportPreviewCols([])
+    setImportUploading(false)
+    try {
+      if (fileInputRef && fileInputRef.current) fileInputRef.current.value = ''
+    } catch (e) {
+      // ignore
+    }
+  }
 
   const [selectedExportKeys, setSelectedExportKeys] = useState<string[]>(() => exportFieldDefs.map((f: any) => f.key))
 
@@ -468,8 +486,255 @@ function CompanyLookupPage() {
   }
 
   // Move heavy handlers out of JSX
-  const handleUploadAndValidate = async () => {
-    if (!importFile) return
+  // Basic mapping helpers for import preview
+  const normalizeHeader = (h: any) => {
+    if (h == null) return ""
+    return String(h).toLowerCase().replace(/[^a-z0-9]/g, "")
+  }
+
+  const headerToField: Record<string, string> = {
+    // English variations
+    companynameen: 'companyNameEn',
+    nameen: 'companyNameEn',
+    companyname: 'companyNameEn',
+    name: 'companyNameEn',
+    companynameth: 'companyNameTh',
+    nameth: 'companyNameTh',
+    registrationno: 'primaryRegistrationNo',
+    registrationnumber: 'primaryRegistrationNo',
+    primaryregistrationno: 'primaryRegistrationNo',
+    description: 'businessDescription',
+    businessdescription: 'businessDescription',
+    addressline1: 'addressLine1',
+    addressline2: 'addressLine2',
+    postalcode: 'postalCode',
+    postcode: 'postalCode',
+    // Industry / region: accept display names as well as ids
+    primaryindustryid: 'primaryIndustryId',
+    primaryindustry: 'primaryIndustryDisplay',
+    primaryindustrydisplay: 'primaryIndustryDisplay',
+    primaryindustryname: 'primaryIndustryDisplay',
+    primaryregionid: 'primaryRegionId',
+    primaryregion: 'primaryRegionDisplay',
+    primaryregiondisplay: 'primaryRegionDisplay',
+    primaryregionname: 'primaryRegionDisplay',
+    website: 'websiteUrl',
+    websiteurl: 'websiteUrl',
+    url: 'websiteUrl',
+    primaryemail: 'primaryEmail',
+    email: 'primaryEmail',
+    primaryphone: 'primaryPhone',
+    phone: 'primaryPhone',
+    companysize: 'companySize',
+    employees: 'employeeCountEstimate',
+    employeecount: 'employeeCountEstimate',
+    employeecountestimate: 'employeeCountEstimate',
+    datasensitivity: 'dataSensitivity',
+  }
+
+  const mapRowObjectToCompany = (rowObj: Record<string, any>) => {
+    const company: any = {}
+    for (const header in rowObj) {
+      const rawVal = rowObj[header]
+      const norm = normalizeHeader(header)
+      const mapped = headerToField[norm]
+      if (mapped) {
+        // attempt to coerce numbers for employeeCountEstimate
+        if (mapped === 'employeeCountEstimate') {
+          const n = Number(rawVal)
+          company[mapped] = Number.isFinite(n) ? n : undefined
+        } else {
+          company[mapped] = rawVal == null ? '' : String(rawVal).trim()
+        }
+      } else {
+        // try heuristics for common header names
+        if (norm.includes('name') && !company.companyNameEn) company.companyNameEn = rawVal
+      }
+    }
+
+    if (company.primaryIndustryDisplay && !company.industrialName) {
+      company.industrialName = company.primaryIndustryDisplay
+    }
+    if (company.primaryRegionDisplay && !company.province) {
+      company.province = company.primaryRegionDisplay
+    }
+    
+    return company
+  }
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0]
+    if (!file) return
+    setImportFile(file)
+    setParsedImportRows([])
+    setImportPreviewCols([])
+
+    const name = file.name.toLowerCase()
+    try {
+      if (name.endsWith('.csv')) {
+        const text = await file.text()
+        const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '')
+        if (lines.length === 0) return
+        const headerLine = lines[0]
+        // naive CSV split (handles simple cases). For complex CSVs use a parser.
+        const headers = headerLine.split(',').map((h) => h.trim())
+        const rows: any[] = []
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',')
+          const obj: any = {}
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j] || `col${j}`] = cols[j] !== undefined ? cols[j].trim() : ''
+          }
+          rows.push(mapRowObjectToCompany(obj))
+        }
+        setImportPreviewCols(headers)
+        setParsedImportRows(rows)
+      } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+        const buf = await file.arrayBuffer()
+        const workbook = new ExcelJS.Workbook()
+        await workbook.xlsx.load(buf)
+        const sheet = workbook.worksheets[0]
+        if (!sheet) return
+        const headerRow = sheet.getRow(1)
+        const headers: string[] = []
+        headerRow.eachCell((cell, colNumber) => {
+          headers.push(cell.value == null ? `col${colNumber}` : String(cell.value))
+        })
+        const rows: any[] = []
+        sheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return
+          const obj: any = {}
+          row.eachCell((cell, colNumber) => {
+            const h = headers[colNumber - 1] || `col${colNumber}`
+            obj[h] = cell.value == null ? '' : (typeof cell.value === 'object' && 'text' in (cell.value as any) ? (cell.value as any).text : String(cell.value))
+          })
+          rows.push(mapRowObjectToCompany(obj))
+        })
+        setImportPreviewCols(headers)
+        setParsedImportRows(rows)
+      } else {
+        // unsupported file type
+        alert('Unsupported file type. Please upload .xlsx, .xls or .csv')
+      }
+    } catch (err) {
+      console.error('Failed to parse import file', err)
+      alert('Failed to parse file. Check console for details.')
+    }
+  }
+
+  const handleUpload = async () => {
+    // For now, we only show preview in the UI. Backend upload/save is out of scope for this change.
+    if (!importFile) return alert('Please choose a file first')
+
+    setImportUploading(true)
+
+    try {
+      // Resolve industry and region display names to IDs when possible
+      const [industriesResp, regionsResp] = await Promise.all([
+        apiClient.getIndustries({ active: true }).catch(() => ({ data: [] })),
+        apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }).catch(() => ({ data: [] })),
+      ])
+
+      const industries: any[] = (industriesResp && industriesResp.data) || []
+      const regions: any[] = (regionsResp && regionsResp.data) || []
+
+      // Build lookup maps (normalized)
+      const normalize = (s: any) => (s ? String(s).toLowerCase().trim() : '')
+
+      const industryMap = new Map<string, string>()
+      industries.forEach((ind: any) => {
+        // Support multiple possible field names returned by the API
+        const possibleNames = [ind.nameEn, ind.nameTh, ind.name, ind.titleEn, ind.titleTh, ind.code]
+        possibleNames.forEach((val: any) => {
+          if (val) industryMap.set(normalize(val), ind.id)
+        })
+      })
+
+      const regionMap = new Map<string, string>()
+      const flattenRegions = (nodes: any[]) => {
+        nodes.forEach((r: any) => {
+          if (r.nameEn) regionMap.set(normalize(r.nameEn), r.id)
+          if (r.nameTh) regionMap.set(normalize(r.nameTh), r.id)
+          if (r.code) regionMap.set(normalize(r.code), r.id)
+          if (Array.isArray(r.children) && r.children.length) flattenRegions(r.children)
+        })
+      }
+      flattenRegions(regions)
+
+      // Map parsed rows to CreateCompanyDto shape
+      const unresolvedIndustries = new Set<string>()
+      const unresolvedRegions = new Set<string>()
+
+      const payloadCompanies = parsedImportRows.map((row) => {
+        const c: any = {}
+        // Required title
+        c.companyNameEn = (row.companyNameEn || '').toString().trim()
+        if (row.companyNameTh) c.companyNameTh = row.companyNameTh
+        if (row.primaryRegistrationNo) c.primaryRegistrationNo = row.primaryRegistrationNo
+        if (row.businessDescription) c.businessDescription = row.businessDescription
+        if (row.websiteUrl) c.websiteUrl = row.websiteUrl
+        if (row.primaryEmail) c.primaryEmail = row.primaryEmail
+        if (row.primaryPhone) c.primaryPhone = row.primaryPhone
+        if (row.addressLine1) c.addressLine1 = row.addressLine1
+        if (row.addressLine2) c.addressLine2 = row.addressLine2
+        if (row.postalCode) c.postalCode = row.postalCode
+        if (row.companySize) c.companySize = row.companySize
+        if (row.employeeCountEstimate !== undefined) c.employeeCountEstimate = Number(row.employeeCountEstimate) || undefined
+        if (row.dataSensitivity) c.dataSensitivity = row.dataSensitivity
+
+        // Prefer explicit IDs; if not present, try to resolve display names
+        if (row.primaryIndustryId) {
+          c.primaryIndustryId = row.primaryIndustryId
+        } else if (row.primaryIndustryDisplay || row.industrialName) {
+          const rawName = row.primaryIndustryDisplay || row.industrialName
+          const name = normalize(rawName)
+          const resolved = industryMap.get(name)
+          if (resolved) c.primaryIndustryId = resolved
+          else unresolvedIndustries.add(String(rawName))
+        }
+
+        if (row.primaryRegionId) {
+          c.primaryRegionId = row.primaryRegionId
+        } else if (row.primaryRegionDisplay || row.province) {
+          const rawName = row.primaryRegionDisplay || row.province
+          const name = normalize(rawName)
+          const resolved = regionMap.get(name)
+          if (resolved) c.primaryRegionId = resolved
+          else unresolvedRegions.add(String(rawName))
+        }
+
+        return c
+      })
+
+      // Filter out rows that don't meet minimal validation
+      const validPayload = payloadCompanies.filter((c) => c.companyNameEn && c.companyNameEn.length >= 2)
+      if (validPayload.length === 0) {
+        alert('No valid rows to upload. Ensure Company Name (EN) exists for at least one row.')
+        setImportUploading(false)
+        return
+      }
+
+      // Send to backend using apiClient bulk route
+      const resp = await apiClient.bulkCreateCompanies(validPayload)
+
+      // Expect resp.results as array of per-row results
+      const results = resp && resp.results ? resp.results : []
+      const successCount = results.filter((r: any) => r.success).length
+
+      console.log('Bulk import results', results)
+      if (successCount > 0) {
+        // Refresh data to show new companies
+        refreshData()
+        closeImportModal()
+      }
+
+      // Optionally keep modal open to allow user to inspect preview and failed rows
+    } catch (err) {
+      console.error('Import failed', err)
+      alert(`Import failed: ${getErrorMessage(err)}`)
+    } finally {
+      setImportUploading(false)
+    }
   }
   return (
     <div className="min-h-screen bg-gray-50">
@@ -713,7 +978,7 @@ function CompanyLookupPage() {
         {/* Import modal */}
         {showImportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowImportModal(false)} />
+            <div className="absolute inset-0 bg-black opacity-40" onClick={closeImportModal} />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">Import ข้อมูลจาก Excel (.xlsx/.xls/.csv)</h3>
               <p className="text-sm text-gray-600 mb-4">เลือกไฟล์ Excel เพื่ออัปโหลดและนำเข้าข้อมูลบริษัทเข้าสู่ระบบ</p>
@@ -730,26 +995,86 @@ function CompanyLookupPage() {
                 </label>
                 <input
                   id="file-upload"
+                  ref={fileInputRef}
                   type="file"
                   accept=".xlsx,.xls,.csv"
-                  // onChange={handleFileChange}
+                  onChange={handleFileChange}
                   className="hidden"
                 />
+                {importFile && (
+                  <div className="mt-3 text-sm text-gray-700">Selected: {importFile.name}</div>
+                )}
               </div>
+
+              {/* Preview table for parsed rows */}
+              {parsedImportRows && parsedImportRows.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-medium mb-2">Preview mapped rows ({parsedImportRows.length})</h4>
+                  <div className="overflow-auto max-h-56 border rounded">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-2 py-1 text-left">#</th>
+                          <th className="px-2 py-1 text-left">Company Name (EN)</th>
+                          <th className="px-2 py-1 text-left">Company Name (TH)</th>
+                          <th className="px-2 py-1 text-left">Registration Number</th>
+                          <th className="px-2 py-1 text-left">Business Description</th>
+                          <th className="px-2 py-1 text-left">Address Line 1</th>
+                          <th className="px-2 py-1 text-left">Address Line 2</th>
+                          <th className="px-2 py-1 text-left">Postal Code</th>
+                          <th className="px-2 py-1 text-left">Region / Province</th>
+                          <th className="px-2 py-1 text-left">Industry</th>
+                          <th className="px-2 py-1 text-left">Website</th>
+                          <th className="px-2 py-1 text-left">Primary Email</th>
+                          <th className="px-2 py-1 text-left">Primary Phone</th>
+                          <th className="px-2 py-1 text-left">Company Size</th>
+                          <th className="px-2 py-1 text-left">Employee Count</th>
+                          <th className="px-2 py-1 text-left">Data Sensitivity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedImportRows.slice(0, 20).map((r, idx) => (
+                          <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-2 py-1">{idx + 1}</td>
+                            <td className="px-2 py-1">{r.companyNameEn || ''}</td>
+                            <td className="px-2 py-1">{r.companyNameTh || ''}</td>
+                            <td className="px-2 py-1">{r.primaryRegistrationNo || ''}</td>
+                            <td className="px-2 py-1 truncate max-w-xs">{r.businessDescription || ''}</td>
+                            <td className="px-2 py-1">{r.addressLine1 || ''}</td>
+                            <td className="px-2 py-1">{r.addressLine2 || ''}</td>
+                            <td className="px-2 py-1">{r.postalCode || ''}</td>
+                            <td className="px-2 py-1">{r.primaryRegionId || r.province || ''}</td>
+                            <td className="px-2 py-1">{r.primaryIndustryId || r.industrialName || ''}</td>
+                            <td className="px-2 py-1">{r.websiteUrl || ''}</td>
+                            <td className="px-2 py-1">{r.primaryEmail || ''}</td>
+                            <td className="px-2 py-1">{r.primaryPhone || ''}</td>
+                            <td className="px-2 py-1">{r.companySize || ''}</td>
+                            <td className="px-2 py-1">{r.employeeCountEstimate ?? ''}</td>
+                            <td className="px-2 py-1">{r.dataSensitivity || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {parsedImportRows.length > 20 && (
+                    <div className="text-xs text-gray-500 mt-1">Showing first 20 rows</div>
+                  )}
+                </div>
+              )}
 
 
               <div className="flex justify-end gap-2">
                 <button className="px-3 py-2 border rounded-md" 
-                  onClick={() => setShowImportModal(false)} 
+                  onClick={closeImportModal} 
                 >
                   Cancel
                 </button>
                 <button
                   className="px-3 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50"
                   disabled={!importFile || importUploading}
-                  onClick={handleUploadAndValidate}
+                  onClick={handleUpload}
                 >
-                  {importUploading ? 'Uploading...' : 'Upload & Validate'}
+                  {importUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>
             </div>
