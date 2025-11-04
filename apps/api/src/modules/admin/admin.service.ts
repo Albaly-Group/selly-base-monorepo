@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThan, Between } from 'typeorm';
 import { Users, Organizations, AuditLogs } from '../../entities';
@@ -99,7 +104,9 @@ export class AdminService {
       });
 
       if (existingUser) {
-        throw new ConflictException(`User with email '${userData.email}' already exists`);
+        throw new ConflictException(
+          `User with email '${userData.email}' already exists`,
+        );
       }
 
       // Hash the password

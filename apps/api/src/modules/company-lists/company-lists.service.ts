@@ -152,9 +152,11 @@ export class CompanyListsService {
     const totalPages = Math.ceil(total / validatedLimit);
 
     // Transform lists to include companyIds array for frontend compatibility
-    const transformedLists = lists.map(list => ({
+    const transformedLists = lists.map((list) => ({
       ...list,
-      companyIds: list.companyListItems ? list.companyListItems.map(item => item.companyId) : [],
+      companyIds: list.companyListItems
+        ? list.companyListItems.map((item) => item.companyId)
+        : [],
       totalCompanies: list.companyListItems ? list.companyListItems.length : 0,
     }));
 
@@ -202,7 +204,9 @@ export class CompanyListsService {
     // Transform list to include companyIds array for frontend compatibility
     const transformedList = {
       ...list,
-      companyIds: list.companyListItems ? list.companyListItems.map(item => item.companyId) : [],
+      companyIds: list.companyListItems
+        ? list.companyListItems.map((item) => item.companyId)
+        : [],
       totalCompanies: list.companyListItems ? list.companyListItems.length : 0,
     };
 
@@ -212,7 +216,8 @@ export class CompanyListsService {
 
     if (
       transformedList.organizationId &&
-      (transformedList.visibility === 'organization' || transformedList.visibility === 'team')
+      (transformedList.visibility === 'organization' ||
+        transformedList.visibility === 'team')
     ) {
       return transformedList;
     }
@@ -241,14 +246,14 @@ export class CompanyListsService {
     const list = this.companyListRepository.create(listData);
     const savedList = await this.companyListRepository.save(list);
     console.log('Created company list in database:', savedList.id);
-    
+
     // Transform response to include companyIds for frontend compatibility
     const transformedList = {
       ...savedList,
       companyIds: [],
       totalCompanies: 0,
     };
-    
+
     return transformedList;
   }
 
@@ -294,14 +299,18 @@ export class CompanyListsService {
     this.companyListRepository.merge(list as any, fieldsToUpdate);
     const updateList = await this.companyListRepository.save(list);
     console.log('Update company list in database:', updateList);
-    
+
     // Transform response to include companyIds for frontend compatibility
     const transformedList = {
       ...updateList,
-      companyIds: updateList.companyListItems ? updateList.companyListItems.map(item => item.companyId) : [],
-      totalCompanies: updateList.companyListItems ? updateList.companyListItems.length : 0,
+      companyIds: updateList.companyListItems
+        ? updateList.companyListItems.map((item) => item.companyId)
+        : [],
+      totalCompanies: updateList.companyListItems
+        ? updateList.companyListItems.length
+        : 0,
     };
-    
+
     return transformedList;
   }
 

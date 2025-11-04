@@ -2,13 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ImportsService } from './imports.service';
-import { ImportJobs, Organizations } from '../../entities';
+import { ImportJobs, Organizations, Companies } from '../../entities';
 import { NotFoundException } from '@nestjs/common';
+import { FileParserService } from './file-parser.service';
+import { TemplateService } from './template.service';
 
 describe('ImportsService', () => {
   let service: ImportsService;
   let importJobRepository: Repository<ImportJobs>;
   let organizationRepository: Repository<Organizations>;
+  let companyRepository: Repository<Companies>;
+  let fileParserService: FileParserService;
+  let templateService: TemplateService;
 
   const mockImportJobRepository = {
     createQueryBuilder: jest.fn(),
@@ -20,6 +25,23 @@ describe('ImportsService', () => {
 
   const mockOrganizationRepository = {
     findOne: jest.fn(),
+  };
+
+  const mockCompanyRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+  };
+
+  const mockFileParserService = {
+    parseFile: jest.fn(),
+    validateRow: jest.fn(),
+    mapRowToEntity: jest.fn(),
+  };
+
+  const mockTemplateService = {
+    getColumnMapping: jest.fn(),
+    generateCSVTemplate: jest.fn(),
+    generateXLSXTemplate: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -34,6 +56,18 @@ describe('ImportsService', () => {
           provide: getRepositoryToken(Organizations),
           useValue: mockOrganizationRepository,
         },
+        {
+          provide: getRepositoryToken(Companies),
+          useValue: mockCompanyRepository,
+        },
+        {
+          provide: FileParserService,
+          useValue: mockFileParserService,
+        },
+        {
+          provide: TemplateService,
+          useValue: mockTemplateService,
+        },
       ],
     }).compile();
 
@@ -44,6 +78,11 @@ describe('ImportsService', () => {
     organizationRepository = module.get<Repository<Organizations>>(
       getRepositoryToken(Organizations),
     );
+    companyRepository = module.get<Repository<Companies>>(
+      getRepositoryToken(Companies),
+    );
+    fileParserService = module.get<FileParserService>(FileParserService);
+    templateService = module.get<TemplateService>(TemplateService);
   });
 
   afterEach(() => {
@@ -205,28 +244,25 @@ describe('ImportsService', () => {
   });
 
   describe('executeImportJob', () => {
-    it('should execute import job using database', async () => {
+    it('should throw error if file data not found', async () => {
       const mockJob = {
         id: '1',
         filename: 'test.csv',
-        status: 'queued',
+        status: 'validated',
         uploadedBy: 'user1',
+        metadata: { entityType: 'companies' },
       };
 
       mockImportJobRepository.createQueryBuilder.mockReturnValue({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(mockJob),
       });
-      mockImportJobRepository.save.mockResolvedValue({
-        ...mockJob,
-        status: 'processing',
-      });
 
-      const result = await service.executeImportJob('1');
-
-      expect(result).toBeDefined();
-      expect(result).toHaveProperty('status');
+      await expect(service.executeImportJob('1')).rejects.toThrow(
+        'File data not found',
+      );
     });
   });
 });

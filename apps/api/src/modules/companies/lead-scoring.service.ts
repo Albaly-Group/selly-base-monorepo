@@ -175,7 +175,7 @@ export class LeadScoringService {
     // Industry data is now stored via foreign key to ref_industry_codes
     // For detailed scoring, the primaryIndustry relation would need to be loaded
     // and the industry code checked against high/medium value industries
-    
+
     // If primary industry is set, give a moderate score
     if (company.primaryIndustryId) {
       return 75;
@@ -196,7 +196,7 @@ export class LeadScoringService {
     if (company.primaryRegionId) {
       return 75;
     }
-    
+
     return 50; // No location data
   }
 

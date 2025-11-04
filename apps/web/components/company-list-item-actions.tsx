@@ -66,7 +66,7 @@ export function CompanyListItemActions({
             <p className="text-gray-600 mb-4">
               Are you sure you want to remove 
               {companyName ? (
-                <span className="font-medium"> "{companyName}" </span>
+                <span className="font-medium"> &quot;{companyName}&quot; </span>
               ) : (
                 " this company "
               )}

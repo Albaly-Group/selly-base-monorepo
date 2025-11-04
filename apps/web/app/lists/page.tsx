@@ -103,7 +103,7 @@ function ListManagementPage() {
     }
 
     fetchLists()
-  }, [refreshKey, selectedListId])
+  }, [refreshKey, selectedListId, showNotification])
 
   useEffect(() => {
     const fetchListCompanies = async () => {
@@ -211,7 +211,7 @@ function ListManagementPage() {
     }
 
     fetchListCompanies()
-  }, [selectedListId, refreshKey])
+  }, [selectedListId, refreshKey, showNotification])
 
   const selectedList = userLists.find((list) => list.id === selectedListId)
 
