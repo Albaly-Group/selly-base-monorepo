@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, ChangeEvent } from "react"
 import { Navigation } from "@/components/navigation"
 import { CompanySearch } from "@/components/company-search"
 import { CompanyTable } from "@/components/company-table"
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Filter, Loader2, Plus } from "lucide-react"
 import ExcelJS from 'exceljs';
+import { apiClient } from '@/lib/api-client'
 
 function CompanyLookupPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -90,6 +91,10 @@ function CompanyLookupPage() {
   ]), [])
 
   const [showExportModal, setShowExportModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importUploading, setImportUploading] = useState(false)
+
   const [selectedExportKeys, setSelectedExportKeys] = useState<string[]>(() => exportFieldDefs.map((f: any) => f.key))
 
   const apiSearchFilters = useMemo(() => {
@@ -446,6 +451,26 @@ function CompanyLookupPage() {
 
   const hasResults = isSimpleSearch || hasAppliedFiltering
 
+  // Helper to safely extract message from unknown errors
+  const getErrorMessage = (err: unknown) => {
+    if (!err) return String(err)
+    if (err instanceof Error) return err.message
+    if (typeof err === 'string') return err
+    try {
+      // try to read .message if present on object-like errors
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        return String((err as any).message)
+      }
+      return JSON.stringify(err)
+    } catch {
+      return String(err)
+    }
+  }
+
+  // Move heavy handlers out of JSX
+  const handleUploadAndValidate = async () => {
+    if (!importFile) return
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -578,6 +603,12 @@ function CompanyLookupPage() {
                     >
                       Export ({selectedCompanies.length})
                     </button>
+                    <button
+                      onClick={() => setShowImportModal(true)}
+                      className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Import
+                    </button>
                   </div>
                 </div>
 
@@ -674,6 +705,52 @@ function CompanyLookupPage() {
               <div className="flex justify-end gap-2">
                 <button className="px-3 py-2 border rounded" onClick={() => setShowExportModal(false)}>Cancel</button>
                 <button className="px-3 py-2 bg-primary text-primary-foreground rounded" onClick={() => { setShowExportModal(false); onExportExcel(selectedExportKeys); }}>Export</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Import modal */}
+        {showImportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowImportModal(false)} />
+            <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
+              <h3 className="text-lg font-semibold mb-2">Import ข้อมูลจาก Excel (.xlsx/.xls/.csv)</h3>
+              <p className="text-sm text-gray-600 mb-4">เลือกไฟล์ Excel เพื่ออัปโหลดและนำเข้าข้อมูลบริษัทเข้าสู่ระบบ</p>
+
+              <div className="mb-4 border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer text-gray-600 hover:text-gray-800 text-center"
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="font-medium">Choose File</span>
+                    <span className="text-sm text-gray-400">.xlsx / .xls / .csv</span>
+                  </div>
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  // onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+
+              <div className="flex justify-end gap-2">
+                <button className="px-3 py-2 border rounded-md" 
+                  onClick={() => setShowImportModal(false)} 
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-3 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50"
+                  disabled={!importFile || importUploading}
+                  onClick={handleUploadAndValidate}
+                >
+                  {importUploading ? 'Uploading...' : 'Upload & Validate'}
+                </button>
               </div>
             </div>
           </div>
