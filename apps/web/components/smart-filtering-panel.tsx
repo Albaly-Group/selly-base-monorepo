@@ -127,9 +127,18 @@ export function SmartFilteringPanel({
         console.error('Failed to fetch industries, using fallback:', error)
       }
 
+      // try {
+      //   // Fetch provinces
+      //   const provincesResponse = await apiClient.getProvinces()
+      //   if (provincesResponse.data && provincesResponse.data.length > 0) {
+      //     setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
+      //   }
+      // } catch (error) {
+      //   console.error('Failed to fetch provinces, using fallback:', error)
+      // }
       try {
-        // Fetch provinces
-        const provincesResponse = await apiClient.getProvinces()
+        // Fetch Used provinces
+        const provincesResponse = await apiClient.getUsedProvinces()
         if (provincesResponse.data && provincesResponse.data.length > 0) {
           setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
         }

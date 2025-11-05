@@ -88,6 +88,31 @@ export class ReferenceDataController {
     return { data: provinces };
   }
 
+  @Get('provinces/used')
+  @ApiOperation({ summary: 'Get provinces that are used by companies' })
+  @ApiQuery({
+    name: 'active',
+    required: false,
+    description: 'Filter by active status (default: true)',
+  })
+  @ApiQuery({
+    name: 'countryCode',
+    required: false,
+    description: 'Filter by country code (default: TH)',
+  })
+  @ApiResponse({ status: 200, description: 'Provinces retrieved successfully' })
+  async getUsedProvinces(
+    @Query('active') active?: string,
+    @Query('countryCode') countryCode?: string,
+  ): Promise<{ data: any[] }> {
+    const isActive = active === 'false' ? false : true;
+    const provinces = await this.referenceDataService.getUsedProvinces(
+      isActive,
+      countryCode || 'TH',
+    );
+    return { data: provinces };
+  }
+
   @Get('company-sizes')
   @ApiOperation({ summary: 'Get all company sizes' })
   @ApiResponse({
