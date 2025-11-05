@@ -623,6 +623,10 @@ class ApiClient {
     return this.get<{ data: any[] }>('/api/v1/reference-data/industries', params);
   }
 
+  async getUsedIndustries(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/industries/used', params);
+  }
+
   async getProvinces(params?: { active?: boolean; countryCode?: string }): Promise<{ data: any[] }> {
     return this.get<{ data: any[] }>('/api/v1/reference-data/provinces', params);
   }

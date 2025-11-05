@@ -59,6 +59,59 @@ export class ReferenceDataService {
     }
   }
 
+  async getUsedIndustries(activeOnly = true): Promise<any[]> {
+    try {
+      const query = this.industryRepository.createQueryBuilder('industry');
+
+      if (activeOnly) {
+        query.where('industry.isActive = :isActive', { isActive: true });
+      }
+
+      // Inner join companies to ensure we only return industries that have at least one company
+      // companies table has primary_industry_id referencing ref_industry_codes.id
+      query
+        .innerJoin('companies', 'company', 'company.primary_industry_id = industry.id')
+        .select([
+          'industry.id as id',
+          'industry.code as code',
+          'industry.title_en as name',
+          'industry.title_en as nameEn',
+          'industry.title_th as nameTh',
+          'industry.description as description',
+          'industry.classification_system as classificationSystem',
+          'industry.level as level',
+        ])
+        .groupBy('industry.id')
+        .addGroupBy('industry.code')
+        .addGroupBy('industry.title_en')
+        .addGroupBy('industry.title_th')
+        .addGroupBy('industry.description')
+        .addGroupBy('industry.classification_system')
+        .addGroupBy('industry.level')
+        .orderBy('industry.title_en', 'ASC');
+
+      const rows = await query.getRawMany();
+
+      if (!rows || rows.length === 0) {
+        return this.getFallbackIndustries();
+      }
+
+      return rows.map((r: any) => ({
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        nameEn: r.nameen || r.nameEn || r.name,
+        nameTh: r.nameth || r.nameTh || r.nameTh,
+        description: r.description,
+        classificationSystem: r.classificationsystem || r.classificationSystem,
+        level: r.level,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch used industries from database:', error);
+      return this.getFallbackIndustries();
+    }
+  }
+
   async getProvinces(activeOnly = true, countryCode = 'TH'): Promise<any[]> {
     try {
       const query = this.regionRepository.createQueryBuilder('region');

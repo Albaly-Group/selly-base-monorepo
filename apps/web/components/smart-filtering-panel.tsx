@@ -90,9 +90,27 @@ export function SmartFilteringPanel({
 
   useEffect(() => {
     const fetchReferenceData = async () => {
+      // try {
+      //   // Fetch industries
+      //   const industriesResponse = await apiClient.getIndustries()
+      //   const list = industriesResponse.data || []
+
+      //   if (industriesResponse.data && industriesResponse.data.length > 0) {
+      //     const options = list
+      //       .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
+      //       .map(it => ({
+      //         value: String(it.id), 
+      //         label: it.nameEn!.trim(), 
+      //       }));
+
+      //     setIndustrialOptions(options);
+      //   }
+      // } catch (error) {
+      //   console.error('Failed to fetch industries, using fallback:', error)
+      // }
       try {
-        // Fetch industries
-        const industriesResponse = await apiClient.getIndustries()
+        // Fetch Used Industries
+        const industriesResponse = await apiClient.getUsedIndustries()
         const list = industriesResponse.data || []
 
         if (industriesResponse.data && industriesResponse.data.length > 0) {
