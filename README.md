@@ -287,11 +287,12 @@ The application has a comprehensive test suite covering all layers with enhanced
 ./run-all-tests.sh              # Run all core tests
 npm test                        # Run unit/component tests
 
-# E2E tests (UX-focused) 🎭
-npm run test:e2e:docker         # Run E2E tests with Docker (RECOMMENDED)
-npm run test:e2e                # Run E2E tests (requires services running)
+# E2E tests (Real Environment) 🎭
+npm run test:e2e                # Run E2E tests with real database (RECOMMENDED)
+npm run test:e2e:mock           # Run E2E tests with mock data (faster, no database)
 npm run test:e2e:ui             # Debug E2E tests interactively
 npm run test:e2e:report         # View detailed E2E test report
+npm run test:e2e:docker         # Run E2E tests in full Docker environment
 
 # Enhanced tests ✨
 npm run test:visual             # Visual regression
@@ -305,6 +306,38 @@ npm run test:coverage           # Code coverage report
 # All tests
 npm run test:all                # Run comprehensive test suite
 ```
+
+### Test Environment Setup
+
+**E2E Tests with Real Database (Default)**
+
+E2E tests now run against a real PostgreSQL database by default for more realistic testing:
+
+```bash
+# Run E2E tests (automatically starts database in Docker)
+npm run test:e2e
+```
+
+What happens:
+1. 🔧 Global setup script automatically starts PostgreSQL in Docker
+2. 🚀 Backend API connects to real database (no mock data)
+3. 🧪 Tests run against actual database
+4. 🧹 Global teardown stops database after tests complete
+
+**Requirements:**
+- Docker and Docker Compose installed
+- Ports 5433 (database) and 3000, 3001 (apps) available
+
+**Quick Development Mode:**
+
+For faster iteration during development, you can use mock data:
+
+```bash
+# Run E2E tests with mock data (no database required)
+npm run test:e2e:mock
+```
+
+This skips the database setup and uses in-memory mock data instead.
 
 ### Test Coverage
 - **Frontend**: 27 component tests
@@ -333,7 +366,8 @@ npm run test:all                # Run comprehensive test suite
 
 ### Documentation
 
-**E2E Testing (UX-Focused) 🎭 NEW**
+**E2E Testing (Real Environment) 🎭 ⭐ NEW**
+- 🔥 [Real Environment Guide](./E2E_REAL_ENVIRONMENT.md) - Run tests with real database
 - ⚡ [E2E Quick Start](./E2E_QUICK_START.md) - Run E2E tests in 1 command
 - 📖 [E2E Docker Guide](./E2E_DOCKER_GUIDE.md) - Complete Docker setup guide
 - 🎨 [UX Improvements](./E2E_UX_IMPROVEMENTS.md) - What changed and why
