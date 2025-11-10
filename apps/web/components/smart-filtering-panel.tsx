@@ -90,9 +90,27 @@ export function SmartFilteringPanel({
 
   useEffect(() => {
     const fetchReferenceData = async () => {
+      // try {
+      //   // Fetch industries
+      //   const industriesResponse = await apiClient.getIndustries()
+      //   const list = industriesResponse.data || []
+
+      //   if (industriesResponse.data && industriesResponse.data.length > 0) {
+      //     const options = list
+      //       .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
+      //       .map(it => ({
+      //         value: String(it.id), 
+      //         label: it.nameEn!.trim(), 
+      //       }));
+
+      //     setIndustrialOptions(options);
+      //   }
+      // } catch (error) {
+      //   console.error('Failed to fetch industries, using fallback:', error)
+      // }
       try {
-        // Fetch industries
-        const industriesResponse = await apiClient.getIndustries()
+        // Fetch Used Industries
+        const industriesResponse = await apiClient.getUsedIndustries()
         const list = industriesResponse.data || []
 
         if (industriesResponse.data && industriesResponse.data.length > 0) {
@@ -109,9 +127,18 @@ export function SmartFilteringPanel({
         console.error('Failed to fetch industries, using fallback:', error)
       }
 
+      // try {
+      //   // Fetch provinces
+      //   const provincesResponse = await apiClient.getProvinces()
+      //   if (provincesResponse.data && provincesResponse.data.length > 0) {
+      //     setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
+      //   }
+      // } catch (error) {
+      //   console.error('Failed to fetch provinces, using fallback:', error)
+      // }
       try {
-        // Fetch provinces
-        const provincesResponse = await apiClient.getProvinces()
+        // Fetch Used provinces
+        const provincesResponse = await apiClient.getUsedProvinces()
         if (provincesResponse.data && provincesResponse.data.length > 0) {
           setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
         }
@@ -217,7 +244,7 @@ export function SmartFilteringPanel({
 
         <div className="space-y-6">
           {/* Keyword Search Section */}
-          <Card className="mt-4">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Search className="h-4 w-4" />
@@ -225,12 +252,12 @@ export function SmartFilteringPanel({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-4">
+              <div className="mb-2">
                 <Label className="mb-2" htmlFor="keyword">Search Keyword</Label>
                 <Input
                   id="keyword"
                   className="shadow-sm "
-                  placeholder="Optional: Company name, registration number, or keywords..."
+                  placeholder="Company name, registration number, or keywords..."
                   value={tempCriteria.keyword || ""}
                   onChange={(e) => updateCriteria("keyword", e.target.value)}
                 />

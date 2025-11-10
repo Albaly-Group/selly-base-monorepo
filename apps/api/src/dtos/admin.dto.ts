@@ -46,12 +46,12 @@ export class CreateOrganizationUserDto {
   @ApiPropertyOptional({
     description: 'User role within the organization',
     example: 'user',
-    enum: ['user', 'staff', 'customer_admin'],
+    enum: ['user', 'staff', 'customer_admin', 'customer_staff'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['user', 'staff', 'customer_admin'], {
-    message: 'Role must be one of: user, staff, customer_admin',
+  @IsIn(['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'], {
+    message: 'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
   })
   role?: string;
 }
@@ -84,12 +84,12 @@ export class UpdateOrganizationUserDto {
   @ApiPropertyOptional({
     description: 'User role within the organization',
     example: 'user',
-    enum: ['user', 'staff', 'customer_admin'],
+    enum: ['user', 'staff', 'customer_admin', 'customer_staff'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['user', 'staff', 'customer_admin'], {
-    message: 'Role must be one of: user, staff, customer_admin',
+  @IsIn(['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'], {
+    message: 'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
   })
   role?: string;
 

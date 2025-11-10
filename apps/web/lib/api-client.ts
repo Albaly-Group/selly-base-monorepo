@@ -461,8 +461,15 @@ class ApiClient {
     return this.post<any>(`/api/v1/imports/${id}/validate`);
   }
 
-  async executeImportJob(id: string): Promise<any> {
-    return this.post<any>(`/api/v1/imports/${id}/execute`);
+  async executeImportJob(id: string, executeDto?: any): Promise<any> {
+    return this.post<any>(`/api/v1/imports/${id}/execute`, executeDto);
+  }
+
+  /**
+   * Upload a file for import (multipart/form-data). Returns the created import job summary.
+   */
+  async uploadImportFile(file: File, entityType = 'companies', organizationId?: string): Promise<any> {
+    return this.post<any>('/api/v1/imports/upload', { file, entityType, organizationId });
   }
 
   // Staff Management endpoints (to be implemented in backend)
@@ -616,8 +623,16 @@ class ApiClient {
     return this.get<{ data: any[] }>('/api/v1/reference-data/industries', params);
   }
 
+  async getUsedIndustries(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/industries/used', params);
+  }
+
   async getProvinces(params?: { active?: boolean; countryCode?: string }): Promise<{ data: any[] }> {
     return this.get<{ data: any[] }>('/api/v1/reference-data/provinces', params);
+  }
+
+  async getUsedProvinces(params?: { active?: boolean; countryCode?: string }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/provinces/used', params);
   }
 
   async getCompanySizes(): Promise<{ data: any[] }> {

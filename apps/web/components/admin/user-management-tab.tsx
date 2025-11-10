@@ -17,7 +17,7 @@ interface User {
   id: string
   name: string
   email: string
-  role: "user" | "staff" | "customer_admin"
+  role: "user" | "staff" | "customer_admin" | "customer_user" | "customer_staff"
   status: "active" | "suspended"
   lastLogin: string
   createdAt: string
@@ -32,6 +32,7 @@ export function UserManagementTab() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
 
+  const [updateUser, setUpdateUser] = useState(false);
   // State for error handling
   const [error, setError] = useState<string | null>(null)
 
@@ -103,6 +104,7 @@ export function UserManagementTab() {
   }
 
   const handleCreateUser = async (userData: { name: string, email: string, role: string, password: string }) => {
+    resetForm();
     try {
       setIsCreating(true)
       setFormErrors({})
@@ -148,6 +150,8 @@ export function UserManagementTab() {
       await apiClient.updateOrganizationUser(userId, userData)
       await refreshUsers()
       setEditingUser(null)
+      setShowAddUser(false)
+      setUpdateUser(false)
     } catch (error) {
       console.error('Failed to update user:', error)
     }
@@ -175,7 +179,16 @@ export function UserManagementTab() {
   }
 
   const handleEditUser = (user: User) => {
+    console.log('Editing user:', user)
     setEditingUser(user)
+    setUpdateUser(true)
+    setShowAddUser(true)
+    setNewUserForm({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      password: "",
+    })
   }
 
   const handleToggleStatus = async (userId: string) => {
@@ -290,8 +303,19 @@ export function UserManagementTab() {
               <CardDescription>Manage user accounts and permissions</CardDescription>
             </div>
             <Dialog open={showAddUser} onOpenChange={(open) => {
+              // Keep the show state in sync and ensure edit state is cleared when opening/closing
               setShowAddUser(open)
-              if (!open) resetForm()
+              if (open) {
+                // Opening dialog for Add User -> clear any editing state and reset form
+                setEditingUser(null)
+                setUpdateUser(false)
+                resetForm()
+              } else {
+                // Closing -> reset form and clear editing state as well
+                resetForm()
+                setEditingUser(null)
+                setUpdateUser(false)
+              }
             }}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -301,9 +325,9 @@ export function UserManagementTab() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
+                  <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
                   <DialogDescription>
-                    Create a new user account and assign permissions
+                    {editingUser ? 'Update user details. Password cannot be changed here.' : 'Create a new user account and assign permissions'}
                   </DialogDescription>
                 </DialogHeader>
                 {formErrors.general && (
@@ -340,12 +364,14 @@ export function UserManagementTab() {
                     <Input 
                       id="password" 
                       type="password" 
-                      placeholder="Enter password (min 6 characters)" 
+                      placeholder={editingUser ? "Disabled when editing" : "Enter password (min 6 characters)"} 
                       value={newUserForm.password}
                       onChange={(e) => setNewUserForm(prev => ({ ...prev, password: e.target.value }))}
                       className={formErrors.password ? 'border-red-500' : ''}
+                      disabled={Boolean(editingUser)}
                     />
                     {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
+                    {editingUser && <p className="text-xs text-gray-500 mt-1">Password changes are not allowed from this form.</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
@@ -363,14 +389,20 @@ export function UserManagementTab() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddUser(false)}>
+                  <Button variant="outline" onClick={() => { setShowAddUser(false); setEditingUser(null); setUpdateUser(false); }}>
                     Cancel
                   </Button>
                   <Button 
-                    onClick={() => handleCreateUser(newUserForm)}
+                    onClick={() => {
+                      if (editingUser) {
+                        handleUpdateUser(editingUser.id, { name: newUserForm.name, email: newUserForm.email, role: newUserForm.role as User['role'] })
+                      } else {
+                        handleCreateUser(newUserForm)
+                      }
+                    }}
                     disabled={isCreating}
                   >
-                    {isCreating ? 'Creating...' : 'Add User'}
+                    {editingUser ? (isCreating ? 'Updating...' : 'Save Changes') : (isCreating ? 'Creating...' : 'Add User')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -400,7 +432,12 @@ export function UserManagementTab() {
                       <p className="text-sm">There are no users in your organization yet.</p>
                       <Button 
                         className="mt-4" 
-                        onClick={() => setShowAddUser(true)}
+                        onClick={() => {
+                          setEditingUser(null)
+                          setUpdateUser(false)
+                          resetForm()
+                          setShowAddUser(true)
+                        }}
                         variant="outline"
                       >
                         Add your first user

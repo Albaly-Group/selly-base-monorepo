@@ -49,6 +49,20 @@ export class ReferenceDataController {
     return { data: industries };
   }
 
+  @Get('industries/used')
+  @ApiOperation({ summary: 'Get industries that are used by companies' })
+  @ApiQuery({
+    name: 'active',
+    required: false,
+    description: 'Filter by active status (default: true)',
+  })
+  @ApiResponse({ status: 200, description: 'Used industries retrieved successfully' })
+  async getUsedIndustries(@Query('active') active?: string): Promise<{ data: any[] }> {
+    const isActive = active === 'false' ? false : true;
+    const industries = await this.referenceDataService.getUsedIndustries(isActive);
+    return { data: industries };
+  }
+
   @Get('provinces')
   @ApiOperation({ summary: 'Get all provinces' })
   @ApiQuery({
@@ -68,6 +82,31 @@ export class ReferenceDataController {
   ): Promise<{ data: any[] }> {
     const isActive = active === 'false' ? false : true;
     const provinces = await this.referenceDataService.getProvinces(
+      isActive,
+      countryCode || 'TH',
+    );
+    return { data: provinces };
+  }
+
+  @Get('provinces/used')
+  @ApiOperation({ summary: 'Get provinces that are used by companies' })
+  @ApiQuery({
+    name: 'active',
+    required: false,
+    description: 'Filter by active status (default: true)',
+  })
+  @ApiQuery({
+    name: 'countryCode',
+    required: false,
+    description: 'Filter by country code (default: TH)',
+  })
+  @ApiResponse({ status: 200, description: 'Provinces retrieved successfully' })
+  async getUsedProvinces(
+    @Query('active') active?: string,
+    @Query('countryCode') countryCode?: string,
+  ): Promise<{ data: any[] }> {
+    const isActive = active === 'false' ? false : true;
+    const provinces = await this.referenceDataService.getUsedProvinces(
       isActive,
       countryCode || 'TH',
     );

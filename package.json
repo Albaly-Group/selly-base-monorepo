@@ -9,7 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint", 
+    "lint": "turbo lint",
     "start": "turbo start",
     "test": "turbo test",
     "clean": "turbo clean",
@@ -36,11 +36,14 @@
     "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y"
   },
   "devDependencies": {
-    "turbo": "latest",
     "@axe-core/playwright": "^4.8.2",
     "@lhci/cli": "^0.12.0",
     "@pact-foundation/pact": "^12.1.0",
-    "lost-pixel": "^3.16.0"
+    "lost-pixel": "^3.16.0",
+    "turbo": "latest"
   },
-  "packageManager": "npm@10.2.4"
+  "packageManager": "npm@10.2.4",
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
 }

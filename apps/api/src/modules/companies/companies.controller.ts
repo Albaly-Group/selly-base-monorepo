@@ -32,6 +32,7 @@ import {
   UpdateCompanyDto,
   CompanySearchDto,
   BulkCompanyIdsDto,
+  BulkCreateCompaniesDto,
 } from '../../dtos/enhanced-company.dto';
 
 interface PaginatedResponse<T> {
@@ -53,6 +54,26 @@ export class CompaniesController {
     private readonly companiesService: CompaniesService,
     private readonly leadScoringService: LeadScoringService,
   ) {}
+
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Bulk create companies' })
+  @ApiResponse({ status: 200, description: 'Bulk create results' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async bulkCreateCompanies(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: false,
+      }),
+    ) bulkDto: BulkCreateCompaniesDto,
+    @CurrentUser() user: Users,
+  ) {
+    return this.companiesService.bulkCreateCompanies(bulkDto.companies, user);
+  }
 
   @Get('search')
   @ApiOperation({ summary: 'Search companies with advanced filters' })

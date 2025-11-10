@@ -497,7 +497,7 @@ export function CompanyCreateDialog({
                   onChange={(e) =>
                     updateField(
                       "employeeCountEstimate",
-                      parseInt(e.target.value) || undefined
+                      parseInt(e.target.value).toString(),
                     )
                   }
                   placeholder="50"
@@ -506,25 +506,32 @@ export function CompanyCreateDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dataSensitivity" className="text-sm font-medium">
-                Data Sensitivity
-              </Label>
-              <Select
-                value={formData.dataSensitivity}
-                onValueChange={(value) => updateField("dataSensitivity", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select sensitivity..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="confidential">Confidential</SelectItem>
-                  <SelectItem value="restricted">Restricted</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="dataSensitivity"
+                  className="text-sm font-medium"
+                >
+                  Data Sensitivity
+                </Label>
+                <Select
+                  value={formData.dataSensitivity}
+                  onValueChange={(value) =>
+                    updateField("dataSensitivity", value)
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sensitivity..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="confidential">Confidential</SelectItem>
+                    <SelectItem value="restricted">Restricted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>

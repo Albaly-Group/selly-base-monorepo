@@ -276,7 +276,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine1">Address Line 1</Label>
               <Input
                 id="addressLine1"
-                value={formData.addressLine1 || ""}
+                value={formData.addressLine1 ?? (formData as any).address1 ?? ""}
                 onChange={(e) => updateField("addressLine1", e.target.value)}
                 disabled={!canEdit}
               />
@@ -286,7 +286,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
                 id="addressLine2"
-                value={formData.addressLine2 || ""}
+                value={formData.addressLine2 ?? (formData as any).address2 ?? ""}
                 onChange={(e) => updateField("addressLine2", e.target.value)}
                 disabled={!canEdit}
               />

@@ -59,6 +59,59 @@ export class ReferenceDataService {
     }
   }
 
+  async getUsedIndustries(activeOnly = true): Promise<any[]> {
+    try {
+      const query = this.industryRepository.createQueryBuilder('industry');
+
+      if (activeOnly) {
+        query.where('industry.isActive = :isActive', { isActive: true });
+      }
+
+      // Inner join companies to ensure we only return industries that have at least one company
+      // companies table has primary_industry_id referencing ref_industry_codes.id
+      query
+        .innerJoin('companies', 'company', 'company.primary_industry_id = industry.id')
+        .select([
+          'industry.id as id',
+          'industry.code as code',
+          'industry.title_en as name',
+          'industry.title_en as nameEn',
+          'industry.title_th as nameTh',
+          'industry.description as description',
+          'industry.classification_system as classificationSystem',
+          'industry.level as level',
+        ])
+        .groupBy('industry.id')
+        .addGroupBy('industry.code')
+        .addGroupBy('industry.title_en')
+        .addGroupBy('industry.title_th')
+        .addGroupBy('industry.description')
+        .addGroupBy('industry.classification_system')
+        .addGroupBy('industry.level')
+        .orderBy('industry.title_en', 'ASC');
+
+      const rows = await query.getRawMany();
+
+      if (!rows || rows.length === 0) {
+        return this.getFallbackIndustries();
+      }
+
+      return rows.map((r: any) => ({
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        nameEn: r.nameen || r.nameEn || r.name,
+        nameTh: r.nameth || r.nameTh || r.nameTh,
+        description: r.description,
+        classificationSystem: r.classificationsystem || r.classificationSystem,
+        level: r.level,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch used industries from database:', error);
+      return this.getFallbackIndustries();
+    }
+  }
+
   async getProvinces(activeOnly = true, countryCode = 'TH'): Promise<any[]> {
     try {
       const query = this.regionRepository.createQueryBuilder('region');
@@ -92,6 +145,59 @@ export class ReferenceDataService {
       }));
     } catch (error) {
       console.error('Failed to fetch provinces from database:', error);
+      return this.getFallbackProvinces();
+    }
+  }
+
+  async getUsedProvinces(activeOnly = true, countryCode = 'TH'): Promise<any[]> {
+    try {
+      const query = this.regionRepository.createQueryBuilder('region');
+
+      if (activeOnly) {
+        query.where('region.isActive = :isActive', { isActive: true });
+      }
+
+      if (countryCode) {
+        query.andWhere('region.countryCode = :countryCode', { countryCode });
+      }
+
+      // Inner join companies to ensure we only return regions (provinces) that have at least one company
+      query
+        .innerJoin('companies', 'company', 'company.primary_region_id = region.id')
+        .select([
+          'region.id as id',
+          'region.code as code',
+          'region.name_en as name',
+          'region.name_en as nameEn',
+          'region.name_th as nameTh',
+          'region.region_type as regionType',
+          'region.country_code as countryCode',
+        ])
+        .groupBy('region.id')
+        .addGroupBy('region.code')
+        .addGroupBy('region.name_en')
+        .addGroupBy('region.name_th')
+        .addGroupBy('region.region_type')
+        .addGroupBy('region.country_code')
+        .orderBy('region.name_en', 'ASC');
+
+      const rows = await query.getRawMany();
+
+      if (!rows || rows.length === 0) {
+        return this.getFallbackProvinces();
+      }
+
+      return rows.map((r: any) => ({
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        nameEn: r.nameen || r.nameEn || r.name,
+        nameTh: r.nameth || r.nameTh || r.nameTh,
+        regionType: r.regiontype || r.regionType,
+        countryCode: r.countrycode || r.countryCode,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch used provinces from database:', error);
       return this.getFallbackProvinces();
     }
   }
