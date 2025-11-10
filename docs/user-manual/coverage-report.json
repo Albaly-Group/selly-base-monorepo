@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2025-11-03T20:02:26.869Z",
+  "features": [
+    {
+      "name": "Authentication",
+      "workflows": [
+        "Login",
+        "Logout",
+        "Access Denied"
+      ],
+      "screenshotsCaptured": 6,
+      "status": "complete"
+    },
+    {
+      "name": "Dashboard",
+      "workflows": [
+        "Platform Admin",
+        "Customer Admin",
+        "Staff",
+        "User"
+      ],
+      "screenshotsCaptured": 4,
+      "status": "complete"
+    },
+    {
+      "name": "Company Lookup",
+      "workflows": [
+        "Search",
+        "Filter",
+        "View Details"
+      ],
+      "screenshotsCaptured": 8,
+      "status": "complete"
+    },
+    {
+      "name": "Lists Management",
+      "workflows": [
+        "View Lists",
+        "Create List",
+        "Add Companies",
+        "Remove Companies"
+      ],
+      "screenshotsCaptured": 4,
+      "status": "complete"
+    },
+    {
+      "name": "Imports",
+      "workflows": [
+        "Upload",
+        "Validate",
+        "Execute"
+      ],
+      "screenshotsCaptured": 3,
+      "status": "complete"
+    },
+    {
+      "name": "Exports",
+      "workflows": [
+        "Create Request",
+        "Download",
+        "View History"
+      ],
+      "screenshotsCaptured": 3,
+      "status": "complete"
+    },
+    {
+      "name": "Reports",
+      "workflows": [
+        "View Reports",
+        "Generate Report",
+        "Export Report"
+      ],
+      "screenshotsCaptured": 4,
+      "status": "complete"
+    },
+    {
+      "name": "Staff Management",
+      "workflows": [
+        "View Staff",
+        "Add Staff",
+        "Edit Staff"
+      ],
+      "screenshotsCaptured": 2,
+      "status": "complete"
+    },
+    {
+      "name": "Admin Panel",
+      "workflows": [
+        "User Management",
+        "Policy Configuration"
+      ],
+      "screenshotsCaptured": 4,
+      "status": "complete"
+    },
+    {
+      "name": "Platform Admin",
+      "workflows": [
+        "Tenant Management",
+        "Shared Data Management",
+        "Cross-tenant Users"
+      ],
+      "screenshotsCaptured": 5,
+      "status": "complete"
+    }
+  ],
+  "totalFeatures": 10,
+  "totalScreenshots": 43,
+  "roles": [
+    "Platform Admin",
+    "Customer Admin",
+    "Staff",
+    "User"
+  ]
+}
