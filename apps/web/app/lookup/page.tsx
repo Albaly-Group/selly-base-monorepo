@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Loader2, Plus } from "lucide-react";
 import ExcelJS from "exceljs";
+import Papa from "papaparse";
 import { apiClient } from "@/lib/api-client";
 
 function CompanyLookupPage() {
@@ -798,25 +799,31 @@ function CompanyLookupPage() {
     const name = file.name.toLowerCase();
     try {
       if (name.endsWith(".csv")) {
-        const text = await file.text();
-        const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
-        if (lines.length === 0) return;
-        const headerLine = lines[0];
-        // naive CSV split (handles simple cases). For complex CSVs use a parser.
-        const headers = headerLine.split(",").map((h) => h.trim());
-        const rows: any[] = [];
-        for (let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(",");
-          const obj: any = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j] || `col${j}`] =
-              cols[j] !== undefined ? cols[j].trim() : "";
-          }
-          rows.push(mapRowObjectToCompany(obj));
-        }
-        setImportPreviewCols(headers);
-        setParsedImportRows(rows);
-      } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        // Use PapaParse for robust CSV parsing (handles quotes, commas, newlines inside fields)
+        await new Promise<void>((resolve, reject) => {
+          Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: (h: any) => (h == null ? "" : String(h)),
+            complete: (results: any) => {
+              try {
+                const data = Array.isArray(results.data) ? results.data : [];
+                const headers = (results.meta && results.meta.fields) || (data[0] ? Object.keys(data[0]) : []);
+                const rows = data.map((rowObj: any) => mapRowObjectToCompany(rowObj));
+                setImportPreviewCols(headers as string[]);
+                setParsedImportRows(rows as any[]);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            },
+            error: (err: any) => {
+              console.error("CSV parse error", err);
+              reject(err);
+            },
+          });
+        });
+      } else if (name.endsWith(".xlsx")) {
         const buf = await file.arrayBuffer();
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buf);
@@ -847,6 +854,8 @@ function CompanyLookupPage() {
         });
         setImportPreviewCols(headers);
         setParsedImportRows(rows);
+      } else if (name.endsWith(".xls")) {
+        alert(".xls file format is not supported in this version. Please convert to .xlsx or .csv and try again.");
       } else {
         // unsupported file type
         alert("Unsupported file type. Please upload .xlsx, .xls or .csv");

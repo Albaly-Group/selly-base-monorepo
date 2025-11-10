@@ -71,7 +71,8 @@
     "vaul": "^0.9.9",
     "zod": "3.25.67",
     "xlsx": "^0.18.5",
-    "exceljs": "^4.3.0"
+    "exceljs": "^4.3.0",
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

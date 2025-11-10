@@ -1,0 +1,5 @@
+CompanyNameEn,CompanyNameTh,PrimaryRegistrationNo,BusinessDescription,AddressLine1,AddressLine2,PostalCode,PrimaryRegion,PrimaryIndustry,Website,PrimaryEmail,PrimaryPhone,CompanySize,EmployeeCountEstimate,DataSensitivity
+"ACME, Inc.",เอซีเอ็มอี,123456,"Manufacturer of widgets, gadgets and more","123 Main St.","Suite 100",10110,Bangkok,Manufacturing,https://acme.example.com,info@acme.example.com,02-123-4567,Medium,150,Low
+"Beta ""Solutions"" Co.",เบต้า โซลูชั่น,7891011,"Provides consulting services.
+Specializes in ""digital"" transformation","45 Second Ave","Floor 2",10220,Chiang Mai,Consulting,https://beta.example.com,contact@beta.example.com,053-987-654,Small,25,Medium
+"Gamma LLC",,,"A small local shop","10 Market Road",,10200,Phuket,Retail,http://gamma.local,sales@gamma.local,,Micro,5,Low
