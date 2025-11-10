@@ -1339,7 +1339,7 @@ function CompanyLookupPage() {
             />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">
-                Import from Excel (.xlsx/.xls/.csv)
+                Import from Excel (.xlsx/.csv)
               </h3>
               <p className="text-sm text-gray-600 mb-2">
                 Upload an Excel file to import company data. Need a sample template
@@ -1364,7 +1364,7 @@ function CompanyLookupPage() {
                   <div className="flex flex-col items-center">
                     <span className="font-medium">Choose File</span>
                     <span className="text-sm text-gray-400">
-                      .xlsx / .xls / .csv
+                      .xlsx / .csv
                     </span>
                   </div>
                 </label>
@@ -1372,7 +1372,7 @@ function CompanyLookupPage() {
                   id="file-upload"
                   ref={fileInputRef}
                   type="file"
-                  accept=".xlsx,.xls,.csv"
+                  accept=".xlsx,.csv"
                   onChange={handleFileChange}
                   className="hidden"
                 />
