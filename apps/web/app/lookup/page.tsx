@@ -1252,10 +1252,10 @@ function CompanyLookupPage() {
             />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">
-                เลือกคอลัมน์ที่ต้องการส่งออก
+                Select columns to export
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                เลือกคอลัมน์ที่จะรวมในไฟล์ Excel. การเลือกเริ่มต้นเป็นทั้งหมด.
+                Choose which columns to include in the Excel file. All columns are selected by default.
               </p>
               <div className="flex items-center justify-between mb-3">
                 <button
@@ -1302,13 +1302,13 @@ function CompanyLookupPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <button
-                  className="px-3 py-2 border rounded"
+                  className="px-3 py-2 border rounded-md"
                   onClick={() => setShowExportModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-3 py-2 bg-primary text-primary-foreground rounded"
+                  className="px-3 py-2 bg-primary text-primary-foreground rounded-md"
                   onClick={() => {
                     setShowExportModal(false);
                     onExportExcel(selectedExportKeys);
@@ -1330,18 +1330,17 @@ function CompanyLookupPage() {
             />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">
-                Import ข้อมูลจาก Excel (.xlsx/.xls/.csv)
+                Import from Excel (.xlsx/.xls/.csv)
               </h3>
               <p className="text-sm text-gray-600 mb-2">
-                เลือกไฟล์ Excel เพื่ออัปโหลดและนำเข้าข้อมูลบริษัทเข้าสู่ระบบ หากต้องการไฟล์เทมเพลตตัวอย่างเพื่อกรอกข้อมูลก่อนอัปโหลดสามารถ
+                Upload an Excel file to import company data. Need a sample template
                 <button
                   type="button"
                   onClick={downloadImportTemplate}
                   className="ml-1 text-blue-600 underline"
                 >
-                  ดาวน์โหลดเทมเพลต
+                  Download template
                 </button>
-                 <span> ได้ที่นี่</span>
               </p>
 
               <div className="text-sm text-gray-600 mb-4">
