@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   Get,
   UseGuards,
@@ -150,5 +151,75 @@ export class AuthController {
     // For JWT-based auth, logout is handled client-side by removing the token
     // This endpoint can be used for logging or future session management
     return { message: 'Logout successful' };
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update user profile' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'User full name' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateProfile(
+    @Request() req: any,
+    @Body() updateData: { name?: string },
+  ) {
+    return this.authService.updateProfile(req.user.sub, updateData);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Change user password' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        currentPassword: { type: 'string', description: 'Current password' },
+        newPassword: { type: 'string', description: 'New password' },
+      },
+      required: ['currentPassword', 'newPassword'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized or invalid password' })
+  async changePassword(
+    @Request() req: any,
+    @Body() passwordData: { currentPassword: string; newPassword: string },
+  ) {
+    return this.authService.changePassword(
+      req.user.sub,
+      passwordData.currentPassword,
+      passwordData.newPassword,
+    );
   }
 }

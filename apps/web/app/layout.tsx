@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { AuthProvider } from "@/lib/auth"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ReactQueryProvider } from "@/lib/react-query-provider"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <AuthProvider>
               <Suspense fallback={null}>{children}</Suspense>
+              <Toaster />
             </AuthProvider>
           </ThemeProvider>
         </ReactQueryProvider>

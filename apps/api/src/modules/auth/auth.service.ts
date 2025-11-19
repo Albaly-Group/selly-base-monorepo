@@ -219,4 +219,89 @@ export class AuthService {
       return false;
     }
   }
+
+  async updateProfile(
+    userId: string,
+    updateData: { name?: string },
+  ): Promise<{ id: string; name: string; email: string; message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Update name if provided
+      if (updateData.name !== undefined && updateData.name.trim() !== '') {
+        user.name = updateData.name.trim();
+      }
+
+      user.updatedAt = new Date();
+      const savedUser = await this.userRepository.save(user);
+
+      return {
+        id: savedUser.id,
+        name: savedUser.name,
+        email: savedUser.email,
+        message: 'Profile updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error updating profile:', error);
+      throw error;
+    }
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Verify current password
+      const isPasswordValid = await this.verifyPassword(
+        currentPassword,
+        user.passwordHash,
+      );
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
+
+      // Validate new password
+      if (!newPassword || newPassword.length < 8) {
+        throw new Error('New password must be at least 8 characters long');
+      }
+
+      if (currentPassword === newPassword) {
+        throw new Error('New password must be different from current password');
+      }
+
+      // Hash and save new password
+      user.passwordHash = await argon2.hash(newPassword);
+      user.updatedAt = new Date();
+      await this.userRepository.save(user);
+
+      return {
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error changing password:', error);
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new Error(
+        error.message || 'Failed to change password. Please try again.',
+      );
+    }
+  }
 }

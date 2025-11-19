@@ -157,6 +157,7 @@ export function Navigation() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/userProfile")}>Settings</DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
