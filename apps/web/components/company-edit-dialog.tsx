@@ -53,12 +53,14 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     id: "",
     registrationNo: "",
     status: "active",
-    authorityCode: "",
-    registrationType: "",
+    authorityId: "",
+    registrationTypeId: "",
     isPrimary: true,
     remarks: "",
     countryCode: "TH",
   });
+  const [registrationAuthorities, setRegistrationAuthorities] = useState<Array<{ id: string; code: string; name: string }>>([]);
+  const [registrationTypes, setRegistrationTypes] = useState<Array<{ id: string; key: string; name: string }>>([]);
   
   // Check if user can edit this company
   const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
@@ -82,9 +84,11 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     if (open) {
       const loadReferenceData = async () => {
         try {
-          const [industriesData, regionsData] = await Promise.all([
+          const [industriesData, regionsData, authoritiesData, typesData] = await Promise.all([
             apiClient.getIndustries({ active: true }),
             apiClient.getRegionsHierarchical({ active: true, countryCode: 'TH' }),
+            apiClient.getRegistrationAuthorities({ active: true }),
+            apiClient.getRegistrationTypes(),
           ])
 
           const cleanIndustries = (industriesData.data || []).filter(
@@ -93,6 +97,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           
           setIndustries(cleanIndustries)
           setRegions(regionsData.data || [])
+          setRegistrationAuthorities(authoritiesData.data || [])
+          setRegistrationTypes(typesData.data || [])
         } catch (err) {
           console.error('Failed to load reference data:', err)
         }
@@ -109,8 +115,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 id: r.id,
                 registrationNo: r.registrationNo || "",
                 status: r.status || "active",
-                authorityCode: r.authorityCode || "",
-                registrationType: r.registrationType || "",
+                  authorityId: r.authorityId || r.authorityCode || "",
+                  registrationTypeId: r.registrationTypeId || r.registrationType || "",
                 isPrimary: !!r.isPrimary,
                 remarks: (r.rawData && (r.rawData as any).remarks) || "",
                 countryCode: r.countryCode || "TH",
@@ -162,13 +168,13 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       
       if (updatedCompany) {
         // Try create/update registration (non-blocking)
-        if (registrationData.registrationNo && registrationData.authorityCode && registrationData.registrationType) {
+        if (registrationData.registrationNo && registrationData.authorityId && registrationData.registrationTypeId) {
           try {
             if (registrationData.id) {
               await apiClient.updateCompanyRegistration(registrationData.id, {
                 registrationNo: registrationData.registrationNo,
-                registrationType: registrationData.registrationType,
-                authorityCode: registrationData.authorityCode,
+                registrationTypeId: registrationData.registrationTypeId,
+                authorityId: registrationData.authorityId,
                 countryCode: registrationData.countryCode,
                 status: registrationData.status,
                 isPrimary: registrationData.isPrimary,
@@ -178,8 +184,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               await apiClient.createCompanyRegistration({
                 companyId: formData.id,
                 registrationNo: registrationData.registrationNo,
-                registrationType: registrationData.registrationType,
-                authorityCode: registrationData.authorityCode,
+                registrationTypeId: registrationData.registrationTypeId,
+                authorityId: registrationData.authorityId,
                 countryCode: registrationData.countryCode,
                 status: registrationData.status,
                 isPrimary: registrationData.isPrimary,
@@ -520,19 +526,19 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 <div className="space-y-2">
                   <Label htmlFor="authorityCode" className="text-sm font-medium">Registration Authorities</Label>
                   <Select
-                    value={registrationData.authorityCode}
-                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, authorityCode: value }))}
+                    value={registrationData.authorityId}
+                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, authorityId: value }))}
                     disabled={!canEdit}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select Registration Authorities" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="DBD">Department of Business Development (DBD)</SelectItem>
-                      <SelectItem value="MOC">Ministry of Commerce</SelectItem>
-                      <SelectItem value="BOI">Board of Investment (BOI)</SelectItem>
-                      <SelectItem value="SEC">Securities and Exchange Commission</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
+                      {registrationAuthorities.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.name || ""}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -540,20 +546,19 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 <div className="space-y-2">
                   <Label htmlFor="registrationType" className="text-sm font-medium">Registration Type</Label>
                   <Select
-                    value={registrationData.registrationType}
-                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, registrationType: value }))}
+                    value={registrationData.registrationTypeId}
+                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, registrationTypeId: value }))}
                     disabled={!canEdit}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select Registration Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="JURISTIC">Juristic Person</SelectItem>
-                      <SelectItem value="PARTNERSHIP">Partnership</SelectItem>
-                      <SelectItem value="LIMITED">Limited Company</SelectItem>
-                      <SelectItem value="PUBLIC">Public Company</SelectItem>
-                      <SelectItem value="BRANCH">Branch Office</SelectItem>
-                      <SelectItem value="REPRESENTATIVE">Representative Office</SelectItem>
+                      {registrationTypes.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name || ""}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

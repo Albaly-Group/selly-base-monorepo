@@ -60,12 +60,15 @@ export function CompanyCreateDialog({
   const [registrationData, setRegistrationData] = useState({
     registrationNo: "",
     status: "active",
-    authorityCode: "",
-    registrationType: "",
+    authorityId: "",
+    registrationTypeId: "",
     isPrimary: true,
     remarks: "",
     countryCode: "TH",
   });
+  const [registrationAuthorities, setRegistrationAuthorities] = useState<Array<{ id: string; code: string; name: string; countryCode?: string }>>([]);
+  const [registrationTypes, setRegistrationTypes] = useState<Array<{ id: string; key: string; name: string }>>([]);
+
   const [industries, setIndustries] = useState<
     Array<{ id: string; titleEn: string; titleTh: string | null }>
   >([]);
@@ -100,8 +103,8 @@ export function CompanyCreateDialog({
     setRegistrationData({
       registrationNo: "",
       status: "active",
-      authorityCode: "",
-      registrationType: "",
+      authorityId: "",
+      registrationTypeId: "",
       isPrimary: true,
       remarks: "",
       countryCode: "TH",
@@ -122,12 +125,14 @@ export function CompanyCreateDialog({
     if (open) {
       const loadReferenceData = async () => {
         try {
-          const [industriesData, regionsData] = await Promise.all([
+          const [industriesData, regionsData, authoritiesData, typesData] = await Promise.all([
             apiClient.getIndustries({ active: true }),
             apiClient.getRegionsHierarchical({
               active: true,
               countryCode: "TH",
             }),
+            apiClient.getRegistrationAuthorities({ active: true }),
+            apiClient.getRegistrationTypes(),
           ]);
           const cleanIndustries = (industriesData.data || []).filter(
             (it: any) =>
@@ -136,6 +141,8 @@ export function CompanyCreateDialog({
 
           setIndustries(cleanIndustries);
           setRegions(regionsData.data || []);
+          setRegistrationAuthorities(authoritiesData.data || []);
+          setRegistrationTypes(typesData.data || []);
         } catch (err) {
           console.error("Failed to load reference data:", err);
         }
@@ -193,15 +200,19 @@ export function CompanyCreateDialog({
 
       const newCompany = await apiClient.createCompany(createData);
 
-      if (newCompany) {
+        if (newCompany) {
         // Create company registration if registration data is provided
-        if (registrationData.registrationNo && registrationData.authorityCode && registrationData.registrationType) {
+        if (
+          registrationData.registrationNo &&
+          registrationData.authorityId &&
+          registrationData.registrationTypeId
+        ) {
           try {
             await apiClient.createCompanyRegistration({
               companyId: newCompany.id,
               registrationNo: registrationData.registrationNo,
-              registrationType: registrationData.registrationType,
-              authorityCode: registrationData.authorityCode,
+              registrationTypeId: registrationData.registrationTypeId,
+              authorityId: registrationData.authorityId,
               countryCode: registrationData.countryCode,
               status: registrationData.status,
               isPrimary: registrationData.isPrimary,
@@ -596,45 +607,44 @@ export function CompanyCreateDialog({
                   <Label htmlFor="authorityCode" className="text-sm font-medium">
                     Registration Authorities
                   </Label>
-                  <Select
-                    value={registrationData.authorityCode}
-                    onValueChange={(value) => updateRegistrationField("authorityCode", value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Registration Authorities" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DBD">Department of Business Development (DBD)</SelectItem>
-                      <SelectItem value="MOC">Ministry of Commerce</SelectItem>
-                      <SelectItem value="BOI">Board of Investment (BOI)</SelectItem>
-                      <SelectItem value="SEC">Securities and Exchange Commission</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Select
+                      value={registrationData.authorityId}
+                      onValueChange={(value) => updateRegistrationField("authorityId", value)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Registration Authorities" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {registrationAuthorities.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.name || ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="registrationType" className="text-sm font-medium">
                     Registration Type
                   </Label>
-                  <Select
-                    value={registrationData.registrationType}
-                    onValueChange={(value) => updateRegistrationField("registrationType", value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Registration Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="JURISTIC">Juristic Person</SelectItem>
-                      <SelectItem value="PARTNERSHIP">Partnership</SelectItem>
-                      <SelectItem value="LIMITED">Limited Company</SelectItem>
-                      <SelectItem value="PUBLIC">Public Company</SelectItem>
-                      <SelectItem value="BRANCH">Branch Office</SelectItem>
-                      <SelectItem value="REPRESENTATIVE">Representative Office</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Select
+                      value={registrationData.registrationTypeId}
+                      onValueChange={(value) => updateRegistrationField("registrationTypeId", value)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Registration Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {registrationTypes.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name || ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                 </div>
               </div>
               {/* <div className="space-y-2">

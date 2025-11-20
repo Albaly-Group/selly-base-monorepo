@@ -858,8 +858,8 @@ class ApiClient {
   async createCompanyRegistration(registrationData: {
     companyId: string;
     registrationNo: string;
-    registrationType: string;
-    authorityCode: string;
+    registrationTypeId?: string;
+    authorityId?: string;
     countryCode?: string;
     status?: string;
     registeredDate?: string;
