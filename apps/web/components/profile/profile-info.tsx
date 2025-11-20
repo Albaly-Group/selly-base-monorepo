@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useAuth } from "@/lib/auth"
+import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,23 +32,9 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
     setIsSaving(true)
 
     try {
-      const token = localStorage.getItem("selly-token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: formData.name,
-        }),
+      const result = await apiClient.updateProfile({
+        name: formData.name,
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile")
-      }
-
-      const updatedUser = await response.json()
       
       // Update local storage
       const storedUser = localStorage.getItem("selly-user")
@@ -64,10 +51,10 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
 
       setIsEditing(false)
       onUpdate?.()
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       })
     } finally {

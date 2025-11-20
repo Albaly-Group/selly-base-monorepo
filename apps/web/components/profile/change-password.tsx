@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -93,23 +94,10 @@ export function ChangePassword() {
     setIsSaving(true)
 
     try {
-      const token = localStorage.getItem("selly-token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || "Failed to change password")
-      }
+      await apiClient.changePassword(
+        formData.currentPassword,
+        formData.newPassword
+      )
 
       toast({
         title: "Password changed",

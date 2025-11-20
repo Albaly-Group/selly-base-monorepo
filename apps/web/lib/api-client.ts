@@ -257,6 +257,39 @@ class ApiClient {
     throw new Error('Max retries exceeded');
   }
 
+  async patch<T>(endpoint: string, data?: any, retries = 3): Promise<T> {
+    if (!this.isApiAvailable()) {
+      throw new Error('API not available - no backend URL configured');
+    }
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'PATCH',
+          headers: this.getHeaders(),
+          credentials: 'include',
+          body: data ? JSON.stringify(data) : undefined,
+        });
+
+        if (response.status === 401) {
+          this.clearToken();
+          throw new Error('Authentication required');
+        }
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        return response.json();
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+      }
+    }
+    throw new Error('Max retries exceeded');
+  }
+
   async delete<T>(endpoint: string, data?: any, retries = 3): Promise<T> {
     if (!this.isApiAvailable()) {
       throw new Error('API not available - no backend URL configured');
@@ -337,6 +370,14 @@ class ApiClient {
       console.log('Backend logout failed, continuing with client-side logout:', error);
     }
     this.clearToken();
+  }
+
+  async updateProfile(data: { name?: string }): Promise<{ id: string; name: string; email: string; message: string }> {
+    return this.patch<{ id: string; name: string; email: string; message: string }>('/api/v1/auth/profile', data);
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return this.post<{ message: string }>('/api/v1/auth/change-password', { currentPassword, newPassword });
   }
 
   // Companies endpoints
