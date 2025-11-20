@@ -136,6 +136,27 @@ CREATE TABLE ref_tags (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS ref_registration_authorities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT UNIQUE NOT NULL,          -- e.g., TH-DBD
+  name TEXT NOT NULL,
+  country_code TEXT NOT NULL,         -- ISO-3166-1 alpha-2
+  website TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+COMMENT ON TABLE ref_registration_authorities IS 'Business registrars (DBD, SEC, etc.).';
+
+CREATE TABLE IF NOT EXISTS ref_registration_types (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT UNIQUE NOT NULL,           -- company_limited, etc.
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+COMMENT ON TABLE ref_registration_types IS 'Legal entity type catalog.';
+
 -- =========================================================
 -- CANONICAL COMPANY DATA
 -- =========================================================
@@ -150,7 +171,6 @@ CREATE TABLE companies (
   name_th TEXT,
   name_local TEXT,
   display_name TEXT GENERATED ALWAYS AS (COALESCE(name_en, name_th)) STORED,
-  primary_registration_no TEXT,
   registration_country_code TEXT DEFAULT 'TH',
   duns_number TEXT,
   address_line_1 TEXT,
@@ -227,8 +247,8 @@ CREATE TABLE company_registrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   registration_no TEXT NOT NULL,
-  registration_type TEXT NOT NULL,
-  authority_code TEXT NOT NULL,
+  authority_id UUID NOT NULL REFERENCES ref_registration_authorities(id) ON DELETE RESTRICT,
+  registration_type_id UUID NOT NULL REFERENCES ref_registration_types(id) ON DELETE RESTRICT,
   country_code TEXT NOT NULL,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'dissolved', 'suspended')),
   registered_date DATE,
@@ -237,7 +257,7 @@ CREATE TABLE company_registrations (
   raw_data JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(registration_no, authority_code)
+  UNIQUE(registration_no, authority_id)
 );
 
 CREATE TABLE company_contacts (
@@ -451,7 +471,6 @@ SELECT
   c.name_en,
   c.name_th,
   c.display_name,
-  c.primary_registration_no,
   c.registration_country_code,
   c.business_description,
   c.website_url,
@@ -467,7 +486,7 @@ SELECT
   c.primary_region_id,
   COALESCE(cc.contact_count, 0) as contact_count,
   pr.registration_no as primary_registration_no_full,
-  pr.authority_code,
+  pr.authority_id,
   COALESCE(lm.list_count, 0) as list_membership_count,
   c.updated_at,
   -- Add province and country_code from ref_regions via primary_region_id
@@ -493,7 +512,7 @@ LEFT JOIN (
   GROUP BY company_id
 ) cc ON c.id = cc.company_id
 LEFT JOIN (
-  SELECT company_id, registration_no, authority_code
+  SELECT company_id, registration_no, authority_id
   FROM company_registrations 
   WHERE is_primary = true
 ) pr ON c.id = pr.company_id
@@ -529,11 +548,14 @@ CREATE INDEX idx_companies_name_trgm ON companies USING gin(name_en gin_trgm_ops
 CREATE INDEX idx_companies_search_vector ON companies USING gin(search_vector);
 CREATE INDEX idx_companies_size ON companies(company_size) WHERE company_size IS NOT NULL;
 CREATE INDEX idx_companies_verification ON companies(verification_status);
-CREATE INDEX idx_companies_registration_no ON companies(primary_registration_no) WHERE primary_registration_no IS NOT NULL;
 CREATE INDEX idx_companies_primary_industry ON companies(primary_industry_id) WHERE primary_industry_id IS NOT NULL;
 CREATE INDEX idx_companies_primary_region ON companies(primary_region_id) WHERE primary_region_id IS NOT NULL;
 CREATE INDEX idx_company_tags_company ON company_tags(company_id);
 CREATE INDEX idx_company_tags_tag ON company_tags(tag_id);
+CREATE INDEX idx_company_registrations_company ON company_registrations(company_id);
+CREATE INDEX idx_company_registrations_no ON company_registrations(registration_no);
+CREATE INDEX idx_company_registrations_authority ON company_registrations(authority_id);
+CREATE INDEX idx_company_registrations_type ON company_registrations(registration_type_id);
 CREATE INDEX idx_company_lists_org_owner ON company_lists(organization_id, owner_user_id);
 CREATE INDEX idx_company_lists_visibility ON company_lists(visibility);
 CREATE INDEX idx_company_lists_smart ON company_lists(is_smart_list) WHERE is_smart_list = true;
