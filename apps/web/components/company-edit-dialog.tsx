@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
@@ -47,6 +48,17 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [activeTab, setActiveTab] = useState("basic");
+  const [registrationData, setRegistrationData] = useState({
+    id: "",
+    registrationNo: "",
+    status: "active",
+    authorityCode: "",
+    registrationType: "",
+    isPrimary: true,
+    remarks: "",
+    countryCode: "TH",
+  });
   
   // Check if user can edit this company
   const canEdit = company?.isSharedData ? (user ? canEditSharedData(user) : false) : true
@@ -86,6 +98,29 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
         }
       }
       loadReferenceData()
+      // load existing registrations for this company
+      if (company?.id) {
+        (async () => {
+          try {
+            const regs = await apiClient.getCompanyRegistrations(company.id);
+            if (Array.isArray(regs) && regs.length > 0) {
+              const r = regs[0];
+              setRegistrationData({
+                id: r.id,
+                registrationNo: r.registrationNo || "",
+                status: r.status || "active",
+                authorityCode: r.authorityCode || "",
+                registrationType: r.registrationType || "",
+                isPrimary: !!r.isPrimary,
+                remarks: (r.rawData && (r.rawData as any).remarks) || "",
+                countryCode: r.countryCode || "TH",
+              });
+            }
+          } catch (err) {
+            console.error('Failed to load company registrations:', err);
+          }
+        })();
+      }
     }
   }, [open]);
 
@@ -126,6 +161,36 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       const updatedCompany = await apiClient.updateCompany(formData.id, updateData)
       
       if (updatedCompany) {
+        // Try create/update registration (non-blocking)
+        if (registrationData.registrationNo && registrationData.authorityCode && registrationData.registrationType) {
+          try {
+            if (registrationData.id) {
+              await apiClient.updateCompanyRegistration(registrationData.id, {
+                registrationNo: registrationData.registrationNo,
+                registrationType: registrationData.registrationType,
+                authorityCode: registrationData.authorityCode,
+                countryCode: registrationData.countryCode,
+                status: registrationData.status,
+                isPrimary: registrationData.isPrimary,
+                remarks: registrationData.remarks,
+              });
+            } else {
+              await apiClient.createCompanyRegistration({
+                companyId: formData.id,
+                registrationNo: registrationData.registrationNo,
+                registrationType: registrationData.registrationType,
+                authorityCode: registrationData.authorityCode,
+                countryCode: registrationData.countryCode,
+                status: registrationData.status,
+                isPrimary: registrationData.isPrimary,
+                remarks: registrationData.remarks,
+              });
+            }
+          } catch (regError) {
+            console.error('Failed to create/update registration:', regError);
+          }
+        }
+
         setSuccess(true);
         setTimeout(() => {
           onSave(updatedCompany as Company);
@@ -183,255 +248,342 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
         )}
 
         <div className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Basic Information</h3>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-2 text-sm">
+              <TabsTrigger value="basic" className="px-2">Basic Information</TabsTrigger>
+              <TabsTrigger value="registration" className="px-2">Registration</TabsTrigger>
+            </TabsList>
 
-            <div className="grid grid-cols-2 gap-4">
+            <TabsContent value="basic" className="space-y-4">
+              <h3 className="text-lg font-medium">Basic Information</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name (EN)</Label>
+                  <Input
+                    id="companyName"
+                    value={formData.companyNameEn || ""}
+                    onChange={(e) => updateField("companyNameEn", e.target.value)}
+                    disabled={!canEdit}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registrationId">Registered Number</Label>
+                  <Input
+                    id="registrationId"
+                    value={formData.registrationId || ""}
+                    onChange={(e) => updateField("registrationId", e.target.value)}
+                    disabled={!canEdit}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name (EN)</Label>
+                <Label htmlFor="companyNameTh">Company Name (TH)</Label>
                 <Input
-                  id="companyName"
-                  value={formData.companyNameEn || ""}
-                  onChange={(e) => updateField("companyNameEn", e.target.value)}
+                  id="companyNameTh"
+                  value={formData.companyNameTh || ""}
+                  onChange={(e) => updateField("companyNameTh", e.target.value)}
                   disabled={!canEdit}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="registrationId">Registered Number</Label>
+                <Label htmlFor="businessDescription">Business Description</Label>
                 <Input
-                  id="registrationId"
-                  value={formData.registrationId || ""}
-                  onChange={(e) => updateField("registrationId", e.target.value)}
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="companyNameTh">Company Name (TH)</Label>
-              <Input
-                id="companyNameTh"
-                value={formData.companyNameTh || ""}
-                onChange={(e) => updateField("companyNameTh", e.target.value)}
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="businessDescription">Business Description</Label>
-              <Input
-                id="businessDescription"
-                value={formData.businessDescription || ""}
-                onChange={(e) => updateField("businessDescription", e.target.value)}
-                disabled={!canEdit}
-              />
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Contact Information</h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="primaryEmail">Primary Email</Label>
-                <Input
-                  id="primaryEmail"
-                  type="email"
-                  value={formData.primaryEmail || ""}
-                  onChange={(e) => updateField("primaryEmail", e.target.value)}
+                  id="businessDescription"
+                  value={formData.businessDescription || ""}
+                  onChange={(e) => updateField("businessDescription", e.target.value)}
                   disabled={!canEdit}
                 />
               </div>
 
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="primaryEmail">Primary Email</Label>
+                    <Input
+                      id="primaryEmail"
+                      type="email"
+                      value={formData.primaryEmail || ""}
+                      onChange={(e) => updateField("primaryEmail", e.target.value)}
+                      disabled={!canEdit}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="primaryPhone">Primary Phone</Label>
+                    <Input
+                      id="primaryPhone"
+                      value={formData.primaryPhone || ""}
+                      onChange={(e) => updateField("primaryPhone", e.target.value)}
+                      disabled={!canEdit}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="websiteUrl">Website URL</Label>
+                  <Input
+                    id="websiteUrl"
+                    type="url"
+                    value={formData.websiteUrl || ""}
+                    onChange={(e) => updateField("websiteUrl", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Address Information</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="addressLine1">Address Line 1</Label>
+                  <Input
+                    id="addressLine1"
+                    value={formData.addressLine1 ?? (formData as any).address1 ?? ""}
+                    onChange={(e) => updateField("addressLine1", e.target.value)}
+                    disabled={!canEdit}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="addressLine2">Address Line 2</Label>
+                  <Input
+                    id="addressLine2"
+                    value={formData.addressLine2 ?? (formData as any).address2 ?? ""}
+                    onChange={(e) => updateField("addressLine2", e.target.value)}
+                    disabled={!canEdit}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 min-w-0">
+                    <Label htmlFor="primaryRegionId">Region</Label>
+                    <Select
+                      value={formData.primaryRegionId || ""}
+                      onValueChange={(value) => updateField("primaryRegionId", value)}
+                      disabled={!canEdit}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select region..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {regions.map((region) => (
+                          <SelectItem key={region.id} value={region.id}>
+                            {region.nameEn} {region.nameTh && `(${region.nameTh})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal Code</Label>
+                    <Input
+                      id="postalCode"
+                      value={formData.postalCode || ""}
+                      onChange={(e) => updateField("postalCode", e.target.value)}
+                      placeholder="10110"
+                      disabled={!canEdit}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Company Details</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2 min-w-0">
+                    <Label htmlFor="primaryIndustryId">Industry</Label>
+                    <Combobox
+                      options={industries.map((industry: any) => ({ value: industry.id, label: industry.nameEn }))}
+                      value={formData.primaryIndustryId || ""}
+                      onValueChange={(value) => updateField("primaryIndustryId", value)}
+                      placeholder="Select industry..."
+                      searchPlaceholder="Search industries..."
+                      emptyText="No industry found."
+                      disabled={!canEdit}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="companySize">Company Size</Label>
+                    <Select
+                      value={formData.companySize || ""}
+                      onValueChange={(value) => updateField("companySize", value)}
+                      disabled={!canEdit}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select size..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="micro">Micro</SelectItem>
+                        <SelectItem value="small">Small</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="large">Large</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="employeeCountEstimate">Employee Count</Label>
+                    <Input
+                      id="employeeCountEstimate"
+                      type="number"
+                      value={formData.employeeCountEstimate || ""}
+                      onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
+                      placeholder="50"
+                      disabled={!canEdit}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
+                  <Select
+                    value={formData.dataSensitivity || ""}
+                    onValueChange={(value) => updateField("dataSensitivity", value)}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select sensitivity..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="confidential">Confidential</SelectItem>
+                      <SelectItem value="restricted">Restricted</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {canSetVerificationStatus && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Data Verification</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="verificationStatus">Verification Status</Label>
+                      <Select
+                        value={formData.verificationStatus || ""}
+                        onValueChange={(value) => updateField("verificationStatus", value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select status..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="verified">Verified</SelectItem>
+                          <SelectItem value="unverified">Invalid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">
+                        {isOwner
+                          ? "As the data owner, you can set the verification status for this company."
+                          : "As a platform admin, you can set the verification status for this shared data."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="registration" className="space-y-4">
+              <h3 className="text-lg font-medium">Registration #1</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="registrationNo" className="text-sm font-medium">Registration Number</Label>
+                  <Input
+                    id="registrationNo"
+                    value={registrationData.registrationNo}
+                    onChange={(e) => setRegistrationData((p) => ({ ...p, registrationNo: e.target.value }))}
+                    disabled={!canEdit}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registrationStatus" className="text-sm font-medium">Status</Label>
+                  <Select
+                    value={registrationData.status}
+                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, status: value }))}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="dissolved">Dissolved</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="authorityCode" className="text-sm font-medium">Registration Authorities</Label>
+                  <Select
+                    value={registrationData.authorityCode}
+                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, authorityCode: value }))}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Registration Authorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DBD">Department of Business Development (DBD)</SelectItem>
+                      <SelectItem value="MOC">Ministry of Commerce</SelectItem>
+                      <SelectItem value="BOI">Board of Investment (BOI)</SelectItem>
+                      <SelectItem value="SEC">Securities and Exchange Commission</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registrationType" className="text-sm font-medium">Registration Type</Label>
+                  <Select
+                    value={registrationData.registrationType}
+                    onValueChange={(value) => setRegistrationData((p) => ({ ...p, registrationType: value }))}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Registration Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="JURISTIC">Juristic Person</SelectItem>
+                      <SelectItem value="PARTNERSHIP">Partnership</SelectItem>
+                      <SelectItem value="LIMITED">Limited Company</SelectItem>
+                      <SelectItem value="PUBLIC">Public Company</SelectItem>
+                      <SelectItem value="BRANCH">Branch Office</SelectItem>
+                      <SelectItem value="REPRESENTATIVE">Representative Office</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isPrimary"
+                  checked={registrationData.isPrimary}
+                  onChange={(e) => setRegistrationData((p) => ({ ...p, isPrimary: e.target.checked }))}
+                  disabled={!canEdit}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="isPrimary" className="text-sm font-medium cursor-pointer">Primary Registration</Label>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="primaryPhone">Primary Phone</Label>
+                <Label htmlFor="remarks" className="text-sm font-medium">Remarks</Label>
                 <Input
-                  id="primaryPhone"
-                  value={formData.primaryPhone || ""}
-                  onChange={(e) => updateField("primaryPhone", e.target.value)}
+                  id="remarks"
+                  value={registrationData.remarks}
+                  onChange={(e) => setRegistrationData((p) => ({ ...p, remarks: e.target.value }))}
                   disabled={!canEdit}
                 />
               </div>
-            </div>
+            </TabsContent>
+          </Tabs>
 
-            <div className="space-y-2">
-              <Label htmlFor="websiteUrl">Website URL</Label>
-              <Input
-                id="websiteUrl"
-                type="url"
-                value={formData.websiteUrl || ""}
-                onChange={(e) => updateField("websiteUrl", e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Address Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Address Information</h3>
-
-            <div className="space-y-2">
-              <Label htmlFor="addressLine1">Address Line 1</Label>
-              <Input
-                id="addressLine1"
-                value={formData.addressLine1 ?? (formData as any).address1 ?? ""}
-                onChange={(e) => updateField("addressLine1", e.target.value)}
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="addressLine2">Address Line 2</Label>
-              <Input
-                id="addressLine2"
-                value={formData.addressLine2 ?? (formData as any).address2 ?? ""}
-                onChange={(e) => updateField("addressLine2", e.target.value)}
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 min-w-0">
-                <Label htmlFor="primaryRegionId">Region</Label>
-                <Select 
-                  value={formData.primaryRegionId || ""} 
-                  onValueChange={(value) => updateField("primaryRegionId", value)}
-                  disabled={!canEdit}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select region..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions.map((region) => (
-                      <SelectItem key={region.id} value={region.id}>
-                        {region.nameEn} {region.nameTh && `(${region.nameTh})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code</Label>
-                <Input
-                  id="postalCode"
-                  value={formData.postalCode || ""}
-                  onChange={(e) => updateField("postalCode", e.target.value)}
-                  placeholder="10110"
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Company Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Company Details</h3>
-
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2 min-w-0">
-              <Label htmlFor="primaryIndustryId">Industry</Label>
-              <Combobox
-                options={industries.map((industry: any) => ({
-                  value: industry.id,
-                  label: industry.nameEn,
-                }))}
-                value={formData.primaryIndustryId || ""}
-                onValueChange={(value) => updateField("primaryIndustryId", value)}
-                placeholder="Select industry..."
-                searchPlaceholder="Search industries..."
-                emptyText="No industry found."
-                disabled={!canEdit}
-              />
-            </div>
-          </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size</Label>
-                <Select
-                  value={formData.companySize || ""}
-                  onValueChange={(value) => updateField("companySize", value)}
-                  disabled={!canEdit}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select size..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="micro">Micro</SelectItem>
-                    <SelectItem value="small">Small</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="large">Large</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="employeeCountEstimate">Employee Count</Label>
-                <Input
-                  id="employeeCountEstimate"
-                  type="number"
-                  value={formData.employeeCountEstimate || ""}
-                  onChange={(e) => updateField("employeeCountEstimate", parseInt(e.target.value) || undefined)}
-                  placeholder="50"
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dataSensitivity">Data Sensitivity</Label>
-              <Select
-                value={formData.dataSensitivity || ""}
-                onValueChange={(value) => updateField("dataSensitivity", value)}
-                disabled={!canEdit}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select sensitivity..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="confidential">Confidential</SelectItem>
-                  <SelectItem value="restricted">Restricted</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Verification Status - For data owners and platform admins on shared data */}
-          {canSetVerificationStatus && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Data Verification</h3>
-              <div className="space-y-2">
-                <Label htmlFor="verificationStatus">Verification Status</Label>
-                <Select
-                  value={formData.verificationStatus || ""}
-                  onValueChange={(value) => updateField("verificationStatus", value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select status..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="verified">Verified</SelectItem>
-                    {/* <SelectItem value="need_verified">Need Verification</SelectItem> */}
-                    <SelectItem value="unverified">Invalid</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  {isOwner 
-                    ? "As the data owner, you can set the verification status for this company."
-                    : "As a platform admin, you can set the verification status for this shared data."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Contact Persons - Removed per requirement #2: Contacts have their own CRUD box */}
         </div>
-
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-800">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
