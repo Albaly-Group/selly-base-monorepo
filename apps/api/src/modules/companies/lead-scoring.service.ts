@@ -119,7 +119,7 @@ export class LeadScoringService {
     const fields = [
       company.nameEn,
       company.nameTh,
-      company.primaryRegistrationNo,
+      // company.primaryRegistrationNo,
       company.businessDescription,
       company.addressLine1,
       company.primaryEmail,

@@ -43,11 +43,11 @@ export class CompanyRegistrationsService {
         .execute();
     }
 
-    // Create registration with remarks in raw_data
+    // Create registration with foreign keys to authorities and types
     const registration = this.registrationsRepository.create({
       registrationNo: createDto.registrationNo,
-      registrationType: createDto.registrationType,
-      authorityCode: createDto.authorityCode,
+      authorityId: createDto.authorityId,
+      registrationTypeId: createDto.registrationTypeId,
       countryCode: createDto.countryCode || 'TH',
       status: createDto.status || 'active',
       registeredDate: createDto.registeredDate || null,
@@ -107,10 +107,10 @@ export class CompanyRegistrationsService {
     // Update fields
     if (updateDto.registrationNo !== undefined)
       registration.registrationNo = updateDto.registrationNo;
-    if (updateDto.registrationType !== undefined)
-      registration.registrationType = updateDto.registrationType;
-    if (updateDto.authorityCode !== undefined)
-      registration.authorityCode = updateDto.authorityCode;
+    if (updateDto.registrationTypeId !== undefined)
+      registration.registrationTypeId = updateDto.registrationTypeId;
+    if (updateDto.authorityId !== undefined)
+      registration.authorityId = updateDto.authorityId;
     if (updateDto.countryCode !== undefined)
       registration.countryCode = updateDto.countryCode;
     if (updateDto.status !== undefined) registration.status = updateDto.status;

@@ -688,6 +688,14 @@ class ApiClient {
     return this.get<{ data: any[] }>('/api/v1/reference-data/tags', params);
   }
 
+  async getRegistrationAuthorities(params?: { active?: boolean }): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/registration-authorities', params);
+  }
+
+  async getRegistrationTypes(): Promise<{ data: any[] }> {
+    return this.get<{ data: any[] }>('/api/v1/reference-data/registration-types');
+  }
+
   // Industry Codes CRUD
   async createIndustryCode(data: any): Promise<any> {
     return this.post<any>('/api/v1/reference-data/industry-codes', data);

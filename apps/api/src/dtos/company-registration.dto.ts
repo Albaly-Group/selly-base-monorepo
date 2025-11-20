@@ -27,15 +27,17 @@ export class CreateCompanyRegistrationDto {
     description: 'Registration type',
     example: 'LIMITED',
   })
-  @IsString()
-  registrationType: string;
+  @IsUUID()
+  @IsOptional()
+  registrationTypeId: string;
 
   @ApiProperty({
     description: 'Authority code',
     example: 'DBD',
   })
-  @IsString()
-  authorityCode: string;
+  @IsUUID()
+  @IsOptional()
+  authorityId: string;
 
   @ApiProperty({
     description: 'Country code',
@@ -108,18 +110,18 @@ export class UpdateCompanyRegistrationDto {
     example: 'LIMITED',
     required: false,
   })
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  registrationType?: string;
+  registrationTypeId?: string;
 
   @ApiProperty({
     description: 'Authority code',
     example: 'DBD',
     required: false,
   })
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  authorityCode?: string;
+  authorityId?: string;
 
   @ApiProperty({
     description: 'Country code',

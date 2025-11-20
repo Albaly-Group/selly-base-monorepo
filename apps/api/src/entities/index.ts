@@ -27,3 +27,5 @@ export { LeadProjectTasks } from './LeadProjectTasks';
 export { RefTags } from './RefTags';
 export { RefIndustryCodes } from './RefIndustryCodes';
 export { RefRegions } from './RefRegions';
+export { RefRegistrationAuthorities } from './RefRegistrationAuthorities';
+export { RefRegistrationTypes } from './RefRegistrationTypes';

@@ -355,7 +355,7 @@ export class CompaniesService {
         nameEn: createDto.companyNameEn,
         nameTh: createDto.companyNameTh || null,
         // Don't set displayName - it's a GENERATED column in the database
-        primaryRegistrationNo: createDto.primaryRegistrationNo || null,
+        // primary registration number is now stored in company_registrations
         organizationId: user.organizationId || null,
         businessDescription: createDto.businessDescription || null,
         websiteUrl: createDto.websiteUrl || null,
@@ -385,7 +385,7 @@ export class CompaniesService {
       const cleanedData = {
         ...companyData,
         nameTh: companyData.nameTh || undefined,
-        primaryRegistrationNo: companyData.primaryRegistrationNo || undefined,
+        // primaryRegistrationNo removed: handled via company_registrations
         businessDescription: companyData.businessDescription || undefined,
         websiteUrl: companyData.websiteUrl || undefined,
         primaryEmail: companyData.primaryEmail || undefined,
@@ -510,10 +510,6 @@ export class CompaniesService {
             ? updateDto.companyNameTh
             : existingCompany.nameTh,
         // displayName is a GENERATED column - don't include it in updates
-        primaryRegistrationNo:
-          updateDto.primaryRegistrationNo !== undefined
-            ? updateDto.primaryRegistrationNo
-            : existingCompany.primaryRegistrationNo,
         businessDescription:
           updateDto.businessDescription !== undefined
             ? updateDto.businessDescription
@@ -869,7 +865,7 @@ export class CompaniesService {
     checkField(combinedData.primaryPhone, 0.1);
     checkField(combinedData.addressLine1, 0.1);
     checkField(combinedData.primaryRegionId, 0.05);
-    checkField(combinedData.primaryRegistrationNo, 0.15);
+    // primaryRegistrationNo removed; primary registration is represented via company_registrations
     checkField(combinedData.tags && combinedData.tags.length > 0, 0.05);
 
     return Math.min(1.0, Math.round((score / maxScore) * 100) / 100);
@@ -885,7 +881,6 @@ export class CompaniesService {
       'nameEn',
       'nameTh',
       'displayName',
-      'primaryRegistrationNo',
       'businessDescription',
       'websiteUrl',
       'primaryEmail',

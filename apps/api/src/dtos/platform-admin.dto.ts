@@ -318,7 +318,7 @@ export class UpdateSharedCompanyDto {
   @IsString()
   @MaxLength(50)
   @Transform(({ value }) => value?.trim())
-  primaryRegistrationNo?: string;
+  // primaryRegistrationNo is now managed via company_registrations
 
   @ApiPropertyOptional({
     description: 'Business description',

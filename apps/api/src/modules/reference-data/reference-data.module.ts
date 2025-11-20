@@ -2,10 +2,24 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReferenceDataController } from './reference-data.controller';
 import { ReferenceDataService } from './reference-data.service';
-import { RefIndustryCodes, RefRegions, RefTags } from '../../entities';
+import {
+  RefIndustryCodes,
+  RefRegions,
+  RefTags,
+  RefRegistrationAuthorities,
+  RefRegistrationTypes,
+} from '../../entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RefIndustryCodes, RefRegions, RefTags])],
+  imports: [
+    TypeOrmModule.forFeature([
+      RefIndustryCodes,
+      RefRegions,
+      RefTags,
+      RefRegistrationAuthorities,
+      RefRegistrationTypes,
+    ]),
+  ],
   controllers: [ReferenceDataController],
   providers: [ReferenceDataService],
   exports: [ReferenceDataService],

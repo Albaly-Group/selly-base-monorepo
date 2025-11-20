@@ -208,7 +208,7 @@ export class PlatformAdminService {
         const totalFields = 10; // Adjust based on important fields
         let filledFields = 0;
         if (company.nameEn) filledFields++;
-        if (company.primaryRegistrationNo) filledFields++;
+        // if (company.primaryRegistrationNo) filledFields++;
         if (company.primaryRegionId) filledFields++;
         if (company.primaryIndustryId) filledFields++;
         if (company.websiteUrl) filledFields++;
@@ -229,7 +229,7 @@ export class PlatformAdminService {
           companyNameEn: company.nameEn,
           industrialName: industryName,
           province: 'N/A', // Region data now stored via foreign key
-          registeredNo: company.primaryRegistrationNo,
+          // registeredNo: company.primaryRegistrationNo,
           verificationStatus:
             company.verificationStatus === 'verified'
               ? 'Active'
@@ -617,8 +617,8 @@ export class PlatformAdminService {
         company.nameEn = updateCompanyDto.companyNameEn;
       if (updateCompanyDto.companyNameTh !== undefined)
         company.nameTh = updateCompanyDto.companyNameTh;
-      if (updateCompanyDto.primaryRegistrationNo !== undefined)
-        company.primaryRegistrationNo = updateCompanyDto.primaryRegistrationNo;
+      // if (updateCompanyDto.primaryRegistrationNo !== undefined)
+        // company.primaryRegistrationNo = updateCompanyDto.primaryRegistrationNo;
       if (updateCompanyDto.businessDescription !== undefined)
         company.businessDescription = updateCompanyDto.businessDescription;
       if (updateCompanyDto.websiteUrl !== undefined)
@@ -656,7 +656,7 @@ export class PlatformAdminService {
           id: savedCompany.id,
           companyNameEn: savedCompany.nameEn,
           companyNameTh: savedCompany.nameTh,
-          primaryRegistrationNo: savedCompany.primaryRegistrationNo,
+          // primaryRegistrationNo: savedCompany.primaryRegistrationNo,
           businessDescription: savedCompany.businessDescription,
           websiteUrl: savedCompany.websiteUrl,
           primaryEmail: savedCompany.primaryEmail,

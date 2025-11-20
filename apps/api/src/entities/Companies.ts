@@ -21,7 +21,6 @@ import { CompanyTags } from './CompanyTags';
 @Index('idx_companies_shared_data', ['isSharedData'], {})
 @Index('idx_companies_name_trgm', ['nameEn'], {})
 @Index('idx_companies_organization', ['organizationId'], {})
-@Index('idx_companies_registration_no', ['primaryRegistrationNo'], {})
 @Index('idx_companies_search_vector', ['searchVector'], {})
 @Index('idx_companies_verification', ['verificationStatus'], {})
 @Index('idx_companies_primary_industry', ['primaryIndustryId'], {})
@@ -49,10 +48,6 @@ export class Companies {
 
   @Column('text', { name: 'display_name', nullable: true })
   displayName: string | null;
-
-  @Column('text', { name: 'primary_registration_no', nullable: true })
-  primaryRegistrationNo: string | null;
-
   @Column('text', {
     name: 'registration_country_code',
     nullable: true,

@@ -2,8 +2,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { Companies } from './Companies';
 
 @Index(
-  'company_registrations_registration_no_authority_code_key',
-  ['authorityCode', 'registrationNo'],
+  'company_registrations_registration_no_authority_id_key',
+  ['authorityId', 'registrationNo'],
   { unique: true },
 )
 @Index('company_registrations_pkey', ['id'], { unique: true })
@@ -16,14 +16,16 @@ export class CompanyRegistrations {
   })
   id: string;
 
-  @Column('text', { name: 'registration_no', unique: true })
+  @Column('uuid', { name: 'company_id' })
+  companyId: string;
+  @Column('text', { name: 'registration_no' })
   registrationNo: string;
 
-  @Column('text', { name: 'registration_type' })
-  registrationType: string;
+  @Column('uuid', { name: 'authority_id' })
+  authorityId: string;
 
-  @Column('text', { name: 'authority_code', unique: true })
-  authorityCode: string;
+  @Column('uuid', { name: 'registration_type_id' })
+  registrationTypeId: string;
 
   @Column('text', { name: 'country_code' })
   countryCode: string;

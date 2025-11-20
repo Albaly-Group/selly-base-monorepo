@@ -5,7 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RefIndustryCodes, RefRegions, RefTags } from '../../entities';
+import {
+  RefIndustryCodes,
+  RefRegions,
+  RefTags,
+  RefRegistrationAuthorities,
+  RefRegistrationTypes,
+} from '../../entities';
 import {
   CreateIndustryCodeDto,
   UpdateIndustryCodeDto,
@@ -24,6 +30,10 @@ export class ReferenceDataService {
     private readonly regionRepository: Repository<RefRegions>,
     @InjectRepository(RefTags)
     private readonly tagRepository: Repository<RefTags>,
+    @InjectRepository(RefRegistrationAuthorities)
+    private readonly authorityRepository: Repository<RefRegistrationAuthorities>,
+    @InjectRepository(RefRegistrationTypes)
+    private readonly registrationTypeRepository: Repository<RefRegistrationTypes>,
   ) {}
 
   async getIndustries(activeOnly = true): Promise<any[]> {
@@ -683,5 +693,21 @@ export class ReferenceDataService {
       console.error('Failed to fetch tags from database:', error);
       return [];
     }
+  }
+
+  // ========================================
+  // Registration Authorities & Types
+  // ========================================
+
+  async getRegistrationAuthorities(activeOnly = true): Promise<any[]> {
+    const query = this.authorityRepository.createQueryBuilder('authority');
+    query.orderBy('authority.name', 'ASC');
+    const rows = await query.getMany();
+    return rows.map((r) => ({ id: r.id, code: r.code, name: r.name, countryCode: r.countryCode, website: r.website }));
+  }
+
+  async getRegistrationTypes(): Promise<any[]> {
+    const rows = await this.registrationTypeRepository.find({ order: { name: 'ASC' } });
+    return rows.map((r) => ({ id: r.id, key: r.key, name: r.name, description: r.description }));
   }
 }

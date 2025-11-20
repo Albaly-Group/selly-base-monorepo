@@ -150,6 +150,32 @@ export class ReferenceDataController {
   }
 
   // ========================================
+  // Registration Authorities & Types
+  // ========================================
+
+  @Get('registration-authorities')
+  @ApiOperation({ summary: 'Get all registration authorities' })
+  @ApiQuery({
+    name: 'active',
+    required: false,
+    description: 'Filter by active status (default: true)'
+  })
+  @ApiResponse({ status: 200, description: 'Registration authorities retrieved successfully' })
+  async getRegistrationAuthorities(@Query('active') active?: string): Promise<{ data: any[] }> {
+    const isActive = active === 'false' ? false : true;
+    const rows = await this.referenceDataService.getRegistrationAuthorities(isActive);
+    return { data: rows };
+  }
+
+  @Get('registration-types')
+  @ApiOperation({ summary: 'Get all registration types' })
+  @ApiResponse({ status: 200, description: 'Registration types retrieved successfully' })
+  async getRegistrationTypes(): Promise<{ data: any[] }> {
+    const rows = await this.referenceDataService.getRegistrationTypes();
+    return { data: rows };
+  }
+
+  // ========================================
   // Industry Codes CRUD Endpoints
   // ========================================
 
