@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
@@ -55,6 +56,16 @@ export function CompanyCreateDialog({
     employeeCountEstimate: undefined as number | undefined,
     dataSensitivity: "standard",
   });
+  
+  const [registrationData, setRegistrationData] = useState({
+    registrationNo: "",
+    status: "active",
+    authorityCode: "",
+    registrationType: "",
+    isPrimary: true,
+    remarks: "",
+    countryCode: "TH",
+  });
   const [industries, setIndustries] = useState<
     Array<{ id: string; titleEn: string; titleTh: string | null }>
   >([]);
@@ -62,6 +73,7 @@ export function CompanyCreateDialog({
     Array<{ id: string; nameEn: string; nameTh: string | null }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { errors, validate, clearError, getError, hasError } =
@@ -84,6 +96,15 @@ export function CompanyCreateDialog({
       companySize: "small",
       employeeCountEstimate: undefined,
       dataSensitivity: "standard",
+    });
+    setRegistrationData({
+      registrationNo: "",
+      status: "active",
+      authorityCode: "",
+      registrationType: "",
+      isPrimary: true,
+      remarks: "",
+      countryCode: "TH",
     });
     setError(null);
     setSuccess(false);
@@ -173,6 +194,27 @@ export function CompanyCreateDialog({
       const newCompany = await apiClient.createCompany(createData);
 
       if (newCompany) {
+        // Create company registration if registration data is provided
+        if (registrationData.registrationNo && registrationData.authorityCode && registrationData.registrationType) {
+          try {
+            await apiClient.createCompanyRegistration({
+              companyId: newCompany.id,
+              registrationNo: registrationData.registrationNo,
+              registrationType: registrationData.registrationType,
+              authorityCode: registrationData.authorityCode,
+              countryCode: registrationData.countryCode,
+              status: registrationData.status,
+              isPrimary: registrationData.isPrimary,
+              remarks: registrationData.remarks,
+            });
+            console.log("Company registration created successfully");
+          } catch (regError: any) {
+            console.error("Failed to create registration:", regError);
+            // Don't fail the whole operation if registration fails
+            // Company is already created
+          }
+        }
+
         setSuccess(true);
         // Wait a moment to show success message
         setTimeout(() => {
@@ -198,6 +240,11 @@ export function CompanyCreateDialog({
     clearError(field);
   };
 
+  const updateRegistrationField = (field: string, value: string | boolean) => {
+    setRegistrationData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -209,158 +256,127 @@ export function CompanyCreateDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-base font-medium text-gray-900">
-              Basic Information
-            </h3>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-2 text-sm">
+              <TabsTrigger value="basic" className="px-2">
+                Basic Information
+              </TabsTrigger>
+              <TabsTrigger value="registration" className="px-2">
+                Registration
+              </TabsTrigger>
+            </TabsList>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="companyNameEn" className="text-sm font-medium">
-                  Company Name (EN) <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="companyNameEn"
-                  value={formData.companyNameEn}
-                  onChange={(e) => updateField("companyNameEn", e.target.value)}
-                  placeholder="Acme Corporation"
-                  disabled={isLoading}
-                  className={hasError("companyNameEn") ? "border-red-500" : ""}
-                />
-                {hasError("companyNameEn") && (
-                  <p className="text-sm text-red-500">
-                    {getError("companyNameEn")}
-                  </p>
-                )}
+            <TabsContent value="basic" className="space-y-4">
+              <h3 className="text-base font-medium text-gray-900">
+                Basic Information
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyNameEn" className="text-sm font-medium">
+                    Company Name (EN) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="companyNameEn"
+                    value={formData.companyNameEn}
+                    onChange={(e) => updateField("companyNameEn", e.target.value)}
+                    placeholder="Acme Corporation"
+                    disabled={isLoading}
+                    className={hasError("companyNameEn") ? "border-red-500" : ""}
+                  />
+                  {hasError("companyNameEn") && (
+                    <p className="text-sm text-red-500">{getError("companyNameEn")}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyNameTh" className="text-sm font-medium">
+                    Company Name (TH)
+                  </Label>
+                  <Input
+                    id="companyNameTh"
+                    value={formData.companyNameTh}
+                    onChange={(e) => updateField("companyNameTh", e.target.value)}
+                    placeholder="บริษัท อัคมี"
+                    disabled={isLoading}
+                    className={hasError("companyNameTh") ? "border-red-500" : ""}
+                  />
+                  {hasError("companyNameTh") && (
+                    <p className="text-sm text-red-500">{getError("companyNameTh")}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="companyNameTh" className="text-sm font-medium">
-                  Company Name (TH)
-                </Label>
-                <Input
-                  id="companyNameTh"
-                  value={formData.companyNameTh}
-                  onChange={(e) => updateField("companyNameTh", e.target.value)}
-                  placeholder="บริษัท อัคมี"
-                  disabled={isLoading}
-                  className={hasError("companyNameTh") ? "border-red-500" : ""}
-                />
-                {hasError("companyNameTh") && (
-                  <p className="text-sm text-red-500">
-                    {getError("companyNameTh")}
-                  </p>
-                )}
-              </div>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessDescription" className="text-sm font-medium">
+                    Business Description
+                  </Label>
+                  <Textarea
+                    id="businessDescription"
+                    value={formData.businessDescription}
+                    onChange={(e) => updateField("businessDescription", e.target.value)}
+                    placeholder="Brief description of the company's business..."
+                    disabled={isLoading}
+                    rows={3}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="primaryRegistrationNo"
-                className="text-sm font-medium"
-              >
-                Registration Number
-              </Label>
-              <Input
-                id="primaryRegistrationNo"
-                value={formData.primaryRegistrationNo}
-                onChange={(e) =>
-                  updateField("primaryRegistrationNo", e.target.value)
-                }
-                placeholder="0105562174634"
-                disabled={isLoading}
-              />
-            </div>
+                {/* Contact Information (moved into Basic tab) */}
+                <div className="space-y-4">
+                  <h3 className="text-base font-medium text-gray-900">Contact Information</h3>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="businessDescription"
-                className="text-sm font-medium"
-              >
-                Business Description
-              </Label>
-              <Textarea
-                id="businessDescription"
-                value={formData.businessDescription}
-                onChange={(e) =>
-                  updateField("businessDescription", e.target.value)
-                }
-                placeholder="Brief description of the company's business..."
-                disabled={isLoading}
-                rows={3}
-              />
-            </div>
-          </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryEmail" className="text-sm font-medium">Primary Email</Label>
+                      <Input
+                        id="primaryEmail"
+                        type="email"
+                        value={formData.primaryEmail}
+                        onChange={(e) => updateField("primaryEmail", e.target.value)}
+                        placeholder="contact@example.com"
+                        disabled={isLoading}
+                        className={hasError("primaryEmail") ? "border-red-500" : ""}
+                      />
+                      {hasError("primaryEmail") && (
+                        <p className="text-sm text-red-500">{getError("primaryEmail")}</p>
+                      )}
+                    </div>
 
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-base font-medium text-gray-900">
-              Contact Information
-            </h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryPhone" className="text-sm font-medium">Primary Phone</Label>
+                      <Input
+                        id="primaryPhone"
+                        type="tel"
+                        value={formData.primaryPhone}
+                        onChange={(e) => updateField("primaryPhone", e.target.value)}
+                        placeholder="+66 2 123 4567"
+                        disabled={isLoading}
+                        className={hasError("primaryPhone") ? "border-red-500" : ""}
+                      />
+                      {hasError("primaryPhone") && (
+                        <p className="text-sm text-red-500">{getError("primaryPhone")}</p>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="primaryEmail" className="text-sm font-medium">
-                  Primary Email
-                </Label>
-                <Input
-                  id="primaryEmail"
-                  type="email"
-                  value={formData.primaryEmail}
-                  onChange={(e) => updateField("primaryEmail", e.target.value)}
-                  placeholder="contact@example.com"
-                  disabled={isLoading}
-                  className={hasError("primaryEmail") ? "border-red-500" : ""}
-                />
-                {hasError("primaryEmail") && (
-                  <p className="text-sm text-red-500">
-                    {getError("primaryEmail")}
-                  </p>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="websiteUrl" className="text-sm font-medium">Website URL</Label>
+                    <Input
+                      id="websiteUrl"
+                      type="url"
+                      value={formData.websiteUrl}
+                      onChange={(e) => updateField("websiteUrl", e.target.value)}
+                      placeholder="https://example.com"
+                      disabled={isLoading}
+                      className={hasError("websiteUrl") ? "border-red-500" : ""}
+                    />
+                    {hasError("websiteUrl") && (
+                      <p className="text-sm text-red-500">{getError("websiteUrl")}</p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="primaryPhone" className="text-sm font-medium">
-                  Primary Phone
-                </Label>
-                <Input
-                  id="primaryPhone"
-                  type="tel"
-                  value={formData.primaryPhone}
-                  onChange={(e) => updateField("primaryPhone", e.target.value)}
-                  placeholder="+66 2 123 4567"
-                  disabled={isLoading}
-                  className={hasError("primaryPhone") ? "border-red-500" : ""}
-                />
-                {hasError("primaryPhone") && (
-                  <p className="text-sm text-red-500">
-                    {getError("primaryPhone")}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="websiteUrl" className="text-sm font-medium">
-                Website URL
-              </Label>
-              <Input
-                id="websiteUrl"
-                type="url"
-                value={formData.websiteUrl}
-                onChange={(e) => updateField("websiteUrl", e.target.value)}
-                placeholder="https://example.com"
-                disabled={isLoading}
-                className={hasError("websiteUrl") ? "border-red-500" : ""}
-              />
-              {hasError("websiteUrl") && (
-                <p className="text-sm text-red-500">{getError("websiteUrl")}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Address Information */}
+                          {/* Address Information */}
           <div className="space-y-4">
             <h3 className="text-base font-medium text-gray-900">
               Address Information
@@ -534,6 +550,144 @@ export function CompanyCreateDialog({
               </div>
             </div>
           </div>
+              </TabsContent>
+
+            <TabsContent value="registration" className="space-y-4">
+              <h3 className="text-base font-medium text-gray-900">Registration #1</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="registrationNo" className="text-sm font-medium">
+                    Registration Number
+                  </Label>
+                  <Input
+                    id="registrationNo"
+                    value={registrationData.registrationNo}
+                    onChange={(e) => updateRegistrationField("registrationNo", e.target.value)}
+                    placeholder="Registration number"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registrationStatus" className="text-sm font-medium">
+                    Status
+                  </Label>
+                  <Select
+                    value={registrationData.status}
+                    onValueChange={(value) => updateRegistrationField("status", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="dissolved">Dissolved</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="authorityCode" className="text-sm font-medium">
+                    Registration Authorities
+                  </Label>
+                  <Select
+                    value={registrationData.authorityCode}
+                    onValueChange={(value) => updateRegistrationField("authorityCode", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Registration Authorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DBD">Department of Business Development (DBD)</SelectItem>
+                      <SelectItem value="MOC">Ministry of Commerce</SelectItem>
+                      <SelectItem value="BOI">Board of Investment (BOI)</SelectItem>
+                      <SelectItem value="SEC">Securities and Exchange Commission</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registrationType" className="text-sm font-medium">
+                    Registration Type
+                  </Label>
+                  <Select
+                    value={registrationData.registrationType}
+                    onValueChange={(value) => updateRegistrationField("registrationType", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Registration Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="JURISTIC">Juristic Person</SelectItem>
+                      <SelectItem value="PARTNERSHIP">Partnership</SelectItem>
+                      <SelectItem value="LIMITED">Limited Company</SelectItem>
+                      <SelectItem value="PUBLIC">Public Company</SelectItem>
+                      <SelectItem value="BRANCH">Branch Office</SelectItem>
+                      <SelectItem value="REPRESENTATIVE">Representative Office</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {/* <div className="space-y-2">
+                  <Label htmlFor="countryCode" className="text-sm font-medium">
+                    Country
+                  </Label>
+                  <Select
+                    value={registrationData.countryCode}
+                    onValueChange={(value) => updateRegistrationField("countryCode", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Registration Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="JURISTIC">Juristic Person</SelectItem>
+                      <SelectItem value="PARTNERSHIP">Partnership</SelectItem>
+                      <SelectItem value="LIMITED">Limited Company</SelectItem>
+                      <SelectItem value="PUBLIC">Public Company</SelectItem>
+                      <SelectItem value="BRANCH">Branch Office</SelectItem>
+                      <SelectItem value="REPRESENTATIVE">Representative Office</SelectItem>
+                    </SelectContent>
+                  </Select>
+              </div> */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isPrimary"
+                  checked={registrationData.isPrimary}
+                  onChange={(e) => updateRegistrationField("isPrimary", e.target.checked)}
+                  disabled={isLoading}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="isPrimary" className="text-sm font-medium cursor-pointer">
+                  Primary Registration
+                </Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="remarks" className="text-sm font-medium">
+                  Remarks
+                </Label>
+                <Textarea
+                  id="remarks"
+                  value={registrationData.remarks}
+                  onChange={(e) => updateRegistrationField("remarks", e.target.value)}
+                  placeholder="Additional notes"
+                  disabled={isLoading}
+                  rows={4}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {error && (

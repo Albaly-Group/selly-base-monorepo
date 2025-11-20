@@ -845,6 +845,38 @@ class ApiClient {
   }> {
     return this.post<any>('/api/v1/companies/calculate-scores', { companyIds, weights });
   }
+
+  // Company Registrations endpoints
+  async createCompanyRegistration(registrationData: {
+    companyId: string;
+    registrationNo: string;
+    registrationType: string;
+    authorityCode: string;
+    countryCode?: string;
+    status?: string;
+    registeredDate?: string;
+    dissolvedDate?: string;
+    isPrimary?: boolean;
+    remarks?: string;
+  }): Promise<any> {
+    return this.post<any>('/api/v1/company-registrations', registrationData);
+  }
+
+  async getCompanyRegistrations(companyId: string): Promise<any[]> {
+    return this.get<any[]>(`/api/v1/company-registrations/company/${companyId}`);
+  }
+
+  async getCompanyRegistration(id: string): Promise<any> {
+    return this.get<any>(`/api/v1/company-registrations/${id}`);
+  }
+
+  async updateCompanyRegistration(id: string, updateData: any): Promise<any> {
+    return this.put<any>(`/api/v1/company-registrations/${id}`, updateData);
+  }
+
+  async deleteCompanyRegistration(id: string): Promise<void> {
+    return this.delete<void>(`/api/v1/company-registrations/${id}`);
+  }
 }
 
 // Export singleton instance

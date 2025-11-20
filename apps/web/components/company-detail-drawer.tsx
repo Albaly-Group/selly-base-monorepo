@@ -115,7 +115,7 @@ export function CompanyDetailDrawer({
   const contactValidation = useFormValidation(createContactSchema);
   const activityValidation = useFormValidation(createActivitySchema);
 
-  const companyDetails = company;
+  const companyDetails: any = company;
 
   console.log(company);
 

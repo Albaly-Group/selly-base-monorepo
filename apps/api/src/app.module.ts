@@ -16,6 +16,7 @@ import { PlatformAdminModule } from './modules/platform-admin/platform-admin.mod
 import { ReferenceDataModule } from './modules/reference-data/reference-data.module';
 import { CompanyContactsModule } from './modules/company-contacts/company-contacts.module';
 import { CompanyActivitiesModule } from './modules/company-activities/company-activities.module';
+import { CompanyRegistrationsModule } from './modules/company-registrations/company-registrations.module';
 import { DatabaseHealthService } from './database/database-health.service';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -40,6 +41,7 @@ const getImports = () => {
     ReferenceDataModule,
     CompanyContactsModule,
     CompanyActivitiesModule,
+    CompanyRegistrationsModule,
   ];
 
   // Only add TypeORM if not skipping database
