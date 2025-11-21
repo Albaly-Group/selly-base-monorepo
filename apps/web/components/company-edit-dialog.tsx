@@ -25,6 +25,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth, canEditSharedData } from "@/lib/auth";
+import { Textarea } from "./ui/textarea";
 
 interface ExtendedCompany extends Company {
   postalCode?: string | null;
@@ -273,35 +274,25 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                     disabled={!canEdit}
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="registrationId">Registered Number</Label>
+                  <Label htmlFor="companyNameTh">Company Name (TH)</Label>
                   <Input
-                    id="registrationId"
-                    value={formData.registrationId || ""}
-                    onChange={(e) => updateField("registrationId", e.target.value)}
+                    id="companyNameTh"
+                    value={formData.companyNameTh || ""}
+                    onChange={(e) => updateField("companyNameTh", e.target.value)}
                     disabled={!canEdit}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="companyNameTh">Company Name (TH)</Label>
-                <Input
-                  id="companyNameTh"
-                  value={formData.companyNameTh || ""}
-                  onChange={(e) => updateField("companyNameTh", e.target.value)}
-                  disabled={!canEdit}
-                />
-              </div>
-
-              <div className="space-y-2">
+              <div className="grid grid-cols-1">
                 <Label htmlFor="businessDescription">Business Description</Label>
-                <Input
+                <Textarea
                   id="businessDescription"
                   value={formData.businessDescription || ""}
                   onChange={(e) => updateField("businessDescription", e.target.value)}
-                  disabled={!canEdit}
+                  disabled={isLoading}
+                  rows={3}
                 />
               </div>
 

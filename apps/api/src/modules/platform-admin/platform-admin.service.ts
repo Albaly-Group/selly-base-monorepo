@@ -220,16 +220,13 @@ export class PlatformAdminService {
 
         const dataCompleteness = Math.round((filledFields / totalFields) * 100);
 
-        // Industry name is now stored via foreign key
-        // Would need to load the primaryIndustry relation to display the name
         const industryName = 'N/A';
 
         return {
           id: company.id,
           companyNameEn: company.nameEn,
           industrialName: industryName,
-          province: 'N/A', // Region data now stored via foreign key
-          // registeredNo: company.primaryRegistrationNo,
+          province: 'N/A', 
           verificationStatus:
             company.verificationStatus === 'verified'
               ? 'Active'
@@ -240,9 +237,9 @@ export class PlatformAdminService {
           lastUpdated:
             company.updatedAt?.toISOString() ||
             company.createdAt?.toISOString(),
-          createdBy: 'System', // Could be enhanced to track actual creator
+          createdBy: 'System',
           isShared: company.isSharedData,
-          tenantCount: 0, // Would need a query to count how many tenants use this company
+          tenantCount: 0,
         };
       });
 
