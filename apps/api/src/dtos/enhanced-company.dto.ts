@@ -221,6 +221,42 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
   primaryRegionId?: string;
+
+  @ApiPropertyOptional({
+    description: 'DUNS number (Dun & Bradstreet identifier)',
+    example: '12-345-6789',
+    maxLength: 50,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  dunsNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'LinkedIn profile URL',
+    example: 'https://linkedin.com/company/albaly-digital',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
+  @MaxLength(255)
+  linkedinUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Facebook page URL',
+    example: 'https://facebook.com/albaly.digital',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
+  @MaxLength(255)
+  facebookUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Company established date',
+    example: '2020-01-15',
+  })
+  @IsOptional()
+  @IsDateString()
+  establishedDate?: string;
 }
 
 export class UpdateCompanyDto {
@@ -386,6 +422,42 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsUUID(4, { message: VALIDATION_MESSAGES.UUID_INVALID })
   primaryRegionId?: string;
+
+  @ApiPropertyOptional({
+    description: 'DUNS number (Dun & Bradstreet identifier)',
+    example: '12-345-6789',
+    maxLength: 50,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  dunsNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'LinkedIn profile URL',
+    example: 'https://linkedin.com/company/albaly-digital',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
+  @MaxLength(255)
+  linkedinUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Facebook page URL',
+    example: 'https://facebook.com/albaly.digital',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: VALIDATION_MESSAGES.URL_INVALID })
+  @MaxLength(255)
+  facebookUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Company established date',
+    example: '2020-01-15',
+  })
+  @IsOptional()
+  @IsDateString()
+  establishedDate?: string;
 }
 
 export class CompanySearchDto {

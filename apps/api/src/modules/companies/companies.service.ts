@@ -357,13 +357,17 @@ export class CompaniesService {
         // Don't set displayName - it's a GENERATED column in the database
         // primary registration number is now stored in company_registrations
         organizationId: user.organizationId || null,
+        dunsNumber: createDto.dunsNumber || null,
         businessDescription: createDto.businessDescription || null,
         websiteUrl: createDto.websiteUrl || null,
+        linkedinUrl: createDto.linkedinUrl || null,
+        facebookUrl: createDto.facebookUrl || null,
         primaryEmail: createDto.primaryEmail || null,
         primaryPhone: createDto.primaryPhone || null,
         addressLine1: createDto.addressLine1 || null,
         addressLine2: createDto.addressLine2 || null,
         postalCode: createDto.postalCode || null,
+        establishedDate: createDto.establishedDate || null,
         companySize: createDto.companySize || 'small',
         employeeCountEstimate: createDto.employeeCountEstimate || null,
         primaryIndustryId: createDto.primaryIndustryId || null,
@@ -385,14 +389,18 @@ export class CompaniesService {
       const cleanedData = {
         ...companyData,
         nameTh: companyData.nameTh || undefined,
+        dunsNumber: companyData.dunsNumber || undefined,
         // primaryRegistrationNo removed: handled via company_registrations
         businessDescription: companyData.businessDescription || undefined,
         websiteUrl: companyData.websiteUrl || undefined,
+        linkedinUrl: companyData.linkedinUrl || undefined,
+        facebookUrl: companyData.facebookUrl || undefined,
         primaryEmail: companyData.primaryEmail || undefined,
         primaryPhone: companyData.primaryPhone || undefined,
         addressLine1: companyData.addressLine1 || undefined,
         addressLine2: companyData.addressLine2 || undefined,
         postalCode: companyData.postalCode || undefined,
+        establishedDate: companyData.establishedDate || undefined,
         employeeCountEstimate: companyData.employeeCountEstimate || undefined,
         primaryIndustryId: companyData.primaryIndustryId || undefined,
         primaryRegionId: companyData.primaryRegionId || undefined,
@@ -510,6 +518,10 @@ export class CompaniesService {
             ? updateDto.companyNameTh
             : existingCompany.nameTh,
         // displayName is a GENERATED column - don't include it in updates
+        dunsNumber:
+          updateDto.dunsNumber !== undefined
+            ? updateDto.dunsNumber
+            : existingCompany.dunsNumber,
         businessDescription:
           updateDto.businessDescription !== undefined
             ? updateDto.businessDescription
@@ -518,6 +530,14 @@ export class CompaniesService {
           updateDto.websiteUrl !== undefined
             ? updateDto.websiteUrl
             : existingCompany.websiteUrl,
+        linkedinUrl:
+          updateDto.linkedinUrl !== undefined
+            ? updateDto.linkedinUrl
+            : existingCompany.linkedinUrl,
+        facebookUrl:
+          updateDto.facebookUrl !== undefined
+            ? updateDto.facebookUrl
+            : existingCompany.facebookUrl,
         primaryEmail:
           updateDto.primaryEmail !== undefined
             ? updateDto.primaryEmail
@@ -538,6 +558,10 @@ export class CompaniesService {
           updateDto.postalCode !== undefined
             ? updateDto.postalCode
             : existingCompany.postalCode,
+        establishedDate:
+          updateDto.establishedDate !== undefined
+            ? updateDto.establishedDate
+            : existingCompany.establishedDate,
         companySize:
           updateDto.companySize !== undefined
             ? updateDto.companySize

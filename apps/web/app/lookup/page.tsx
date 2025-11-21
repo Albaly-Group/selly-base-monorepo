@@ -65,7 +65,14 @@ function CompanyLookupPage() {
       {
         key: "primary_registration_no",
         label: "Registration No",
-        get: (c: any) => c.primaryRegistrationNo || "",
+        get: (c: any) => {
+          // Get primary registration from companyRegistrations array
+          const registrations = Array.isArray(c.companyRegistrations)
+            ? c.companyRegistrations
+            : [];
+          const primaryReg = registrations.find((r: any) => r.isPrimary);
+          return primaryReg?.registrationNo || registrations[0]?.registrationNo || "";
+        },
       },
       {
         key: "registration_country_code",
@@ -174,13 +181,7 @@ function CompanyLookupPage() {
               p && p.phone ? `${p.phone} (contact${idx + 1})` : null
             )
             .filter(Boolean as any);
-          if (phones.length > 0) {
-            return `${phones.join(", ")}`;
-          }
-          if (c.primaryPhone) {
-            return `${c.primaryPhone} (primary)`;
-          }
-          return "";
+          return phones.length > 0 ? phones.join(", ") : "";
         },
       },
       {
@@ -444,6 +445,17 @@ function CompanyLookupPage() {
             email: contact.email,
           })),
 
+          // Registrations
+          companyRegistrations: (item.companyRegistrations || []).map((reg: any) => ({
+            id: reg.id,
+            registrationNo: reg.registrationNo,
+            isPrimary: reg.isPrimary,
+            status: reg.status,
+            authorityId: reg.authorityId,
+            registrationTypeId: reg.registrationTypeId,
+            countryCode: reg.countryCode,
+          })),
+
           // Timestamps and audit
           lastEnrichedAt: item.lastEnrichedAt,
           createdAt: item.createdAt,
@@ -511,11 +523,39 @@ function CompanyLookupPage() {
     }
   };
 
-  const onExportExcel = (fieldKeys?: string[]) => {
+  const onExportExcel = async (fieldKeys?: string[]) => {
     // Use ExcelJS for richer styling and better control
     const selectedData = filteredCompanies.filter((c) =>
       selectedCompanies.includes(c.id)
     );
+
+    // Prefetch registrations for companies that don't have them populated
+    const fetchRegs = selectedData.map(async (company) => {
+      try {
+        const hasRegs = Array.isArray(company.companyRegistrations) && company.companyRegistrations.length > 0;
+        if (!hasRegs) {
+
+          const regs = await apiClient.getCompanyRegistrations(company.id).catch(() => []);
+          company.companyRegistrations = (Array.isArray(regs) ? regs : []).map((r: any) => ({
+            id: r.id,
+            registrationNo: r.registrationNo ?? r.registration_no ?? r.registrationNoRaw ?? r.registration_no_raw ?? null,
+            isPrimary: r.isPrimary ?? r.is_primary ?? false,
+            status: r.status,
+            authorityId: r.authorityId ?? r.authority_id,
+            registrationTypeId: r.registrationTypeId ?? r.registration_type_id,
+            countryCode: r.countryCode ?? r.country_code,
+          }));
+          // eslint-disable-next-line no-console
+          console.debug('export:prefetch:registrations:fetched', { companyId: company.id, companyRegistrations: company.companyRegistrations });
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('export:prefetch:registrations:error', { companyId: company.id, err });
+        company.companyRegistrations = [];
+      }
+    });
+
+    await Promise.all(fetchRegs);
 
     const chosenKeys =
       fieldKeys && fieldKeys.length > 0 ? fieldKeys : selectedExportKeys;
@@ -719,58 +759,72 @@ function CompanyLookupPage() {
   };
 
   const headerToField: Record<string, string> = {
-    // English variations
+    // Company table fields
     companynameen: "companyNameEn",
-    nameen: "companyNameEn",
-    companyname: "companyNameEn",
-    name: "companyNameEn",
     companynameth: "companyNameTh",
-    nameth: "companyNameTh",
-    registrationno: "primaryRegistrationNo",
-    registrationnumber: "primaryRegistrationNo",
-    primaryregistrationno: "primaryRegistrationNo",
-    description: "businessDescription",
-    businessdescription: "businessDescription",
+    dunsnumber: "dunsNumber",
     addressline1: "addressLine1",
     addressline2: "addressLine2",
     postalcode: "postalCode",
-    postcode: "postalCode",
-    // Industry / region: accept display names as well as ids
-    primaryindustryid: "primaryIndustryId",
-    primaryindustry: "primaryIndustryDisplay",
-    primaryindustrydisplay: "primaryIndustryDisplay",
-    primaryindustryname: "primaryIndustryDisplay",
-    primaryregionid: "primaryRegionId",
-    primaryregion: "primaryRegionDisplay",
-    primaryregiondisplay: "primaryRegionDisplay",
-    primaryregionname: "primaryRegionDisplay",
-    website: "websiteUrl",
-    websiteurl: "websiteUrl",
-    url: "websiteUrl",
-    primaryemail: "primaryEmail",
-    email: "primaryEmail",
-    primaryphone: "primaryPhone",
-    phone: "primaryPhone",
-    companysize: "companySize",
-    employees: "employeeCountEstimate",
-    employeecount: "employeeCountEstimate",
+    businessdescription: "businessDescription",
+    establisheddate: "establishedDate",
     employeecountestimate: "employeeCountEstimate",
-    datasensitivity: "dataSensitivity",
+    websiteurl: "websiteUrl",
+    facebookurl: "facebookUrl",
+    linkedinurl: "linkedinUrl",
+    companyemail: "primaryEmail",
+    companyphone: "primaryPhone",
+    industry: "primaryIndustryDisplay",
+    primaryindustryid: "primaryIndustryId",
+    region: "primaryRegionDisplay",
+    companysize: "companySize",
+    
+    // Company registration table fields
+    registrationno: "registration_no",
+    registrationnumber: "registration_no",
+    registrationtype: "registration_type",
+    authority: "authority",
+    country: "country",
+    registereddate: "registered_date",
+    
+    // Company contact table fields
+    firstname: "first_name",
+    lastname: "last_name",
+    title: "title",
+    department: "department",
+    contactemail: "contact_email",
+    contactphone: "contact_phone",
   };
 
   const mapRowObjectToCompany = (rowObj: Record<string, any>) => {
     const company: any = {};
+    const registration: any = {};
+    const contact: any = {};
+    
     for (const header in rowObj) {
       const rawVal = rowObj[header];
+      if (!rawVal || (typeof rawVal === 'string' && !rawVal.trim())) continue;
+      
       const norm = normalizeHeader(header);
       const mapped = headerToField[norm];
+      
       if (mapped) {
-        // attempt to coerce numbers for employeeCountEstimate
-        if (mapped === "employeeCountEstimate") {
-          const n = Number(rawVal);
-          company[mapped] = Number.isFinite(n) ? n : undefined;
-        } else {
-          company[mapped] = rawVal == null ? "" : String(rawVal).trim();
+        // Company registration fields
+        if (mapped.startsWith('registration_') || mapped === 'authority' || mapped === 'country' || mapped === 'registered_date') {
+          registration[mapped] = rawVal;
+        }
+        // Company contact fields
+        else if (['first_name', 'last_name', 'title', 'department', 'contact_email', 'contact_phone'].includes(mapped)) {
+          contact[mapped] = rawVal;
+        }
+        // Company fields
+        else {
+          if (mapped === "employeeCountEstimate") {
+            const n = Number(rawVal);
+            company[mapped] = Number.isFinite(n) ? n : undefined;
+          } else {
+            company[mapped] = rawVal == null ? "" : String(rawVal).trim();
+          }
         }
       } else {
         // try heuristics for common header names
@@ -786,7 +840,7 @@ function CompanyLookupPage() {
       company.province = company.primaryRegionDisplay;
     }
 
-    return company;
+    return { company, registration, contact };
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -867,29 +921,29 @@ function CompanyLookupPage() {
   };
 
   const handleUpload = async () => {
-    // For now, we only show preview in the UI. Backend upload/save is out of scope for this change.
     if (!importFile) return alert("Please choose a file first");
 
     setImportUploading(true);
 
     try {
-      // Resolve industry and region display names to IDs when possible
-      const [industriesResp, regionsResp] = await Promise.all([
+      // Fetch all reference data needed for mapping
+      const [industriesResp, regionsResp, authoritiesResp, registrationTypesResp] = await Promise.all([
         apiClient.getIndustries({ active: true }).catch(() => ({ data: [] })),
-        apiClient
-          .getRegionsHierarchical({ active: true, countryCode: "TH" })
-          .catch(() => ({ data: [] })),
+        apiClient.getRegionsHierarchical({ active: true, countryCode: "TH" }).catch(() => ({ data: [] })),
+        apiClient.getRegistrationAuthorities({ active: true }).catch(() => ({ data: [] })),
+        apiClient.getRegistrationTypes().catch(() => ({ data: [] })),
       ]);
 
       const industries: any[] = (industriesResp && industriesResp.data) || [];
       const regions: any[] = (regionsResp && regionsResp.data) || [];
+      const authorities: any[] = (authoritiesResp && authoritiesResp.data) || [];
+      const registrationTypes: any[] = (registrationTypesResp && registrationTypesResp.data) || [];
 
       // Build lookup maps (normalized)
       const normalize = (s: any) => (s ? String(s).toLowerCase().trim() : "");
 
       const industryMap = new Map<string, string>();
       industries.forEach((ind: any) => {
-        // Support multiple possible field names returned by the API
         const possibleNames = [
           ind.nameEn,
           ind.nameTh,
@@ -906,69 +960,124 @@ function CompanyLookupPage() {
       const regionMap = new Map<string, string>();
       const flattenRegions = (nodes: any[]) => {
         nodes.forEach((r: any) => {
-          if (r.nameEn) regionMap.set(normalize(r.nameEn), r.id);
-          if (r.nameTh) regionMap.set(normalize(r.nameTh), r.id);
-          if (r.code) regionMap.set(normalize(r.code), r.id);
-          if (Array.isArray(r.children) && r.children.length)
-            flattenRegions(r.children);
+          const possibleNames = [r.nameEn, r.nameTh, r.name, r.code];
+          possibleNames.forEach((val: any) => {
+            if (val) regionMap.set(normalize(val), r.id);
+          });
+          if (r.children && r.children.length > 0) flattenRegions(r.children);
         });
       };
       flattenRegions(regions);
 
-      // Map parsed rows to CreateCompanyDto shape
+      // Build authority map (code -> id)
+      const authorityMap = new Map<string, string>();
+      authorities.forEach((auth: any) => {
+        if (auth.code) authorityMap.set(normalize(auth.code), auth.id);
+        if (auth.name) authorityMap.set(normalize(auth.name), auth.id);
+      });
+
+      // Build registration type map (key -> id)
+      const registrationTypeMap = new Map<string, string>();
+      registrationTypes.forEach((type: any) => {
+        if (type.key) registrationTypeMap.set(normalize(type.key), type.id);
+        if (type.name) registrationTypeMap.set(normalize(type.name), type.id);
+      });
+
+      // Map parsed rows
       const unresolvedIndustries = new Set<string>();
       const unresolvedRegions = new Set<string>();
 
-      const payloadCompanies = parsedImportRows.map((row) => {
-        const c: any = {};
-        // Required title
-        c.companyNameEn = (row.companyNameEn || "").toString().trim();
-        if (row.companyNameTh) c.companyNameTh = row.companyNameTh;
-        if (row.primaryRegistrationNo)
-          c.primaryRegistrationNo = row.primaryRegistrationNo;
-        if (row.businessDescription)
-          c.businessDescription = row.businessDescription;
-        if (row.websiteUrl) c.websiteUrl = row.websiteUrl;
-        if (row.primaryEmail) c.primaryEmail = row.primaryEmail;
-        if (row.primaryPhone) c.primaryPhone = row.primaryPhone;
-        if (row.addressLine1) c.addressLine1 = row.addressLine1;
-        if (row.addressLine2) c.addressLine2 = row.addressLine2;
-        if (row.postalCode) c.postalCode = row.postalCode;
-        if (row.companySize) c.companySize = row.companySize;
-        if (row.employeeCountEstimate !== undefined)
-          c.employeeCountEstimate =
-            Number(row.employeeCountEstimate) || undefined;
-        if (row.dataSensitivity) c.dataSensitivity = row.dataSensitivity;
-
-        // Prefer explicit IDs; if not present, try to resolve display names
-        if (row.primaryIndustryId) {
-          c.primaryIndustryId = row.primaryIndustryId;
-        } else if (row.primaryIndustryDisplay || row.industrialName) {
-          const rawName = row.primaryIndustryDisplay || row.industrialName;
-          const name = normalize(rawName);
-          const resolved = industryMap.get(name);
-          if (resolved) c.primaryIndustryId = resolved;
-          else unresolvedIndustries.add(String(rawName));
+      const processedRows = parsedImportRows.map((row) => {
+        const { company, registration, contact } = row;
+        
+        // Required field
+        company.companyNameEn = (company.companyNameEn || "").toString().trim();
+        
+        // Resolve industry
+        if (company.primaryIndustryId) {
+          // Already have ID
+        } else if (company.primaryIndustryDisplay || company.industrialName) {
+          const displayName = company.primaryIndustryDisplay || company.industrialName;
+          const id = industryMap.get(normalize(displayName));
+          if (id) {
+            company.primaryIndustryId = id;
+          } else {
+            unresolvedIndustries.add(displayName);
+          }
         }
 
-        if (row.primaryRegionId) {
-          c.primaryRegionId = row.primaryRegionId;
-        } else if (row.primaryRegionDisplay || row.province) {
-          const rawName = row.primaryRegionDisplay || row.province;
-          const name = normalize(rawName);
-          const resolved = regionMap.get(name);
-          if (resolved) c.primaryRegionId = resolved;
-          else unresolvedRegions.add(String(rawName));
+        // Resolve region
+        if (company.primaryRegionId) {
+          // Already have ID
+        } else if (company.primaryRegionDisplay || company.province) {
+          const displayName = company.primaryRegionDisplay || company.province;
+          const id = regionMap.get(normalize(displayName));
+          if (id) {
+            company.primaryRegionId = id;
+          } else {
+            unresolvedRegions.add(displayName);
+          }
         }
 
-        return c;
+        // Resolve registration authority (code -> id)
+        if (registration.authority) {
+          const authId = authorityMap.get(normalize(registration.authority));
+          if (authId) {
+            registration.authorityId = authId;
+          }
+          delete registration.authority;
+        }
+
+        // Resolve registration type (key -> id)
+        if (registration.registration_type) {
+          const typeId = registrationTypeMap.get(normalize(registration.registration_type));
+          if (typeId) {
+            registration.registrationTypeId = typeId;
+          }
+          delete registration.registration_type;
+        }
+
+        // Rename registration fields to match DTO
+        if (registration.registration_no) {
+          registration.registrationNo = registration.registration_no;
+          delete registration.registration_no;
+        }
+        if (registration.country) {
+          registration.countryCode = registration.country;
+          delete registration.country;
+        }
+        if (registration.registered_date) {
+          registration.registeredDate = registration.registered_date;
+          delete registration.registered_date;
+        }
+
+        // Rename contact fields to match DTO
+        if (contact.first_name) {
+          contact.firstName = contact.first_name;
+          delete contact.first_name;
+        }
+        if (contact.last_name) {
+          contact.lastName = contact.last_name;
+          delete contact.last_name;
+        }
+        if (contact.contact_email) {
+          contact.email = contact.contact_email;
+          delete contact.contact_email;
+        }
+        if (contact.contact_phone) {
+          contact.phone = contact.contact_phone;
+          delete contact.contact_phone;
+        }
+
+        return { company, registration, contact };
       });
 
-      // Filter out rows that don't meet minimal validation
-      const validPayload = payloadCompanies.filter(
-        (c) => c.companyNameEn && c.companyNameEn.length >= 2
+      // Filter valid companies
+      const validRows = processedRows.filter(
+        (row) => row.company.companyNameEn && row.company.companyNameEn.length >= 2
       );
-      if (validPayload.length === 0) {
+      
+      if (validRows.length === 0) {
         alert(
           "No valid rows to upload. Ensure Company Name (EN) exists for at least one row."
         );
@@ -976,21 +1085,78 @@ function CompanyLookupPage() {
         return;
       }
 
-      // Send to backend using apiClient bulk route
-      const resp = await apiClient.bulkCreateCompanies(validPayload);
+      // Create companies first
+      const companiesToCreate = validRows.map(row => {
+        const { company } = row;
+        // Remove display-only fields that are not part of the DTO
+        const { primaryIndustryDisplay, primaryRegionDisplay, industrialName, province, ...cleanCompany } = company;
+        return cleanCompany;
+      });
+      const resp = await apiClient.bulkCreateCompanies(companiesToCreate);
 
-      // Expect resp.results as array of per-row results
       const results = resp && resp.results ? resp.results : [];
-      const successCount = results.filter((r: any) => r.success).length;
-
+      const successfulCompanies = results.filter((r: any) => r.success);
+      
       console.log("Bulk import results", results);
-      if (successCount > 0) {
-        // Refresh data to show new companies
-        refreshData();
-        closeImportModal();
+
+      // For each successful company, create registrations and contacts
+      const registrationPromises: Promise<any>[] = [];
+      const contactPromises: Promise<any>[] = [];
+
+      successfulCompanies.forEach((result: any, index: number) => {
+        const companyId = result.id || result.data?.id;
+        if (!companyId) return;
+
+        const originalRow = validRows[index];
+        const { registration, contact } = originalRow;
+
+        // Create registration if we have registration_no and registration_type
+        if (registration.registrationNo && registration.registrationTypeId) {
+          registrationPromises.push(
+            apiClient.createCompanyRegistration({
+              companyId,
+              ...registration,
+              isPrimary: true,
+            }).catch((err) => {
+              console.error(`Failed to create registration for company ${companyId}:`, err);
+              return { success: false, error: err };
+            })
+          );
+        }
+
+        // Create contact if we have at least first_name or email or phone
+        if (contact.firstName || contact.email || contact.phone) {
+          contactPromises.push(
+            apiClient.createCompanyContact({
+              companyId,
+              ...contact,
+            }).catch((err) => {
+              console.error(`Failed to create contact for company ${companyId}:`, err);
+              return { success: false, error: err };
+            })
+          );
+        }
+      });
+
+      // Wait for all registrations and contacts to be created
+      if (registrationPromises.length > 0 || contactPromises.length > 0) {
+        await Promise.all([...registrationPromises, ...contactPromises]);
+        console.log(
+          `Created ${registrationPromises.length} registrations and ${contactPromises.length} contacts`
+        );
       }
 
-      // Optionally keep modal open to allow user to inspect preview and failed rows
+      if (successfulCompanies.length > 0) {
+        alert(
+          `Successfully imported ${successfulCompanies.length} companies with related data. ` +
+          (unresolvedIndustries.size > 0 ? `\nUnresolved industries: ${Array.from(unresolvedIndustries).join(", ")}` : "") +
+          (unresolvedRegions.size > 0 ? `\nUnresolved regions: ${Array.from(unresolvedRegions).join(", ")}` : "")
+        );
+        refreshData();
+        closeImportModal();
+      } else {
+        alert("No companies were successfully created. Please check your data.");
+      }
     } catch (err) {
       console.error("Import failed", err);
       alert(`Import failed: ${getErrorMessage(err)}`);
@@ -1394,39 +1560,32 @@ function CompanyLookupPage() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-2 py-1 text-left">#</th>
-                          <th className="px-2 py-1 text-left">
-                            Company Name (EN)
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Company Name (TH)
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Registration Number
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Business Description
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Address Line 1
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Address Line 2
-                          </th>
-                          <th className="px-2 py-1 text-left">Postal Code</th>
-                          <th className="px-2 py-1 text-left">
-                            Region / Province
-                          </th>
-                          <th className="px-2 py-1 text-left">Industry</th>
-                          <th className="px-2 py-1 text-left">Website</th>
-                          <th className="px-2 py-1 text-left">Primary Email</th>
-                          <th className="px-2 py-1 text-left">Primary Phone</th>
-                          <th className="px-2 py-1 text-left">Company Size</th>
-                          <th className="px-2 py-1 text-left">
-                            Employee Count
-                          </th>
-                          <th className="px-2 py-1 text-left">
-                            Data Sensitivity
-                          </th>
+                          <th className="px-2 py-1 text-left">company_nameEn</th>
+                          <th className="px-2 py-1 text-left">company_nameTh</th>
+                          <th className="px-2 py-1 text-left">duns_number</th>
+                          <th className="px-2 py-1 text-left">address_line_1</th>
+                          <th className="px-2 py-1 text-left">address_line_2</th>
+                          <th className="px-2 py-1 text-left">postal_code</th>
+                          <th className="px-2 py-1 text-left">business_description</th>
+                          <th className="px-2 py-1 text-left">established_date</th>
+                          <th className="px-2 py-1 text-left">employee_count_estimate</th>
+                          <th className="px-2 py-1 text-left">website_url</th>
+                          <th className="px-2 py-1 text-left">facebook_url</th>
+                          <th className="px-2 py-1 text-left">company_email</th>
+                          <th className="px-2 py-1 text-left">company_phone</th>
+                          <th className="px-2 py-1 text-left">industry</th>
+                          <th className="px-2 py-1 text-left">region</th>
+                          <th className="px-2 py-1 text-left">registration_no</th>
+                          <th className="px-2 py-1 text-left">registration_type</th>
+                          <th className="px-2 py-1 text-left">authority</th>
+                          <th className="px-2 py-1 text-left">country</th>
+                          <th className="px-2 py-1 text-left">registered_date</th>
+                          <th className="px-2 py-1 text-left">first_name</th>
+                          <th className="px-2 py-1 text-left">last_name</th>
+                          <th className="px-2 py-1 text-left">title</th>
+                          <th className="px-2 py-1 text-left">department</th>
+                          <th className="px-2 py-1 text-left">contact_email</th>
+                          <th className="px-2 py-1 text-left">contact_phone</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1438,45 +1597,32 @@ function CompanyLookupPage() {
                             }
                           >
                             <td className="px-2 py-1">{idx + 1}</td>
-                            <td className="px-2 py-1">
-                              {r.companyNameEn || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.companyNameTh || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.primaryRegistrationNo || ""}
-                            </td>
-                            <td className="px-2 py-1 truncate max-w-xs">
-                              {r.businessDescription || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.addressLine1 || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.addressLine2 || ""}
-                            </td>
-                            <td className="px-2 py-1">{r.postalCode || ""}</td>
-                            <td className="px-2 py-1">
-                              {r.primaryRegionId || r.province || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.primaryIndustryId || r.industrialName || ""}
-                            </td>
-                            <td className="px-2 py-1">{r.websiteUrl || ""}</td>
-                            <td className="px-2 py-1">
-                              {r.primaryEmail || ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.primaryPhone || ""}
-                            </td>
-                            <td className="px-2 py-1">{r.companySize || ""}</td>
-                            <td className="px-2 py-1">
-                              {r.employeeCountEstimate ?? ""}
-                            </td>
-                            <td className="px-2 py-1">
-                              {r.dataSensitivity || ""}
-                            </td>
+                            <td className="px-2 py-1">{r.company?.companyNameEn || ""}</td>
+                            <td className="px-2 py-1">{r.company?.companyNameTh || ""}</td>
+                            <td className="px-2 py-1">{r.company?.dunsNumber || ""}</td>
+                            <td className="px-2 py-1">{r.company?.addressLine1 || ""}</td>
+                            <td className="px-2 py-1">{r.company?.addressLine2 || ""}</td>
+                            <td className="px-2 py-1">{r.company?.postalCode || ""}</td>
+                            <td className="px-2 py-1 truncate max-w-xs">{r.company?.businessDescription || ""}</td>
+                            <td className="px-2 py-1">{r.company?.establishedDate || ""}</td>
+                            <td className="px-2 py-1">{r.company?.employeeCountEstimate ?? ""}</td>
+                            <td className="px-2 py-1">{r.company?.websiteUrl || ""}</td>
+                            <td className="px-2 py-1">{r.company?.facebookUrl || ""}</td>
+                            <td className="px-2 py-1">{r.company?.primaryEmail || ""}</td>
+                            <td className="px-2 py-1">{r.company?.primaryPhone || ""}</td>
+                            <td className="px-2 py-1">{r.company?.primaryIndustryDisplay || r.company?.industrialName || ""}</td>
+                            <td className="px-2 py-1">{r.company?.primaryRegionDisplay || r.company?.province || ""}</td>
+                            <td className="px-2 py-1">{r.registration?.registration_no || r.registration?.registrationNo || ""}</td>
+                            <td className="px-2 py-1">{r.registration?.registration_type || ""}</td>
+                            <td className="px-2 py-1">{r.registration?.authority || ""}</td>
+                            <td className="px-2 py-1">{r.registration?.country || r.registration?.countryCode || ""}</td>
+                            <td className="px-2 py-1">{r.registration?.registered_date || r.registration?.registeredDate || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.first_name || r.contact?.firstName || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.last_name || r.contact?.lastName || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.title || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.department || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.contact_email || r.contact?.email || ""}</td>
+                            <td className="px-2 py-1">{r.contact?.contact_phone || r.contact?.phone || ""}</td>
                           </tr>
                         ))}
                       </tbody>
