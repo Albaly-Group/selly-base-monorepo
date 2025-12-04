@@ -132,7 +132,8 @@ export class TemplateService {
         label: 'Shared Data',
         required: false,
         example: 'false',
-        description: 'Set to "true" for platform-level shared data (platform admins only)',
+        description:
+          'Set to "true" for platform-level shared data (platform admins only)',
       },
     ],
     [ImportEntityType.CONTACTS]: [

@@ -287,6 +287,9 @@ The application has a comprehensive test suite covering all layers with enhanced
 ./run-all-tests.sh              # Run all core tests
 npm test                        # Run unit/component tests
 
+# Production readiness 🚀
+npm run test:production-ready   # Comprehensive production validation (65+ checks)
+
 # E2E tests (UX-focused) 🎭
 npm run test:e2e:docker         # Run E2E tests with Docker (RECOMMENDED)
 npm run test:e2e                # Run E2E tests (requires services running)
@@ -355,6 +358,7 @@ npm run test:all                # Run comprehensive test suite
 - **Architecture Guide**: [docs/TURBOREPO_ARCHITECTURE.md](./docs/TURBOREPO_ARCHITECTURE.md)
 - **API Documentation**: http://localhost:3001/api/docs (when running)
 - **Company Lists**: [docs/COMPANY_LISTS_IMPLEMENTATION.md](./docs/COMPANY_LISTS_IMPLEMENTATION.md)
+- **Production Readiness**: [PRODUCTION_READINESS_TEST.md](./PRODUCTION_READINESS_TEST.md) 🚀 **65+ validation checks**
 - **Deployment Guides**:
   - **Docker Compose Production (Traefik)**: [DOCKER_PRODUCTION_QUICKSTART.md](./DOCKER_PRODUCTION_QUICKSTART.md) ⭐ **New - Production Ready**
   - **Full-Stack Vercel Deployment**: [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)

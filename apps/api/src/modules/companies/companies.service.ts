@@ -361,7 +361,6 @@ export class CompaniesService {
         organizationId = user.organizationId;
       }
     } else {
-
       if (!user.organizationId) {
         throw new BadRequestException(
           'User organization information is required',
@@ -372,7 +371,6 @@ export class CompaniesService {
     }
 
     try {
-
       const companyData = {
         nameEn: createDto.companyNameEn,
         nameTh: createDto.companyNameTh || null,
@@ -433,7 +431,10 @@ export class CompaniesService {
         .createQueryBuilder('company')
         .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
         .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
-        .leftJoinAndSelect('company.companyRegistrations', 'companyRegistrations')
+        .leftJoinAndSelect(
+          'company.companyRegistrations',
+          'companyRegistrations',
+        )
         .leftJoinAndSelect('company.companyContacts', 'companyContacts')
         .where('company.id = :id', { id: savedCompany.id })
         .getOne();
@@ -443,7 +444,10 @@ export class CompaniesService {
       }
 
       // Recalculate score with loaded relations and update if different
-      const finalScore = this.calculateDataQualityScore(companyWithRelations, companyWithRelations);
+      const finalScore = this.calculateDataQualityScore(
+        companyWithRelations,
+        companyWithRelations,
+      );
       if (finalScore.toString() !== companyWithRelations.dataQualityScore) {
         await this.companyRepository.update(savedCompany.id, {
           dataQualityScore: finalScore.toString(),
@@ -520,7 +524,10 @@ export class CompaniesService {
         .createQueryBuilder('company')
         .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
         .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
-        .leftJoinAndSelect('company.companyRegistrations', 'companyRegistrations')
+        .leftJoinAndSelect(
+          'company.companyRegistrations',
+          'companyRegistrations',
+        )
         .leftJoinAndSelect('company.companyContacts', 'companyContacts')
         .where('company.id = :id', { id })
         .getOne();
@@ -530,7 +537,11 @@ export class CompaniesService {
       }
 
       // Verify access control
-      if (user.organizationId && existingCompany.organizationId !== user.organizationId && !existingCompany.isSharedData) {
+      if (
+        user.organizationId &&
+        existingCompany.organizationId !== user.organizationId &&
+        !existingCompany.isSharedData
+      ) {
         throw new ForbiddenException('Access denied to organization data');
       }
 
@@ -671,20 +682,26 @@ export class CompaniesService {
       };
 
       await this.companyRepository.update(id, dbUpdate);
-      
+
       // Reload with relations using QueryBuilder
       const savedCompany = await this.companyRepository
         .createQueryBuilder('company')
         .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
         .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
-        .leftJoinAndSelect('company.companyRegistrations', 'companyRegistrations')
+        .leftJoinAndSelect(
+          'company.companyRegistrations',
+          'companyRegistrations',
+        )
         .leftJoinAndSelect('company.companyContacts', 'companyContacts')
         .where('company.id = :id', { id })
         .getOne();
 
       // Calculate score with loaded relations and update
       if (savedCompany) {
-        const finalScore = this.calculateDataQualityScore(savedCompany, savedCompany);
+        const finalScore = this.calculateDataQualityScore(
+          savedCompany,
+          savedCompany,
+        );
         await this.companyRepository.update(id, {
           dataQualityScore: finalScore.toString(),
         });
@@ -857,7 +874,10 @@ export class CompaniesService {
         .leftJoinAndSelect('company.organization', 'organization')
         .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
         .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
-        .leftJoinAndSelect('company.companyRegistrations', 'companyRegistrations')
+        .leftJoinAndSelect(
+          'company.companyRegistrations',
+          'companyRegistrations',
+        )
         .leftJoinAndSelect('company.companyContacts', 'companyContacts')
         .where('company.id IN (:...ids)', { ids });
 
@@ -932,7 +952,9 @@ export class CompaniesService {
     );
 
     if (!isPlatformAdmin && !user.organizationId) {
-      throw new BadRequestException('User organization information is required');
+      throw new BadRequestException(
+        'User organization information is required',
+      );
     }
 
     const results: Array<any> = [];
@@ -940,7 +962,7 @@ export class CompaniesService {
     for (let i = 0; i < companies.length; i++) {
       const companyDto = companies[i];
       try {
-        const created = await this.createCompany(companyDto as CreateCompanyDto, user as User);
+        const created = await this.createCompany(companyDto, user);
         results.push({ index: i, success: true, id: created.id });
       } catch (error) {
         // Capture error message(s) for the row; preserve as array
@@ -953,15 +975,21 @@ export class CompaniesService {
     if (this.auditService && user) {
       const successCount = results.filter((r) => r.success).length;
       const failedCount = results.length - successCount;
-      await this.auditService.logUserAction(user, 'CREATE', 'CompanyBulk', undefined, {
-        resourceType: 'bulk_companies_create',
-        resourcePath: '/api/companies/bulk',
-        metadata: {
-          requested: results.length,
-          successes: successCount,
-          failures: failedCount,
+      await this.auditService.logUserAction(
+        user,
+        'CREATE',
+        'CompanyBulk',
+        undefined,
+        {
+          resourceType: 'bulk_companies_create',
+          resourcePath: '/api/companies/bulk',
+          metadata: {
+            requested: results.length,
+            successes: successCount,
+            failures: failedCount,
+          },
         },
-      });
+      );
     }
 
     return { results };
@@ -977,19 +1005,16 @@ export class CompaniesService {
 
     // Group 1: Company Detail (50% weight)
     const companyDetailScore = this.calculateCompanyDetailScore(combinedData);
-    
+
     // Group 2: Company Registration Detail (30% weight)
     const registrationScore = this.calculateRegistrationScore(combinedData);
-    
+
     // Group 3: Company Contact Detail (20% weight)
     const contactScore = this.calculateContactScore(combinedData);
-    
+
     // Calculate weighted total score
-    const totalScore = (
-      companyDetailScore * 0.5 +
-      registrationScore * 0.3 +
-      contactScore * 0.2
-    );
+    const totalScore =
+      companyDetailScore * 0.5 + registrationScore * 0.3 + contactScore * 0.2;
 
     return Math.min(1.0, Math.round(totalScore * 100) / 100);
   }
@@ -1000,52 +1025,69 @@ export class CompaniesService {
 
     const checkField = (field: any, weight: number) => {
       maxScore += weight;
-      if (field !== null && field !== undefined && field.toString().trim() !== '') {
+      if (
+        field !== null &&
+        field !== undefined &&
+        field.toString().trim() !== ''
+      ) {
         score += weight;
       }
     };
 
     const checkEitherField = (field1: any, field2: any, weight: number) => {
       maxScore += weight;
-      const hasField1 = field1 !== null && field1 !== undefined && field1.toString().trim() !== '';
-      const hasField2 = field2 !== null && field2 !== undefined && field2.toString().trim() !== '';
+      const hasField1 =
+        field1 !== null &&
+        field1 !== undefined &&
+        field1.toString().trim() !== '';
+      const hasField2 =
+        field2 !== null &&
+        field2 !== undefined &&
+        field2.toString().trim() !== '';
       if (hasField1 || hasField2) {
         score += weight;
       }
     };
 
     // Company Name (En) OR Company Name (Th) - 15%
-    checkEitherField(data.companyNameEn || data.nameEn, data.companyNameTh || data.nameTh, 0.15);
-    
+    checkEitherField(
+      data.companyNameEn || data.nameEn,
+      data.companyNameTh || data.nameTh,
+      0.15,
+    );
+
     // Business Description - 10%
-    checkField(data.businessDescription, 0.10);
-    
+    checkField(data.businessDescription, 0.1);
+
     // Company Email - 10%
-    checkField(data.primaryEmail, 0.10);
-    
+    checkField(data.primaryEmail, 0.1);
+
     // Company Phone - 10%
-    checkField(data.primaryPhone, 0.10);
-    
+    checkField(data.primaryPhone, 0.1);
+
     // Address Line1 OR Address Line2 - 10%
-    checkEitherField(data.addressLine1, data.addressLine2, 0.10);
-    
+    checkEitherField(data.addressLine1, data.addressLine2, 0.1);
+
     // Region - 10%
-    checkField(data.primaryRegionId, 0.10);
-    
+    checkField(data.primaryRegionId, 0.1);
+
     // Company Industry - 15%
     checkField(data.primaryIndustryId, 0.15);
-    
+
     // Company Size - 10%
-    checkField(data.companySize, 0.10);
-    
+    checkField(data.companySize, 0.1);
+
     // Employee Count - 10%
-    checkField(data.employeeCountEstimate, 0.10);
+    checkField(data.employeeCountEstimate, 0.1);
 
     return maxScore > 0 ? score / maxScore : 0;
   }
 
   private calculateRegistrationScore(data: any): number {
-    if (!data.companyRegistrations || !Array.isArray(data.companyRegistrations)) {
+    if (
+      !data.companyRegistrations ||
+      !Array.isArray(data.companyRegistrations)
+    ) {
       return 0;
     }
 
@@ -1054,23 +1096,29 @@ export class CompaniesService {
 
     const checkField = (field: any, weight: number) => {
       maxScore += weight;
-      if (field !== null && field !== undefined && field.toString().trim() !== '') {
+      if (
+        field !== null &&
+        field !== undefined &&
+        field.toString().trim() !== ''
+      ) {
         score += weight;
       }
     };
 
     // Get the primary registration or first registration
-    const primaryReg = data.companyRegistrations.find((r: any) => r.isPrimary) || data.companyRegistrations[0];
-    
+    const primaryReg =
+      data.companyRegistrations.find((r: any) => r.isPrimary) ||
+      data.companyRegistrations[0];
+
     if (primaryReg) {
       // Registration Number - 40%
-      checkField(primaryReg.registrationNo, 0.40);
-      
+      checkField(primaryReg.registrationNo, 0.4);
+
       // Registration Authority - 30%
-      checkField(primaryReg.authorityId, 0.30);
-      
+      checkField(primaryReg.authorityId, 0.3);
+
       // Registration Type - 30%
-      checkField(primaryReg.registrationTypeId, 0.30);
+      checkField(primaryReg.registrationTypeId, 0.3);
     }
 
     return maxScore > 0 ? score / maxScore : 0;
@@ -1091,34 +1139,44 @@ export class CompaniesService {
 
       const checkField = (field: any, weight: number) => {
         maxScore += weight;
-        if (field !== null && field !== undefined && field.toString().trim() !== '') {
+        if (
+          field !== null &&
+          field !== undefined &&
+          field.toString().trim() !== ''
+        ) {
           score += weight;
         }
       };
 
       const checkEitherField = (field1: any, field2: any, weight: number) => {
         maxScore += weight;
-        const hasField1 = field1 !== null && field1 !== undefined && field1.toString().trim() !== '';
-        const hasField2 = field2 !== null && field2 !== undefined && field2.toString().trim() !== '';
+        const hasField1 =
+          field1 !== null &&
+          field1 !== undefined &&
+          field1.toString().trim() !== '';
+        const hasField2 =
+          field2 !== null &&
+          field2 !== undefined &&
+          field2.toString().trim() !== '';
         if (hasField1 || hasField2) {
           score += weight;
         }
       };
 
       // FirstName OR FullName - 20%
-      checkEitherField(contact.firstName, contact.fullName, 0.20);
+      checkEitherField(contact.firstName, contact.fullName, 0.2);
 
       // Position (title) - 20%
-      checkField(contact.title, 0.20);
+      checkField(contact.title, 0.2);
 
       // Phone - 20%
-      checkField(contact.phone, 0.20);
+      checkField(contact.phone, 0.2);
 
       // Email - 20%
-      checkField(contact.email, 0.20);
+      checkField(contact.email, 0.2);
 
       if (maxScore > 0) {
-        totalScore += (score / maxScore);
+        totalScore += score / maxScore;
         contactCount++;
       }
     }

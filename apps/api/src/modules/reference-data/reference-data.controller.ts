@@ -56,10 +56,16 @@ export class ReferenceDataController {
     required: false,
     description: 'Filter by active status (default: true)',
   })
-  @ApiResponse({ status: 200, description: 'Used industries retrieved successfully' })
-  async getUsedIndustries(@Query('active') active?: string): Promise<{ data: any[] }> {
+  @ApiResponse({
+    status: 200,
+    description: 'Used industries retrieved successfully',
+  })
+  async getUsedIndustries(
+    @Query('active') active?: string,
+  ): Promise<{ data: any[] }> {
     const isActive = active === 'false' ? false : true;
-    const industries = await this.referenceDataService.getUsedIndustries(isActive);
+    const industries =
+      await this.referenceDataService.getUsedIndustries(isActive);
     return { data: industries };
   }
 
@@ -158,18 +164,27 @@ export class ReferenceDataController {
   @ApiQuery({
     name: 'active',
     required: false,
-    description: 'Filter by active status (default: true)'
+    description: 'Filter by active status (default: true)',
   })
-  @ApiResponse({ status: 200, description: 'Registration authorities retrieved successfully' })
-  async getRegistrationAuthorities(@Query('active') active?: string): Promise<{ data: any[] }> {
+  @ApiResponse({
+    status: 200,
+    description: 'Registration authorities retrieved successfully',
+  })
+  async getRegistrationAuthorities(
+    @Query('active') active?: string,
+  ): Promise<{ data: any[] }> {
     const isActive = active === 'false' ? false : true;
-    const rows = await this.referenceDataService.getRegistrationAuthorities(isActive);
+    const rows =
+      await this.referenceDataService.getRegistrationAuthorities(isActive);
     return { data: rows };
   }
 
   @Get('registration-types')
   @ApiOperation({ summary: 'Get all registration types' })
-  @ApiResponse({ status: 200, description: 'Registration types retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Registration types retrieved successfully',
+  })
   async getRegistrationTypes(): Promise<{ data: any[] }> {
     const rows = await this.referenceDataService.getRegistrationTypes();
     return { data: rows };

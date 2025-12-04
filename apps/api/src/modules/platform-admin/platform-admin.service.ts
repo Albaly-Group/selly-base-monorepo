@@ -226,7 +226,7 @@ export class PlatformAdminService {
           id: company.id,
           companyNameEn: company.nameEn,
           industrialName: industryName,
-          province: 'N/A', 
+          province: 'N/A',
           verificationStatus:
             company.verificationStatus === 'verified'
               ? 'Active'
@@ -615,7 +615,7 @@ export class PlatformAdminService {
       if (updateCompanyDto.companyNameTh !== undefined)
         company.nameTh = updateCompanyDto.companyNameTh;
       // if (updateCompanyDto.primaryRegistrationNo !== undefined)
-        // company.primaryRegistrationNo = updateCompanyDto.primaryRegistrationNo;
+      // company.primaryRegistrationNo = updateCompanyDto.primaryRegistrationNo;
       if (updateCompanyDto.businessDescription !== undefined)
         company.businessDescription = updateCompanyDto.businessDescription;
       if (updateCompanyDto.websiteUrl !== undefined)
