@@ -257,6 +257,15 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsDateString()
   establishedDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether this company data is shared across all organizations (platform-level data). Only platform admins can set this to true.',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'isSharedData must be a boolean value' })
+  isSharedData?: boolean;
 }
 
 export class UpdateCompanyDto {

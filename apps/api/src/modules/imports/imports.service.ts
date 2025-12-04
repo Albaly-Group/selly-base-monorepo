@@ -474,10 +474,13 @@ export class ImportsService {
   }
 
   private async saveCompany(data: any, organizationId?: string) {
-    // Create company record
+    const isSharedData = data.isSharedData === true || data.isSharedData === 'true';
+    const finalOrganizationId = isSharedData ? null : (organizationId || data.organizationId || null);
+
     const company = this.companyRepository.create({
       ...data,
-      organizationId: organizationId || data.organizationId,
+      organizationId: finalOrganizationId,
+      isSharedData: isSharedData,
       dataSource: 'import',
       verificationStatus: 'unverified',
     });

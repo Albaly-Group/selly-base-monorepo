@@ -345,18 +345,38 @@ export class CompaniesService {
       (p: any) => p.key === 'shared-data:manage' || p.key === '*',
     );
 
-    // For non-platform admins, organization ID is required
-    if (!isPlatformAdmin && !user.organizationId) {
-      throw new BadRequestException(
-        'User organization information is required',
-      );
+    let isSharedData: boolean;
+    let organizationId: string | null;
+
+    if (isPlatformAdmin) {
+      // Platform admin logic
+      if (createDto.isSharedData === true) {
+        isSharedData = true;
+        organizationId = null;
+      } else if (!user.organizationId) {
+        isSharedData = true;
+        organizationId = null;
+      } else {
+        isSharedData = false;
+        organizationId = user.organizationId;
+      }
+    } else {
+
+      if (!user.organizationId) {
+        throw new BadRequestException(
+          'User organization information is required',
+        );
+      }
+      isSharedData = false;
+      organizationId = user.organizationId;
     }
 
     try {
+
       const companyData = {
         nameEn: createDto.companyNameEn,
         nameTh: createDto.companyNameTh || null,
-        organizationId: user.organizationId || null,
+        organizationId: organizationId,
         dunsNumber: createDto.dunsNumber || null,
         businessDescription: createDto.businessDescription || null,
         websiteUrl: createDto.websiteUrl || null,
@@ -374,9 +394,9 @@ export class CompaniesService {
         primaryRegionId: createDto.primaryRegionId || null,
         dataSensitivity: createDto.dataSensitivity || 'standard',
         dataSource: 'customer_input',
-        isSharedData: false,
+        isSharedData: isSharedData,
         verificationStatus: 'unverified',
-        ตร: this.calculateDataQualityScore(createDto).toString(),
+        dataQualityScore: this.calculateDataQualityScore(createDto).toString(),
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: user.id,

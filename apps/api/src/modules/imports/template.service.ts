@@ -127,6 +127,13 @@ export class TemplateService {
         example: 'THB',
         description: 'Currency code (THB, USD, etc.)',
       },
+      {
+        field: 'isSharedData',
+        label: 'Shared Data',
+        required: false,
+        example: 'false',
+        description: 'Set to "true" for platform-level shared data (platform admins only)',
+      },
     ],
     [ImportEntityType.CONTACTS]: [
       {
