@@ -319,7 +319,6 @@ export class UpdateSharedCompanyDto {
   @MaxLength(50)
   @Transform(({ value }) => value?.trim())
   // primaryRegistrationNo is now managed via company_registrations
-
   @ApiPropertyOptional({
     description: 'Business description',
     example: 'Digital transformation and software development company',

@@ -259,7 +259,8 @@ export class CreateCompanyDto {
   establishedDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Whether this company data is shared across all organizations (platform-level data). Only platform admins can set this to true.',
+    description:
+      'Whether this company data is shared across all organizations (platform-level data). Only platform admins can set this to true.',
     example: false,
     default: false,
   })
@@ -639,7 +640,8 @@ export class BulkCreateCompaniesDto {
   companies: CreateCompanyDto[];
 
   @ApiPropertyOptional({
-    description: 'Optional organization ID to scope creation (server will enforce permissions)',
+    description:
+      'Optional organization ID to scope creation (server will enforce permissions)',
     format: 'uuid',
   })
   @IsOptional()

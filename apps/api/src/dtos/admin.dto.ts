@@ -50,9 +50,13 @@ export class CreateOrganizationUserDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'], {
-    message: 'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
-  })
+  @IsIn(
+    ['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'],
+    {
+      message:
+        'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
+    },
+  )
   role?: string;
 }
 
@@ -88,9 +92,13 @@ export class UpdateOrganizationUserDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'], {
-    message: 'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
-  })
+  @IsIn(
+    ['user', 'staff', 'customer_admin', 'customer_staff', 'customer_user'],
+    {
+      message:
+        'Role must be one of: user, staff, customer_admin, customer_staff, customer_user',
+    },
+  )
   role?: string;
 
   @ApiPropertyOptional({

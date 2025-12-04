@@ -69,7 +69,8 @@ export class CompaniesController {
         whitelist: true,
         forbidNonWhitelisted: false,
       }),
-    ) bulkDto: BulkCreateCompaniesDto,
+    )
+    bulkDto: BulkCreateCompaniesDto,
     @CurrentUser() user: Users,
   ) {
     return this.companiesService.bulkCreateCompanies(bulkDto.companies, user);

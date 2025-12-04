@@ -80,7 +80,11 @@ export class ReferenceDataService {
       // Inner join companies to ensure we only return industries that have at least one company
       // companies table has primary_industry_id referencing ref_industry_codes.id
       query
-        .innerJoin('companies', 'company', 'company.primary_industry_id = industry.id')
+        .innerJoin(
+          'companies',
+          'company',
+          'company.primary_industry_id = industry.id',
+        )
         .select([
           'industry.id as id',
           'industry.code as code',
@@ -159,7 +163,10 @@ export class ReferenceDataService {
     }
   }
 
-  async getUsedProvinces(activeOnly = true, countryCode = 'TH'): Promise<any[]> {
+  async getUsedProvinces(
+    activeOnly = true,
+    countryCode = 'TH',
+  ): Promise<any[]> {
     try {
       const query = this.regionRepository.createQueryBuilder('region');
 
@@ -173,7 +180,11 @@ export class ReferenceDataService {
 
       // Inner join companies to ensure we only return regions (provinces) that have at least one company
       query
-        .innerJoin('companies', 'company', 'company.primary_region_id = region.id')
+        .innerJoin(
+          'companies',
+          'company',
+          'company.primary_region_id = region.id',
+        )
         .select([
           'region.id as id',
           'region.code as code',
@@ -703,11 +714,24 @@ export class ReferenceDataService {
     const query = this.authorityRepository.createQueryBuilder('authority');
     query.orderBy('authority.name', 'ASC');
     const rows = await query.getMany();
-    return rows.map((r) => ({ id: r.id, code: r.code, name: r.name, countryCode: r.countryCode, website: r.website }));
+    return rows.map((r) => ({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      countryCode: r.countryCode,
+      website: r.website,
+    }));
   }
 
   async getRegistrationTypes(): Promise<any[]> {
-    const rows = await this.registrationTypeRepository.find({ order: { name: 'ASC' } });
-    return rows.map((r) => ({ id: r.id, key: r.key, name: r.name, description: r.description }));
+    const rows = await this.registrationTypeRepository.find({
+      order: { name: 'ASC' },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      key: r.key,
+      name: r.name,
+      description: r.description,
+    }));
   }
 }

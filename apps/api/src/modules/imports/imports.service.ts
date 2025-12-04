@@ -474,8 +474,11 @@ export class ImportsService {
   }
 
   private async saveCompany(data: any, organizationId?: string) {
-    const isSharedData = data.isSharedData === true || data.isSharedData === 'true';
-    const finalOrganizationId = isSharedData ? null : (organizationId || data.organizationId || null);
+    const isSharedData =
+      data.isSharedData === true || data.isSharedData === 'true';
+    const finalOrganizationId = isSharedData
+      ? null
+      : organizationId || data.organizationId || null;
 
     const company = this.companyRepository.create({
       ...data,
