@@ -117,6 +117,12 @@ export function CompanyDetailDrawer({
 
   const companyDetails: any = company;
 
+  // Determine primary registration (fall back to first registration if primary not set)
+  const primaryRegistration =
+    companyDetails?.companyRegistrations && Array.isArray(companyDetails.companyRegistrations)
+      ? companyDetails.companyRegistrations.find((r: any) => r.isPrimary) || companyDetails.companyRegistrations[0]
+      : undefined;
+
   console.log(company);
 
   useEffect(() => {
@@ -663,10 +669,6 @@ export function CompanyDetailDrawer({
                             {companyDetails.industrialName}
                           </div>
                         </div>
-                        {/* <div>
-                      <Label className="text-sm font-medium text-gray-600">Business Type</Label>
-                      <div className="mt-1">{companyDetails.businessType}</div>
-                    </div> */}
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
                             Employee Count
@@ -679,11 +681,11 @@ export function CompanyDetailDrawer({
                       <div className="space-y-3">
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Registration ID
-                          </Label>
-                          <div className="mt-1 font-mono">
-                            {companyDetails.registrationId}
-                          </div>
+                              Registration ID
+                            </Label>
+                            <div className="mt-1 font-mono">
+                              {primaryRegistration?.registrationNo || companyDetails.registrationNo || "N/A"}
+                            </div>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
