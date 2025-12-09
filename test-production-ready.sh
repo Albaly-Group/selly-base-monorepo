@@ -11,7 +11,8 @@
 # 4. Production readiness checklist
 #############################################
 
-set -e  # Exit on error
+# Don't exit on error - we want to collect all validation results
+set +e
 
 # Colors for output
 RED='\033[0;31m'
