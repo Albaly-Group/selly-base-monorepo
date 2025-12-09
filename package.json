@@ -33,7 +33,10 @@
     "test:contract": "cd apps/api && npm run test:contract",
     "test:security": "docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline-scan.py -t http://localhost:3000 -c zap.config.yaml",
     "test:coverage": "turbo test -- --coverage",
-    "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y"
+    "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y",
+    "test:production-ready": "bash test-production-ready.sh",
+    "test:production-ready:quick": "SKIP_CORE_TESTS=true bash test-production-ready.sh",
+    "test:production-ready:e2e-only": "playwright test e2e/production-ready.e2e.spec.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.8.2",
