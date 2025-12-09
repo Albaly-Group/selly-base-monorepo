@@ -35,6 +35,7 @@
     "test:contract": "cd apps/api && npm run test:contract",
     "test:security": "docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline-scan.py -t http://localhost:3000 -c zap.config.yaml",
     "test:coverage": "turbo test -- --coverage",
+    "test:production-ready": "bash test-production-ready.sh",
     "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y",
     "upgrade:deps": "node ./tools/update-deps.js"
   },
