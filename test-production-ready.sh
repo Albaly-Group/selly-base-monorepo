@@ -219,7 +219,8 @@ else
 fi
 
 # Check for error handling
-if [ -f "apps/api/src/filters/http-exception.filter.ts" ] || 
+if [ -f "apps/api/src/filters/all-exceptions.filter.ts" ] || 
+   [ -f "apps/api/src/filters/http-exception.filter.ts" ] ||
    [ -f "apps/api/src/common/filters/http-exception.filter.ts" ]; then
   echo -e "  ${GREEN}✓${NC} Global error handling implemented"
 else
