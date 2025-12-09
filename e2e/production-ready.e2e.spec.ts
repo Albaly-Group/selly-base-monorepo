@@ -26,13 +26,17 @@ const execAsync = promisify(exec);
  * - Data integrity is maintained
  */
 
-// Helper function to query database
+// Helper function to query database (with basic input sanitization)
 async function queryDatabase(query: string): Promise<string> {
   try {
     const containerName = process.env.DB_CONTAINER_NAME || 'selly-base-postgres-e2e';
     const dbName = process.env.DB_NAME || 'selly_base_e2e';
+    
+    // Basic validation: prevent command injection by escaping quotes
+    const sanitizedQuery = query.replace(/"/g, '\\"');
+    
     const { stdout } = await execAsync(
-      `docker exec ${containerName} psql -U postgres -d ${dbName} -t -c "${query}"`,
+      `docker exec ${containerName} psql -U postgres -d ${dbName} -t -c "${sanitizedQuery}"`,
     );
     return stdout.trim();
   } catch (error) {
@@ -41,8 +45,15 @@ async function queryDatabase(query: string): Promise<string> {
   }
 }
 
-// Helper function to get table count
+// Helper function to get table count (with table name validation)
 async function getTableCount(tableName: string): Promise<number> {
+  // Validate table name to prevent SQL injection
+  // Only allow alphanumeric characters and underscores
+  if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+    console.error(`Invalid table name: ${tableName}`);
+    return 0;
+  }
+  
   const count = await queryDatabase(`SELECT COUNT(*) FROM ${tableName};`);
   return parseInt(count, 10) || 0;
 }
