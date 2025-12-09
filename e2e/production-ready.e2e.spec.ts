@@ -26,8 +26,10 @@ const execAsync = promisify(exec);
 // Helper function to query database safely
 async function queryDatabase(query: string): Promise<string> {
   try {
+    // Escape both backslashes and double quotes for shell safety
+    const escapedQuery = query.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     const { stdout } = await execAsync(
-      `docker exec selly-base-postgres-e2e psql -U postgres -d selly_base_e2e -t -c "${query.replace(/"/g, '\\"')}"`,
+      `docker exec selly-base-postgres-e2e psql -U postgres -d selly_base_e2e -t -c "${escapedQuery}"`,
     );
     return stdout.trim();
   } catch (error) {
