@@ -7,6 +7,8 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "npm run verify:setup",
+    "verify:setup": "node -e \"console.log('✅ Dependencies installed successfully! You can now run: npm run dev')\"",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
@@ -33,16 +35,17 @@
     "test:contract": "cd apps/api && npm run test:contract",
     "test:security": "docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline-scan.py -t http://localhost:3000 -c zap.config.yaml",
     "test:coverage": "turbo test -- --coverage",
-    "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y"
+    "test:all": "npm run test && npm run test:e2e && npm run test:visual && npm run test:a11y",
+    "upgrade:deps": "node ./tools/update-deps.js"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.8.2",
-    "@lhci/cli": "^0.12.0",
-    "@pact-foundation/pact": "^12.1.0",
-    "lost-pixel": "^3.16.0",
+    "@axe-core/playwright": "^4.11.0",
+    "@lhci/cli": "^0.15.1",
+    "@pact-foundation/pact": "^16.0.2",
+    "lost-pixel": "^3.22.0",
     "turbo": "latest"
   },
-  "packageManager": "npm@10.2.4",
+  "packageManager": "npm@11.6.4",
   "dependencies": {
     "exceljs": "^4.4.0"
   }
