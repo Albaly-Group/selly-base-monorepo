@@ -148,7 +148,11 @@ fi
 echo ""
 echo "Checking database connectivity..."
 if docker ps | grep -q "postgres"; then
-    POSTGRES_CONTAINER=$(docker ps --filter "name=postgres" --format "{{.Names}}" | head -n 1)
+    # Check for specific E2E postgres container first, then any postgres container
+    POSTGRES_CONTAINER=$(docker ps --filter "name=selly-base-postgres-e2e" --format "{{.Names}}" | head -n 1)
+    if [ -z "$POSTGRES_CONTAINER" ]; then
+        POSTGRES_CONTAINER=$(docker ps --filter "name=postgres" --format "{{.Names}}" | head -n 1)
+    fi
     if [ -n "$POSTGRES_CONTAINER" ]; then
         if docker exec "$POSTGRES_CONTAINER" pg_isready -U postgres > /dev/null 2>&1; then
             echo -e "${GREEN}✓${NC} Database is ready"
@@ -167,7 +171,7 @@ if check_service "$API_URL/api/v1/health" "Backend API"; then
     echo -e "${GREEN}✓${NC} Backend API is healthy"
 else
     echo -e "${RED}✗${NC} Backend API is not responding"
-    echo "Please check the logs: docker compose -f $DOCKER_COMPOSE_FILE logs api"
+    echo "Please check the logs with: docker compose -f $DOCKER_COMPOSE_FILE logs"
     exit 1
 fi
 

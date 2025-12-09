@@ -101,10 +101,6 @@ test.describe('Production-Ready Validation Suite', () => {
     });
 
     test('SEC-002: Should prevent XSS in user inputs', async ({ page }) => {
-      await page.goto('http://localhost:3000/dashboard');
-      await page.evaluate(() => localStorage.setItem('authToken', ''));
-      await page.evaluate(() => localStorage.setItem('authToken', `${localStorage.getItem('authToken')}`));
-      
       const xssAttempts = [
         '<script>alert("XSS")</script>',
         '<img src=x onerror=alert("XSS")>',
