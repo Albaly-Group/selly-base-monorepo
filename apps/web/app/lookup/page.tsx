@@ -321,9 +321,9 @@ function CompanyLookupPage() {
     isError: hasApiError,
   } = useCompaniesSearch(shouldSearch ? apiSearchFilters : {});
 
-  const { filteredCompanies, leadScores, isLoading } = useMemo(() => {
+  const { filteredCompanies, leadScores, isLoading, paginationInfo } = useMemo(() => {
     if (shouldSearch && isApiLoading) {
-      return { filteredCompanies: [], leadScores: {}, isLoading: true };
+      return { filteredCompanies: [], leadScores: {}, isLoading: true, paginationInfo: null };
     }
 
     if (shouldSearch && apiSearchResult && !hasApiError) {
@@ -473,10 +473,21 @@ function CompanyLookupPage() {
         });
       }
 
+      // Calculate pagination info from API response
+      const totalPages = Math.ceil(apiSearchResult.total / apiSearchResult.limit);
+      const pagination = {
+        currentPage: apiSearchResult.page,
+        totalPages,
+        total: apiSearchResult.total,
+        limit: apiSearchResult.limit,
+        hasNextPage: apiSearchResult.hasNextPage,
+      };
+
       return {
         filteredCompanies: companies,
         leadScores: calculatedLeadScores,
         isLoading: false,
+        paginationInfo: pagination,
       };
     }
 
@@ -484,7 +495,7 @@ function CompanyLookupPage() {
       console.error("API search failed, no fallback data available");
     }
 
-    return { filteredCompanies: [], leadScores: {}, isLoading: false };
+    return { filteredCompanies: [], leadScores: {}, isLoading: false, paginationInfo: null };
   }, [
     shouldSearch,
     isApiLoading,
@@ -499,6 +510,13 @@ function CompanyLookupPage() {
     setRefreshTrigger((prev) => prev + 1);
     // Clear selections when refreshing
     setSelectedCompanies([]);
+  }, []);
+
+  // Handle page change for server-side pagination
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    setSelectedCompanies([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleSelectCompany = (companyId: string, selected: boolean) => {
@@ -675,6 +693,7 @@ function CompanyLookupPage() {
       setIsSimpleSearch(true);
       setHasAppliedFiltering(false);
       setSelectedCompanies([]);
+      setCurrentPage(1); // Reset to first page on new search
     }
   };
 
@@ -690,6 +709,7 @@ function CompanyLookupPage() {
     setHasAppliedFiltering(true);
     setIsSimpleSearch(false);
     setSelectedCompanies([]);
+    setCurrentPage(1); // Reset to first page on new filter
   };
 
   const clearFilters = () => {
@@ -698,6 +718,7 @@ function CompanyLookupPage() {
     setIsSimpleSearch(false);
     setSearchTerm("");
     setSelectedCompanies([]);
+    setCurrentPage(1); // Reset to first page when clearing filters
   };
 
   const ViewCompany = (company: any) => {
@@ -1349,8 +1370,6 @@ function CompanyLookupPage() {
               </Card>
             ) : (
               <>
-                
-
                 {/* Results Table */}
                 <CompanyTable
                   companies={filteredCompanies}
@@ -1361,14 +1380,12 @@ function CompanyLookupPage() {
                   showLeadScores={hasAppliedFiltering}
                   leadScores={leadScores}
                   sortable={true}
+                  pagination={paginationInfo || undefined}
+                  onPageChange={handlePageChange}
                 />
 
-                {!isLoading && (
-                  <div className="text-sm text-gray-600 flex justify-between">
-                    <span>
-                      Showing {filteredCompanies.length} companies matching
-                      &quot;{searchTerm}&quot;
-                    </span>
+                {!isLoading && paginationInfo && (
+                  <div className="text-sm text-gray-600 flex justify-end">
                     {filteredCompanies.length > 0 && (
                       <span className="text-blue-600">
                         Sorted by: Highest weighted score first

@@ -64,7 +64,7 @@ export function PlatformSettingsTab() {
   
   const [settings, setSettings] = useState<SystemSettings>({
     general: {
-      platformName: "Selly Base",
+      platformName: "SalesSphere Base",
       supportEmail: "support@albaly.com",
       maintenanceMode: false,
       allowRegistrations: true,

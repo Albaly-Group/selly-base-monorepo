@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Selly Base - B2B Prospecting Platform",
+  title: "SalesSphere Base - B2B Prospecting Platform",
   description: "Professional B2B prospecting and lead management platform for business growth",
   generator: "v0.app",
 }
