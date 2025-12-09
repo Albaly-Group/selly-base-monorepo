@@ -31,6 +31,8 @@ selly-base-monorepo/
 
 ## 🚀 Quick Start
 
+> **📦 Just pulled updates?** Run `npm install` from the root directory to install all dependencies. See [SETUP.md](SETUP.md) for troubleshooting.
+
 ### Prerequisites
 - Node.js 18+
 - npm
@@ -42,7 +44,7 @@ selly-base-monorepo/
 1. **Clone and install dependencies:**
    ```bash
    git clone <repository>
-   cd selly-base-frontend
+   cd selly-base-monorepo
    npm install
    ```
 

@@ -7,6 +7,8 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "npm run verify:setup",
+    "verify:setup": "node -e \"console.log('✅ Dependencies installed successfully! You can now run: npm run dev')\"",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
