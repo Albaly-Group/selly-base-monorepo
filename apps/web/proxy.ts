@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   try {
     // Get the pathname of the request
     const { pathname } = request.nextUrl
@@ -72,8 +72,8 @@ export function middleware(request: NextRequest) {
 
     return NextResponse.next()
   } catch (error) {
-    // If any error occurs in middleware, redirect to login safely
-    console.error("Middleware error:", error)
+    // If any error occurs in proxy, redirect to login safely
+    console.error("Proxy error:", error)
     return NextResponse.redirect(new URL("/login", request.url))
   }
 }
