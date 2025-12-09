@@ -79,7 +79,7 @@ function PlatformAdminPage() {
             </Badge>
           </div>
           <p className="text-gray-600">
-            Manage the entire Selly Base platform, tenant organizations, and shared data resources
+            Manage the entire SalesSphere Base platform, tenant organizations, and shared data resources
           </p>
         </div>
 

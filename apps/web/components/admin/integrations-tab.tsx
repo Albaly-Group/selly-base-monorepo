@@ -52,7 +52,7 @@ export function IntegrationsTab() {
     smtpUser: "noreply@example.com",
     smtpPassword: "••••••••",
     fromEmail: "noreply@example.com",
-    fromName: "Selly BASE System"
+    fromName: "SalesSphere Base System"
   })
 
   const handleWebhookToggle = (webhookId: string) => {
@@ -299,7 +299,7 @@ export function IntegrationsTab() {
             <div className="space-y-2">
               <Label>From Name</Label>
               <Input 
-                placeholder="Selly BASE System"
+                placeholder="SalesSphere Base System"
                 value={emailSettings.fromName}
                 onChange={(e) => setEmailSettings({...emailSettings, fromName: e.target.value})}
               />

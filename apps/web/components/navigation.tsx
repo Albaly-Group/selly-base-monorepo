@@ -35,7 +35,7 @@ export function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <button className="text-xl font-bold text-primary">
-              <a href="/dashboard">Selly Base</a>
+              <a href="/dashboard">SalesSphere Base</a>
             </button>
 
             <NavigationMenu>

@@ -137,7 +137,7 @@ export function PlatformAdminDashboard() {
           </div>
           <p className="text-gray-600 max-w-2xl">
             Welcome to the Albaly platform administration dashboard. Here you can manage all customer organizations, 
-            shared data resources, and system-wide settings across the entire Selly Base platform.
+            shared data resources, and system-wide settings across the entire SalesSphere Base platform.
           </p>
         </div>
 
@@ -272,7 +272,7 @@ export function PlatformAdminDashboard() {
               <h4 className="font-medium text-amber-800 mb-1">Platform Admin Notice</h4>
               <p className="text-sm text-amber-700">
                 You are logged in as a platform administrator with cross-tenant access. All actions performed here 
-                affect the entire Selly Base platform and all customer organizations. Use with caution.
+                affect the entire SalesSphere Base platform and all customer organizations. Use with caution.
               </p>
             </div>
           </div>

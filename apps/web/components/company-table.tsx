@@ -21,8 +21,16 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { Eye, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState } from "react"
+
+interface PaginationInfo {
+  currentPage: number
+  totalPages: number
+  total: number
+  limit: number
+  hasNextPage: boolean
+}
 
 interface CompanyTableProps {
   companies: TableCompany[]
@@ -33,6 +41,8 @@ interface CompanyTableProps {
   showLeadScores?: boolean
   leadScores?: { [companyId: string]: WeightedLeadScore }
   sortable?: boolean
+  pagination?: PaginationInfo
+  onPageChange?: (page: number) => void
 }
 
 type SortField = 'name' | 'industry' | 'province' | 'status' | 'completeness' | 'score'
@@ -46,7 +56,9 @@ export function CompanyTable({
   onViewCompany,
   showLeadScores = false,
   leadScores = {},
-  sortable = false
+  sortable = false,
+  pagination,
+  onPageChange
 }: CompanyTableProps) {
   console.log("Comapany Table", companies)
   const [sortField, setSortField] = useState<SortField>('score')
@@ -303,6 +315,99 @@ export function CompanyTable({
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+          <div className="text-sm text-gray-600">
+            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
+            {Math.min(pagination.currentPage * pagination.limit, pagination.total)} of{' '}
+            {pagination.total} results
+          </div>
+          <div className="flex items-center gap-1">
+            {/* Previous Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="h-8 px-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="ml-1">Previous</span>
+            </Button>
+
+            {/* Page Numbers */}
+            {(() => {
+              const pages: (number | string)[] = []
+              const current = pagination.currentPage
+              const total = pagination.totalPages
+              
+              // Always show first page
+              pages.push(1)
+              
+              // Calculate range around current page
+              let start = Math.max(2, current - 1)
+              let end = Math.min(total - 1, current + 1)
+              
+              // Show ellipsis after first page if needed
+              if (start > 2) {
+                pages.push('...')
+              }
+              
+              // Add pages around current
+              for (let i = start; i <= end; i++) {
+                if (!pages.includes(i)) {
+                  pages.push(i)
+                }
+              }
+              
+              // Show ellipsis before last page if needed
+              if (end < total - 1) {
+                pages.push('...')
+              }
+              
+              // Always show last page if more than 1 page
+              if (total > 1 && !pages.includes(total)) {
+                pages.push(total)
+              }
+              
+              return pages.map((page, idx) => {
+                if (page === '...') {
+                  return (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  )
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant={pagination.currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onPageChange?.(page as number)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                )
+              })
+            })()}
+
+            {/* Next Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(pagination.currentPage + 1)}
+              disabled={!pagination.hasNextPage}
+              className="h-8 px-2"
+            >
+              <span className="mr-1">Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
