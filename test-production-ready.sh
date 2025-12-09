@@ -34,6 +34,9 @@ VALIDATIONS_FAILED=0
 VALIDATION_RESULTS=()
 
 # Function to run validation and track results
+# NOTE: This function uses eval to execute validation commands. All commands are
+# hardcoded within this script and not user-controllable. This is acceptable for
+# a controlled test script but should be avoided when processing user input.
 run_validation() {
   local validation_name=$1
   local validation_command=$2
