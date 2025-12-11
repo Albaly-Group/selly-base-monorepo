@@ -1,18 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompanyContacts } from '../../entities';
+import { CompanyContacts, Companies } from '../../entities';
 import {
   CreateCompanyContactDto,
   UpdateCompanyContactDto,
 } from '../../dtos/company-contact.dto';
+import { CompaniesService } from '../companies/companies.service';
 
 @Injectable()
 export class CompanyContactsService {
   constructor(
     @InjectRepository(CompanyContacts)
     private readonly contactRepository: Repository<CompanyContacts>,
+    @InjectRepository(Companies)
+    private readonly companyRepository: Repository<Companies>,
+    @Inject(forwardRef(() => CompaniesService))
+    private readonly companiesService: CompaniesService,
   ) {}
+
+  private async recalculateCompanyScore(companyId: string): Promise<void> {
+    try {
+      await this.companiesService.calculateCompanyDataCompleteness(companyId, true);
+    } catch (error) {
+      console.error(`Failed to recalculate score for company ${companyId}:`, error);
+    }
+  }
 
   async getContacts(companyId?: string): Promise<any[]> {
     try {
@@ -124,6 +137,9 @@ export class CompanyContactsService {
 
     const savedContact = await this.contactRepository.save(contact);
 
+    // Recalculate company data completeness score
+    await this.recalculateCompanyScore(savedContact.companyId);
+
     return {
       id: savedContact.id,
       companyId: savedContact.companyId,
@@ -182,6 +198,9 @@ export class CompanyContactsService {
 
     const savedContact = await this.contactRepository.save(contact);
 
+    // Recalculate company data completeness score
+    await this.recalculateCompanyScore(savedContact.companyId);
+
     return {
       id: savedContact.id,
       companyId: savedContact.companyId,
@@ -206,7 +225,11 @@ export class CompanyContactsService {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
 
+    const companyId = contact.companyId;
     await this.contactRepository.remove(contact);
+
+    // Recalculate company data completeness score after deletion
+    await this.recalculateCompanyScore(companyId);
 
     return { message: 'Contact deleted successfully' };
   }

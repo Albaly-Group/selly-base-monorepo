@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompanyRegistrations } from '../../entities/CompanyRegistrations';
@@ -7,6 +7,7 @@ import {
   CreateCompanyRegistrationDto,
   UpdateCompanyRegistrationDto,
 } from '../../dtos/company-registration.dto';
+import { CompaniesService } from '../companies/companies.service';
 
 @Injectable()
 export class CompanyRegistrationsService {
@@ -15,7 +16,17 @@ export class CompanyRegistrationsService {
     private registrationsRepository: Repository<CompanyRegistrations>,
     @InjectRepository(Companies)
     private companiesRepository: Repository<Companies>,
+    @Inject(forwardRef(() => CompaniesService))
+    private readonly companiesService: CompaniesService,
   ) {}
+
+  private async recalculateCompanyScore(companyId: string): Promise<void> {
+    try {
+      await this.companiesService.calculateCompanyDataCompleteness(companyId, true);
+    } catch (error) {
+      console.error(`Failed to recalculate score for company ${companyId}:`, error);
+    }
+  }
 
   async create(
     createDto: CreateCompanyRegistrationDto,
@@ -59,7 +70,12 @@ export class CompanyRegistrationsService {
       company: company,
     });
 
-    return await this.registrationsRepository.save(registration);
+    const savedRegistration = await this.registrationsRepository.save(registration);
+
+    // Recalculate company data completeness score
+    await this.recalculateCompanyScore(createDto.companyId);
+
+    return savedRegistration;
   }
 
   async findByCompany(companyId: string): Promise<CompanyRegistrations[]> {
@@ -131,11 +147,21 @@ export class CompanyRegistrationsService {
 
     registration.updatedAt = new Date();
 
-    return await this.registrationsRepository.save(registration);
+    const savedRegistration = await this.registrationsRepository.save(registration);
+
+    // Recalculate company data completeness score
+    await this.recalculateCompanyScore(registration.company.id);
+
+    return savedRegistration;
   }
 
   async remove(id: string): Promise<void> {
     const registration = await this.findOne(id);
+    const companyId = registration.company.id;
+    
     await this.registrationsRepository.remove(registration);
+
+    // Recalculate company data completeness score after deletion
+    await this.recalculateCompanyScore(companyId);
   }
 }
