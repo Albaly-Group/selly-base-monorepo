@@ -243,6 +243,9 @@ CREATE TABLE company_tags (
   UNIQUE(company_id, tag_id)
 );
 
+-- Create ENUM type for status
+-- CREATE TYPE registration_status AS ENUM ('active', 'inactive', 'dissolved', 'suspended');
+
 CREATE TABLE company_registrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -250,7 +253,7 @@ CREATE TABLE company_registrations (
   authority_id UUID NOT NULL REFERENCES ref_registration_authorities(id) ON DELETE RESTRICT,
   registration_type_id UUID NOT NULL REFERENCES ref_registration_types(id) ON DELETE RESTRICT,
   country_code TEXT NOT NULL,
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'dissolved', 'suspended')),
+  status TEXT DEFAULT 'active',
   registered_date DATE,
   dissolved_date DATE,
   is_primary BOOLEAN DEFAULT false,
