@@ -7,6 +7,8 @@ import { AuthProvider } from "@/lib/auth"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ReactQueryProvider } from "@/lib/react-query-provider"
 import { Toaster } from "@/components/ui/toaster"
+import I18nProvider from "@/components/i18n-provider"
+import LanguageSwitch from "@/components/language-switch"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -26,8 +28,13 @@ export default function RootLayout({
         <ReactQueryProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <AuthProvider>
-              <Suspense fallback={null}>{children}</Suspense>
-              <Toaster />
+              <I18nProvider>
+                <div style={{position: 'fixed', top: 8, right: 8, zIndex: 999}}>
+                  <LanguageSwitch />
+                </div>
+                <Suspense fallback={null}>{children}</Suspense>
+                <Toaster />
+              </I18nProvider>
             </AuthProvider>
           </ThemeProvider>
         </ReactQueryProvider>

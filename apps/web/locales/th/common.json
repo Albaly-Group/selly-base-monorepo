@@ -1,0 +1,65 @@
+{
+  "welcome": "ยินดีต้อนรับ",
+  "logout": "ออกจากระบบ",
+  "login": "เข้าสู่ระบบ",
+  "language": "ภาษา",
+
+  "app": {
+    "title": "SalesSphere Base"
+  },
+
+  "login": {
+    "description": "เข้าสู่ระบบเพื่อเข้าใช้งานแพลตฟอร์ม",
+    "email_label": "อีเมล",
+    "email_placeholder": "กรอกอีเมลของคุณ",
+    "password_label": "รหัสผ่าน",
+    "password_placeholder": "กรอกรหัสผ่านของคุณ",
+    "remember_me": "จำฉันไว้",
+    "sign_in": "เข้าสู่ระบบ",
+    "signing_in": "กำลังเข้าสู่ระบบ...",
+    "invalid_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+  },
+
+  "dashboard": {
+    "failed_title": "โหลดแดชบอร์ดล้มเหลว",
+    "failed_message": "{{error}}",
+    "retry": "ลองใหม่",
+    "welcome_back": "ยินดีต้อนรับกลับ, {{name}}",
+    "description": {
+      "general": "ค้นหาและจัดการลูกค้าเป้าหมายของคุณด้วยเครื่องมือค้นหาและตัวกรองขั้นสูง",
+      "manage_db": "จัดการฐานข้อมูลบริษัทและตรวจสอบการส่งข้อมูลจากผู้ใช้งาน",
+      "full_access": "เข้าถึงฟีเจอร์ทั้งหมดของแพลตฟอร์มและการตั้งค่าผู้ดูแลระบบ"
+    },
+    "total_companies": "จำนวนบริษัททั้งหมด",
+    "active_lists": "รายการที่ใช้งาน",
+    "data_quality": "คุณภาพข้อมูล",
+    "from_last_month": "+{{value}}% จากเดือนที่แล้ว",
+    "your_saved_lists": "รายการที่บันทึกไว้ของคุณ",
+    "platform_wide": "ทั่วทั้งแพลตฟอร์ม",
+    "average_completeness": "ความสมบูรณ์เฉลี่ย",
+    "get_started": "เริ่มต้น",
+    "quick_actions": "การกระทำด่วน",
+    "search_companies": "ค้นหาบริษัท",
+    "manage_database": "จัดการฐานข้อมูล",
+    "apply_my_lists": "ใช้งานรายการของฉัน"
+  },
+
+  "feature": {
+    "company_lookup": {
+      "title": "ค้นหาบริษัท",
+      "description": "ค้นหาและค้นพบบริษัทจากฐานข้อมูลของเรา"
+    },
+    "my_lists": {
+      "title": "รายการของฉัน",
+      "description": "จัดการรายการบริษัทที่บันทึกไว้และใช้ตัวกรองอัจฉริยะ"
+    },
+    "database_management": {
+      "title": "จัดการฐานข้อมูล",
+      "description": "จัดการและดูแลฐานข้อมูลบริษัท"
+    },
+    "analytics": {
+      "title": "การวิเคราะห์",
+      "description": "ดูการใช้งานแพลตฟอร์มและเมตริกคุณภาพข้อมูล"
+    }
+  }
+}

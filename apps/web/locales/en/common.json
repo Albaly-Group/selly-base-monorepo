@@ -1,0 +1,65 @@
+{
+  "welcome": "Welcome",
+  "logout": "Logout",
+  "login": "Login",
+  "language": "Language",
+
+  "app": {
+    "title": "SalesSphere Base"
+  },
+
+  "login": {
+    "description": "Sign in to your account to access the platform",
+    "email_label": "Email",
+    "email_placeholder": "Enter your email",
+    "password_label": "Password",
+    "password_placeholder": "Enter your password",
+    "remember_me": "Remember me",
+    "sign_in": "Sign In",
+    "signing_in": "Signing in...",
+    "invalid_credentials": "Invalid email or password"
+  },
+
+  "dashboard": {
+    "failed_title": "Failed to Load Dashboard",
+    "failed_message": "{{error}}",
+    "retry": "Retry",
+    "welcome_back": "Welcome back, {{name}}",
+    "description": {
+      "general": "Discover and manage your business prospects with powerful search and filtering tools.",
+      "manage_db": "Manage the company database and moderate user submissions.",
+      "full_access": "Full access to all platform features and administrative controls."
+    },
+    "total_companies": "Total Companies",
+    "active_lists": "Active Lists",
+    "data_quality": "Data Quality",
+    "from_last_month": "+{{value}}% from last month",
+    "your_saved_lists": "Your saved lists",
+    "platform_wide": "Platform-wide",
+    "average_completeness": "Average completeness",
+    "get_started": "Get Started",
+    "quick_actions": "Quick Actions",
+    "search_companies": "Search Companies",
+    "manage_database": "Manage Database",
+    "apply_my_lists": "Apply My Lists"
+  },
+
+  "feature": {
+    "company_lookup": {
+      "title": "Company Lookup",
+      "description": "Search and discover companies in our comprehensive database"
+    },
+    "my_lists": {
+      "title": "My Lists",
+      "description": "Manage your saved company lists and apply smart filtering"
+    },
+    "database_management": {
+      "title": "Database Management",
+      "description": "Manage and moderate the company database"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "View platform usage and data quality metrics"
+    }
+  }
+}
