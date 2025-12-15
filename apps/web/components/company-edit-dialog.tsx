@@ -265,7 +265,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
+              <h3 className="text-lg font-medium">{t('companyInfo.title')}</h3>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -300,7 +300,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Contact Information</h3>
+                <h3 className="text-lg font-medium">{t('contactInfo.title')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="primaryEmail">{tFields('email')}</Label>
@@ -335,7 +335,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Address Information</h3>
+                <h3 className="text-lg font-medium">{t('contactInfo.address') || 'Address Information'}</h3>
                 <div className="space-y-2">
                   <Label htmlFor="addressLine1">{tFields('addressLine1')}</Label>
                   <Input
@@ -363,8 +363,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                       disabled={!canEdit}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select region..." />
-                      </SelectTrigger>
+                          <SelectValue placeholder={t('contactInfo.province') || 'Select region...'} />
+                        </SelectTrigger>
                       <SelectContent>
                         {regions.map((region) => (
                           <SelectItem key={region.id} value={region.id}>
@@ -388,7 +388,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Company Details</h3>
+                <h3 className="text-lg font-medium">{t('companyInfo.title')}</h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2 min-w-0">
                     <Label htmlFor="primaryIndustryId">Industry</Label>
@@ -396,9 +396,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                       options={industries.map((industry: any) => ({ value: industry.id, label: industry.nameEn }))}
                       value={formData.primaryIndustryId || ""}
                       onValueChange={(value) => updateField("primaryIndustryId", value)}
-                      placeholder="Select industry..."
-                      searchPlaceholder="Search industries..."
-                      emptyText="No industry found."
+                      placeholder={t('companyInfo.industry') || 'Select industry...'}
+                        searchPlaceholder={t('filters.industryPlaceholder') || 'Search industries...'}
+                        emptyText={t('filters.noIndustry') || 'No industry found.'}
                       disabled={!canEdit}
                     />
                   </div>
@@ -411,9 +411,9 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                       onValueChange={(value) => updateField("companySize", value)}
                       disabled={!canEdit}
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select size..." />
-                      </SelectTrigger>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={t('filters.anySize') || 'Select size...'} />
+                        </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="micro">{tSizes('micro')}</SelectItem>
                         <SelectItem value="small">{tSizes('small')}</SelectItem>
@@ -442,8 +442,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                     onValueChange={(value) => updateField("dataSensitivity", value)}
                     disabled={!canEdit}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select sensitivity..." />
+                      <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('companies_lookup.createCompany.dataSensitivity.placeholder') || 'Select sensitivity...'} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="public">Public</SelectItem>
@@ -473,8 +473,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                       </Select>
                       <p className="text-xs text-gray-500">
                         {isOwner
-                          ? "As the data owner, you can set the verification status for this company."
-                          : "As a platform admin, you can set the verification status for this shared data."}
+                          ? t('messages.ownerCanSetVerification') || "As the data owner, you can set the verification status for this company."
+                          : t('messages.adminCanSetVerification') || "As a platform admin, you can set the verification status for this shared data."}
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import type { UserList } from "@/lib/types"
 import type { CompanyList } from "@/lib/types/company-lists"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +31,7 @@ interface ListSelectorProps {
 export function EnhancedListSelector({ lists, selectedListId, onSelectList, onListCreated }: EnhancedListSelectorProps) {
   console.log("lists", lists);
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const t = useTranslations('lists')
 
   const getVisibilityIcon = (visibility: string) => {
     switch (visibility) {
@@ -58,9 +60,9 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div>
+              <div>
               <button><List className="h-5 w-5" /></button>
-              My Lists
+              {t('title')}
             </div>
           </CardTitle>
         </CardHeader>
@@ -104,8 +106,8 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
 
           {lists.length === 0 && (
             <div className="text-center py-6 text-gray-500">
-              <p className="text-sm">No lists created yet</p>
-              <p className="text-xs mt-1">Create your first company list</p>
+              <p className="text-sm">{t('emptyTitle')}</p>
+              <p className="text-xs mt-1">{t('emptySubtitle')}</p>
             </div>
           )}
 
@@ -115,7 +117,7 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
             onClick={() => setShowCreateDialog(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Create New List
+            {t('createButton')}
           </Button>
         </CardContent>
       </Card>
@@ -130,6 +132,8 @@ export function EnhancedListSelector({ lists, selectedListId, onSelectList, onLi
 }
 
 export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdate }: ListSelectorProps) {
+  const t = useTranslations('lists')
+  const tCommon = useTranslations('common')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const deleteCompanyListMutation = useDeleteCompanyList()
@@ -179,14 +183,14 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
           <CardTitle className="flex items-center gap-2 justify-between">
             <div className="flex items-center gap-2">
               <button><List className="h-5 w-5" /></button>
-              My Lists
+              {t('title')}
             </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={!selectedListId || deleteCompanyListMutation.isPending}
                 className={`${!selectedListId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'} p-1 rounded`}
-                title={!selectedListId ? "Select a list to delete" : "Delete selected list"}
+                title={!selectedListId ? t('selectToDelete') : t('deleteSelected')}
               >
                 <Trash2 className="h-5 w-5 text-red-500" />
               </button>
@@ -205,7 +209,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium truncate">{list.name}</span>
                   <Badge variant="secondary" className="ml-2">
-                    {(list as any).totalCompanyCount ?? 0} items
+                    {((list as any).totalCompanyCount ?? 0) + ' ' + t('items')}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -218,8 +222,8 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
 
           {lists.length === 0 && (
             <div className="text-center py-6 text-gray-500">
-              <p className="text-sm">No lists created yet</p>
-              <p className="text-sm mt-1">Create lists from Company Lookup</p>
+              <p className="text-sm">{t('emptyTitle')}</p>
+              <p className="text-sm mt-1">{t('createFromLookup')}</p>
             </div>
           )}
 
@@ -229,15 +233,13 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
             onClick={() => setShowCreateDialog(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Create New List
+            {t('createButton')}
           </Button>
           {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Delete</h3>
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to delete this list? This action cannot be undone and all companies in this list will be removed.
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('confirmDeleteTitle')}</h3>
+              <p className="text-gray-600 mb-4">{t('confirmDeleteMessage')}</p>
               
               {deleteCompanyListMutation.error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -256,7 +258,7 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                   }}
                   disabled={deleteCompanyListMutation.isPending}
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -266,10 +268,10 @@ export function ListSelector({ lists, selectedListId, onSelectList, onListsUpdat
                   {deleteCompanyListMutation.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Deleting...
+                      {t('deleting')}
                     </>
                   ) : (
-                    "Delete"
+                    tCommon('delete')
                   )}
                 </Button>
               </div>

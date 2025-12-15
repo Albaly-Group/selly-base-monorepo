@@ -11,6 +11,7 @@ import { requireAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api-client"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Filter, Target, Loader2, CheckCircle, X } from "lucide-react"
@@ -26,6 +27,7 @@ interface CompanyList {
 }
 
 function ListManagementPage() {
+  const t = useTranslations('lists')
   const [userLists, setUserLists] = useState<CompanyList[]>([])
   const [listCompanies, setListCompanies] = useState<Company[]>([])
   const [selectedListId, setSelectedListId] = useState<string>("")
@@ -365,8 +367,8 @@ function ListManagementPage() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">List Management</h1>
-          <p className="text-gray-600">Manage your saved company lists and apply smart filtering</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* Notification Alert */}

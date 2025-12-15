@@ -1190,9 +1190,9 @@ export function CompanyDetailDrawer({
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Last Name</Label>
+                  <Label>{t('contacts.lastName')}</Label>
                   <Input
-                    placeholder="Enter last name"
+                    placeholder={t('contacts.lastNamePlaceholder')}
                     value={contactFormData.lastName}
                     onChange={(e) => {
                       setContactFormData({
@@ -1215,9 +1215,9 @@ export function CompanyDetailDrawer({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Title/Position</Label>
+                <Label>{t('contacts.position')}</Label>
                 <Input
-                  placeholder="e.g., Chief Technology Officer"
+                  placeholder={t('contacts.titlePlaceholder') || 'e.g., Chief Technology Officer'}
                   value={contactFormData.title}
                   onChange={(e) =>
                     setContactFormData({
@@ -1229,9 +1229,9 @@ export function CompanyDetailDrawer({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Phone</Label>
+                  <Label>{t('contacts.phone')}</Label>
                   <Input
-                    placeholder="+66-2-123-4567"
+                    placeholder={t('contacts.phonePlaceholder') || '+66-2-123-4567'}
                     value={contactFormData.phone}
                     onChange={(e) => {
                       setContactFormData({
@@ -1369,19 +1369,20 @@ export function CompanyDetailDrawer({
                   </Select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea
-                  placeholder="Enter activity details..."
-                  rows={3}
-                  value={activityFormData.content}
-                  onChange={(e) =>
-                    setActivityFormData({
-                      ...activityFormData,
-                      content: e.target.value,
-                    })
-                  }
-                />
+                <div className="space-y-2">
+                  <Label>{t('contacts.email')}</Label>
+                  <Input
+                    type="email"
+                    placeholder={t('contacts.emailPlaceholder') || 'contact@company.com'}
+                    value={contactFormData.email}
+                    onChange={(e) => {
+                      setContactFormData({
+                        ...contactFormData,
+                        email: e.target.value,
+                      });
+                      contactValidation.clearError("email");
+                    }}
+                  />
               </div>
             </div>
             <DialogFooter>
@@ -1403,18 +1404,17 @@ export function CompanyDetailDrawer({
         <Dialog open={showEditContact} onOpenChange={setShowEditContact}>
           <DialogContent className="w-[95vw] max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Edit Contact Person</DialogTitle>
+              <DialogTitle>{t('contacts.editContact')}</DialogTitle>
               <DialogDescription>
-                Update contact information for{" "}
-                {editingContact?.fullName || "contact"}
+                {t('contacts.updateContactFor', { name: editingContact?.fullName || t('contacts.fullName') })}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>First Name</Label>
+                  <Label>{t('contacts.firstName')}</Label>
                   <Input
-                    placeholder="Enter first name"
+                    placeholder={t('contacts.firstNamePlaceholder')}
                     value={contactFormData.firstName}
                     onChange={(e) => {
                       setContactFormData({

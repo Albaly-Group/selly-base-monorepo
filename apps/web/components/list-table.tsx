@@ -2,6 +2,7 @@
 
 import type { Company, LeadScore } from "@/lib/types"
 import type { WeightedLeadScore } from "@/lib/types"
+import { useTranslations } from 'next-intl'
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -29,6 +30,7 @@ export function ListTable({
   onViewCompany,
   sortable = false,
 }: ListTableProps) {
+  const t = useTranslations('companies_lookup')
   console.log("Company", companies)
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
@@ -115,18 +117,18 @@ export function ListTable({
             {showLeadScores && (
               <TableHead>
                 <div className="flex items-center gap-1">
-                  Weighted Score
+                  {t('table.leadScore')}
                   {sortable && <ArrowUpDown className="h-4 w-4" />}
                 </div>
               </TableHead>
             )}
-            <TableHead>Company Name</TableHead>
-            <TableHead>Industry</TableHead>
-            <TableHead>Province</TableHead>
-            <TableHead>Contact Person</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Data Completeness</TableHead>
-            <TableHead>Last Updated</TableHead>
+            <TableHead>{t('table.companyName')}</TableHead>
+            <TableHead>{t('table.industry')}</TableHead>
+            <TableHead>{t('table.province')}</TableHead>
+            <TableHead>{t('table.contactPerson')}</TableHead>
+            <TableHead>{t('table.status')}</TableHead>
+            <TableHead>{t('table.dataCompleteness')}</TableHead>
+            <TableHead>{t('table.lastUpdated') || 'Last Updated'}</TableHead>
             {/* <TableHead>Owner</TableHead> */}
             <TableHead className="w-24">Actions</TableHead>
           </TableRow>
@@ -178,7 +180,7 @@ export function ListTable({
                       )}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No contact info</span>
+                    <span className="text-gray-400">{t('table.noContactInfo') || 'No contact info'}</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -209,7 +211,7 @@ export function ListTable({
         </TableBody>
       </Table>
 
-      {companies.length === 0 && <div className="text-center py-12 text-gray-500">No companies in this list.</div>}
+      {companies.length === 0 && <div className="text-center py-12 text-gray-500">{t('table.noResults')}</div>}
     </div>
   )
 }

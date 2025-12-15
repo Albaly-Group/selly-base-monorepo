@@ -11,6 +11,7 @@ import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Search, Target, Save, Plus, Trash2 } from "lucide-react"
+import { useTranslations } from 'next-intl'
 import { Separator } from "@/components/ui/separator"
 import { apiClient } from "@/lib/api-client"
 
@@ -72,6 +73,8 @@ export function SmartFilteringPanel({
   onClearFiltering,
   initialKeyword = "",
 }: SmartFilteringPanelProps) {
+  const t = useTranslations('companies_lookup')
+  const tCommon = useTranslations('common')
   const [tempCriteria, setTempCriteria] = useState<SmartFilteringCriteria>({
     ...criteria,
     keyword: initialKeyword || criteria.keyword || "",
@@ -229,45 +232,42 @@ export function SmartFilteringPanel({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Smart Filtering & Lead Scoring
+            {t('filters.smartFiltering')} &nbsp;{t('table.leadScore')}
             {hasActiveCriteria && (
               <Badge variant="default" className="ml-2">
-                Active
+                {t('smartFiltering.active') || 'Active'}
               </Badge>
             )}
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Filter companies by attributes like industry, province, size, and status. 
-            Keywords are optional - you can filter using attributes alone.
+            {t('filters.smartFilteringDescription')}
           </p>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Keyword Search Section */}
           <Card>
-            <CardHeader>
+              <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Search className="h-4 w-4" />
-                Keyword Search (Optional)
+                {t('search.label')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-2">
-                <Label className="mb-2" htmlFor="keyword">Search Keyword</Label>
+                <Label className="mb-2" htmlFor="keyword">{t('filters.keyword')}</Label>
                 <Input
                   id="keyword"
                   className="shadow-sm "
-                  placeholder="Company name, registration number, or keywords..."
+                  placeholder={t('search.placeholder')}
                   value={tempCriteria.keyword || ""}
                   onChange={(e) => updateCriteria("keyword", e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Leave empty to filter by attributes only
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t('filters.keywordHelp') || 'Leave empty to filter by attributes only'}</p>
               </div>
               {tempCriteria.keyword && tempCriteria.keyword.trim() && (
                 <div>
-                  <Label>Keyword Weight: {tempCriteria.keywordWeight}%</Label>
+                  <Label>{t('smartFiltering.keywordWeightLabel') || 'Keyword Weight:'} {tempCriteria.keywordWeight}%</Label>
                   <Slider
                     value={[tempCriteria.keywordWeight ?? 25]}
                     onValueChange={(value) => updateCriteria("keywordWeight", value[0])}
@@ -282,19 +282,19 @@ export function SmartFilteringPanel({
 
           {/* Attribute Filtering Section */}
           <Card>
-            <CardHeader>
+                <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                Attribute Filters & Weights
+                {t('filters.smartFiltering')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Industry */}
                 <div className="space-y-3">
-                  <Label>Industry</Label>
+                  <Label>{t('filters.industry')}</Label>
                     <Combobox
-                      options={[{ value: "", label: "Any Industry" }, ...industrialOptions]}
+                      options={[{ value: "", label: t('filters.anyIndustry') || "Any Industry" }, ...industrialOptions]}
                       value={
                         useMemo(() => {
                           const opt = industrialOptions.find(o => o.label === (tempCriteria.industrial || ""));
@@ -305,13 +305,13 @@ export function SmartFilteringPanel({
                         const opt = industrialOptions.find(o => o.value === val);
                         updateCriteria("industrial", opt?.label ?? undefined);
                       }}
-                      placeholder="Search industries..."
-                      searchPlaceholder="Search industries..."
-                      emptyText="No industry found."
+                      placeholder={t('filters.industryPlaceholder') || "Search industries..."}
+                      searchPlaceholder={t('filters.industryPlaceholder') || "Search industries..."}
+                      emptyText={t('filters.noIndustry') || "No industry found."}
                     />
 
                   <div>
-                    <Label className="text-sm">Weight: {tempCriteria.industrialWeight}%</Label>
+                    <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.industrialWeight}%</Label>
                     <Slider
                       value={[tempCriteria.industrialWeight ?? 25]}
                       onValueChange={(value) => updateCriteria("industrialWeight", value[0])}
@@ -324,10 +324,10 @@ export function SmartFilteringPanel({
 
                 {/* Province */}
                 <div className="space-y-3">
-                  <Label>Province</Label>
+                  <Label>{t('filters.province')}</Label>
                   <Combobox
                     options={[
-                      { value: "", label: "Any Province" },
+                      { value: "", label: t('filters.anyProvince') || "Any Province" },
                       ...provinceOptions.map((option) => ({
                         value: option,
                         label: option,
@@ -335,12 +335,12 @@ export function SmartFilteringPanel({
                     ]}
                     value={tempCriteria.province || ""}
                     onValueChange={(value) => updateCriteria("province", value)}
-                    placeholder="Search provinces..."
-                    searchPlaceholder="Search provinces..."
-                    emptyText="No province found."
+                    placeholder={t('filters.provincePlaceholder') || "Search provinces..."}
+                    searchPlaceholder={t('filters.provincePlaceholder') || "Search provinces..."}
+                    emptyText={t('filters.noProvince') || "No province found."}
                   />
                   <div>
-                    <Label className="text-sm">Weight: {tempCriteria.provinceWeight}%</Label>
+                    <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.provinceWeight}%</Label>
                     <Slider
                       value={[tempCriteria.provinceWeight ?? 20]}
                       onValueChange={(value) => updateCriteria("provinceWeight", value[0])}
@@ -353,16 +353,16 @@ export function SmartFilteringPanel({
 
                 {/* Company Size */}
                 <div className="space-y-3">
-                  <Label>Company Size</Label>
+                  <Label>{t('filters.size')}</Label>
                   <Select
                     value={tempCriteria.companySize || ""}
                     onValueChange={(value) => updateCriteria("companySize", value === "any" ? "" : value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Any Size" />
+                      <SelectValue placeholder={t('filters.anySize') || 'Any Size'} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any Size</SelectItem>
+                      <SelectItem value="any">{t('filters.anySize') || 'Any Size'}</SelectItem>
                       {companySizeOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
@@ -371,7 +371,7 @@ export function SmartFilteringPanel({
                     </SelectContent>
                   </Select>
                   <div>
-                    <Label className="text-sm">Weight: {tempCriteria.companySizeWeight}%</Label>
+                    <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.companySizeWeight}%</Label>
                     <Slider
                       value={[tempCriteria.companySizeWeight ?? 15]}
                       onValueChange={(value) => updateCriteria("companySizeWeight", value[0])}
@@ -384,16 +384,16 @@ export function SmartFilteringPanel({
 
                 {/* Contact Status */}
                 <div className="space-y-3">
-                  <Label>Contact Status</Label>
+                  <Label>{t('filters.status')}</Label>
                   <Select
                     value={tempCriteria.verificationStatus || ""}
                     onValueChange={(value) => updateCriteria("verificationStatus", value === "any" ? "" : value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Any Status" />
+                      <SelectValue placeholder={t('filters.anyStatus') || 'Any Status'} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any Status</SelectItem>
+                      <SelectItem value="any">{t('filters.anyStatus') || 'Any Status'}</SelectItem>
                       {contactStatusOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
@@ -402,7 +402,7 @@ export function SmartFilteringPanel({
                     </SelectContent>
                   </Select>
                   <div>
-                    <Label className="text-sm">Weight: {tempCriteria.verificationStatusWeight}%</Label>
+                    <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.verificationStatusWeight}%</Label>
                     <Slider
                       value={[tempCriteria.verificationStatusWeight ?? 15]}
                       onValueChange={(value) => updateCriteria("verificationStatusWeight", value[0])}
@@ -419,17 +419,17 @@ export function SmartFilteringPanel({
               {/* Total Weight Display */}
               <div className="bg-muted p-3 rounded-md">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Active Weight</span>
+                  <span className="font-medium">{t('smartFiltering.totalWeightTitle') || 'Total Active Weight'}</span>
                   <Badge variant={totalWeight === 100 ? "default" : "secondary"}>
                     {totalWeight}% 
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {totalWeight === 0 
-                    ? "Select at least one filter above to enable weighted scoring"
+                    ? (t('smartFiltering.totalWeightMessages.none') || "Select at least one filter above to enable weighted scoring")
                     : totalWeight !== 100 
-                      ? "Weights don't need to total 100%. Results will be normalized."
-                      : "Perfect! Weights are balanced at 100%"}
+                      ? (t('smartFiltering.totalWeightMessages.normalized') || "Weights don't need to total 100%. Results will be normalized.")
+                      : (t('smartFiltering.totalWeightMessages.perfect') || "Perfect! Weights are balanced at 100%")}
                 </p>
               </div>
             </CardContent>
@@ -437,12 +437,12 @@ export function SmartFilteringPanel({
 
           {/* Minimum Score Threshold */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Score Threshold</CardTitle>
-            </CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base">{t('smartFiltering.scoreThreshold') || 'Score Threshold'}</CardTitle>
+              </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <Label>Minimum Weighted Score: {tempCriteria.minimumScore}%</Label>
+                  <Label>{t('smartFiltering.minimumWeightedScore') || 'Minimum Weighted Score:'} {tempCriteria.minimumScore}%</Label>
                 <Slider
                   value={[tempCriteria.minimumScore ?? 0]}
                   onValueChange={(value) => updateCriteria("minimumScore", value[0])}
@@ -450,9 +450,9 @@ export function SmartFilteringPanel({
                   step={5}
                   className="mt-2"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Only show companies with a weighted score above this threshold
-                </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('smartFiltering.minimumScoreDescription') || 'Only show companies with a weighted score above this threshold'}
+                  </p>
               </div>
             </CardContent>
           </Card>
@@ -487,12 +487,12 @@ export function SmartFilteringPanel({
           <div className="flex flex-col gap-3 pt-4">
             {!hasActiveCriteria && (
               <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                Please select at least one filter (Industry, Province, Company Size, or Contact Status) or add a keyword to apply smart filtering.
+                {t('smartFiltering.helpSelectCriteria')}
               </p>
             )}
             <div className="flex gap-3">
               <Button onClick={handleApply} className="flex-1" disabled={!hasActiveCriteria}>
-                Apply Smart Filtering
+                {t('actions.applySmartFiltering') || 'Apply Smart Filtering'}
                 {hasActiveCriteria && (
                   <Badge variant="secondary" className="ml-2 bg-white/20">
                     {Object.values(tempCriteria).filter((value, index) => {
@@ -505,10 +505,10 @@ export function SmartFilteringPanel({
                 )}
               </Button>
               <Button variant="outline" onClick={handleClear}>
-                Clear All
+                {t('actions.clearAll') || 'Clear All'}
               </Button>
               <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                Cancel
+                {tCommon('cancel') || 'Cancel'}
               </Button>
             </div>
           </div>

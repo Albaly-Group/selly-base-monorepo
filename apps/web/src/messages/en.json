@@ -10,6 +10,20 @@
     "organization_admin": "Organization Admin",
     "platform_admin": "Platform Admin"
   },
+  "lists": {
+    "title": "My Lists",
+    "subtitle": "Manage your saved company lists and apply smart filtering",
+    "emptyTitle": "No lists created yet",
+    "emptySubtitle": "Create your first company list to start organizing companies.",
+    "createButton": "Create New List",
+    "createFromLookup": "Create from Lookup",
+    "selectToDelete": "Select a list to delete",
+    "deleteSelected": "Delete Selected",
+    "confirmDeleteTitle": "Delete List",
+    "confirmDeleteMessage": "Are you sure you want to delete this list? This action cannot be undone.",
+    "items": "items",
+    "deleting": "Deleting..."
+  },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back",
@@ -96,18 +110,46 @@
     },
     "filters": {
       "smartFiltering": "Smart Filtering:",
+      "smartFilteringDescription": "Filter companies by attributes like industry, province, size, and status. Keywords are optional - you can filter using attributes alone.",
       "keyword": "Keyword",
+      "keywordHelp": "Leave empty to filter by attributes only",
       "industry": "Industry",
       "province": "Province",
       "size": "Size",
       "status": "Status",
+      "anyIndustry": "Any Industry",
+      "industryPlaceholder": "Search industries...",
+      "noIndustry": "No industry found.",
+      "anyProvince": "Any Province",
+      "provincePlaceholder": "Search provinces...",
+      "noProvince": "No province found.",
+      "anySize": "Any Size",
+      "anyStatus": "Any Status",
       "usingFallback": "Using fallback data (API unavailable)"
+    },
+    "smartFiltering": {
+      "description": "Filter companies by attributes like industry, province, size, and status. Keywords are optional - you can filter using attributes alone.",
+      "active": "Active",
+      "weightLabel": "Weight:",
+      "keywordWeightLabel": "Keyword Weight:",
+      "totalWeightTitle": "Total Active Weight",
+      "totalWeightMessages": {
+        "none": "Select at least one filter above to enable weighted scoring",
+        "normalized": "Weights don't need to total 100%. Results will be normalized.",
+        "perfect": "Perfect! Weights are balanced at 100%"
+      },
+      "helpSelectCriteria": "Please select at least one filter (Industry, Province, Company Size, or Contact Status) or add a keyword to apply smart filtering.",
+      "scoreThreshold": "Score Threshold",
+      "minimumWeightedScore": "Minimum Weighted Score:",
+      "minimumScoreDescription": "Only show companies with a weighted score above this threshold"
     },
     "actions": {
       "createCompany": "Create Company",
       "import": "Import",
       "export": "Export",
-      "addToList": "Add to List"
+      "addToList": "Add to List",
+      "applySmartFiltering": "Apply Smart Filtering",
+      "clearAll": "Clear All"
     },
     "table": {
       "companyName": "Company Name",
@@ -127,13 +169,29 @@
       "results": "results",
       "previous": "Previous",
       "next": "Next",
-      "sortedBy": "Sorted by: Highest weighted score first"
+      "sortedBy": "Sorted by: Highest weighted score first",
+      "lastUpdated": "Last Updated",
+      "noContactInfo": "No contact info"
     },
     "emptyState": {
       "title": "Ready to Find Companies?",
       "description": "Enter keywords in the search box and press Enter for instant results, or use Smart Filtering for advanced weighted scoring.",
       "quickSearch": "Quick search: Enter keywords and press Enter",
       "advancedSearch": "Advanced: Use Smart Filtering for lead scoring"
+    },
+    "lists": {
+      "title": "List Management",
+      "subtitle": "Manage your saved company lists and apply smart filtering",
+      "emptyTitle": "No lists created yet",
+      "emptySubtitle": "Create your first company list to start organizing companies.",
+      "createButton": "Create New List",
+      "createFromLookup": "Create from Lookup",
+      "selectToDelete": "Select a list to delete",
+      "deleteSelected": "Delete Selected",
+      "confirmDeleteTitle": "Delete List",
+      "confirmDeleteMessage": "Are you sure you want to delete this list? This action cannot be undone.",
+      "items": "items",
+      "deleting": "Deleting..."
     },
     "export": {
       "title": "Select columns to export",
@@ -176,7 +234,8 @@
       "success": "Successfully added {count} companies to the list.",
       "error": "Cannot add. This item is already in the list.",
       "errorName": "Please enter a list name.",
-      "errorSelect": "Please select a list."
+      "errorSelect": "Please select a list.",
+      "description": "Create a new list to organize and track companies."
     },
     "createCompany": {
       "title": "Create New Company",
@@ -184,7 +243,10 @@
       "tabs": {
         "basic": "Basic Info",
         "registration": "Registration",
-        "contact": "Contact"
+        "contact": "Contact",
+        "addToList": "Add to List",
+        "applySmartFiltering": "Apply Smart Filtering",
+        "clearAll": "Clear All"
       },
       "fields": {
         "companyNameEn": "Company Name (EN) *",
@@ -196,6 +258,9 @@
         "businessDescription": "Business Description",
         "businessDescriptionPlaceholder": "Describe the company's business...",
         "addressLine1": "Address Line",
+        "lastUpdated": "Last Updated",
+        "noResults": "No companies found",
+        "noContactInfo": "No contact info",
         "addressLine1Placeholder": "Street address",
         "addressLine2": "Address Line 2",
         "addressLine2Placeholder": "Building, suite, etc.",
@@ -300,6 +365,7 @@
       "loading": "Loading contacts...",
       "noContacts": "No contacts found. Add your first contact above.",
       "lastVerified": "Last verified:",
+      "updateContactFor": "Update contact information for {name}",
       "fullName": "Full Name",
       "firstName": "First Name",
       "firstNamePlaceholder": "Enter first name",
@@ -320,6 +386,19 @@
       "lineIdPlaceholder": "@lineid",
       "preferredContact": "Preferred Contact Method",
       "isPrimary": "Set as Primary Contact"
+    },
+    "updateContactFor": "Update contact information for {name}",
+    "filters": {
+      "industryPlaceholder": "Search industries...",
+      "noIndustry": "No industry found.",
+      "anySize": "Any Size"
+    },
+    "companies_lookup": {
+      "createCompany": {
+        "dataSensitivity": {
+          "placeholder": "Select data sensitivity"
+        }
+      }
     },
     "activity": {
       "outcomes": {
@@ -406,7 +485,8 @@
       "activityDeleted": "Activity deleted successfully",
       "error": "An error occurred. Please try again.",
       "confirmDeleteContact": "Are you sure you want to delete this contact? This action cannot be undone.",
-      "confirmDeleteActivity": "Are you sure you want to delete this activity? This action cannot be undone."
+      "confirmDeleteActivity": "Are you sure you want to delete this activity? This action cannot be undone.",
+      "adminCanSetVerification": "Only platform administrators can set verification status for shared records."
     },
     "shared": {
       "title": "Shared Reference Data",
