@@ -143,7 +143,7 @@ export class CompaniesService {
 
       if (includeSharedData) {
         query.where(
-          '(company.organizationId = :organizationId OR company.isSharedData = true)',
+          '(company.organizationId = :organizationId OR company.isSharedData = true OR company.organizationId IS NULL)',
           {
             organizationId,
           },
@@ -154,9 +154,9 @@ export class CompaniesService {
         });
       }
     } else {
-      // When no organizationId is provided, only allow shared data access
+      // When no organizationId is provided, include shared data and platformAdmin data (organization_id IS NULL)
       if (includeSharedData) {
-        query.where('company.isSharedData = true');
+        query.where('(company.isSharedData = true OR company.organizationId IS NULL)');
       } else {
         throw new ForbiddenException(
           'Organization ID is required for non-shared data access',
@@ -246,6 +246,9 @@ export class CompaniesService {
 
     const [companies, total] = await query.getManyAndCount();
 
+    // Ensure all companies have valid data quality scores
+    await this.ensureDataQualityScores(companies);
+
     const totalPages = Math.ceil(total / validatedLimit);
 
     return {
@@ -317,13 +320,14 @@ export class CompaniesService {
       }
 
       query.andWhere(
-        '(company.organizationId = :organizationId OR company.isSharedData = true)',
+        '(company.organizationId = :organizationId OR company.isSharedData = true OR company.organizationId IS NULL)',
         {
           organizationId,
         },
       );
     } else {
-      query.andWhere('company.isSharedData = true');
+      // Include shared data and platformAdmin data (organization_id IS NULL)
+      query.andWhere('(company.isSharedData = true OR company.organizationId IS NULL)');
     }
 
     const company = await query.getOne();
@@ -331,6 +335,9 @@ export class CompaniesService {
     if (!company) {
       throw new NotFoundException('Company not found or access denied');
     }
+
+    // Ensure company has valid data quality score
+    await this.ensureDataQualityScore(company);
 
     return company;
   }
@@ -713,6 +720,34 @@ export class CompaniesService {
     }
   }
 
+  private async ensureDataQualityScore(company: Companies): Promise<void> {
+    // Check if score is missing, null, or zero
+    const needsCalculation = 
+      company.dataQualityScore === null || 
+      company.dataQualityScore === undefined || 
+      parseFloat(company.dataQualityScore) === 0;
+
+    if (needsCalculation) {
+      // Calculate the score
+      const score = this.calculateDataQualityScore(company, company);
+      
+      // Update in database asynchronously (don't await to avoid blocking)
+      this.companyRepository.update(company.id, {
+        dataQualityScore: score.toString(),
+      }).catch(err => {
+        console.error(`Failed to update dataQualityScore for company ${company.id}:`, err);
+      });
+      
+      // Update the in-memory object immediately
+      company.dataQualityScore = score.toString();
+    }
+  }
+
+  private async ensureDataQualityScores(companies: Companies[]): Promise<void> {
+    const promises = companies.map(company => this.ensureDataQualityScore(company));
+    await Promise.all(promises);
+  }
+
   async calculateCompanyDataCompleteness(
     companyId: string,
     updateDb: boolean = false,
@@ -754,6 +789,60 @@ export class CompaniesService {
     }
 
     return score;
+  }
+
+  async recalculateAllDataQualityScores(
+    organizationId?: string,
+  ): Promise<{ updated: number; failed: number; errors: string[] }> {
+    const query = this.companyRepository
+      .createQueryBuilder('company')
+      .leftJoinAndSelect('company.primaryIndustry', 'primaryIndustry')
+      .leftJoinAndSelect('company.primaryRegion', 'primaryRegion')
+      .leftJoinAndSelect('company.companyRegistrations', 'companyRegistrations')
+      .leftJoinAndSelect('company.companyContacts', 'companyContacts');
+
+    if (organizationId) {
+      query.where('company.organizationId = :organizationId', {
+        organizationId,
+      });
+    }
+    // If no organizationId specified, process ALL companies including platformAdmin (organization_id IS NULL)
+    // This ensures platformAdmin data is also included in recalculation
+
+    // Only process companies with missing or zero scores
+    query.andWhere(
+      '(company.dataQualityScore IS NULL OR company.dataQualityScore = 0)',
+    );
+
+    const companies = await query.getMany();
+    let updated = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    // Process in batches to avoid memory issues
+    const batchSize = 100;
+    for (let i = 0; i < companies.length; i += batchSize) {
+      const batch = companies.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (company) => {
+          try {
+            const score = this.calculateDataQualityScore(company, company);
+            await this.companyRepository.update(company.id, {
+              dataQualityScore: score.toString(),
+            });
+            updated++;
+          } catch (error) {
+            failed++;
+            errors.push(
+              `Company ${company.id} (${company.nameEn}): ${error.message}`,
+            );
+          }
+        }),
+      );
+    }
+
+    return { updated, failed, errors };
   }
 
   async deleteCompany(id: string, user: User): Promise<void> {
@@ -867,16 +956,20 @@ export class CompaniesService {
           throw new ForbiddenException('Access denied to organization data');
         }
         query.andWhere(
-          '(company.organizationId = :organizationId OR company.isSharedData = true)',
+          '(company.organizationId = :organizationId OR company.isSharedData = true OR company.organizationId IS NULL)',
           {
             organizationId,
           },
         );
       } else {
-        query.andWhere('company.isSharedData = true');
+        // Include shared data and platformAdmin data (organization_id IS NULL)
+        query.andWhere('(company.isSharedData = true OR company.organizationId IS NULL)');
       }
 
       const companies = await query.getMany();
+
+      // Ensure all companies have valid data quality scores
+      await this.ensureDataQualityScores(companies);
 
       // Log bulk read operation
       if (user) {

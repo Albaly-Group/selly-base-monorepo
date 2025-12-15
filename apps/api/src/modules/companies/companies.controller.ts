@@ -341,4 +341,35 @@ export class CompaniesController {
 
     return { results };
   }
+
+  @Post('recalculate-data-quality-scores')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ 
+    summary: 'Recalculate data quality scores for all companies',
+    description: 'Useful for fixing records that were inserted directly into the database without proper score calculation'
+  })
+  @ApiQuery({
+    name: 'organizationId',
+    required: false,
+    description: 'Limit recalculation to specific organization',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Recalculation completed',
+    schema: {
+      properties: {
+        updated: { type: 'number' },
+        failed: { type: 'number' },
+        errors: { type: 'array', items: { type: 'string' } },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async recalculateDataQualityScores(
+    @Query('organizationId') organizationId?: string,
+    @CurrentUser() user?: Users,
+  ) {
+    return this.companiesService.recalculateAllDataQualityScores(organizationId);
+  }
 }
