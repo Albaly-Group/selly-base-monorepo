@@ -25,7 +25,9 @@ export function Navigation() {
   const { user } = useAuth()
   const router = useRouter()
   const locale = useLocale()
-  const t = useTranslations('dashboard')
+  const t = useTranslations('nav')
+  const tCommon = useTranslations('common')
+  const tLogin = useTranslations('login')
 
   const handleLogout = () => {
     router.push(`/${locale}/logout`)
@@ -42,16 +44,16 @@ export function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <button className="text-xl font-bold text-primary">
-              <a href="/dashboard">SalesSphere Base</a>
+              <a href={localePath('/dashboard')}>{tLogin('title')}</a>
             </button>
 
             <NavigationMenu>
               <NavigationMenuList>
                 {/* Dashboard - available to all authenticated users */}
                 <NavigationMenuItem>
-                  <Link href="/dashboard">
+                  <Link href={localePath('/dashboard')}>
                     <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      Dashboard
+                      {t('dashboard')}
                     </div>
                   </Link>
                 </NavigationMenuItem>
@@ -60,16 +62,16 @@ export function Navigation() {
                 {(hasPermission(user, 'companies:read') || hasPermission(user, '*')) && (
                   <>
                     <NavigationMenuItem>
-                      <Link href="/lookup">
+                      <Link href={localePath('/lookup')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          Company Lookup
+                          {t('company_lookup')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                      <Link href="/lists">
+                      <Link href={localePath('/lists')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          My Lists
+                          {t('my_lists')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
@@ -80,16 +82,16 @@ export function Navigation() {
                 {canManageDatabase(user) && !canManageTenants(user) && (
                   <>
                     <NavigationMenuItem>
-                      <Link href="/staff">
+                      <Link href={localePath('/staff')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          Database Management
+                          {t('database_management')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                      <Link href="/reports">
+                      <Link href={localePath('/reports')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          Reports
+                          {t('reports')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
@@ -100,16 +102,16 @@ export function Navigation() {
                 {(hasPermission(user, 'data:import') || hasPermission(user, 'data:export') || hasPermission(user, '*')) && !canManageTenants(user) && (
                   <>
                     <NavigationMenuItem>
-                      <Link href="/imports">
+                      <Link href={localePath('/imports')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          Imports
+                          {t('import')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                      <Link href="/exports">
+                      <Link href={localePath('/exports')}>
                         <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                          Exports
+                          {t('export')}
                         </div>
                       </Link>
                     </NavigationMenuItem>
@@ -119,9 +121,9 @@ export function Navigation() {
                 {/* Customer Admin - Organization-specific administration */}
                 {canManageOrganizationUsers(user) && (
                   <NavigationMenuItem>
-                    <Link href="/admin">
+                    <Link href={localePath('/admin')}>
                       <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                        Organization Admin
+                        {t('organization_admin')}
                       </div>
                     </Link>
                   </NavigationMenuItem>
@@ -130,9 +132,9 @@ export function Navigation() {
                 {/* Platform Admin - Albaly platform management */}
                 {canManageTenants(user) && (
                   <NavigationMenuItem>
-                    <Link href="/platform-admin">
+                    <Link href={localePath('/platform-admin')}>
                       <div className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                        Platform Admin
+                        {t('platform_admin')}
                       </div>
                     </Link>
                   </NavigationMenuItem>
@@ -166,8 +168,8 @@ export function Navigation() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/userProfile")}>Settings</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push(localePath('/userProfile'))}>{tCommon('settings')}</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>{tCommon('logout')}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

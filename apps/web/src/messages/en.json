@@ -1,7 +1,23 @@
 {
+  "nav": {
+    "dashboard": "Dashboard",
+    "company_lookup": "Company Lookup",
+    "my_lists": "My Lists",
+    "database_management": "Database Management",
+    "reports": "Reports",
+    "import": "Import",
+    "export": "Export",
+    "organization_admin": "Organization Admin",
+    "platform_admin": "Platform Admin"
+  },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back",
+    "welcomeDescription": {
+      "user": "Discover and manage your business prospects with powerful search and filtering tools.",
+      "staff": "Manage the company database and moderate user submissions.",
+      "admin": "Full access to all platform features and administrative controls."
+    },
     "loading": "Loading...",
     "error": "Failed to load dashboard data. Please ensure the backend is running.",
     "stats": {
@@ -62,6 +78,9 @@
       }
     }
   },
+  "companies_lookup": {
+
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -74,7 +93,9 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "settings": "Settings",
+    "logout": "Log out"
   },
   "login": {
     "title": "SalesSphere Base",

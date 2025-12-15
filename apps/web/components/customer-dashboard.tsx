@@ -144,9 +144,9 @@ export function CustomerDashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('welcome')}, {user.name}</h1>
           <p className="text-gray-600">
-            {!canManageDatabase(user) && "Discover and manage your business prospects with powerful search and filtering tools."}
-            {canManageDatabase(user) && !canManageOrganizationUsers(user) && "Manage the company database and moderate user submissions."}
-            {canManageOrganizationUsers(user) && "Full access to all platform features and administrative controls."}
+            {!canManageDatabase(user) && t('welcomeDescription.user')}
+            {canManageDatabase(user) && !canManageOrganizationUsers(user) && t('welcomeDescription.staff')}
+            {canManageOrganizationUsers(user) && t('welcomeDescription.admin')}
           </p>
         </div>
 
