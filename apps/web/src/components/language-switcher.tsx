@@ -34,8 +34,8 @@ export function LanguageSwitcher() {
     const first = segments[0]
     const pathSegments = (first === 'en' || first === 'th') ? segments.slice(1) : segments
 
-    // Rebuild the path without empty or undefined parts
-    const pathWithoutLocale = pathSegments.filter(Boolean).join('/')
+    // Rebuild the path without empty or literal "undefined" parts
+    const pathWithoutLocale = pathSegments.filter(Boolean).filter(s => s !== 'undefined').join('/')
 
     const newPath = pathWithoutLocale ? `/${newLocale}/${pathWithoutLocale}` : `/${newLocale}`
 

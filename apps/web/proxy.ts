@@ -52,8 +52,8 @@ export function proxy(request: NextRequest) {
     const localeMatch = pathname.match(/^\/(en|th)(\/|$)/)
     const currentLocale = localeMatch ? localeMatch[1] : defaultLocale
     
-    // Remove locale from pathname for route checking
-    const pathnameWithoutLocale = localeMatch ? pathname.slice(3) : pathname
+    // Remove locale from pathname for route checking.
+    const pathnameWithoutLocale = localeMatch ? pathname.replace(new RegExp(`^\/${localeMatch[1]}`), '') || '/' : pathname
     
     // Public routes that don't require authentication
     const publicRoutes = ["/", "/login", "/logout", "/access-denied"]
