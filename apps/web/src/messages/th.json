@@ -78,6 +78,365 @@
       }
     }
   },
+  "companies_lookup": {
+    "title": "ค้นหาข้อมูลบริษัท",
+    "subtitle": "ค้นหาและสำรวจบริษัทในฐานข้อมูลของเรา",
+    "allCompanies": "บริษัททั้งหมด",
+    "search": {
+      "label": "ค้นหาบริษัท",
+      "placeholder": "ค้นหาด้วยชื่อบริษัท หมายเลขจดทะเบียน หรือคำค้นหา...",
+      "smartFiltering": "การกรองอัจฉริยะ",
+      "supports": "รองรับการค้นหา:",
+      "companyNameEn": "ชื่อบริษัท (EN) - เช่น \"ABC Manufacturing Co., Ltd.\"",
+      "registeredNo": "เลขทะเบียน - เช่น \"0105564111698\"",
+      "keywords": "คำค้นหา - เช่น \"รองเท้า\", \"โลจิสติกส์\"",
+      "active": "ค้นหา:",
+      "clear": "ล้าง",
+      "clearAll": "ล้างทั้งหมด"
+    },
+    "filters": {
+      "smartFiltering": "การกรองอัจฉริยะ:",
+      "keyword": "คำค้นหา",
+      "industry": "อุตสาหกรรม",
+      "province": "จังหวัด",
+      "size": "ขนาด",
+      "status": "สถานะ",
+      "usingFallback": "ใช้ข้อมูลสำรอง (API ไม่พร้อมใช้งาน)"
+    },
+    "actions": {
+      "createCompany": "สร้างบริษัท",
+      "import": "นำเข้า",
+      "export": "ส่งออก",
+      "addToList": "เพิ่มในรายการ"
+    },
+    "table": {
+      "companyName": "ชื่อบริษัท",
+      "industry": "อุตสาหกรรม",
+      "province": "จังหวัด / ภูมิภาค",
+      "contactPerson": "ผู้ติดต่อ",
+      "status": "สถานะ",
+      "dataCompleteness": "ความสมบูรณ์ของข้อมูล",
+      "leadScore": "คะแนนลีด",
+      "actions": "การดำเนินการ",
+      "view": "ดู",
+      "noResults": "ไม่พบบริษัท",
+      "tryAdjusting": "ลองปรับเกณฑ์การค้นหาของคุณ",
+      "showing": "แสดง",
+      "to": "ถึง",
+      "of": "จาก",
+      "results": "รายการ",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป",
+      "sortedBy": "เรียงตาม: คะแนนถ่วงน้ำหนักสูงสุดก่อน"
+    },
+    "emptyState": {
+      "title": "พร้อมค้นหาบริษัทหรือยัง?",
+      "description": "กรอกคำค้นหาในช่องค้นหาและกด Enter เพื่อผลลัพธ์ทันที หรือใช้การกรองอัจฉริยะสำหรับการให้คะแนนแบบถ่วงน้ำหนักขั้นสูง",
+      "quickSearch": "ค้นหาด่วน: กรอกคำค้นหาและกด Enter",
+      "advancedSearch": "ขั้นสูง: ใช้การกรองอัจฉริยะสำหรับการให้คะแนนลีด"
+    },
+    "export": {
+      "title": "เลือกคอลัมน์ที่ต้องการส่งออก",
+      "description": "เลือกคอลัมน์ที่จะรวมในไฟล์ Excel ทุกคอลัมน์ถูกเลือกตามค่าเริ่มต้น",
+      "selectAll": "เลือกทั้งหมด",
+      "deselectAll": "ยกเลิกการเลือกทั้งหมด",
+      "selected": "เลือกแล้ว",
+      "cancel": "ยกเลิก",
+      "export": "ส่งออก"
+    },
+    "import": {
+      "title": "นำเข้าจาก Excel (.xlsx/.csv)",
+      "description": "อัปโหลดไฟล์ Excel เพื่อนำเข้าข้อมูลบริษัท ต้องการแม่แบบตัวอย่าง",
+      "downloadTemplate": "ดาวน์โหลดแม่แบบ",
+      "chooseFile": "เลือกไฟล์",
+      "fileTypes": ".xlsx / .csv",
+      "selected": "เลือกแล้ว:",
+      "preview": "ตัวอย่างแถวที่แมป",
+      "showingFirst": "แสดง 20 แถวแรก",
+      "cancel": "ยกเลิก",
+      "upload": "อัปโหลด",
+      "uploading": "กำลังอัปโหลด..."
+    },
+    "addToList": {
+      "title": "เพิ่มบริษัทในรายการ",
+      "description": "เพิ่มบริษัทที่เลือก {count} รายการในรายการ",
+      "existing": "เพิ่มในรายการที่มีอยู่",
+      "new": "สร้างรายการใหม่",
+      "selectList": "เลือกรายการ",
+      "choosePlaceholder": "เลือกรายการ...",
+      "listName": "ชื่อรายการ *",
+      "listNamePlaceholder": "กรอกชื่อรายการ...",
+      "listDescription": "คำอธิบาย (ไม่บังคับ)",
+      "listDescriptionPlaceholder": "กรอกคำอธิบายรายการ...",
+      "companies": "บริษัท",
+      "cancel": "ยกเลิก",
+      "createAndAdd": "สร้างรายการและเพิ่ม",
+      "addToList": "เพิ่มในรายการ",
+      "processing": "กำลังดำเนินการ...",
+      "success": "เพิ่มบริษัท {count} รายการในรายการสำเร็จ",
+      "error": "ไม่สามารถเพิ่มได้ รายการนี้มีอยู่ในรายการแล้ว",
+      "errorName": "กรุณากรอกชื่อรายการ",
+      "errorSelect": "กรุณาเลือกรายการ"
+    },
+    "createCompany": {
+      "title": "สร้างบริษัทใหม่",
+      "description": "เพิ่มบริษัทใหม่ในฐานข้อมูลขององค์กรของคุณ",
+      "tabs": {
+        "basic": "ข้อมูลพื้นฐาน",
+        "registration": "การจดทะเบียน",
+        "contact": "ข้อมูลติดต่อ"
+      },
+      "fields": {
+        "companyNameEn": "ชื่อบริษัท (EN) *",
+        "companyNameEnPlaceholder": "กรอกชื่อบริษัทเป็นภาษาอังกฤษ",
+        "companyNameTh": "ชื่อบริษัท (TH)",
+        "companyNameThPlaceholder": "กรอกชื่อบริษัทเป็นภาษาไทย",
+        "registrationNo": "เลขทะเบียนหลัก",
+        "registrationNoPlaceholder": "เช่น 0105564111698",
+        "businessDescription": "คำอธิบายธุรกิจ",
+        "businessDescriptionPlaceholder": "อธิบายธุรกิจของบริษัท...",
+        "addressLine1": "ที่อยู่บรรทัดที่ 1",
+        "addressLine1Placeholder": "ที่อยู่ถนน",
+        "addressLine2": "ที่อยู่บรรทัดที่ 2",
+        "addressLine2Placeholder": "อาคาร ห้องชุด ฯลฯ",
+        "postalCode": "รหัสไปรษณีย์",
+        "postalCodePlaceholder": "เช่น 10110",
+        "industry": "อุตสาหกรรม",
+        "industryPlaceholder": "เลือกอุตสาหกรรม",
+        "region": "ภูมิภาค / จังหวัด",
+        "regionPlaceholder": "เลือกภูมิภาค",
+        "websiteUrl": "เว็บไซต์ URL",
+        "websiteUrlPlaceholder": "https://...",
+        "email": "อีเมลหลัก",
+        "emailPlaceholder": "contact@company.com",
+        "phone": "เบอร์โทรศัพท์หลัก",
+        "phonePlaceholder": "+66...",
+        "companySize": "ขนาดบริษัท",
+        "employeeCount": "จำนวนพนักงานโดยประมาณ",
+        "employeeCountPlaceholder": "จำนวนโดยประมาณ",
+        "dataSensitivity": "ความอ่อนไหวของข้อมูล"
+      },
+      "companySizes": {
+        "micro": "ขนาดเล็กมาก (1-10)",
+        "small": "ขนาดเล็ก (11-50)",
+        "medium": "ขนาดกลาง (51-250)",
+        "large": "ขนาดใหญ่ (251+)",
+        "enterprise": "องค์กรขนาดใหญ่ (1000+)"
+      },
+      "dataSensitivity": {
+        "public": "สาธารณะ",
+        "standard": "มาตรฐาน",
+        "confidential": "ลับ",
+        "restricted": "จำกัด"
+      },
+      "registration": {
+        "registrationNo": "เลขทะเบียน *",
+        "registrationNoPlaceholder": "เช่น 0105564111698",
+        "authority": "หน่วยงานจดทะเบียน *",
+        "authorityPlaceholder": "เลือกหน่วยงาน",
+        "type": "ประเภทการจดทะเบียน *",
+        "typePlaceholder": "เลือกประเภท",
+        "country": "รหัสประเทศ",
+        "countryPlaceholder": "เช่น TH",
+        "status": "สถานะ",
+        "isPrimary": "ตั้งเป็นการจดทะเบียนหลัก",
+        "remarks": "หมายเหตุ",
+        "remarksPlaceholder": "บันทึกเพิ่มเติม..."
+      },
+      "registrationStatus": {
+        "active": "ใช้งานอยู่",
+        "inactive": "ไม่ได้ใช้งาน",
+        "suspended": "ระงับ",
+        "dissolved": "เลิกกิจการ"
+      },
+      "cancel": "ยกเลิก",
+      "create": "สร้างบริษัท",
+      "creating": "กำลังสร้าง...",
+      "success": "สร้างบริษัทสำเร็จ!",
+      "error": "กรุณาแก้ไขข้อผิดพลาดก่อนส่ง"
+    },
+    "refreshing": "กำลังรีเฟรชข้อมูล..."
+  },
+  "company_detail": {
+    "tabs": {
+      "overview": "ภาพรวม",
+      "contacts": "ผู้ติดต่อ",
+      "activity": "กิจกรรม",
+      "lists": "รายการ",
+      "history": "ประวัติ"
+    },
+    "companyInfo": {
+      "title": "ข้อมูลบริษัท",
+      "companyName": "ชื่อบริษัท",
+      "industry": "อุตสาหกรรม",
+      "employeeCount": "จำนวนพนักงาน",
+      "verificationStatus": "สถานะการยืนยัน",
+      "registrationId": "หมายเลขทะเบียน",
+      "registrationDate": "วันที่จดทะเบียน",
+      "dataCompleteness": "ความสมบูรณ์ของข้อมูล",
+      "lastUpdated": "อัปเดตล่าสุด",
+      "description": "คำอธิบาย"
+    },
+    "contactInfo": {
+      "title": "ข้อมูลการติดต่อ",
+      "primaryContact": "ผู้ติดต่อหลัก",
+      "contactPerson": "ผู้ติดต่อ",
+      "department": "แผนก",
+      "position": "ตำแหน่ง",
+      "phone": "โทรศัพท์",
+      "mobile": "มือถือ",
+      "email": "อีเมล",
+      "lineId": "Line ID",
+      "website": "เว็บไซต์",
+      "address": "ที่อยู่",
+      "province": "จังหวัด"
+    },
+    "contacts": {
+      "title": "ตำแหน่ง",
+      "addContact": "เพิ่มผู้ติดต่อ",
+      "add": "เพิ่ม",
+      "editContact": "แก้ไขผู้ติดต่อ",
+      "deleteContact": "ลบผู้ติดต่อ",
+      "loading": "กำลังโหลดผู้ติดต่อ...",
+      "noContacts": "ยังไม่มีผู้ติดต่อ",
+      "lastVerified": "ตรวจสอบล่าสุด:",
+      "fullName": "ชื่อเต็ม",
+      "firstName": "ชื่อ",
+      "firstNamePlaceholder": "กรอกชื่อ",
+      "lastName": "นามสกุล",
+      "lastNamePlaceholder": "กรอกนามสกุล",
+      "titlePlaceholder": "เช่น ผู้จัดการฝ่ายขาย",
+      "department": "แผนก",
+      "departmentPlaceholder": "เช่น ฝ่ายขาย",
+      "position": "ตำแหน่ง",
+      "positionPlaceholder": "เช่น ผู้จัดการ",
+      "phone": "โทรศัพท์",
+      "phonePlaceholder": "+66...",
+      "mobile": "มือถือ",
+      "mobilePlaceholder": "+66...",
+      "email": "อีเมล",
+      "emailPlaceholder": "email@company.com",
+      "lineId": "Line ID",
+      "lineIdPlaceholder": "@lineid",
+      "preferredContact": "วิธีการติดต่อที่ต้องการ",
+      "isPrimary": "ตั้งเป็นผู้ติดต่อหลัก"
+    },
+    "activity": {
+      "title": "ไทม์ไลน์กิจกรรม",
+      "logActivity": "บันทึกกิจกรรม",
+      "log": "บันทึก",
+      "editActivity": "แก้ไขกิจกรรม",
+      "deleteActivity": "ลบกิจกรรม",
+      "loading": "กำลังโหลดกิจกรรม...",
+      "noActivities": "ยังไม่มีกิจกรรม",
+      "activityTitle": "หัวข้อกิจกรรม",
+      "activityTitlePlaceholder": "เช่น โทรเพื่อติดตาม",
+      "activityType": "ประเภทกิจกรรม",
+      "activityTypePlaceholder": "เลือกประเภท",
+      "types": {
+        "call": "โทร",
+        "email": "อีเมล",
+        "meeting": "ประชุม",
+        "note": "บันทึก",
+        "task": "งาน"
+      },
+      "outcomes": {
+        "interested": "สนใจ",
+        "not-interested": "ไม่สนใจ",
+        "follow-up": "ต้องติดตาม",
+        "qualified": "ลีดที่ผ่านการคัดกรอง"
+      },
+      "description": "คำอธิบาย",
+      "descriptionPlaceholder": "เพิ่มรายละเอียดเกี่ยวกับกิจกรรม...",
+      "dueDate": "กำหนดเวลา",
+      "status": "สถานะ",
+      "statusPlaceholder": "เลือกสถานะ",
+      "statuses": {
+        "pending": "รอดำเนินการ",
+        "completed": "เสร็จสิ้น",
+        "cancelled": "ยกเลิก"
+      },
+      "completedAt": "เสร็จเมื่อ:",
+      "createdBy": "สร้างโดย:"
+    },
+    "dialogs": {
+      "addContact": "เพิ่มผู้ติดต่อ",
+      "editContact": {
+        "title": "แก้ไขผู้ติดต่อ",
+        "description": "แก้ไขรายละเอียดผู้ติดต่อ"
+      },
+      "addActivity": "บันทึกกิจกรรม",
+      "editActivity": {
+        "title": "แก้ไขกิจกรรม",
+        "description": "แก้ไขรายละเอียดกิจกรรม"
+      },
+      "cancel": "ยกเลิก",
+      "save": "บันทึก",
+      "saving": "กำลังบันทึก...",
+      "savingError": "กรุณาแก้ไขข้อผิดพลาดก่อนบันทึก",
+      "updateContact": "อัปเดตผู้ติดต่อ",
+      "updateActivity": "อัปเดตกิจกรรม"
+    },
+    "actions": {
+      "edit": "แก้ไขบริษัท",
+      "addToList": "เพิ่มในรายการ",
+      "close": "ปิด"
+    },
+    "messages": {
+      "contactAdded": "เพิ่มผู้ติดต่อสำเร็จ",
+      "contactUpdated": "อัปเดตผู้ติดต่อสำเร็จ",
+      "contactDeleted": "ลบผู้ติดต่อสำเร็จ",
+      "activityAdded": "บันทึกกิจกรรมสำเร็จ",
+      "activityUpdated": "อัปเดตกิจกรรมสำเร็จ",
+      "activityDeleted": "ลบกิจกรรมสำเร็จ",
+      "error": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      "confirmDeleteContact": "คุณแน่ใจหรือไม่ว่าต้องการลบผู้ติดต่อ รายการนี้จะไม่สามารถกู้คืนได้",
+      "confirmDeleteActivity": "คุณแน่ใจหรือไม่ว่าต้องการลบกิจกรรม รายการนี้จะไม่สามารถกู้คืนได้"
+    },
+    "shared": {
+      "title": "ข้อมูลอ้างอิงที่แชร์",
+      "description": "ระเบียนบริษัทนี้เป็นข้อมูลที่แชร์ข้ามองค์กรและอาจถูกจัดการแบบรวมศูนย์",
+      "cannotEdit": "ระเบียนนี้เป็นข้อมูลที่แชร์และไม่สามารถแก้ไขได้",
+      "cannotEditDescription": "มีเพียงผู้ดูแลระบบของแพลตฟอร์มเท่านั้นที่สามารถแก้ไขข้อมูลที่แชร์ได้",
+      "cannotEditTitle": "อ่านอย่างเดียว (ข้อมูลที่แชร์)",
+      "editing": "คุณกำลังแก้ไขข้อมูลที่แชร์",
+      "editingDescription": "การเปลี่ยนแปลงข้อมูลที่แชร์จะมีผลกับทุกองค์กรที่อ้างอิงระเบียนนี้"
+    },
+    "lists": {
+      "title": "รายการ",
+      "belongsTo": "บริษัทนี้อยู่ในรายการต่อไปนี้:",
+      "loading": "กำลังโหลดรายการ...",
+      "noLists": "บริษัทนี้ยังไม่มีรายการ",
+      "openList": "เปิด",
+      "table": {
+        "listName": "ชื่อรายการ",
+        "status": "สถานะ",
+        "owner": "เจ้าของ",
+        "addedDate": "วันที่เพิ่ม",
+        "actions": "การดำเนินการ",
+        "openList": "เปิด"
+      }
+    },
+    "history": {
+      "title": "ประวัติการเปลี่ยนแปลง",
+      "field": "ฟิลด์",
+      "oldValue": "ค่าก่อนหน้า",
+      "newValue": "ค่าใหม่",
+      "changedBy": "แก้ไขโดย",
+      "date": "วันที่"
+    },
+    "edit": {
+      "title": "แก้ไขบริษัท",
+      "description": "ปรับปรุงรายละเอียดบริษัทด้านล่าง",
+      "registrationTab": "การจดทะเบียน",
+      "success": "อัปเดตบริษัทสำเร็จ",
+      "saved": "บันทึกแล้ว"
+    },
+    "verification": {
+      "verified": "ยืนยันแล้ว",
+      "unverified": "ยังไม่ได้ยืนยัน"
+    }
+  },
   "common": {
     "loading": "กำลังโหลด...",
     "error": "ข้อผิดพลาด",

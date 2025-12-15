@@ -23,6 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useTranslations } from 'next-intl'
 import { apiClient } from "@/lib/api-client";
 import { useAuth, canEditSharedData } from "@/lib/auth";
 import { Textarea } from "./ui/textarea";
@@ -42,6 +43,14 @@ interface CompanyEditDialogProps {
 
 export function CompanyEditDialog({ company, open, onOpenChange, onSave }: CompanyEditDialogProps) {
   console.log(company)
+  const t = useTranslations('company_detail')
+  const tCommon = useTranslations('common')
+  const tFields = useTranslations('companies_lookup.createCompany.fields')
+  const tSizes = useTranslations('companies_lookup.createCompany.companySizes')
+  const tSensitivity = useTranslations('companies_lookup.createCompany.dataSensitivity')
+  const tReg = useTranslations('companies_lookup.createCompany.registration')
+  const tRegStatus = useTranslations('companies_lookup.createCompany.registrationStatus')
+  
   const { user } = useAuth()
   const [formData, setFormData] = useState<Partial<ExtendedCompany>>({})
   const [industries, setIndustries] = useState<Array<{ id: string; titleEn: string; titleTh: string | null }>>([])
@@ -224,20 +233,16 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Company Record</DialogTitle>
-          <DialogDescription>
-            Update company information and contact details.
-          </DialogDescription>
+          <DialogTitle>{t('edit.title')}</DialogTitle>
+          <DialogDescription>{t('edit.description')}</DialogDescription>
         </DialogHeader>
 
         {company?.isSharedData && !canEdit && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-red-800">
-              <p className="font-medium">Cannot Edit Shared Data</p>
-              <p className="text-red-700 mt-1">
-                This company is from a shared data source and cannot be edited. Only platform admins can edit shared data.
-              </p>
+              <p className="font-medium">{t('shared.cannotEdit')}</p>
+              <p className="text-red-700 mt-1">{t('shared.cannotEditDescription')}</p>
             </div>
           </div>
         )}
@@ -246,10 +251,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-800">
-              <p className="font-medium">Editing Shared Data</p>
-              <p className="text-blue-700 mt-1">
-                You have platform admin privileges to edit this shared data. Changes will affect all organizations using this data.
-              </p>
+              <p className="font-medium">{t('shared.editing')}</p>
+              <p className="text-blue-700 mt-1">{t('shared.editingDescription')}</p>
             </div>
           </div>
         )}
@@ -257,8 +260,8 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-2 text-sm">
-              <TabsTrigger value="basic" className="px-2">Basic Information</TabsTrigger>
-              <TabsTrigger value="registration" className="px-2">Registration</TabsTrigger>
+              <TabsTrigger value="basic" className="px-2">{t('companyInfo.title')}</TabsTrigger>
+              <TabsTrigger value="registration" className="px-2">{t('edit.registrationTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4">
@@ -266,7 +269,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name (EN)</Label>
+                  <Label htmlFor="companyName">{tFields('companyNameEn')}</Label>
                   <Input
                     id="companyName"
                     value={formData.companyNameEn || ""}
@@ -275,7 +278,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyNameTh">Company Name (TH)</Label>
+                  <Label htmlFor="companyNameTh">{tFields('companyNameTh')}</Label>
                   <Input
                     id="companyNameTh"
                     value={formData.companyNameTh || ""}
@@ -286,7 +289,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               </div>
 
               <div className="grid grid-cols-1">
-                <Label htmlFor="businessDescription">Business Description</Label>
+                <Label htmlFor="businessDescription">{tFields('businessDescription')}</Label>
                 <Textarea
                   id="businessDescription"
                   value={formData.businessDescription || ""}
@@ -300,7 +303,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 <h3 className="text-lg font-medium">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="primaryEmail">Primary Email</Label>
+                    <Label htmlFor="primaryEmail">{tFields('email')}</Label>
                     <Input
                       id="primaryEmail"
                       type="email"
@@ -311,7 +314,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="primaryPhone">Primary Phone</Label>
+                    <Label htmlFor="primaryPhone">{tFields('phone')}</Label>
                     <Input
                       id="primaryPhone"
                       value={formData.primaryPhone || ""}
@@ -321,7 +324,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="websiteUrl">Website URL</Label>
+                  <Label htmlFor="websiteUrl">{tFields('websiteUrl')}</Label>
                   <Input
                     id="websiteUrl"
                     type="url"
@@ -334,7 +337,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Address Information</h3>
                 <div className="space-y-2">
-                  <Label htmlFor="addressLine1">Address Line 1</Label>
+                  <Label htmlFor="addressLine1">{tFields('addressLine1')}</Label>
                   <Input
                     id="addressLine1"
                     value={formData.addressLine1 ?? (formData as any).address1 ?? ""}
@@ -343,7 +346,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="addressLine2">Address Line 2</Label>
+                  <Label htmlFor="addressLine2">{tFields('addressLine2')}</Label>
                   <Input
                     id="addressLine2"
                     value={formData.addressLine2 ?? (formData as any).address2 ?? ""}
@@ -412,11 +415,11 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                         <SelectValue placeholder="Select size..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="micro">Micro</SelectItem>
-                        <SelectItem value="small">Small</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="large">Large</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                        <SelectItem value="micro">{tSizes('micro')}</SelectItem>
+                        <SelectItem value="small">{tSizes('small')}</SelectItem>
+                        <SelectItem value="medium">{tSizes('medium')}</SelectItem>
+                        <SelectItem value="large">{tSizes('large')}</SelectItem>
+                        <SelectItem value="enterprise">{tSizes('enterprise')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -461,11 +464,11 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                         onValueChange={(value) => updateField("verificationStatus", value)}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select status..." />
+                          <SelectValue placeholder={t('companyInfo.verificationStatus') || 'Status'} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="verified">Verified</SelectItem>
-                          <SelectItem value="unverified">Invalid</SelectItem>
+                          <SelectItem value="verified">{t('verification.verified')}</SelectItem>
+                          <SelectItem value="unverified">{t('verification.unverified')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-gray-500">
@@ -484,7 +487,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="registrationNo" className="text-sm font-medium">Registration Number</Label>
+                  <Label htmlFor="registrationNo" className="text-sm font-medium">{tReg('registrationNo')}</Label>
                   <Input
                     id="registrationNo"
                     value={registrationData.registrationNo}
@@ -494,20 +497,20 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="registrationStatus" className="text-sm font-medium">Status</Label>
+                  <Label htmlFor="registrationStatus" className="text-sm font-medium">{tReg('status')}</Label>
                   <Select
                     value={registrationData.status}
                     onValueChange={(value) => setRegistrationData((p) => ({ ...p, status: value }))}
                     disabled={!canEdit}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select status..." />
+                      <SelectValue placeholder={tReg('status')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="dissolved">Dissolved</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="active">{tRegStatus('active')}</SelectItem>
+                      <SelectItem value="inactive">{tRegStatus('inactive')}</SelectItem>
+                      <SelectItem value="dissolved">{tRegStatus('dissolved')}</SelectItem>
+                      <SelectItem value="suspended">{tRegStatus('suspended')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -515,7 +518,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="authorityCode" className="text-sm font-medium">Registration Authorities</Label>
+                  <Label htmlFor="authorityCode" className="text-sm font-medium">{tReg('authority')}</Label>
                   <Select
                     value={registrationData.authorityId}
                     onValueChange={(value) => setRegistrationData((p) => ({ ...p, authorityId: value }))}
@@ -535,7 +538,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="registrationType" className="text-sm font-medium">Registration Type</Label>
+                  <Label htmlFor="registrationType" className="text-sm font-medium">{tReg('type')}</Label>
                   <Select
                     value={registrationData.registrationTypeId}
                     onValueChange={(value) => setRegistrationData((p) => ({ ...p, registrationTypeId: value }))}
@@ -590,16 +593,16 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
         {success && (
           <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-800">
             <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm">Company updated successfully!</span>
+            <span className="text-sm">{t('edit.success')}</span>
           </div>
         )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            {!canEdit ? "Close" : "Cancel"}
+            {!canEdit ? tCommon('cancel') : tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading || success || !canEdit}>
-            {isLoading ? "Saving..." : success ? "Saved!" : "Save Changes"}
+            {isLoading ? tCommon('loading') : success ? t('edit.saved') : tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

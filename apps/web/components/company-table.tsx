@@ -1,5 +1,6 @@
 "use client"
 import type { Company } from "@/lib/mock-data"
+import { useTranslations } from 'next-intl'
 
 // Table expects some additional optional fields when showing joined data from the API
 type TableCompany = Company & Partial<{
@@ -61,6 +62,8 @@ export function CompanyTable({
   onPageChange
 }: CompanyTableProps) {
   console.log("Comapany Table", companies)
+  const t = useTranslations('companies_lookup.table')
+  const ts = useTranslations('companies_lookup.search')
   const [sortField, setSortField] = useState<SortField>('score')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -158,7 +161,7 @@ export function CompanyTable({
               onClick={() => handleSort('name')}
             >
               <div className="flex items-center">
-                Company Name
+                {t('companyName')}
                 {getSortIcon('name')}
               </div>
             </TableHead>
@@ -167,7 +170,7 @@ export function CompanyTable({
               onClick={() => handleSort('industry')}
             >
               <div className="flex items-center">
-                Industry
+                {t('industry')}
                 {getSortIcon('industry')}
               </div>
             </TableHead>
@@ -176,17 +179,17 @@ export function CompanyTable({
               onClick={() => handleSort('province')}
             >
               <div className="flex items-center">
-                Province
+                {t('province')}
                 {getSortIcon('province')}
               </div>
             </TableHead>
-            <TableHead>Contact Person</TableHead>
+            <TableHead>{t('contactPerson')}</TableHead>
             <TableHead 
               className={sortable ? "cursor-pointer hover:bg-gray-50" : ""}
               onClick={() => handleSort('status')}
             >
               <div className="flex items-center">
-                Status
+                {t('status')}
                 {getSortIcon('status')}
               </div>
             </TableHead>
@@ -195,7 +198,7 @@ export function CompanyTable({
               onClick={() => handleSort('completeness')}
             >
               <div className="flex items-center">
-                Data Completeness
+                {t('dataCompleteness')}
                 {getSortIcon('completeness')}
               </div>
             </TableHead>
@@ -205,12 +208,12 @@ export function CompanyTable({
                 onClick={() => handleSort('score')}
               >
                 <div className="flex items-center">
-                  Weighted Score
+                  {t('leadScore')}
                   {getSortIcon('score')}
                 </div>
               </TableHead>
             )}
-            <TableHead className="w-24">Actions</TableHead>
+            <TableHead className="w-24">{t('actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -220,7 +223,7 @@ export function CompanyTable({
                 colSpan={showLeadScores ? 9 : 8} 
                 className="text-center py-12 text-gray-500"
               >
-                No companies match your search criteria
+                {t('noResults')}
               </TableCell>
             </TableRow>
           ) : (
@@ -238,7 +241,7 @@ export function CompanyTable({
                     onClick={() => onViewCompany?.(company)}
                   >
                     <div className="font-semibold hover:underline cursor-pointer">{company.companyNameEn}</div>
-                    {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
+                    {company.registeredNo && <div className="text-sm text-gray-500">{ts('registeredNo')}: {company.registeredNo}</div>}
                   </button>
                 </TableCell>
                 <TableCell>
@@ -271,7 +274,7 @@ export function CompanyTable({
                       )}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No contact info</span>
+                    <span className="text-gray-400">-</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -320,9 +323,9 @@ export function CompanyTable({
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
           <div className="text-sm text-gray-600">
-            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
-            {Math.min(pagination.currentPage * pagination.limit, pagination.total)} of{' '}
-            {pagination.total} results
+            {t('showing')} {((pagination.currentPage - 1) * pagination.limit) + 1} {t('to')}{' '}
+            {Math.min(pagination.currentPage * pagination.limit, pagination.total)} {t('of')}{' '}
+            {pagination.total} {t('results')}
           </div>
           <div className="flex items-center gap-1">
             {/* Previous Button */}
@@ -334,7 +337,7 @@ export function CompanyTable({
               className="h-8 px-2"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="ml-1">Previous</span>
+              <span className="ml-1">{t('previous')}</span>
             </Button>
 
             {/* Page Numbers */}
@@ -402,7 +405,7 @@ export function CompanyTable({
               disabled={!pagination.hasNextPage}
               className="h-8 px-2"
             >
-              <span className="mr-1">Next</span>
+              <span className="mr-1">{t('next')}</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

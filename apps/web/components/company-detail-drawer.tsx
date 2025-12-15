@@ -66,6 +66,7 @@ import {
   createActivitySchema,
 } from "@/lib/validation-schemas";
 import { useFormValidation } from "@/hooks/use-form-validation";
+import { useTranslations } from 'next-intl'
 
 interface CompanyDetailDrawerProps {
   company: Company | null;
@@ -81,6 +82,10 @@ export function CompanyDetailDrawer({
   onCompanyUpdated,
 }: CompanyDetailDrawerProps) {
   console.log("List company", company);
+  const t = useTranslations('company_detail')
+  const tCommon = useTranslations('common')
+  const tLookup = useTranslations('companies_lookup')
+  
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddContact, setShowAddContact] = useState(false);
@@ -210,7 +215,8 @@ export function CompanyDetailDrawer({
       contactData.email = contactFormData.email.trim();
 
     if (!contactValidation.validate(contactData)) {
-      // alert('Please fix validation errors before saving')
+      // validation errors
+      alert(t('dialogs.savingError') || 'Please fix validation errors before saving')
       return;
     }
 
@@ -266,7 +272,7 @@ export function CompanyDetailDrawer({
       activityData.content = activityFormData.content.trim();
 
     if (!activityValidation.validate(activityData)) {
-      alert("Please fix validation errors before saving");
+      alert(t('dialogs.savingError') || 'Please fix validation errors before saving')
       return;
     }
 
@@ -310,7 +316,7 @@ export function CompanyDetailDrawer({
   const handleDeleteContact = async (contactId: string) => {
     if (!company?.id) return;
 
-    if (!confirm("Are you sure you want to delete this contact?")) {
+    if (!confirm(t('messages.confirmDeleteContact'))) {
       return;
     }
 
@@ -365,7 +371,7 @@ export function CompanyDetailDrawer({
       contactData.email = contactFormData.email.trim();
 
     if (!contactValidation.validate(contactData)) {
-      alert("Please fix validation errors before saving");
+      alert(t('dialogs.savingError') || 'Please fix validation errors before saving')
       return;
     }
 
@@ -395,7 +401,7 @@ export function CompanyDetailDrawer({
   const handleDeleteActivity = async (activityId: string) => {
     if (!company?.id) return;
 
-    if (!confirm("Are you sure you want to delete this activity?")) {
+    if (!confirm(t('messages.confirmDeleteActivity'))) {
       return;
     }
 
@@ -447,7 +453,7 @@ export function CompanyDetailDrawer({
     // For validation, we need to include companyId temporarily
     const validationData = { ...activityData, companyId: company.id };
     if (!activityValidation.validate(validationData)) {
-      alert("Please fix validation errors before saving");
+      alert(t('dialogs.savingError') || 'Please fix validation errors before saving')
       return;
     }
 
@@ -521,7 +527,7 @@ export function CompanyDetailDrawer({
                     onClick={() => setShowEditDialog(true)}
                   >
                     <Edit className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Edit</span>
+                    <span className="hidden sm:inline">{t('actions.edit')}</span>
                   </Button>
                 ) : (
                   <Button
@@ -529,10 +535,10 @@ export function CompanyDetailDrawer({
                     size="sm"
                     className="text-xs sm:text-sm"
                     disabled
-                    title="Cannot edit shared reference data. Only platform admins can edit shared data."
+                    title={t('shared.cannotEditTitle')}
                   >
                     <Edit className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Edit</span>
+                    <span className="hidden sm:inline">{t('actions.edit')}</span>
                   </Button>
                 )}
 
@@ -542,8 +548,8 @@ export function CompanyDetailDrawer({
                   className="text-xs sm:text-sm"
                   onClick={() => setShowAddToListDialog(true)}
                 >
-                  <span className="hidden sm:inline">Add to List</span>
-                  <span className="sm:hidden">List</span>
+                  <span className="hidden sm:inline">{tLookup('actions.addToList')}</span>
+                  <span className="sm:hidden">{tLookup('actions.addToList')}</span>
                 </Button>
               </div>
             </div>
@@ -561,7 +567,7 @@ export function CompanyDetailDrawer({
                   variant="outline"
                   className="bg-blue-50 text-blue-700 border-blue-200"
                 >
-                  Shared Reference Data
+                  {t('shared.title')}
                 </Badge>
               )}
               {company.industrialName && (
@@ -596,9 +602,9 @@ export function CompanyDetailDrawer({
 
             {/* แถว Description */}
             <DialogDescription className="mt-2 flex gap-2 flex-wrap">
-              <span>Registration ID: {company.registrationId}</span>
+              <span>{t('companyInfo.registrationId')}: {company.registrationId}</span>
               <span>•</span>
-              <span>Data Completeness: {company.dataCompleteness}%</span>
+              <span>{t('companyInfo.dataCompleteness')}: {company.dataCompleteness}%</span>
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -608,10 +614,9 @@ export function CompanyDetailDrawer({
             <div className="mt-4 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium">Shared Reference Data</p>
+                <p className="font-medium">{t('shared.title')}</p>
                 <p className="text-blue-700 mt-1">
-                  This company is from a shared data source and cannot be
-                  edited. You can still add contacts and log activities.
+                  {t('shared.description')}
                 </p>
               </div>
             </div>
@@ -624,19 +629,19 @@ export function CompanyDetailDrawer({
           >
             <TabsList className="grid w-full grid-cols-5 mb-4 text-xs sm:text-sm">
               <TabsTrigger value="overview" className="px-2">
-                Overview
+                {t('tabs.overview')}
               </TabsTrigger>
               <TabsTrigger value="contacts" className="px-2">
-                Contacts
+                {t('tabs.contacts')}
               </TabsTrigger>
               <TabsTrigger value="activity" className="px-2">
-                Activity
+                {t('tabs.activity')}
               </TabsTrigger>
               <TabsTrigger value="lists" className="px-2">
-                Lists
+                {t('tabs.lists')}
               </TabsTrigger>
               <TabsTrigger value="history" className="px-2">
-                History
+                {t('tabs.history')}
               </TabsTrigger>
             </TabsList>
 
@@ -647,7 +652,7 @@ export function CompanyDetailDrawer({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Building className="h-5 w-5" />
-                      Company Information
+                      {t('companyInfo.title')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -655,7 +660,7 @@ export function CompanyDetailDrawer({
                       <div className="space-y-3">
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Company Name
+                            {t('companyInfo.companyName')}
                           </Label>
                           <div className="mt-1">
                             {companyDetails.companyNameEn}
@@ -663,7 +668,7 @@ export function CompanyDetailDrawer({
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Industry
+                            {t('companyInfo.industry')}
                           </Label>
                           <div className="mt-1">
                             {companyDetails.industrialName}
@@ -671,7 +676,7 @@ export function CompanyDetailDrawer({
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Employee Count
+                            {t('companyInfo.employeeCount')}
                           </Label>
                           <div className="mt-1">
                             {companyDetails.employeeCountEstimate}
@@ -681,7 +686,7 @@ export function CompanyDetailDrawer({
                       <div className="space-y-3">
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                              Registration ID
+                              {t('companyInfo.registrationId')}
                             </Label>
                             <div className="mt-1 font-mono">
                               {primaryRegistration?.registrationNo || companyDetails.registrationNo || "N/A"}
@@ -689,7 +694,7 @@ export function CompanyDetailDrawer({
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Registration Date
+                            {t('companyInfo.registrationDate')}
                           </Label>
                           <div className="mt-1">
                             {new Date(
@@ -699,7 +704,7 @@ export function CompanyDetailDrawer({
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Data Completeness
+                            {t('companyInfo.dataCompleteness')}
                           </Label>
                           <div className="mt-1">
                             {companyDetails.dataCompleteness}%
@@ -707,7 +712,7 @@ export function CompanyDetailDrawer({
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Last Updated
+                            {t('companyInfo.lastUpdated')}
                           </Label>
                           <div className="mt-1">
                             {new Date(
@@ -721,7 +726,7 @@ export function CompanyDetailDrawer({
                     {companyDetails.description && (
                       <div>
                         <Label className="text-sm font-medium text-gray-600">
-                          Description
+                          {t('companyInfo.description')}
                         </Label>
                         <div className="mt-1 text-sm">
                           {companyDetails.description}
@@ -736,7 +741,7 @@ export function CompanyDetailDrawer({
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
-                      Location & Contact
+                      {t('contactInfo.title')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -744,7 +749,7 @@ export function CompanyDetailDrawer({
                       <div className="space-y-3">
                         <div>
                           <Label className="text-sm font-medium text-gray-600">
-                            Address
+                            {t('contactInfo.address')}
                           </Label>
                           <div className="mt-1">{companyDetails.address1}</div>
                         </div>
@@ -752,7 +757,7 @@ export function CompanyDetailDrawer({
                           companyDetails.primaryRegionId) && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Region
+                              {t('contactInfo.province')}
                             </Label>
                             <div className="mt-1">
                               {companyDetails.primaryRegion?.nameEn ||
@@ -768,7 +773,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.primaryIndustry?.titleEn && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Industry
+                              {t('companyInfo.industry')}
                             </Label>
                             <div className="mt-1">
                               {companyDetails.primaryIndustry.titleEn}
@@ -783,7 +788,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.district && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              District
+                              {t('contactInfo.district')}
                             </Label>
                             <div className="mt-1">
                               {companyDetails.district}
@@ -793,7 +798,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.province && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Province
+                              {t('contactInfo.province')}
                             </Label>
                             <div className="mt-1">
                               {companyDetails.province}
@@ -805,7 +810,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.contactPersons?.[0]?.phone && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Phone
+                              {t('contactInfo.phone')}
                             </Label>
                             <div className="mt-1 flex items-center gap-2">
                               <span>
@@ -824,7 +829,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.contactPersons?.[0]?.email && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Email
+                              {t('contactInfo.email')}
                             </Label>
                             <div className="mt-1 flex items-center gap-2">
                               <span>
@@ -843,7 +848,7 @@ export function CompanyDetailDrawer({
                         {companyDetails.primaryEmail && (
                           <div>
                             <Label className="text-sm font-medium text-gray-600">
-                              Website
+                              {t('contactInfo.website')}
                             </Label>
                             <div className="mt-1 flex items-center gap-2">
                               <span>{companyDetails.primaryEmail}</span>
@@ -888,14 +893,14 @@ export function CompanyDetailDrawer({
 
               <TabsContent value="contacts" className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <h3 className="text-lg font-medium">Contact Persons</h3>
+                  <h3 className="text-lg font-medium">{t('contacts.title')}</h3>
                   <Button
                     onClick={() => setShowAddContact(true)}
                     size="sm"
                     className="gap-1 self-start sm:self-center"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Add Contact</span>
+                    <span className="hidden sm:inline">{t('contacts.addContact')}</span>
                     <span className="sm:hidden">Add</span>
                   </Button>
                 </div>
@@ -903,11 +908,11 @@ export function CompanyDetailDrawer({
                 <div className="space-y-4">
                   {isLoadingContacts ? (
                     <div className="text-center text-gray-500 py-8">
-                      Loading contacts...
+                      {t('contacts.loading')}
                     </div>
                   ) : contacts.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
-                      No contacts found. Add your first contact above.
+                      {t('contacts.noContacts')}
                     </div>
                   ) : (
                     contacts.map((contact) => (
@@ -949,8 +954,7 @@ export function CompanyDetailDrawer({
                               </div>
                               {contact.lastVerifiedAt && (
                                 <div className="text-xs text-gray-500">
-                                  Last verified:{" "}
-                                  {new Date(
+                                  {t('contacts.lastVerified')} {new Date(
                                     contact.lastVerifiedAt
                                   ).toLocaleDateString()}
                                 </div>
@@ -962,7 +966,7 @@ export function CompanyDetailDrawer({
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => handleEditContact(contact.id)}
-                                title="Edit contact"
+                                title={t('contacts.editContact')}
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
@@ -971,7 +975,7 @@ export function CompanyDetailDrawer({
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => handleDeleteContact(contact.id)}
-                                title="Delete contact"
+                                title={t('contacts.deleteContact')}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -987,26 +991,26 @@ export function CompanyDetailDrawer({
               {/* Activity */}
               <TabsContent value="activity" className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <h3 className="text-lg font-medium">Activity Timeline</h3>
+                  <h3 className="text-lg font-medium">{t('activity.title')}</h3>
                   <Button
                     onClick={() => setShowAddActivity(true)}
                     size="sm"
                     className="gap-1 self-start sm:self-center"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Log Activity</span>
-                    <span className="sm:hidden">Log</span>
+                    <span className="hidden sm:inline">{t('activity.logActivity')}</span>
+                    <span className="sm:hidden">{t('activity.log')}</span>
                   </Button>
                 </div>
 
                 <div className="space-y-4">
                   {isLoadingActivities ? (
                     <div className="text-center text-gray-500 py-8">
-                      Loading activities...
+                      {t('activity.loading')}
                     </div>
                   ) : activities.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
-                      No activities logged yet. Log your first activity above.
+                      {t('activity.noActivities')}
                     </div>
                   ) : (
                     activities.map((activity) => (
@@ -1019,17 +1023,16 @@ export function CompanyDetailDrawer({
                             <div className="flex-1 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap pb-2">
                                 <Badge variant="outline">
-                                  {activity.activityType}
+                                  {t(`activity.types.${activity.activityType}`) || activity.activityType}
                                 </Badge>
                                 {activity.details?.outcome && (
                                   <Badge variant="secondary">
-                                    {activity.details.outcome}
+                                    {t(`activity.outcomes.${activity.details.outcome}`) || activity.details.outcome}
                                   </Badge>
                                 )}
                                 {activity.user && (
                                   <span className="text-sm text-gray-500">
-                                    by{" "}
-                                    {activity.user.name || activity.user.email}
+                                    {t('activity.createdBy')} {activity.user.name || activity.user.email}
                                   </span>
                                 )}
                               </div>
@@ -1040,7 +1043,7 @@ export function CompanyDetailDrawer({
                               )}
                               {activity.details?.contactPerson && (
                                 <div className="text-sm text-gray-600">
-                                  Contact: {activity.details.contactPerson}
+                                  {t('activity.contactPerson')}: {activity.details.contactPerson}
                                 </div>
                               )}
                               <div className="text-xs text-gray-500">
@@ -1053,7 +1056,7 @@ export function CompanyDetailDrawer({
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => handleEditActivity(activity.id)}
-                                title="Edit activity"
+                                title={t('activity.editActivity')}
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
@@ -1064,7 +1067,7 @@ export function CompanyDetailDrawer({
                                 onClick={() =>
                                   handleDeleteActivity(activity.id)
                                 }
-                                title="Delete activity"
+                                title={t('activity.deleteActivity')}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -1079,18 +1082,16 @@ export function CompanyDetailDrawer({
 
               {/* Lists */}
               <TabsContent value="lists" className="space-y-6">
-                <h3 className="text-lg font-medium">
-                  Lists Containing This Company
-                </h3>
+                <h3 className="text-lg font-medium">{t('lists.title')}</h3>
 
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>List Name</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Owner</TableHead>
-                      <TableHead>Added Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('lists.table.listName')}</TableHead>
+                      <TableHead>{t('lists.table.status')}</TableHead>
+                      <TableHead>{t('lists.table.owner')}</TableHead>
+                      <TableHead>{t('lists.table.addedDate')}</TableHead>
+                      <TableHead>{t('lists.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1113,7 +1114,7 @@ export function CompanyDetailDrawer({
                         </TableCell>
                         <TableCell>
                           <Button variant="outline" size="sm">
-                            Open List
+                            {t('lists.openList')}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -1124,16 +1125,16 @@ export function CompanyDetailDrawer({
 
               {/* History */}
               <TabsContent value="history" className="space-y-6">
-                <h3 className="text-lg font-medium">Audit Trail</h3>
+                <h3 className="text-lg font-medium">{t('history.title')}</h3>
 
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Field</TableHead>
-                      <TableHead>Old Value</TableHead>
-                      <TableHead>New Value</TableHead>
-                      <TableHead>Changed By</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>{t('history.field')}</TableHead>
+                      <TableHead>{t('history.oldValue')}</TableHead>
+                      <TableHead>{t('history.newValue')}</TableHead>
+                      <TableHead>{t('history.changedBy')}</TableHead>
+                      <TableHead>{t('history.date')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

@@ -5,6 +5,7 @@ import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useTranslations } from 'next-intl'
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ interface CompanyList {
 }
 
 export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSuccess }: AddToListDialogProps) {
+  const t = useTranslations('companies_lookup.addToList')
   const [listOption, setListOption] = useState<"existing" | "new">("existing")
   const [selectedListId, setSelectedListId] = useState("")
   const [newListName, setNewListName] = useState("")
@@ -67,7 +69,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       // Create new list if needed
       if (listOption === "new") {
         if (!newListName.trim()) {
-          setMessage({ type: 'error', text: 'Please enter a list name.' })
+          setMessage({ type: 'error', text: t('errorName') })
           setIsLoading(false)
           return
         }
@@ -80,7 +82,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       }
 
       if (!targetListId) {
-        setMessage({ type: 'error', text: 'Please select a list.' })
+        setMessage({ type: 'error', text: t('errorSelect') })
         setIsLoading(false)
         return
       }
@@ -89,7 +91,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       
       setMessage({ 
         type: 'success', 
-        text: `Successfully added ${selectedCompanyIds.length} companies to the list.` 
+        text: t('success', { count: selectedCompanyIds.length })
       })
       
       setTimeout(() => {
@@ -104,7 +106,7 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
       
     } catch (error) {
       console.error('Error adding companies to list:', error)
-      setMessage({ type: 'error', text: 'Cannot add. This item is already in the list.' })
+      setMessage({ type: 'error', text: t('error') })
     } finally {
       setIsLoading(false)
     }
@@ -116,8 +118,8 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Companies to List</DialogTitle>
-          <DialogDescription>Add {selectedCompanyIds.length} selected companies to a list.</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description', { count: selectedCompanyIds.length })}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -134,25 +136,25 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
           <RadioGroup value={listOption} onValueChange={(value) => setListOption(value as "existing" | "new")}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="existing" id="existing" />
-              <Label htmlFor="existing">Add to existing list</Label>
+              <Label htmlFor="existing">{t('existing')}</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="new" id="new" />
-              <Label htmlFor="new">Create new list</Label>
+              <Label htmlFor="new">{t('new')}</Label>
             </div>
           </RadioGroup>
 
           {listOption === "existing" && (
             <div className="space-y-2">
-              <Label htmlFor="list-select">Select List</Label>
+              <Label htmlFor="list-select">{t('selectList')}</Label>
               <Select value={selectedListId} onValueChange={setSelectedListId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a list..." />
+                  <SelectValue placeholder={t('choosePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {lists.map((list) => (
                     <SelectItem key={list.id} value={list.id}>
-                      {list.name} ({list.companyListItems?.length || 0} companies)
+                      {list.name} ({list.companyListItems?.length || 0} {t('companies')})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -163,20 +165,20 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
           {listOption === "new" && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-list-name">List Name *</Label>
+                <Label htmlFor="new-list-name">{t('listName')}</Label>
                 <Input
                   id="new-list-name"
-                  placeholder="Enter list name..."
+                  placeholder={t('listNamePlaceholder')}
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-list-description">Description (Optional)</Label>
+                <Label htmlFor="new-list-description">{t('listDescription')}</Label>
                 <Input
                   id="new-list-description"
-                  placeholder="Enter list description..."
+                  placeholder={t('listDescriptionPlaceholder')}
                   value={newListDescription}
                   onChange={(e) => setNewListDescription(e.target.value)}
                 />
@@ -191,10 +193,10 @@ export function AddToListDialog({ open, onOpenChange, selectedCompanyIds, onSucc
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || isLoading}>
-            {isLoading ? "Processing..." : listOption === "new" ? "Create List & Add" : "Add to List"}
+            {isLoading ? t('processing') : listOption === "new" ? t('createAndAdd') : t('addToList')}
           </Button>
         </DialogFooter>
       </DialogContent>

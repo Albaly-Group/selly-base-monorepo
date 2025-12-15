@@ -3,6 +3,7 @@
 import { Search, X, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from 'next-intl'
 
 interface CompanySearchProps {
   searchTerm: string
@@ -19,6 +20,8 @@ export function CompanySearch({
   onSearchSubmit,
   onOpenSmartFiltering 
 }: CompanySearchProps) {
+  const t = useTranslations('companies_lookup.search')
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (onSearchSubmit) {
@@ -38,7 +41,7 @@ export function CompanySearch({
         <div className="flex gap-4 items-end">
           <div className="flex-1">
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-              Search Companies
+              {t('label')}
             </label>
             <div className="relative flex">
               <div className="relative flex-1">
@@ -46,7 +49,7 @@ export function CompanySearch({
                 <Input
                   id="search"
                   type="text"
-                  placeholder="Search by company name, registered number, or keyword..."
+                  placeholder={t('placeholder')}
                   value={searchTerm}
                   onChange={(e) => onSearchChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -81,18 +84,18 @@ export function CompanySearch({
               className="flex items-center gap-2 mb-0"
             >
               <Filter className="h-4 w-4" />
-              Smart Filtering
+              {t('smartFiltering')}
             </Button>
           )}
         </div>
       </form>
 
       <div className="mt-4 text-sm text-gray-600">
-        <p className="font-medium mb-1">Search supports:</p>
+        <p className="font-medium mb-1">{t('supports')}</p>
         <ul className="list-disc list-inside space-y-1">
-          <li>Company Name (EN) - e.g., &quot;ABC Manufacturing Co., Ltd.&quot;</li>
-          <li>Registered No. - e.g., &quot;0105564111698&quot;</li>
-          <li>Keywords - e.g., &quot;Shoe&quot;, &quot;Logistics&quot;</li>
+          <li>{t('companyNameEn')}</li>
+          <li>{t('registeredNo')}</li>
+          <li>{t('keywords')}</li>
         </ul>
       </div>
     </div>
