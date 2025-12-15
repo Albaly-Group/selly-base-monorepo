@@ -1,0 +1,95 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "loading": "Loading...",
+    "error": "Failed to load dashboard data. Please ensure the backend is running.",
+    "stats": {
+      "totalCompanies": "Total Companies",
+      "totalLists": "Total Lists",
+      "dataQualityScore": "Data Quality Score",
+      "monthlyGrowth": "Monthly Growth"
+    },
+    "growth": {
+      "companies": "Companies",
+      "exports": "Exports",
+      "users": "Users"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "search": "Search Companies",
+      "searchDescription": "Find and explore company information",
+      "lookup": "Company Lookup",
+      "lookupDescription": "Look up detailed company information",
+      "createList": "Create List",
+      "createListDescription": "Organize companies into lists",
+      "importData": "Import Data",
+      "importDataDescription": "Import company data in bulk",
+      "manageDatabase": "Manage Database",
+      "manageDatabaseDescription": "Database administration and management",
+      "manageUsers": "Manage Users",
+      "manageUsersDescription": "User management and permissions"
+    },
+    "insights": {
+      "title": "Insights & Analytics",
+      "recentActivity": "Recent Activity",
+      "recentActivityDescription": "View your recent activities and updates",
+      "performanceMetrics": "Performance Metrics",
+      "performanceMetricsDescription": "Track your key performance indicators",
+      "needsAttention": "Needs Attention",
+      "needsAttentionDescription": "Items requiring your attention"
+    },
+    "platformAdmin": {
+      "title": "Platform Admin Dashboard",
+      "welcome": "Welcome, Platform Administrator",
+      "stats": {
+        "totalTenants": "Total Tenants",
+        "activeTenants": "Active Tenants",
+        "totalUsers": "Total Users",
+        "systemHealth": "System Health"
+      },
+      "tenants": {
+        "title": "Tenant Management",
+        "manage": "Manage Tenants",
+        "manageDescription": "View and manage all tenant organizations"
+      },
+      "monitoring": {
+        "title": "System Monitoring",
+        "health": "System Health",
+        "healthDescription": "Monitor system health and performance",
+        "logs": "System Logs",
+        "logsDescription": "View system logs and activity"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
+  },
+  "login": {
+    "title": "SalesSphere Base",
+    "subtitle": "Sign in to your account to access the platform",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "invalidCredentials": "Invalid email or password",
+    "error": "An error occurred. Please try again."
+  },
+  "logout": {
+    "loggingOut": "Logging out..."
+  }
+}

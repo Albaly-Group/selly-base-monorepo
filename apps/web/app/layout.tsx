@@ -1,37 +1,15 @@
 import type React from "react"
-import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { Suspense } from "react"
-import { AuthProvider } from "@/lib/auth"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ReactQueryProvider } from "@/lib/react-query-provider"
-import { Toaster } from "@/components/ui/toaster"
-import "./globals.css"
 
-export const metadata: Metadata = {
-  title: "SalesSphere Base - B2B Prospecting Platform",
-  description: "Professional B2B prospecting and lead management platform for business growth",
-  generator: "v0.app",
-}
-
+// Root layout - pass through to locale-specific layout
+// This is required for next-intl routing structure
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
-        <ReactQueryProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            <AuthProvider>
-              <Suspense fallback={null}>{children}</Suspense>
-              <Toaster />
-            </AuthProvider>
-          </ThemeProvider>
-        </ReactQueryProvider>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   )
 }

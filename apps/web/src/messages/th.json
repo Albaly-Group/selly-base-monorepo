@@ -1,0 +1,95 @@
+{
+  "dashboard": {
+    "title": "แดชบอร์ด",
+    "welcome": "ยินดีต้อนรับกลับมา",
+    "loading": "กำลังโหลด...",
+    "error": "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้ กรุณาตรวจสอบว่าเซิร์ฟเวอร์กำลังทำงาน",
+    "stats": {
+      "totalCompanies": "บริษัททั้งหมด",
+      "totalLists": "รายการทั้งหมด",
+      "dataQualityScore": "คะแนนคุณภาพข้อมูล",
+      "monthlyGrowth": "การเติบโตรายเดือน"
+    },
+    "growth": {
+      "companies": "บริษัท",
+      "exports": "ส่งออก",
+      "users": "ผู้ใช้"
+    },
+    "quickActions": {
+      "title": "การดำเนินการด่วน",
+      "search": "ค้นหาบริษัท",
+      "searchDescription": "ค้นหาและสำรวจข้อมูลบริษัท",
+      "lookup": "ค้นหาข้อมูลบริษัท",
+      "lookupDescription": "ค้นหาข้อมูลบริษัทอย่างละเอียด",
+      "createList": "สร้างรายการ",
+      "createListDescription": "จัดระเบียบบริษัทในรายการ",
+      "importData": "นำเข้าข้อมูล",
+      "importDataDescription": "นำเข้าข้อมูลบริษัทจำนวนมาก",
+      "manageDatabase": "จัดการฐานข้อมูล",
+      "manageDatabaseDescription": "การจัดการและดูแลฐานข้อมูล",
+      "manageUsers": "จัดการผู้ใช้",
+      "manageUsersDescription": "การจัดการผู้ใช้และสิทธิ์การใช้งาน"
+    },
+    "insights": {
+      "title": "ข้อมูลเชิงลึกและการวิเคราะห์",
+      "recentActivity": "กิจกรรมล่าสุด",
+      "recentActivityDescription": "ดูกิจกรรมและการอัปเดตล่าสุดของคุณ",
+      "performanceMetrics": "ตัวชี้วัดประสิทธิภาพ",
+      "performanceMetricsDescription": "ติดตามตัวชี้วัดประสิทธิภาพหลักของคุณ",
+      "needsAttention": "ต้องการความสนใจ",
+      "needsAttentionDescription": "รายการที่ต้องการความสนใจจากคุณ"
+    },
+    "platformAdmin": {
+      "title": "แดชบอร์ดผู้ดูแลระบบ",
+      "welcome": "ยินดีต้อนรับ ผู้ดูแลระบบ",
+      "stats": {
+        "totalTenants": "องค์กรทั้งหมด",
+        "activeTenants": "องค์กรที่ใช้งานอยู่",
+        "totalUsers": "ผู้ใช้ทั้งหมด",
+        "systemHealth": "สุขภาพระบบ"
+      },
+      "tenants": {
+        "title": "การจัดการองค์กร",
+        "manage": "จัดการองค์กร",
+        "manageDescription": "ดูและจัดการองค์กรทั้งหมด"
+      },
+      "monitoring": {
+        "title": "การตรวจสอบระบบ",
+        "health": "สุขภาพระบบ",
+        "healthDescription": "ตรวจสอบสุขภาพและประสิทธิภาพของระบบ",
+        "logs": "บันทึกระบบ",
+        "logsDescription": "ดูบันทึกและกิจกรรมของระบบ"
+      }
+    }
+  },
+  "common": {
+    "loading": "กำลังโหลด...",
+    "error": "ข้อผิดพลาด",
+    "success": "สำเร็จ",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "create": "สร้าง",
+    "search": "ค้นหา",
+    "filter": "กรอง",
+    "export": "ส่งออก",
+    "import": "นำเข้า"
+  },
+  "login": {
+    "title": "SalesSphere Base",
+    "subtitle": "เข้าสู่ระบบเพื่อเข้าถึงแพลตฟอร์ม",
+    "email": "อีเมล",
+    "emailPlaceholder": "กรอกอีเมลของคุณ",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "กรอกรหัสผ่านของคุณ",
+    "rememberMe": "จดจำฉัน",
+    "signIn": "เข้าสู่ระบบ",
+    "signingIn": "กำลังเข้าสู่ระบบ...",
+    "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "error": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
+  },
+  "logout": {
+    "loggingOut": "กำลังออกจากระบบ..."
+  }
+}
