@@ -217,7 +217,7 @@ export function CompanyEditDialog({ company, open, onOpenChange, onSave }: Compa
       }
     } catch (error: any) {
       console.error("Error updating company:", error);
-      setError(error.message || "Failed to update company. Please try again.");
+      setError(error.message || t('messages.errorUpdating'));
     } finally {
       setIsLoading(false);
     }

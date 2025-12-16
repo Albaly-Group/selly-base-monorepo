@@ -1,30 +1,18 @@
 "use client"
 
+import type { ExportJob } from "@/types/jobs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Download, Clock, CheckCircle, XCircle, FileText, Calendar } from "lucide-react"
-
-interface ExportJob {
-  id: string
-  filename: string
-  status: "processing" | "completed" | "expired" | "failed"
-  scope: string
-  format: string
-  totalRecords: number
-  fileSize?: string
-  requestedBy: string
-  createdAt: string
-  completedAt?: string
-  expiresAt?: string
-  downloadUrl?: string
-}
+import { useTranslations } from 'next-intl'
 
 interface ExportJobsTableProps {
   jobs: ExportJob[]
 }
 
 export function ExportJobsTable({ jobs }: ExportJobsTableProps) {
+  const t = useTranslations('export.export_table')
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -69,14 +57,14 @@ export function ExportJobsTable({ jobs }: ExportJobsTableProps) {
     const expiry = new Date(expiresAt)
     const diff = expiry.getTime() - now.getTime()
     
-    if (diff <= 0) return "Expired"
+    if (diff <= 0) return t('table.fileExpired')
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
     
-    if (days > 0) return `${days}d ${hours}h remaining`
-    if (hours > 0) return `${hours}h remaining`
-    return "< 1h remaining"
+    if (days > 0) return `${days}d ${hours}h ${t('table.remaining')}`
+    if (hours > 0) return `${hours}h ${t('table.remaining')}`
+    return t('table.lessThanHour')
   }
 
   const handleDownload = (job: ExportJob) => {
@@ -91,15 +79,15 @@ export function ExportJobsTable({ jobs }: ExportJobsTableProps) {
     <div className="bg-white rounded-lg border">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>File</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Scope</TableHead>
-            <TableHead>Records</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Requested By</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableRow>
+            <TableHead>{t('table.headers.file')}</TableHead>
+            <TableHead>{t('table.headers.status')}</TableHead>
+            <TableHead>{t('table.headers.scope')}</TableHead>
+            <TableHead>{t('table.headers.records')}</TableHead>
+            <TableHead>{t('table.headers.size')}</TableHead>
+            <TableHead>{t('table.headers.requestedBy')}</TableHead>
+            <TableHead>{t('table.headers.created')}</TableHead>
+            <TableHead>{t('table.headers.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

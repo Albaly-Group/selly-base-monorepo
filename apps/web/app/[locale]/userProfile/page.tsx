@@ -10,10 +10,12 @@ import { ArrowLeft, User, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useTranslations } from 'next-intl'
 
 export default function UserProfilePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const t = useTranslations('setting.userProfile')
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -36,7 +38,7 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -46,14 +48,12 @@ export default function UserProfilePage() {
             onClick={() => router.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            {t('back')}
           </Button>
           
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">User Profile</h1>
-            <p className="text-muted-foreground">
-              Manage your account settings and security preferences
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -64,11 +64,11 @@ export default function UserProfilePage() {
           <TabsList className="mb-8">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
-              Profile Information
+              {t('tabs.profile')}
             </TabsTrigger>
             <TabsTrigger value="security" className="gap-2">
               <Lock className="h-4 w-4" />
-              Security & Password
+              {t('tabs.security')}
             </TabsTrigger>
           </TabsList>
 

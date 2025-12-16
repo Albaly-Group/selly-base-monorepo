@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, Lock, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useTranslations } from 'next-intl'
 
 interface PasswordRequirement {
   label: string
@@ -17,6 +18,7 @@ interface PasswordRequirement {
 
 export function ChangePassword() {
   const { toast } = useToast()
+  const t = useTranslations('setting.userProfile.changePassword')
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -33,23 +35,23 @@ export function ChangePassword() {
   // Password strength validation
   const passwordRequirements: PasswordRequirement[] = [
     {
-      label: "At least 8 characters",
+      label: t('requirements.minChars'),
       met: formData.newPassword.length >= 8,
     },
     {
-      label: "Contains uppercase letter",
+      label: t('requirements.uppercase'),
       met: /[A-Z]/.test(formData.newPassword),
     },
     {
-      label: "Contains lowercase letter",
+      label: t('requirements.lowercase'),
       met: /[a-z]/.test(formData.newPassword),
     },
     {
-      label: "Contains number",
+      label: t('requirements.number'),
       met: /\d/.test(formData.newPassword),
     },
     {
-      label: "Contains special character",
+      label: t('requirements.special'),
       met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.newPassword),
     },
   ]
@@ -100,8 +102,8 @@ export function ChangePassword() {
       )
 
       toast({
-        title: "Password changed",
-        description: "Your password has been updated successfully.",
+        title: t('changeSuccess'),
+        description: t('changeSuccessDesc'),
       })
 
       // Reset form
@@ -114,7 +116,7 @@ export function ChangePassword() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to change password. Please try again.",
+        description: error.message || t('changeError'),
         variant: "destructive",
       })
     } finally {
@@ -129,9 +131,9 @@ export function ChangePassword() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Change Password</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Update your password to keep your account secure
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -140,7 +142,7 @@ export function ChangePassword() {
           <div className="space-y-2">
             <Label htmlFor="currentPassword" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              Current Password
+              {t('currentPassword')}
             </Label>
             <div className="relative">
               <Input
@@ -152,7 +154,7 @@ export function ChangePassword() {
                   setErrors({ ...errors, currentPassword: "" })
                 }}
                 disabled={isSaving}
-                placeholder="Enter your current password"
+                placeholder={t('placeholders.current')}
                 className={errors.currentPassword ? "border-red-500" : ""}
               />
               <Button
@@ -179,7 +181,7 @@ export function ChangePassword() {
           <div className="space-y-2">
             <Label htmlFor="newPassword" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              New Password
+              {t('newPassword')}
             </Label>
             <div className="relative">
               <Input
@@ -191,7 +193,7 @@ export function ChangePassword() {
                   setErrors({ ...errors, newPassword: "" })
                 }}
                 disabled={isSaving}
-                placeholder="Enter your new password"
+                placeholder={t('placeholders.new')}
                 className={errors.newPassword ? "border-red-500" : ""}
               />
               <Button
@@ -239,7 +241,7 @@ export function ChangePassword() {
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              Confirm New Password
+              {t('confirmPassword')}
             </Label>
             <div className="relative">
               <Input
@@ -251,7 +253,7 @@ export function ChangePassword() {
                   setErrors({ ...errors, confirmPassword: "" })
                 }}
                 disabled={isSaving}
-                placeholder="Confirm your new password"
+                placeholder={t('placeholders.confirm')}
                 className={errors.confirmPassword ? "border-red-500" : ""}
               />
               <Button
@@ -275,16 +277,14 @@ export function ChangePassword() {
             {formData.confirmPassword && passwordsMatch && (
               <p className="text-xs text-green-600 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
-                Passwords match
+                {t('passwordsMatch')}
               </p>
             )}
           </div>
 
           {/* Security Alert */}
           <Alert>
-            <AlertDescription className="text-sm">
-              After changing your password, you will need to log in again on all your devices.
-            </AlertDescription>
+            <AlertDescription className="text-sm">{t('afterChangeNote')}</AlertDescription>
           </Alert>
 
           {/* Submit Button */}
@@ -294,7 +294,7 @@ export function ChangePassword() {
               disabled={isSaving || !allRequirementsMet || !passwordsMatch}
             >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Change Password
+              {t('title')}
             </Button>
           </div>
         </form>
