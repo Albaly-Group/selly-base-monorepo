@@ -7,9 +7,12 @@ import { requireAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, FileText, Clock, CheckCircle } from "lucide-react"
+import { useTranslations } from 'next-intl'
+import type { ExportJob } from "@/types/jobs"
 
 function ExportsPage() {
-  const [exportJobs, setExportJobs] = useState([])
+  const t = useTranslations('export')
+  const [exportJobs, setExportJobs] = useState<ExportJob[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
 
@@ -41,7 +44,7 @@ function ExportsPage() {
         <main className="container mx-auto px-4 py-6">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading export jobs...</p>
+            <p className="mt-4 text-gray-600">{t('loading')}</p>
           </div>
         </main>
       </div>
@@ -54,8 +57,8 @@ function ExportsPage() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Export History</h1>
-          <p className="text-gray-600">Download and manage your data exports</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* Summary Cards */}
@@ -64,12 +67,12 @@ function ExportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Available Downloads
+                {t('cards.availableDownloads.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeExports.length}</div>
-              <p className="text-xs text-gray-500">Ready for download</p>
+              <p className="text-xs text-gray-500">{t('cards.availableDownloads.subtitle')}</p>
             </CardContent>
           </Card>
 
@@ -77,12 +80,12 @@ function ExportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Processing
+                {t('cards.processing.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{processingExports.length}</div>
-              <p className="text-xs text-gray-500">Currently generating</p>
+              <p className="text-xs text-gray-500">{t('cards.processing.subtitle')}</p>
             </CardContent>
           </Card>
 
@@ -90,12 +93,12 @@ function ExportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Total Exports
+                {t('cards.totalExports.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{exportJobs.length}</div>
-              <p className="text-xs text-gray-500">All time exports</p>
+              <p className="text-xs text-gray-500">{t('cards.totalExports.subtitle')}</p>
             </CardContent>
           </Card>
 
@@ -103,14 +106,14 @@ function ExportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <Download className="h-4 w-4" />
-                Data Volume
+                {t('cards.dataVolume.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {exportJobs.reduce((sum, job) => sum + job.totalRecords, 0).toLocaleString()}
               </div>
-              <p className="text-xs text-gray-500">Total records exported</p>
+              <p className="text-xs text-gray-500">{t('cards.dataVolume.subtitle')}</p>
             </CardContent>
           </Card>
         </div>
@@ -121,12 +124,8 @@ function ExportsPage() {
             <div className="flex items-start gap-3">
               <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <h3 className="font-medium text-blue-900">Export Retention Policy</h3>
-                <p className="text-sm text-blue-700 mt-1">
-                  Export files are available for download for 7 days after generation. After this period, 
-                  files are automatically deleted for security and storage management. You can regenerate 
-                  exports at any time from the relevant sections.
-                </p>
+                <h3 className="font-medium text-blue-900">{t('retention.title')}</h3>
+                <p className="text-sm text-blue-700 mt-1">{t('retention.description')}</p>
               </div>
             </div>
           </CardContent>
@@ -135,10 +134,8 @@ function ExportsPage() {
         {/* Export Jobs Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Export History</CardTitle>
-            <CardDescription>
-              View and download your exported data files
-            </CardDescription>
+            <CardTitle>{t('table.title')}</CardTitle>
+            <CardDescription>{t('table.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ExportJobsTable jobs={exportJobs} />

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, Mail, Building2, Shield, Calendar, User } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 interface ProfileInfoProps {
   onUpdate?: () => void
@@ -20,6 +21,7 @@ interface ProfileInfoProps {
 export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
   const { user } = useAuth()
   const { toast } = useToast()
+  const t = useTranslations('setting.userProfile.userInfo')
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -81,10 +83,8 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>
-          View and manage your personal information
-        </CardDescription>
+        <CardTitle>{t('title')}</CardTitle>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Avatar Section */}
@@ -112,7 +112,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Full Name
+              {t('fullName')}
             </Label>
             <Input
               id="name"
@@ -126,7 +126,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              Email Address
+              {t('email')}
             </Label>
             <Input
               id="email"
@@ -135,9 +135,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
               disabled
               className="bg-muted"
             />
-            <p className="text-xs text-muted-foreground">
-              Email address cannot be changed. Contact your administrator if you need to update it.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('emailNote')}</p>
           </div>
 
           <Separator />
@@ -149,8 +147,8 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
                 <Building2 className="h-4 w-4" />
                 Organization
               </Label>
-              <div className="rounded-md border bg-muted px-3 py-2 text-sm">
-                {user.organization?.name || "No organization"}
+                <div className="rounded-md border bg-muted px-3 py-2 text-sm">
+                {user.organization?.name || t('noOrganization')}
               </div>
             </div>
 
@@ -159,7 +157,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
                 <Shield className="h-4 w-4" />
                 Roles & Permissions
               </Label>
-              <div className="rounded-md border bg-muted px-3 py-2">
+                <div className="rounded-md border bg-muted px-3 py-2">
                 <div className="space-y-2">
                   {user.roles && user.roles.length > 0 ? (
                     user.roles.map((role) => (
@@ -187,7 +185,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
                       </div>
                     ))
                   ) : (
-                    <span className="text-sm">No roles assigned</span>
+                    <span className="text-sm">{t('rolesPermissions')}</span>
                   )}
                 </div>
               </div>
@@ -214,7 +212,7 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
           <div className="flex justify-end gap-2">
             {!isEditing ? (
               <Button type="button" onClick={() => setIsEditing(true)}>
-                Edit Profile
+                {t('edit')}
               </Button>
             ) : (
               <>
@@ -224,11 +222,11 @@ export function ProfileInfo({ onUpdate }: ProfileInfoProps) {
                   onClick={handleCancel}
                   disabled={isSaving}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button type="submit" disabled={isSaving}>
                   {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
+                  {t('saveChanges')}
                 </Button>
               </>
             )}

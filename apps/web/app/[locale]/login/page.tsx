@@ -3,18 +3,20 @@
 import { useAuth } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 import { useRouter } from "next/navigation"
+import { useLocale } from 'next-intl'
 import { useEffect } from "react"
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const locale = useLocale()
 
   useEffect(() => {
     if (!isLoading && user) {
-      // Redirect authenticated users to home
-      router.replace("/")
+      // Redirect authenticated users to dashboard with locale
+      router.replace(`/${locale}/dashboard`)
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, locale])
 
   if (isLoading) {
     return (

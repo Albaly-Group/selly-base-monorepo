@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { Navigation } from "@/components/navigation"
 import { StaffTable } from "@/components/staff-table"
 import { CompanyEditDialog } from "@/components/company-edit-dialog"
@@ -14,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search, Upload, Download } from "lucide-react"
 
 function StaffDashboardPage() {
+  const t = useTranslations('staff')
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<FilterOptions>({})
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
@@ -69,9 +71,9 @@ function StaffDashboardPage() {
   // Statistics
   const stats = useMemo(() => {
     const total = companies.length
-    const active = companies.filter((c) => c.verificationStatus === "Active").length
-    const needsVerification = companies.filter((c) => c.verificationStatus === "Needs Verification").length
-    const invalid = companies.filter((c) => c.verificationStatus === "Invalid").length
+    const active = companies.filter((c) => c.verificationStatus === "verified").length
+    const needsVerification = companies.filter((c) => c.verificationStatus === "unverified").length
+    const invalid = companies.filter((c) => c.verificationStatus === "disputed" || c.verificationStatus === "inactive").length
     const avgCompleteness = total > 0 ? Math.round(companies.reduce((sum, c) => sum + (c.dataCompleteness || 0), 0) / total) : 0
 
     return { total, active, needsVerification, invalid, avgCompleteness }
@@ -95,7 +97,7 @@ function StaffDashboardPage() {
 
   const handleApprove = async (companyId: string) => {
     try {
-      await apiClient.updateCompany(companyId, { verificationStatus: "Active" })
+      await apiClient.updateCompany(companyId, { verificationStatus: "verified" })
       setRefreshKey(prev => prev + 1) // Refresh the data
       console.log("Company approved:", companyId)
     } catch (error) {
@@ -106,7 +108,7 @@ function StaffDashboardPage() {
   const handleReject = async (companyId: string, reason: string) => {
     try {
       await apiClient.updateCompany(companyId, { 
-        verificationStatus: "Invalid",
+        verificationStatus: "disputed",
         rejectionReason: reason 
       })
       setRefreshKey(prev => prev + 1) // Refresh the data
@@ -166,11 +168,11 @@ function StaffDashboardPage() {
         company.companyNameEn,
         company.industrialName,
         company.province,
-        company.contactPersons[0]?.name || "",
-        company.contactPersons[0]?.phone || "",
-        company.contactPersons[0]?.email || "",
+        company.contactPersons?.[0]?.name || "",
+        company.contactPersons?.[0]?.phone || "",
+        company.contactPersons?.[0]?.email || "",
         company.verificationStatus,
-        `${company.dataCompleteness}%`,
+        `${company.dataCompleteness ?? 0}%`,
         company.lastUpdated,
         company.createdBy,
       ]),
@@ -193,15 +195,15 @@ function StaffDashboardPage() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Database Management</h1>
-          <p className="text-gray-600">Manage and moderate the company database</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Companies</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t('stats.totalCompanies')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
@@ -210,7 +212,7 @@ function StaffDashboardPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t('stats.active')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{stats.active}</div>
@@ -219,7 +221,7 @@ function StaffDashboardPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Needs Verification</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t('stats.needsVerification')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">{stats.needsVerification}</div>
@@ -228,7 +230,7 @@ function StaffDashboardPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Invalid</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t('stats.invalid')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{stats.invalid}</div>
@@ -237,7 +239,7 @@ function StaffDashboardPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Avg. Completeness</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t('stats.avgCompleteness')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{stats.avgCompleteness}%</div>
@@ -254,7 +256,7 @@ function StaffDashboardPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     type="text"
-                    placeholder="Search companies..."
+                    placeholder={t('search.placeholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -265,14 +267,14 @@ function StaffDashboardPage() {
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={handleImport} className="gap-2 bg-transparent">
                   <Upload className="h-4 w-4" />
-                  Import Records
+                  {t('actions.import')}
                 </Button>
                 <Button variant="outline" onClick={handleExport} className="gap-2 bg-transparent">
                   <Download className="h-4 w-4" />
-                  Export ({selectedCompanies.length || filteredCompanies.length})
+                  {t('actions.export', { count: selectedCompanies.length || filteredCompanies.length })}
                 </Button>
                 <Button onClick={handleBulkEdit} disabled={selectedCompanies.length === 0} className="gap-2">
-                  Bulk Edit ({selectedCompanies.length})
+                  {t('actions.bulkEdit', { count: selectedCompanies.length })}
                 </Button>
               </div>
             </div>
@@ -293,11 +295,11 @@ function StaffDashboardPage() {
         {/* Results Summary */}
         <div className="mt-4 text-sm text-gray-600">
           {isLoading ? (
-            "Loading companies..."
+            t('loading')
           ) : (
             <>
-              Showing {filteredCompanies.length} of {companies.length} companies
-              {selectedCompanies.length > 0 && ` • ${selectedCompanies.length} selected`}
+              {t('results.showing', { filtered: filteredCompanies.length, total: companies.length })}
+              {selectedCompanies.length > 0 && ` • ${t('results.selected', { count: selectedCompanies.length })}`}
             </>
           )}
         </div>

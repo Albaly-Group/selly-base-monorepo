@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from 'next-intl'
 import {
   Select,
   SelectContent,
@@ -79,6 +80,12 @@ export function CompanyCreateDialog({
   const [activeTab, setActiveTab] = useState("basic");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const t = useTranslations('companies_lookup.createCompany');
+  const tFields = useTranslations('companies_lookup.createCompany.fields');
+  const tSizes = useTranslations('companies_lookup.createCompany.companySizes');
+  const tSensitivity = useTranslations('companies_lookup.createCompany.dataSensitivity');
+  const tReg = useTranslations('companies_lookup.createCompany.registration');
+  const tRegStatus = useTranslations('companies_lookup.createCompany.registrationStatus');
   const { errors, validate, clearError, getError, hasError } =
     useFormValidation(createCompanySchema);
 
@@ -154,7 +161,7 @@ export function CompanyCreateDialog({
   const handleSubmit = async () => {
     // Validate all fields using Zod schema
     if (!validate(formData)) {
-      setError("Please fix the validation errors before submitting");
+      setError(t('error'));
       return;
     }
 
@@ -239,7 +246,7 @@ export function CompanyCreateDialog({
       }
     } catch (error: any) {
       console.error("Error creating company:", error);
-      setError(error.message || "Failed to create company. Please try again.");
+      setError(error.message || t('error'));
     } finally {
       setIsLoading(false);
     }
@@ -260,9 +267,9 @@ export function CompanyCreateDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Company</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Add a new company to your organization&apos;s database.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -270,28 +277,28 @@ export function CompanyCreateDialog({
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-2 text-sm">
               <TabsTrigger value="basic" className="px-2">
-                Basic Information
+                {t('tabs.basic')}
               </TabsTrigger>
               <TabsTrigger value="registration" className="px-2">
-                Registration
+                {t('tabs.registration')}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4">
               <h3 className="text-base font-medium text-gray-900">
-                Basic Information
+                {t('tabs.basic')}
               </h3>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="companyNameEn" className="text-sm font-medium">
-                    Company Name (EN) <span className="text-red-500">*</span>
+                    {tFields('companyNameEn')}
                   </Label>
                   <Input
                     id="companyNameEn"
                     value={formData.companyNameEn}
                     onChange={(e) => updateField("companyNameEn", e.target.value)}
-                    placeholder="Acme Corporation"
+                    placeholder={tFields('companyNameEnPlaceholder')}
                     disabled={isLoading}
                     className={hasError("companyNameEn") ? "border-red-500" : ""}
                   />
@@ -302,13 +309,13 @@ export function CompanyCreateDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="companyNameTh" className="text-sm font-medium">
-                    Company Name (TH)
+                    {tFields('companyNameTh')}
                   </Label>
                   <Input
                     id="companyNameTh"
                     value={formData.companyNameTh}
                     onChange={(e) => updateField("companyNameTh", e.target.value)}
-                    placeholder="บริษัท อัคมี"
+                    placeholder={tFields('companyNameThPlaceholder')}
                     disabled={isLoading}
                     className={hasError("companyNameTh") ? "border-red-500" : ""}
                   />
@@ -320,13 +327,13 @@ export function CompanyCreateDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="businessDescription" className="text-sm font-medium">
-                    Business Description
+                    {tFields('businessDescription')}
                   </Label>
                   <Textarea
                     id="businessDescription"
                     value={formData.businessDescription}
                     onChange={(e) => updateField("businessDescription", e.target.value)}
-                    placeholder="Brief description of the company's business..."
+                    placeholder={tFields('businessDescriptionPlaceholder')}
                     disabled={isLoading}
                     rows={3}
                   />
@@ -334,17 +341,17 @@ export function CompanyCreateDialog({
 
                 {/* Contact Information (moved into Basic tab) */}
                 <div className="space-y-4">
-                  <h3 className="text-base font-medium text-gray-900">Contact Information</h3>
+                  <h3 className="text-base font-medium text-gray-900">{t('tabs.contact')}</h3>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="primaryEmail" className="text-sm font-medium">Primary Email</Label>
+                      <Label htmlFor="primaryEmail" className="text-sm font-medium">{tFields('email')}</Label>
                       <Input
                         id="primaryEmail"
                         type="email"
                         value={formData.primaryEmail}
                         onChange={(e) => updateField("primaryEmail", e.target.value)}
-                        placeholder="contact@example.com"
+                        placeholder={tFields('emailPlaceholder')}
                         disabled={isLoading}
                         className={hasError("primaryEmail") ? "border-red-500" : ""}
                       />
@@ -354,13 +361,13 @@ export function CompanyCreateDialog({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="primaryPhone" className="text-sm font-medium">Primary Phone</Label>
+                      <Label htmlFor="primaryPhone" className="text-sm font-medium">{tFields('phone')}</Label>
                       <Input
                         id="primaryPhone"
                         type="tel"
                         value={formData.primaryPhone}
                         onChange={(e) => updateField("primaryPhone", e.target.value)}
-                        placeholder="+66 2 123 4567"
+                        placeholder={tFields('phonePlaceholder')}
                         disabled={isLoading}
                         className={hasError("primaryPhone") ? "border-red-500" : ""}
                       />
@@ -371,13 +378,13 @@ export function CompanyCreateDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="websiteUrl" className="text-sm font-medium">Website URL</Label>
+                    <Label htmlFor="websiteUrl" className="text-sm font-medium">{tFields('websiteUrl')}</Label>
                     <Input
                       id="websiteUrl"
                       type="url"
                       value={formData.websiteUrl}
                       onChange={(e) => updateField("websiteUrl", e.target.value)}
-                      placeholder="https://example.com"
+                      placeholder={tFields('websiteUrlPlaceholder')}
                       disabled={isLoading}
                       className={hasError("websiteUrl") ? "border-red-500" : ""}
                     />
@@ -390,31 +397,31 @@ export function CompanyCreateDialog({
                           {/* Address Information */}
           <div className="space-y-4">
             <h3 className="text-base font-medium text-gray-900">
-              Address Information
+              {tFields('addressLine1')}
             </h3>
 
             <div className="space-y-2">
               <Label htmlFor="addressLine1" className="text-sm font-medium">
-                Address Line 1
+                {tFields('addressLine1')}
               </Label>
               <Input
                 id="addressLine1"
                 value={formData.addressLine1}
                 onChange={(e) => updateField("addressLine1", e.target.value)}
-                placeholder="123 Sukhumvit Road"
+                placeholder={tFields('addressLine1Placeholder')}
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="addressLine2" className="text-sm font-medium">
-                Address Line 2
+                {tFields('addressLine2')}
               </Label>
               <Input
                 id="addressLine2"
                 value={formData.addressLine2}
                 onChange={(e) => updateField("addressLine2", e.target.value)}
-                placeholder="Floor 15, Tower A"
+                placeholder={tFields('addressLine2Placeholder')}
                 disabled={isLoading}
               />
             </div>
@@ -425,7 +432,7 @@ export function CompanyCreateDialog({
                   htmlFor="primaryRegionId"
                   className="text-sm font-medium"
                 >
-                  Region
+                  {tFields('region')}
                 </Label>
                 <Select
                   value={formData.primaryRegionId}
@@ -435,7 +442,7 @@ export function CompanyCreateDialog({
                   disabled={isLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select region..." />
+                    <SelectValue placeholder={tFields('regionPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {regions.map((region) => (
@@ -449,13 +456,13 @@ export function CompanyCreateDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="postalCode" className="text-sm font-medium">
-                  Postal Code
+                  {tFields('postalCode')}
                 </Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) => updateField("postalCode", e.target.value)}
-                  placeholder="10110"
+                  placeholder={tFields('postalCodePlaceholder')}
                   disabled={isLoading}
                 />
               </div>
@@ -465,7 +472,7 @@ export function CompanyCreateDialog({
           {/* Company Details */}
           <div className="space-y-4">
             <h3 className="text-base font-medium text-gray-900">
-              Company Details
+              {t('tabs.basic')}
             </h3>
 
             <div className="grid grid-cols-1 gap-4">
@@ -474,7 +481,7 @@ export function CompanyCreateDialog({
                   htmlFor="primaryIndustryId"
                   className="text-sm font-medium"
                 >
-                  Industry
+                  {tFields('industry')}
                 </Label>
                 <Combobox
                   options={industries.map((industry: any) => ({
@@ -485,9 +492,9 @@ export function CompanyCreateDialog({
                   onValueChange={(value) =>
                     updateField("primaryIndustryId", value)
                   }
-                  placeholder="Select industry..."
-                  searchPlaceholder="Search industries..."
-                  emptyText="No industry found."
+                  placeholder={tFields('industryPlaceholder')}
+                  searchPlaceholder={tFields('industryPlaceholder')}
+                  emptyText="-"
                   disabled={isLoading}
                 />
               </div>
@@ -495,27 +502,27 @@ export function CompanyCreateDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size</Label>
+                <Label htmlFor="companySize">{tFields('companySize')}</Label>
                 <Select
                   value={formData.companySize}
                   onValueChange={(value) => updateField("companySize", value)}
                   disabled={isLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select size..." />
+                    <SelectValue placeholder={tFields('companySize')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="micro">Micro</SelectItem>
-                    <SelectItem value="small">Small</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="large">Large</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="micro">{tSizes('micro')}</SelectItem>
+                    <SelectItem value="small">{tSizes('small')}</SelectItem>
+                    <SelectItem value="medium">{tSizes('medium')}</SelectItem>
+                    <SelectItem value="large">{tSizes('large')}</SelectItem>
+                    <SelectItem value="enterprise">{tSizes('enterprise')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="employeeCountEstimate">
-                  Employee Count <span className="text-red-500">*</span>
+                  {tFields('employeeCount')}
                 </Label>
                 <Input
                   id="employeeCountEstimate"
@@ -527,7 +534,7 @@ export function CompanyCreateDialog({
                       parseInt(e.target.value).toString(),
                     )
                   }
-                  placeholder="50"
+                  placeholder={tFields('employeeCountPlaceholder')}
                   disabled={isLoading}
                 />
               </div>
@@ -539,7 +546,7 @@ export function CompanyCreateDialog({
                   htmlFor="dataSensitivity"
                   className="text-sm font-medium"
                 >
-                  Data Sensitivity
+                  {tFields('dataSensitivity')}
                 </Label>
                 <Select
                   value={formData.dataSensitivity}
@@ -549,13 +556,13 @@ export function CompanyCreateDialog({
                   disabled={isLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select sensitivity..." />
+                    <SelectValue placeholder={tFields('dataSensitivity')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="standard">Standard</SelectItem>
-                    <SelectItem value="confidential">Confidential</SelectItem>
-                    <SelectItem value="restricted">Restricted</SelectItem>
+                    <SelectItem value="public">{tSensitivity('public')}</SelectItem>
+                    <SelectItem value="standard">{tSensitivity('standard')}</SelectItem>
+                    <SelectItem value="confidential">{tSensitivity('confidential')}</SelectItem>
+                    <SelectItem value="restricted">{tSensitivity('restricted')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -564,25 +571,25 @@ export function CompanyCreateDialog({
               </TabsContent>
 
             <TabsContent value="registration" className="space-y-4">
-              <h3 className="text-base font-medium text-gray-900">Registration #1</h3>
+              <h3 className="text-base font-medium text-gray-900">{t('tabs.registration')}</h3>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="registrationNo" className="text-sm font-medium">
-                    Registration Number
+                    {tReg('registrationNo')}
                   </Label>
                   <Input
                     id="registrationNo"
                     value={registrationData.registrationNo}
                     onChange={(e) => updateRegistrationField("registrationNo", e.target.value)}
-                    placeholder="Registration number"
+                    placeholder={tReg('registrationNoPlaceholder')}
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="registrationStatus" className="text-sm font-medium">
-                    Status
+                    {tReg('status')}
                   </Label>
                   <Select
                     value={registrationData.status}
@@ -590,13 +597,13 @@ export function CompanyCreateDialog({
                     disabled={isLoading}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select status..." />
+                      <SelectValue placeholder={tReg('status')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="dissolved">Dissolved</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="active">{tRegStatus('active')}</SelectItem>
+                      <SelectItem value="inactive">{tRegStatus('inactive')}</SelectItem>
+                      <SelectItem value="dissolved">{tRegStatus('dissolved')}</SelectItem>
+                      <SelectItem value="suspended">{tRegStatus('suspended')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -605,7 +612,7 @@ export function CompanyCreateDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="authorityCode" className="text-sm font-medium">
-                    Registration Authorities
+                    {tReg('authority')}
                   </Label>
                     <Select
                       value={registrationData.authorityId}
@@ -613,7 +620,7 @@ export function CompanyCreateDialog({
                       disabled={isLoading}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Registration Authorities" />
+                        <SelectValue placeholder={tReg('authorityPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {registrationAuthorities.map((a) => (
@@ -627,7 +634,7 @@ export function CompanyCreateDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="registrationType" className="text-sm font-medium">
-                    Registration Type
+                    {tReg('type')}
                   </Label>
                     <Select
                       value={registrationData.registrationTypeId}
@@ -635,7 +642,7 @@ export function CompanyCreateDialog({
                       disabled={isLoading}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Registration Type" />
+                        <SelectValue placeholder={tReg('typePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {registrationTypes.map((t) => (
@@ -679,19 +686,19 @@ export function CompanyCreateDialog({
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <Label htmlFor="isPrimary" className="text-sm font-medium cursor-pointer">
-                  Primary Registration
+                  {tReg('isPrimary')}
                 </Label>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="remarks" className="text-sm font-medium">
-                  Remarks
+                  {tReg('remarks')}
                 </Label>
                 <Textarea
                   id="remarks"
                   value={registrationData.remarks}
                   onChange={(e) => updateRegistrationField("remarks", e.target.value)}
-                  placeholder="Additional notes"
+                  placeholder={tReg('remarksPlaceholder')}
                   disabled={isLoading}
                   rows={4}
                 />
@@ -710,7 +717,7 @@ export function CompanyCreateDialog({
         {success && (
           <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-800">
             <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm">Company created successfully!</span>
+            <span className="text-sm">{t('success')}</span>
           </div>
         )}
 
@@ -720,14 +727,14 @@ export function CompanyCreateDialog({
             onClick={() => handleOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading || success}>
             {isLoading
-              ? "Creating..."
+              ? t('creating')
               : success
-                ? "Created!"
-                : "Create Company"}
+                ? t('success')
+                : t('create')}
           </Button>
         </DialogFooter>
       </DialogContent>

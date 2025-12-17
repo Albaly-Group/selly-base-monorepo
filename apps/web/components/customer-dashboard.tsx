@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Users, Target, Database, BarChart3, TrendingUp, AlertTriangle } from "lucide-react"
+import { useTranslations, useLocale } from 'next-intl'
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
@@ -22,6 +23,8 @@ interface DashboardStats {
 
 export function CustomerDashboard() {
   const { user } = useAuth()
+  const t = useTranslations('dashboard')
+  const locale = useLocale()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,8 +34,8 @@ export function CustomerDashboard() {
       try {
         setError(null)
         const [analyticsData, listsData] = await Promise.all([
-          apiClient.getDashboardAnalytics(user.organizationId),
-          apiClient.getCompanyLists({ organizationId: user.organizationId }).catch(() => ({ data: [] }))
+          apiClient.getDashboardAnalytics(user?.organization_id || ''),
+          apiClient.getCompanyLists({ organizationId: user?.organization_id || '' }).catch(() => ({ data: [] }))
         ])
         
         setStats({
@@ -43,7 +46,7 @@ export function CustomerDashboard() {
         })
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
-        setError('Failed to load dashboard data. Please ensure the backend is running.')
+        setError(t('error'))
         setStats(null)
       } finally {
         setIsLoading(false)
@@ -67,7 +70,7 @@ export function CustomerDashboard() {
             <CardContent className="p-6">
               <div className="text-center">
                 <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-600" />
-                <h3 className="text-lg font-semibold mb-2 text-red-800">Failed to Load Dashboard</h3>
+                <h3 className="text-lg font-semibold mb-2 text-red-800">{t('error')}</h3>
                 <p className="text-gray-600 mb-4">{error}</p>
                 <Button onClick={() => window.location.reload()} variant="outline">
                   Retry
@@ -80,20 +83,22 @@ export function CustomerDashboard() {
     )
   }
 
+  const localePath = (path: string) => `/${locale}${path}`
+
   const userFeatures = [
     {
-      title: "Company Lookup",
-      description: "Search and discover companies in our comprehensive database",
+      title: t('quickActions.lookup'),
+      description: t('quickActions.lookupDescription'),
       icon: Search,
-      href: "/lookup",
+      href: localePath("/lookup"),
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
-      title: "My Lists",
-      description: "Manage your saved company lists and apply smart filtering",
+      title: t('quickActions.createList'),
+      description: t('quickActions.createListDescription'),
       icon: Users,
-      href: "/lists",
+      href: localePath("/lists"),
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
@@ -109,18 +114,18 @@ export function CustomerDashboard() {
 
   const staffFeatures = [
     {
-      title: "Database Management",
-      description: "Manage and moderate the company database",
+      title: t('quickActions.manageDatabase'),
+      description: t('quickActions.manageDatabaseDescription'),
       icon: Database,
-      href: "/staff",
+      href: localePath("/staff"),
       color: "text-orange-600",
       bgColor: "bg-orange-50",
     },
     {
-      title: "Analytics",
-      description: "View platform usage and data quality metrics",
+      title: t('insights.performanceMetrics'),
+      description: t('insights.performanceMetricsDescription'),
       icon: BarChart3,
-      href: "/staff/analytics",
+      href: localePath("/staff/analytics"),
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
     },
@@ -137,11 +142,11 @@ export function CustomerDashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('welcome')}, {user.name}</h1>
           <p className="text-gray-600">
-            {!canManageDatabase(user) && "Discover and manage your business prospects with powerful search and filtering tools."}
-            {canManageDatabase(user) && !canManageOrganizationUsers(user) && "Manage the company database and moderate user submissions."}
-            {canManageOrganizationUsers(user) && "Full access to all platform features and administrative controls."}
+            {!canManageDatabase(user) && t('welcomeDescription.user')}
+            {canManageDatabase(user) && !canManageOrganizationUsers(user) && t('welcomeDescription.staff')}
+            {canManageOrganizationUsers(user) && t('welcomeDescription.admin')}
           </p>
         </div>
 
@@ -149,7 +154,7 @@ export function CustomerDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.totalCompanies')}</CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -157,14 +162,14 @@ export function CustomerDashboard() {
                 {isLoading ? "..." : stats?.totalCompanies.toLocaleString() || "0"}
               </div>
               <p className="text-xs text-muted-foreground">
-                +{stats?.monthlyGrowth.companies || 0}% from last month
+                +{stats?.monthlyGrowth.companies || 0}% {t('stats.monthlyGrowth')}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Lists</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.totalLists')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -179,7 +184,7 @@ export function CustomerDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Data Quality</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('stats.dataQualityScore')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -216,28 +221,28 @@ export function CustomerDashboard() {
 
         {/* Quick Actions */}
         <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('quickActions.title')}</h2>
           <div className="flex flex-wrap gap-3">
             <Button variant="outline" asChild>
-              <Link href="/lookup">
+              <Link href={localePath("/lookup")}>
                 <Search className="h-4 w-4 mr-2" />
-                Search Companies
+                {t('quickActions.search')}
               </Link>
             </Button>
 
             {canManageDatabase(user) && (
               <Button variant="outline" asChild>
-                <Link href="/staff">
+                <Link href={localePath("/staff")}>
                   <Database className="h-4 w-4 mr-2" />
-                  Manage Database
+                  {t('quickActions.manageDatabase')}
                 </Link>
               </Button>
             )}
 
             <Button variant="outline" asChild>
-              <Link href="/lists">
+              <Link href={localePath("/lists")}>
                 <Users className="h-4 w-4 mr-2" />
-                Apply My Lists
+                {t('quickActions.createList')}
               </Link>
             </Button>
           </div>

@@ -1,24 +1,12 @@
 "use client"
 
+import type { ImportJob } from "@/types/jobs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { Download, Clock, CheckCircle, XCircle } from "lucide-react"
-
-interface ImportJob {
-  id: string
-  filename: string
-  status: "processing" | "completed" | "failed"
-  totalRows: number
-  processedRows: number
-  errorRows: number
-  createdAt: string
-  completedAt?: string
-  failedAt?: string
-  importedBy: string
-  errorMessage?: string
-}
+import { useTranslations } from 'next-intl'
 
 interface ImportJobsTableProps {
   jobs: ImportJob[]
@@ -26,6 +14,7 @@ interface ImportJobsTableProps {
 }
 
 export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
+  const t = useTranslations('import.import_table')
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -71,13 +60,13 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>File</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Progress</TableHead>
-            <TableHead>Records</TableHead>
-            <TableHead>Imported By</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>{t('table.headers.file')}</TableHead>
+            <TableHead>{t('table.headers.status')}</TableHead>
+            <TableHead>{t('table.headers.progress')}</TableHead>
+            <TableHead>{t('table.headers.records')}</TableHead>
+            <TableHead>{t('table.headers.importedBy')}</TableHead>
+            <TableHead>{t('table.headers.created')}</TableHead>
+            <TableHead>{t('table.headers.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,7 +83,7 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
                 <Badge variant="secondary" className={getStatusColor(job.status)}>
                   <div className="flex items-center gap-1">
                     {getStatusIcon(job.status)}
-                    {job.status}
+                    {t(`status.${job.status}`)}
                   </div>
                 </Badge>
               </TableCell>
@@ -111,12 +100,12 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
               <TableCell>
                 <div className="text-sm">
                   <div className="flex items-center gap-4">
-                    <span className="text-green-600">{job.processedRows} success</span>
+                    <span className="text-green-600">{job.processedRows} {t('table.success')}</span>
                     {job.errorRows > 0 && (
-                      <span className="text-red-600">{job.errorRows} errors</span>
+                      <span className="text-red-600">{job.errorRows} {t('table.errors')}</span>
                     )}
                   </div>
-                  <div className="text-gray-500">Total: {job.totalRows}</div>
+                  <div className="text-gray-500">{t('table.total')}: {job.totalRows}</div>
                 </div>
               </TableCell>
               
@@ -142,7 +131,7 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
                       className="gap-1"
                     >
                       <Download className="h-3 w-3" />
-                      Errors
+                      {t('table.errorsButton')}
                     </Button>
                   )}
                   {job.status === "failed" && (
@@ -153,7 +142,7 @@ export function ImportJobsTable({ jobs, onRefresh }: ImportJobsTableProps) {
                       className="gap-1"
                     >
                       <Download className="h-3 w-3" />
-                      Details
+                      {t('table.detailsButton')}
                     </Button>
                   )}
                 </div>

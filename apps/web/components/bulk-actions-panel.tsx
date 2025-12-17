@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,19 +24,17 @@ interface BulkActionsPanelProps {
   onComplete: () => void
 }
 
-// Fallback options in case API fails
-const fallbackStatusOptions = [
-  { value: "Active", label: "Active" },
-  { value: "Needs Verification", label: "Needs Verification" },
-  { value: "Invalid", label: "Invalid" },
-]
-
 export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onComplete }: BulkActionsPanelProps) {
+  const t = useTranslations('staff.staff_actions')
   const [action, setAction] = useState<"approve" | "reject" | "update-status">("approve")
   const [newStatus, setNewStatus] = useState("")
   const [reason, setReason] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [statusOptions, setStatusOptions] = useState<{ value: string; label: string }[]>(fallbackStatusOptions)
+  const [statusOptions, setStatusOptions] = useState<{ value: string; label: string }[]>([
+    { value: "Active", label: "Active" },
+    { value: "Needs Verification", label: "Needs Verification" },
+    { value: "Invalid", label: "Invalid" },
+  ])
 
   useEffect(() => {
     const fetchContactStatuses = async () => {
@@ -86,35 +85,35 @@ export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onCom
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Bulk Actions</DialogTitle>
-          <DialogDescription>Apply actions to {selectedCompanyIds.length} selected companies.</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description', { count: selectedCompanyIds.length })}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-3">
-            <Label>Action</Label>
+            <Label>{t('actionLabel')}</Label>
             <RadioGroup value={action} onValueChange={(value) => setAction(value as any)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="approve" id="approve" />
-                <Label htmlFor="approve">Approve all selected companies</Label>
+                <Label htmlFor="approve">{t('actions.approve')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="reject" id="reject" />
-                <Label htmlFor="reject">Reject all selected companies</Label>
+                <Label htmlFor="reject">{t('actions.reject')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="update-status" id="update-status" />
-                <Label htmlFor="update-status">Update verification status</Label>
+                <Label htmlFor="update-status">{t('actions.updateStatus')}</Label>
               </div>
             </RadioGroup>
           </div>
 
           {action === "update-status" && (
             <div className="space-y-2">
-              <Label htmlFor="new-status">New Status</Label>
+              <Label htmlFor="new-status">{t('newStatusLabel')}</Label>
               <Select value={newStatus} onValueChange={setNewStatus}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select new status..." />
+                  <SelectValue placeholder={t('newStatusPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
@@ -129,10 +128,10 @@ export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onCom
 
           {(action === "reject" || action === "update-status") && (
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason {action === "reject" ? "(Required)" : "(Optional)"}</Label>
+              <Label htmlFor="reason">{t('reasonLabel')} {action === "reject" ? t('reasonRequired') : t('reasonOptional')}</Label>
               <Textarea
                 id="reason"
-                placeholder="Enter reason for this action..."
+                placeholder={t('reasonPlaceholder')}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
@@ -143,7 +142,7 @@ export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onCom
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -151,7 +150,7 @@ export function BulkActionsPanel({ open, onOpenChange, selectedCompanyIds, onCom
               isLoading || (action === "reject" && !reason.trim()) || (action === "update-status" && !newStatus)
             }
           >
-            {isLoading ? "Processing..." : `Apply to ${selectedCompanyIds.length} Companies`}
+            {isLoading ? t('processing') : t('applyButton', { count: selectedCompanyIds.length })}
           </Button>
         </DialogFooter>
       </DialogContent>

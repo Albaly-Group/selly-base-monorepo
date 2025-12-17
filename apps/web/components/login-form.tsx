@@ -4,6 +4,8 @@ import type React from "react"
 
 import { useState } from "react"
 import { useAuth } from "@/lib/auth"
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from "@/src/components/language-switcher"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +18,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const t = useTranslations('login')
 
   const { login, isLoading } = useAuth()
 
@@ -25,36 +28,41 @@ export function LoginForm() {
 
     const result = await login(email, password)
     if (!result.success) {
-      setError(result.error || "Invalid email or password")
+      setError(result.error || t('invalidCredentials'))
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      {/* Language Switcher - Top Right */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+      
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">SalesSphere Base</CardTitle>
-          <CardDescription className="text-center">Sign in to your account to access the platform</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">{t('title')}</CardTitle>
+          <CardDescription className="text-center">{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -86,11 +94,11 @@ export function LoginForm() {
                   "
                 />
                 <label className="ml-2 font-medium text-sm">
-                  Remember me
+                  {t('rememberMe')}
                 </label>
             </div>
             <Button type="submit" className="w-full mt-1" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? t('signingIn') : t('signIn')}
             </Button>
           </form>
         </CardContent>

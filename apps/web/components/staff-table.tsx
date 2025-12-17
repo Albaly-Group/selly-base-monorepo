@@ -1,4 +1,5 @@
 "use client"
+import { useTranslations } from 'next-intl'
 import type { Company } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,16 +27,18 @@ export function StaffTable({
   onReject,
   onEdit,
 }: StaffTableProps) {
+  const t = useTranslations('staff.staff_table')
   const allSelected = companies.length > 0 && selectedCompanies.length === companies.length
   const someSelected = selectedCompanies.length > 0 && selectedCompanies.length < companies.length
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
-      case "Active":
+      case "verified":
         return "bg-green-100 text-green-800"
-      case "Needs Verification":
+      case "unverified":
         return "bg-yellow-100 text-yellow-800"
-      case "Invalid":
+      case "disputed":
+      case "inactive":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -49,7 +52,7 @@ export function StaffTable({
   }
 
   const handleReject = (companyId: string) => {
-    const reason = prompt("Please provide a reason for rejection:")
+    const reason = prompt(t('rejectPrompt'))
     if (reason) {
       onReject(companyId, reason)
     }
@@ -65,19 +68,19 @@ export function StaffTable({
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
                 ref={(el) => {
-                  if (el) el.indeterminate = someSelected
+                  if (el) (el as any).indeterminate = someSelected
                 }}
               />
             </TableHead>
-            <TableHead>Company Name</TableHead>
-            <TableHead>Industry</TableHead>
-            <TableHead>Province</TableHead>
-            <TableHead>Contact Person</TableHead>
-            <TableHead>Verification Status</TableHead>
-            <TableHead>Data Completeness</TableHead>
-            <TableHead>Last Updated</TableHead>
-            <TableHead>Created By</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
+            <TableHead>{t('headers.companyName')}</TableHead>
+            <TableHead>{t('headers.industry')}</TableHead>
+            <TableHead>{t('headers.province')}</TableHead>
+            <TableHead>{t('headers.contactPerson')}</TableHead>
+            <TableHead>{t('headers.verificationStatus')}</TableHead>
+            <TableHead>{t('headers.dataCompleteness')}</TableHead>
+            <TableHead>{t('headers.lastUpdated')}</TableHead>
+            <TableHead>{t('headers.createdBy')}</TableHead>
+            <TableHead className="w-24">{t('headers.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -92,13 +95,13 @@ export function StaffTable({
               <TableCell className="font-medium">
                 <div>
                   <div className="font-semibold">{company.companyNameEn}</div>
-                  {company.registeredNo && <div className="text-sm text-gray-500">Reg: {company.registeredNo}</div>}
+                  {company.registrationId && <div className="text-sm text-gray-500">{t('regPrefix')}: {company.registrationId}</div>}
                 </div>
               </TableCell>
               <TableCell>{company.industrialName}</TableCell>
               <TableCell>{company.province}</TableCell>
               <TableCell>
-                {company.contactPersons.length > 0 ? (
+                {company.contactPersons && company.contactPersons.length > 0 ? (
                   <div>
                     <div className="font-medium">{company.contactPersons[0].name}</div>
                     {company.contactPersons[0].phone && (
@@ -109,22 +112,22 @@ export function StaffTable({
                     )}
                   </div>
                 ) : (
-                  <span className="text-gray-400">No contact info</span>
+                  <span className="text-gray-400">{t('noContactInfo')}</span>
                 )}
               </TableCell>
               <TableCell>
                 <Badge className={getStatusColor(company.verificationStatus)}>{company.verificationStatus}</Badge>
               </TableCell>
               <TableCell>
-                <span className={`font-medium ${getCompletenessColor(company.dataCompleteness)}`}>
-                  {company.dataCompleteness}%
+                <span className={`font-medium ${getCompletenessColor(company.dataCompleteness ?? 0)}`}>
+                  {company.dataCompleteness ?? 0}%
                 </span>
               </TableCell>
               <TableCell className="text-sm text-gray-500">{company.lastUpdated}</TableCell>
               <TableCell className="text-sm text-gray-500">{company.createdBy}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-1">
-                  {company.verificationStatus === "Needs Verification" && (
+                  {company.verificationStatus === "unverified" && (
                     <>
                       <Button
                         size="sm"
@@ -154,18 +157,18 @@ export function StaffTable({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(company)}>
                         <Edit className="h-4 w-4 mr-2" />
-                        Edit Record
+                        {t('actions.edit')}
                       </DropdownMenuItem>
-                      {company.verificationStatus !== "Active" && (
+                      {company.verificationStatus !== "verified" && (
                         <DropdownMenuItem onClick={() => onApprove(company.id)}>
                           <Check className="h-4 w-4 mr-2" />
-                          Approve
+                          {t('actions.approve')}
                         </DropdownMenuItem>
                       )}
-                      {company.verificationStatus !== "Invalid" && (
+                      {company.verificationStatus !== "disputed" && company.verificationStatus !== "inactive" && (
                         <DropdownMenuItem onClick={() => handleReject(company.id)}>
                           <X className="h-4 w-4 mr-2" />
-                          Reject
+                          {t('actions.reject')}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -178,7 +181,7 @@ export function StaffTable({
       </Table>
 
       {companies.length === 0 && (
-        <div className="text-center py-12 text-gray-500">No companies found matching your criteria.</div>
+        <div className="text-center py-12 text-gray-500">{t('noCompanies')}</div>
       )}
     </div>
   )

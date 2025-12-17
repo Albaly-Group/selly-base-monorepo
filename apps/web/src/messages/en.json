@@ -1,0 +1,815 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "company_lookup": "Company Lookup",
+    "my_lists": "My Lists",
+    "database_management": "Database Management",
+    "reports": "Reports",
+    "import": "Import",
+    "export": "Export",
+    "organization_admin": "Organization Admin",
+    "platform_admin": "Platform Admin"
+  },
+  "lists": {
+    "title": "My Lists",
+    "subtitle": "Manage your saved company lists and apply smart filtering",
+    "emptyTitle": "No lists created yet",
+    "emptySubtitle": "Create your first company list to start organizing companies.",
+    "createButton": "Create New List",
+    "createFromLookup": "Create from Lookup",
+    "selectToDelete": "Select a list to delete",
+    "deleteSelected": "Delete Selected",
+    "confirmDeleteTitle": "Delete List",
+    "confirmDeleteMessage": "Are you sure you want to delete this list? This action cannot be undone.",
+    "items": "items",
+    "deleting": "Deleting..."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "welcomeDescription": {
+      "user": "Discover and manage your business prospects with powerful search and filtering tools.",
+      "staff": "Manage the company database and moderate user submissions.",
+      "admin": "Full access to all platform features and administrative controls."
+    },
+    "loading": "Loading...",
+    "error": "Failed to load dashboard data. Please ensure the backend is running.",
+    "stats": {
+      "totalCompanies": "Total Companies",
+      "totalLists": "Total Lists",
+      "dataQualityScore": "Data Quality Score",
+      "monthlyGrowth": "Monthly Growth"
+    },
+    "growth": {
+      "companies": "Companies",
+      "exports": "Exports",
+      "users": "Users"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "search": "Search Companies",
+      "searchDescription": "Find and explore company information",
+      "lookup": "Company Lookup",
+      "lookupDescription": "Look up detailed company information",
+      "createList": "Create List",
+      "createListDescription": "Organize companies into lists",
+      "importData": "Import Data",
+      "importDataDescription": "Import company data in bulk",
+      "manageDatabase": "Manage Database",
+      "manageDatabaseDescription": "Database administration and management",
+      "manageUsers": "Manage Users",
+      "manageUsersDescription": "User management and permissions"
+    },
+    "insights": {
+      "title": "Insights & Analytics",
+      "recentActivity": "Recent Activity",
+      "recentActivityDescription": "View your recent activities and updates",
+      "performanceMetrics": "Performance Metrics",
+      "performanceMetricsDescription": "Track your key performance indicators",
+      "needsAttention": "Needs Attention",
+      "needsAttentionDescription": "Items requiring your attention"
+    },
+    "platformAdmin": {
+      "title": "Platform Admin Dashboard",
+      "welcome": "Welcome, Platform Administrator",
+      "stats": {
+        "totalTenants": "Total Tenants",
+        "activeTenants": "Active Tenants",
+        "totalUsers": "Total Users",
+        "systemHealth": "System Health"
+      },
+      "tenants": {
+        "title": "Tenant Management",
+        "manage": "Manage Tenants",
+        "manageDescription": "View and manage all tenant organizations"
+      },
+      "monitoring": {
+        "title": "System Monitoring",
+        "health": "System Health",
+        "healthDescription": "Monitor system health and performance",
+        "logs": "System Logs",
+        "logsDescription": "View system logs and activity"
+      }
+    }
+  },
+  "companies_lookup": {
+    "title": "Company Lookup",
+    "subtitle": "Search and discover companies in our database",
+    "allCompanies": "All Companies",
+    "search": {
+      "label": "Search Companies",
+      "placeholder": "Search by company name, registered number, or keyword...",
+      "smartFiltering": "Smart Filtering",
+      "supports": "Search supports:",
+      "companyNameEn": "Company Name (EN) - e.g., \"ABC Manufacturing Co., Ltd.\"",
+      "registeredNo": "Registered No. - e.g., \"0105564111698\"",
+      "keywords": "Keywords - e.g., \"Shoe\", \"Logistics\"",
+      "active": "Search:",
+      "clear": "Clear",
+      "clearAll": "Clear All"
+    },
+    "filters": {
+      "smartFiltering": "Smart Filtering:",
+      "smartFilteringDescription": "Filter companies by attributes like industry, province, size, and status. Keywords are optional - you can filter using attributes alone.",
+      "keyword": "Keyword",
+      "keywordHelp": "Leave empty to filter by attributes only",
+      "industry": "Industry",
+      "province": "Province",
+      "size": "Size",
+      "status": "Status",
+      "anyIndustry": "Any Industry",
+      "industryPlaceholder": "Search industries...",
+      "noIndustry": "No industry found.",
+      "anyProvince": "Any Province",
+      "provincePlaceholder": "Search provinces...",
+      "noProvince": "No province found.",
+      "anySize": "Any Size",
+      "anyStatus": "Any Status",
+      "usingFallback": "Using fallback data (API unavailable)"
+    },
+    "smartFiltering": {
+      "description": "Filter companies by attributes like industry, province, size, and status. Keywords are optional - you can filter using attributes alone.",
+      "active": "Active",
+      "weightLabel": "Weight:",
+      "keywordWeightLabel": "Keyword Weight:",
+      "totalWeightTitle": "Total Active Weight",
+      "totalWeightMessages": {
+        "none": "Select at least one filter above to enable weighted scoring",
+        "normalized": "Weights don't need to total 100%. Results will be normalized.",
+        "perfect": "Perfect! Weights are balanced at 100%"
+      },
+      "helpSelectCriteria": "Please select at least one filter (Industry, Province, Company Size, or Contact Status) or add a keyword to apply smart filtering.",
+      "scoreThreshold": "Score Threshold",
+      "minimumWeightedScore": "Minimum Weighted Score:",
+      "minimumScoreDescription": "Only show companies with a weighted score above this threshold"
+    },
+    "actions": {
+      "createCompany": "Create Company",
+      "import": "Import",
+      "export": "Export",
+      "addToList": "Add to List",
+      "applySmartFiltering": "Apply Smart Filtering",
+      "clearAll": "Clear All"
+    },
+    "table": {
+      "companyName": "Company Name",
+      "industry": "Industry",
+      "province": "Province / Region",
+      "contactPerson": "Contact Person",
+      "status": "Status",
+      "dataCompleteness": "Data Completeness",
+      "leadScore": "Lead Score",
+      "actions": "Actions",
+      "view": "View",
+      "noResults": "No companies found",
+      "tryAdjusting": "Try adjusting your search criteria",
+      "showing": "Showing",
+      "to": "to",
+      "of": "of",
+      "results": "results",
+      "previous": "Previous",
+      "next": "Next",
+      "sortedBy": "Sorted by: Highest weighted score first",
+      "lastUpdated": "Last Updated",
+      "noContactInfo": "No contact info"
+    },
+    "emptyState": {
+      "title": "Ready to Find Companies?",
+      "description": "Enter keywords in the search box and press Enter for instant results, or use Smart Filtering for advanced weighted scoring.",
+      "quickSearch": "Quick search: Enter keywords and press Enter",
+      "advancedSearch": "Advanced: Use Smart Filtering for lead scoring"
+    },
+    "lists": {
+      "title": "List Management",
+      "subtitle": "Manage your saved company lists and apply smart filtering",
+      "emptyTitle": "No lists created yet",
+      "emptySubtitle": "Create your first company list to start organizing companies.",
+      "createButton": "Create New List",
+      "createFromLookup": "Create from Lookup",
+      "selectToDelete": "Select a list to delete",
+      "deleteSelected": "Delete Selected",
+      "confirmDeleteTitle": "Delete List",
+      "confirmDeleteMessage": "Are you sure you want to delete this list? This action cannot be undone.",
+      "items": "items",
+      "deleting": "Deleting..."
+    },
+    "export": {
+      "title": "Select columns to export",
+      "description": "Choose which columns to include in the Excel file. All columns are selected by default.",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "selected": "selected",
+      "cancel": "Cancel",
+      "export": "Export"
+    },
+    "import": {
+      "title": "Import from Excel (.xlsx/.csv)",
+      "description": "Upload an Excel file to import company data. Need a sample template",
+      "downloadTemplate": "Download template",
+      "chooseFile": "Choose File",
+      "fileTypes": ".xlsx / .csv",
+      "selected": "Selected:",
+      "preview": "Preview mapped rows",
+      "showingFirst": "Showing first 20 rows",
+      "cancel": "Cancel",
+      "upload": "Upload",
+      "uploading": "Uploading..."
+    },
+    "addToList": {
+      "title": "Add Companies to List",
+      "description": "Add {count} selected companies to a list.",
+      "existing": "Add to existing list",
+      "new": "Create new list",
+      "selectList": "Select List",
+      "choosePlaceholder": "Choose a list...",
+      "listName": "List Name *",
+      "listNamePlaceholder": "Enter list name...",
+      "listDescription": "Description (Optional)",
+      "listDescriptionPlaceholder": "Enter list description...",
+      "companies": "companies",
+      "cancel": "Cancel",
+      "createAndAdd": "Create List & Add",
+      "addToList": "Add to List",
+      "processing": "Processing...",
+      "success": "Successfully added {count} companies to the list.",
+      "error": "Cannot add. This item is already in the list.",
+      "errorName": "Please enter a list name.",
+      "errorSelect": "Please select a list.",
+      "description": "Create a new list to organize and track companies."
+    },
+    "createCompany": {
+      "title": "Create New Company",
+      "description": "Add a new company to your organization's database.",
+      "tabs": {
+        "basic": "Basic Info",
+        "registration": "Registration",
+        "contact": "Contact",
+        "addToList": "Add to List",
+        "applySmartFiltering": "Apply Smart Filtering",
+        "clearAll": "Clear All"
+      },
+      "fields": {
+        "companyNameEn": "Company Name (EN) *",
+        "companyNameEnPlaceholder": "Enter company name in English",
+        "companyNameTh": "Company Name (TH)",
+        "companyNameThPlaceholder": "Enter company name in Thai",
+        "registrationNo": "Primary Registration No.",
+        "registrationNoPlaceholder": "e.g., 0105564111698",
+        "businessDescription": "Business Description",
+        "businessDescriptionPlaceholder": "Describe the company's business...",
+        "addressLine1": "Address Line",
+        "lastUpdated": "Last Updated",
+        "noResults": "No companies found",
+        "noContactInfo": "No contact info",
+        "addressLine1Placeholder": "Street address",
+        "addressLine2": "Address Line 2",
+        "addressLine2Placeholder": "Building, suite, etc.",
+        "postalCode": "Postal Code",
+        "postalCodePlaceholder": "e.g., 10110",
+        "industry": "Industry",
+        "industryPlaceholder": "Select industry",
+        "region": "Region / Province",
+        "regionPlaceholder": "Select region",
+        "websiteUrl": "Website URL",
+        "websiteUrlPlaceholder": "https://...",
+        "email": "Primary Email",
+        "emailPlaceholder": "contact@company.com",
+        "phone": "Primary Phone",
+        "phonePlaceholder": "+66...",
+        "companySize": "Company Size",
+        "employeeCount": "Employee Count Estimate",
+        "employeeCountPlaceholder": "Estimated number",
+        "dataSensitivity": "Data Sensitivity"
+      },
+      "companySizes": {
+        "micro": "Micro (1-10)",
+        "small": "Small (11-50)",
+        "medium": "Medium (51-250)",
+        "large": "Large (251+)",
+        "enterprise": "Enterprise (1000+)"
+      },
+      "dataSensitivity": {
+        "public": "Public",
+        "standard": "Standard",
+        "confidential": "Confidential",
+        "restricted": "Restricted"
+      },
+      "registration": {
+        "registrationNo": "Registration No. *",
+        "registrationNoPlaceholder": "e.g., 0105564111698",
+        "authority": "Registration Authority *",
+        "authorityPlaceholder": "Select authority",
+        "type": "Registration Type *",
+        "typePlaceholder": "Select type",
+        "country": "Country Code",
+        "countryPlaceholder": "e.g., TH",
+        "status": "Status",
+        "isPrimary": "Set as Primary Registration",
+        "remarks": "Remarks",
+        "remarksPlaceholder": "Additional notes..."
+      },
+      "registrationStatus": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "suspended": "Suspended",
+        "dissolved": "Dissolved"
+      },
+      "cancel": "Cancel",
+      "create": "Create Company",
+      "creating": "Creating...",
+      "success": "Company created successfully!",
+      "error": "Please fix the validation errors before submitting"
+    },
+    "refreshing": "Refreshing data..."
+  },
+  "company_detail": {
+    "tabs": {
+      "overview": "Overview",
+      "contacts": "Contacts",
+      "activity": "Activity",
+      "lists": "Lists",
+      "history": "History"
+    },
+    "companyInfo": {
+      "title": "Company Information",
+      "companyName": "Company Name",
+      "industry": "Industry",
+      "employeeCount": "Employee Count",
+      "registrationId": "Registration ID",
+      "registrationDate": "Registration Date",
+      "dataCompleteness": "Data Completeness",
+      "lastUpdated": "Last Updated",
+      "verificationStatus": "Verification Status",
+      "description": "Description"
+    },
+    "contactInfo": {
+      "title": "Contact Information",
+      "primaryContact": "Primary Contact",
+      "contactPerson": "Contact Person",
+      "department": "Department",
+      "position": "Position",
+      "phone": "Phone",
+      "mobile": "Mobile",
+      "email": "Email",
+      "lineId": "Line ID",
+      "website": "Website",
+      "address": "Address",
+      "province": "Province"
+    },
+    "contacts": {
+      "title": "Title",
+      "addContact": "Add Contact",
+      "add": "Add",
+      "editContact": "Edit contact",
+      "deleteContact": "Delete contact",
+      "loading": "Loading contacts...",
+      "noContacts": "No contacts found. Add your first contact above.",
+      "lastVerified": "Last verified:",
+      "updateContactFor": "Update contact information for {name}",
+      "fullName": "Full Name",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter last name",
+      "titlePlaceholder": "e.g., Sales Manager",
+      "department": "Department",
+      "departmentPlaceholder": "e.g., Sales",
+      "position": "Position",
+      "positionPlaceholder": "e.g., Manager",
+      "phone": "Phone",
+      "phonePlaceholder": "+66...",
+      "mobile": "Mobile",
+      "mobilePlaceholder": "+66...",
+      "email": "Email",
+      "emailPlaceholder": "email@company.com",
+      "lineId": "Line ID",
+      "lineIdPlaceholder": "@lineid",
+      "preferredContact": "Preferred Contact Method",
+      "isPrimary": "Set as Primary Contact"
+    },
+    "updateContactFor": "Update contact information for {name}",
+    "filters": {
+      "industryPlaceholder": "Search industries...",
+      "noIndustry": "No industry found.",
+      "anySize": "Any Size"
+    },
+    "companies_lookup": {
+      "createCompany": {
+        "dataSensitivity": {
+          "placeholder": "Select data sensitivity"
+        }
+      }
+    },
+    "activity": {
+      "outcomes": {
+        "interested": "Interested",
+        "not-interested": "Not Interested",
+        "follow-up": "Follow up",
+        "qualified": "Qualified"
+      },
+      "title": "Activity Timeline",
+      "logActivity": "Log Activity",
+      "log": "Log",
+      "editActivity": "Edit activity",
+      "deleteActivity": "Delete activity",
+      "loading": "Loading activities...",
+      "noActivities": "No activities found. Log your first activity above.",
+      "activityTitle": "Activity Title",
+      "activityTitlePlaceholder": "e.g., Follow-up call",
+      "activityType": "Activity Type",
+      "activityTypePlaceholder": "Select type",
+      "types": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "note": "Note",
+        "task": "Task"
+      },
+      "description": "Description",
+      "descriptionPlaceholder": "Add details about the activity...",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "statusPlaceholder": "Select status",
+      "statuses": {
+        "pending": "Pending",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "completedAt": "Completed:",
+      "createdBy": "Created by:"
+    },
+    "lists": {
+      "title": "Lists",
+      "belongsTo": "This company belongs to the following lists:",
+      "loading": "Loading lists...",
+      "noLists": "This company is not in any lists yet.",
+      "table": {
+        "listName": "List Name",
+        "status": "Status",
+        "owner": "Owner",
+        "addedDate": "Added Date",
+        "actions": "Actions",
+        "openList": "Open"
+      },
+      "openList": "Open"
+    },
+    "dialogs": {
+      "addContact": "Add Contact",
+      "editContact": {
+        "title": "Edit Contact Person",
+        "description": "Edit contact person details"
+      },
+      "addActivity": "Log Activity",
+      "editActivity": {
+        "title": "Edit Activity",
+        "description": "Edit activity details"
+      },
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "updateContact": "Update Contact",
+      "updateActivity": "Update Activity",
+      "savingError": "Please fix validation errors before saving"
+    },
+    "actions": {
+      "edit": "Edit Company",
+      "addToList": "Add to List",
+      "close": "Close"
+    },
+    "messages": {
+      "contactAdded": "Contact added successfully",
+      "contactUpdated": "Contact updated successfully",
+      "contactDeleted": "Contact deleted successfully",
+      "activityAdded": "Activity logged successfully",
+      "activityUpdated": "Activity updated successfully",
+      "activityDeleted": "Activity deleted successfully",
+      "error": "An error occurred. Please try again.",
+      "errorUpdating": "Failed to update company. Please try again.",
+      "confirmDeleteContact": "Are you sure you want to delete this contact? This action cannot be undone.",
+      "confirmDeleteActivity": "Are you sure you want to delete this activity? This action cannot be undone.",
+      "adminCanSetVerification": "Only platform administrators can set verification status for shared records."
+    },
+    "shared": {
+      "title": "Shared Reference Data",
+      "description": "This company record is shared across organizations and may be managed centrally.",
+      "cannotEdit": "This record is shared and cannot be edited.",
+      "cannotEditDescription": "Only platform administrators can edit shared reference data.",
+      "cannotEditTitle": "Read-only (Shared Data)",
+      "editing": "You are editing shared data",
+      "editingDescription": "Changes to shared data will affect all organizations referencing this record."
+    },
+    "history": {
+      "title": "Change History",
+      "field": "Field",
+      "oldValue": "Old Value",
+      "newValue": "New Value",
+      "changedBy": "Changed By",
+      "date": "Date"
+    },
+    "edit": {
+      "title": "Edit Company",
+      "description": "Update company details below.",
+      "registrationTab": "Registration",
+      "success": "Company updated successfully",
+      "saved": "Saved"
+    },
+    "verification": {
+      "verified": "Verified",
+      "unverified": "Unverified"
+    }
+  },
+  "setting": {
+    "userProfile": {
+      "title": "User Profile",
+      "subtitle": "Manage your account settings and security preferences",
+      "back": "Back",
+      "tabs": {
+        "profile": "Profile Information",
+        "security": "Security & Password"
+      },
+    "loading": "Loading...",
+    "userInfo": {
+      "title": "Profile Information",
+      "description": "View and manage your personal information",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "emailNote": "Email address cannot be changed. Contact your administrator if you need to update it.",
+      "organization": "Organization",
+      "noOrganization": "No organization",
+      "rolesPermissions": "Roles & Permissions",
+      "accountCreated": "Account Created",
+      "edit": "Edit Profile",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "profileUpdated": "Profile updated",
+      "profileUpdatedDesc": "Your profile information has been updated successfully.",
+      "errorUpdating": "Failed to update profile. Please try again."
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "description": "Update your password to keep your account secure",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "placeholders": {
+        "current": "Enter your current password",
+        "new": "Enter your new password",
+        "confirm": "Confirm your new password"
+      },
+      "requirementsTitle": "Password requirements:",
+      "requirements": {
+        "minChars": "At least 8 characters",
+        "uppercase": "Contains uppercase letter",
+        "lowercase": "Contains lowercase letter",
+        "number": "Contains number",
+        "special": "Contains special character"
+      },
+      "passwordsMatch": "Passwords match",
+      "changeSuccess": "Password changed",
+      "changeSuccessDesc": "Your password has been updated successfully.",
+      "changeError": "Failed to change password. Please try again.",
+      "afterChangeNote": "After changing your password, you will need to log in again on all your devices."
+      }
+    }
+  },
+  "report": {
+    "title": "Reports & Analytics",
+    "subtitle": "Track performance and data quality metrics",
+    "loading": "Loading analytics...",
+    "error": "Failed to load analytics data. Please ensure the backend is running.",
+    "timePeriod": {
+      "placeholder": "Select time period",
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "90days": "Last 90 days",
+      "12months": "Last 12 months"
+    },
+    "cards": {
+      "totalCompanies": { "title": "Total Companies", "subtitle": "In your database" },
+      "activeCompanies": { "title": "Active Companies", "subtitle": "% of total" },
+      "needsReview": { "title": "Needs Review", "subtitle": "Verification required" },
+      "dataQuality": { "title": "Data Quality", "subtitle": "Avg. completeness" }
+    },
+    "charts": {
+      "industry": { "title": "Industry Distribution", "description": "Companies by industry sector" },
+      "dataQuality": { "title": "Data Quality Status", "description": "Distribution of verification statuses" },
+      "province": { "title": "Geographic Distribution", "description": "Companies by province" },
+      "completeness": { "title": "Data Completeness", "description": "Distribution of data quality scores" }
+    },
+    "future": {
+      "title": "Future Features (Not Yet Available)",
+      "description": "The following features will be implemented in future releases with platform admin access",
+      "items": {
+        "salesActivity": { "title": "Sales Activity Tracking", "desc": "Future: Track sales activities and performance" },
+        "salesRep": { "title": "Sales Rep Performance", "desc": "Future: Individual representative analytics" },
+        "activityTrends": { "title": "Activity Trends", "desc": "Future: Historical performance trends" },
+        "leadScoring": { "title": "Lead Scoring Analytics", "desc": "Future: AI-powered lead insights" },
+        "platformMetrics": { "title": "Platform-wide Metrics", "desc": "Future: Cross-customer aggregated data" },
+        "advancedReporting": { "title": "Advanced Reporting", "desc": "Future: Custom reports and data exports" }
+      },
+      "currentScopeTitle": "Current Scope:",
+      "currentScopeDesc": "As a customer admin, you see reports based only on your organization's company data. Call tracking, sales metrics, and platform-wide analytics are not yet available but will be added with future platform admin features."
+    }
+  },
+  "staff": {
+    "title": "Database Management",
+    "subtitle": "Manage and moderate the company database",
+    "stats": {
+      "totalCompanies": "Total Companies",
+      "active": "Active",
+      "needsVerification": "Needs Verification",
+      "invalid": "Invalid",
+      "avgCompleteness": "Avg. Completeness"
+    },
+    "search": {
+      "placeholder": "Search companies..."
+    },
+    "actions": {
+      "import": "Import Records",
+      "export": "Export ({count})",
+      "bulkEdit": "Bulk Edit ({count})"
+    },
+    "loading": "Loading companies...",
+    "results": {
+      "showing": "Showing {filtered} of {total} companies",
+      "selected": "{count} selected"
+    },
+    "staff_actions": {
+      "title": "Bulk Actions",
+      "description": "Apply actions to {count} selected companies.",
+      "actionLabel": "Action",
+      "actions": {
+        "approve": "Approve all selected companies",
+        "reject": "Reject all selected companies",
+        "updateStatus": "Update verification status"
+      },
+      "statusOptions": {
+        "active": "Active",
+        "needsVerification": "Needs Verification",
+        "invalid": "Invalid"
+      },
+      "newStatusLabel": "New Status",
+      "newStatusPlaceholder": "Select new status...",
+      "reasonLabel": "Reason",
+      "reasonRequired": "(Required)",
+      "reasonOptional": "(Optional)",
+      "reasonPlaceholder": "Enter reason for this action...",
+      "cancel": "Cancel",
+      "processing": "Processing...",
+      "applyButton": "Apply to {count} Companies"
+    },
+    "staff_table": {
+      "headers": {
+        "companyName": "Company Name",
+        "industry": "Industry",
+        "province": "Province",
+        "contactPerson": "Contact Person",
+        "verificationStatus": "Verification Status",
+        "dataCompleteness": "Data Completeness",
+        "lastUpdated": "Last Updated",
+        "createdBy": "Created By",
+        "actions": "Actions"
+      },
+      "regPrefix": "Reg",
+      "noContactInfo": "No contact info",
+      "actions": {
+        "edit": "Edit Record",
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "rejectPrompt": "Please provide a reason for rejection:",
+      "noCompanies": "No companies found matching your criteria."
+    }
+  },
+  "import": {
+    "title": "Data Import",
+    "subtitle": "Import company data from Excel/CSV files with validation and mapping",
+    "tabs": { "upload": "Upload File", "jobs": "Import Jobs" },
+    "supportedFormats": {
+      "title": "Supported Formats",
+      "xlsx": { "title": "Excel (.xlsx)", "subtitle": "Up to 50,000 rows" },
+      "csv": { "title": "CSV (.csv)", "subtitle": "UTF-8 encoding required" }
+    },
+    "requiredFields": {
+      "title": "Required Fields",
+      "company_name_en": "Company name (English)",
+      "registration_id": "13-digit Thai registration ID",
+      "optionalLabel": "Optional:",
+      "optional": "industry, province, contact details"
+    },
+    "dataProcessing": {
+      "title": "Data Processing",
+      "item1": "Auto-detection of column mapping",
+      "item2": "Validation and error reporting",
+      "item3": "Duplicate detection by registration ID",
+      "item4": "Merge or create new records"
+    },
+    "actions": { "startImport": "Start New Import" },
+    "loadingJobs": "Loading import jobs...",
+    "import_wizard": {
+      "stepTitles": {
+        "upload": "Upload File",
+        "mapping": "Map Columns",
+        "validation": "Validate Data",
+        "processing": "Processing Import",
+        "complete": "Import Complete",
+        "default": "Import Data"
+      },
+      "descriptions": {
+        "upload": "Select a file to import company data",
+        "mapping": "Map your file columns to system fields",
+        "validation": "Checking data quality and format",
+        "processing": "Importing data into the system",
+        "complete": "Import process finished"
+      },
+      "upload": { "chooseFile": "Choose Excel (.xlsx) or CSV (.csv) file", "maxRows": "Maximum 50,000 rows" },
+      "fields": {
+        "company_name_en": "Company Name (English)",
+        "registration_id": "Registration ID",
+        "industry_name": "Industry/Sector",
+        "province": "Province",
+        "contact_name": "Contact Person Name",
+        "phone": "Phone Number",
+        "email": "Email Address",
+        "website": "Website URL"
+      },
+      "mapping": { "title": "Map your columns to system fields:", "selectColumn": "Select column...", "skipField": "Skip this field", "columnsDetected": "columns detected" },
+      "validation": { "validating": "Validating data..." },
+      "processing": { "title": "Processing records...", "processed": "Processed", "remaining": "Remaining", "errors": "Errors" },
+      "complete": { "title": "Import Completed!", "success": "Successfully processed {count} records", "imported": "Imported", "errors": "Errors", "total": "Total", "hasErrors": "{count} records had errors.", "downloadErrors": "Download error report" },
+      "buttons": { "next": "Next: Map Columns", "back": "Back", "validateImport": "Validate & Import", "close": "Close" }
+    },
+    "import_table": {
+      "table": {
+        "headers": { "file": "File", "status": "Status", "progress": "Progress", "records": "Records", "importedBy": "Imported By", "created": "Created", "actions": "Actions" },
+        "success": "success",
+        "errors": "errors",
+        "total": "Total",
+        "errorsButton": "Errors",
+        "detailsButton": "Details"
+      },
+      "status": { "completed": "Completed", "failed": "Failed", "processing": "Processing" }
+    }
+  },
+  "export": {
+    "title": "Export History",
+    "subtitle": "Download and manage your data exports",
+    "loading": "Loading export jobs...",
+    "cards": {
+      "availableDownloads": { "title": "Available Downloads", "subtitle": "Ready for download" },
+      "processing": { "title": "Processing", "subtitle": "Currently generating" },
+      "totalExports": { "title": "Total Exports", "subtitle": "All time exports" },
+      "dataVolume": { "title": "Data Volume", "subtitle": "Total records exported" }
+    },
+    "retention": {
+      "title": "Export Retention Policy",
+      "description": "Export files are available for download for 7 days after generation. After this period, files are automatically deleted for security and storage management. You can regenerate exports at any time from the relevant sections."
+    },
+    "table": { "title": "Export History", "description": "View and download your exported data files" },
+    "export_table": {
+      "table": {
+        "headers": { "file": "File", "status": "Status", "scope": "Scope", "records": "Records", "size": "Size", "requestedBy": "Requested By", "created": "Created", "actions": "Actions" },
+        "generating": "Generating...",
+        "fileExpired": "Expired",
+        "remaining": "remaining",
+        "lessThanHour": "< 1h remaining",
+        "calculating": "Calculating...",
+        "downloadButton": "Download"
+      },
+      "status": { "completed": "Completed", "expired": "Expired", "failed": "Failed", "processing": "Processing" }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "login": {
+    "title": "SalesSphere Base",
+    "subtitle": "Sign in to your account to access the platform",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "invalidCredentials": "Invalid email or password",
+    "error": "An error occurred. Please try again."
+  },
+  "logout": {
+    "loggingOut": "Logging out..."
+  }
+}

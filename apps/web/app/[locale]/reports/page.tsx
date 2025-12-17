@@ -19,8 +19,10 @@ import {
   Cell
 } from "recharts"
 import { TrendingUp, Users, CheckCircle, AlertTriangle, Loader2 } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 function ReportsPage() {
+  const t = useTranslations('report')
   const [analytics, setAnalytics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,8 +36,8 @@ function ReportsPage() {
         setAnalytics(data);
         setError(null);
       } catch (err) {
-        console.error('Failed to fetch analytics:', err);
-        setError('Failed to load analytics data. Please ensure the backend is running.');
+          console.error('Failed to fetch analytics:', err);
+          setError(t('error'));
       } finally {
         setIsLoading(false);
       }
@@ -50,7 +52,7 @@ function ReportsPage() {
         <main className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <span className="ml-2 text-gray-600">Loading analytics...</span>
+            <span className="ml-2 text-gray-600">{t('loading')}</span>
           </div>
         </main>
       </div>
@@ -63,7 +65,7 @@ function ReportsPage() {
         <Navigation />
         <main className="container mx-auto px-4 py-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error || 'Failed to load analytics data'}</p>
+            <p className="text-red-800">{error || t('error')}</p>
           </div>
         </main>
       </div>
@@ -81,7 +83,9 @@ function ReportsPage() {
   const invalidCompanies = Math.round(totalCompanies * 0.10);
 
   // Use real data quality distribution from analytics
-  const dataQualityData = analytics.dataQualityDistribution || [
+  type DataQualityEntry = { name: string; value: number; color: string }
+
+  const dataQualityData: DataQualityEntry[] = (analytics.dataQualityDistribution as DataQualityEntry[] | undefined) || [
     { name: "High Quality", value: Math.round(totalCompanies * 0.65), color: "#10b981" },
     { name: "Medium Quality", value: Math.round(totalCompanies * 0.25), color: "#f59e0b" },
     { name: "Low Quality", value: Math.round(totalCompanies * 0.10), color: "#ef4444" }
@@ -102,21 +106,21 @@ function ReportsPage() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports & Analytics</h1>
-          <p className="text-gray-600">Track performance and data quality metrics</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('title')}</h1>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </div>
 
         {/* Time Period Filter */}
         <div className="mb-6">
           <Select defaultValue="30days">
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select time period" />
+              <SelectValue placeholder={t('timePeriod.placeholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7days">Last 7 days</SelectItem>
-              <SelectItem value="30days">Last 30 days</SelectItem>
-              <SelectItem value="90days">Last 90 days</SelectItem>
-              <SelectItem value="12months">Last 12 months</SelectItem>
+              <SelectItem value="7days">{t('timePeriod.7days')}</SelectItem>
+              <SelectItem value="30days">{t('timePeriod.30days')}</SelectItem>
+              <SelectItem value="90days">{t('timePeriod.90days')}</SelectItem>
+              <SelectItem value="12months">{t('timePeriod.12months')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -127,12 +131,12 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Total Companies
+                {t('cards.totalCompanies.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalCompanies}</div>
-              <p className="text-xs text-gray-600">In your database</p>
+              <p className="text-xs text-gray-600">{t('cards.totalCompanies.subtitle')}</p>
             </CardContent>
           </Card>
 
@@ -140,13 +144,13 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Active Companies
+                {t('cards.activeCompanies.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeCompanies}</div>
               <p className="text-xs text-green-600">
-                {Math.round((activeCompanies / totalCompanies) * 100)}% of total
+                {Math.round((activeCompanies / totalCompanies) * 100)}% {t('cards.activeCompanies.subtitle')}
               </p>
             </CardContent>
           </Card>
@@ -155,12 +159,12 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                Needs Review
+                {t('cards.needsReview.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{needsVerificationCompanies + invalidCompanies}</div>
-              <p className="text-xs text-orange-600">Verification required</p>
+              <p className="text-xs text-orange-600">{t('cards.needsReview.subtitle')}</p>
             </CardContent>
           </Card>
 
@@ -168,12 +172,12 @@ function ReportsPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Data Quality
+                {t('cards.dataQuality.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{avgCompleteness}%</div>
-              <p className="text-xs text-gray-600">Avg. completeness</p>
+              <p className="text-xs text-gray-600">{t('cards.dataQuality.subtitle')}</p>
             </CardContent>
           </Card>
         </div>
@@ -181,9 +185,9 @@ function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Industry Distribution */}
           <Card>
-            <CardHeader>
-              <CardTitle>Industry Distribution</CardTitle>
-              <CardDescription>Companies by industry sector</CardDescription>
+              <CardHeader>
+              <CardTitle>{t('charts.industry.title')}</CardTitle>
+              <CardDescription>{t('charts.industry.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -202,9 +206,9 @@ function ReportsPage() {
 
           {/* Data Quality Status */}
           <Card>
-            <CardHeader>
-              <CardTitle>Data Quality Status</CardTitle>
-              <CardDescription>Distribution of verification statuses</CardDescription>
+              <CardHeader>
+              <CardTitle>{t('charts.dataQuality.title')}</CardTitle>
+              <CardDescription>{t('charts.dataQuality.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -244,9 +248,9 @@ function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Province Distribution */}
           <Card>
-            <CardHeader>
-              <CardTitle>Geographic Distribution</CardTitle>
-              <CardDescription>Companies by province</CardDescription>
+              <CardHeader>
+              <CardTitle>{t('charts.province.title')}</CardTitle>
+              <CardDescription>{t('charts.province.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -265,9 +269,9 @@ function ReportsPage() {
 
           {/* Data Completeness */}
           <Card>
-            <CardHeader>
-              <CardTitle>Data Completeness</CardTitle>
-              <CardDescription>Distribution of data quality scores</CardDescription>
+              <CardHeader>
+              <CardTitle>{t('charts.completeness.title')}</CardTitle>
+              <CardDescription>{t('charts.completeness.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -287,44 +291,43 @@ function ReportsPage() {
 
         {/* Future Features Notice */}
         <Card className="mt-6">
-          <CardHeader>
+            <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Future Features (Not Yet Available)
+              {t('future.title')}
             </CardTitle>
-            <CardDescription>The following features will be implemented in future releases with platform admin access</CardDescription>
+            <CardDescription>{t('future.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Sales Activity Tracking</div>
-                <div className="text-gray-600 mt-1">Future: Track sales activities and performance</div>
+                <div className="font-medium text-gray-700">{t('future.items.salesActivity.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.salesActivity.desc')}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Sales Rep Performance</div>
-                <div className="text-gray-600 mt-1">Future: Individual representative analytics</div>
+                <div className="font-medium text-gray-700">{t('future.items.salesRep.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.salesRep.desc')}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Activity Trends</div>
-                <div className="text-gray-600 mt-1">Future: Historical performance trends</div>
+                <div className="font-medium text-gray-700">{t('future.items.activityTrends.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.activityTrends.desc')}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Lead Scoring Analytics</div>
-                <div className="text-gray-600 mt-1">Future: AI-powered lead insights</div>
+                <div className="font-medium text-gray-700">{t('future.items.leadScoring.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.leadScoring.desc')}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Platform-wide Metrics</div>
-                <div className="text-gray-600 mt-1">Future: Cross-customer aggregated data</div>
+                <div className="font-medium text-gray-700">{t('future.items.platformMetrics.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.platformMetrics.desc')}</div>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="font-medium text-gray-700">Advanced Reporting</div>
-                <div className="text-gray-600 mt-1">Future: Custom reports and data exports</div>
+                <div className="font-medium text-gray-700">{t('future.items.advancedReporting.title')}</div>
+                <div className="text-gray-600 mt-1">{t('future.items.advancedReporting.desc')}</div>
               </div>
             </div>
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <div className="text-blue-800 text-sm">
-                <strong>Current Scope:</strong> As a customer admin, you see reports based only on your organization&apos;s company data. 
-                Call tracking, sales metrics, and platform-wide analytics are not yet available but will be added with future platform admin features.
+                <strong>{t('future.currentScopeTitle')}</strong> {t('future.currentScopeDesc')}
               </div>
             </div>
           </CardContent>

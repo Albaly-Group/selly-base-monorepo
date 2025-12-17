@@ -1,10 +1,35 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import createIntlMiddleware from 'next-intl/middleware'
+import { locales, defaultLocale } from './src/i18n'
+
+// Create next-intl middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always',
+  localeDetection: true
+})
 
 export function proxy(request: NextRequest) {
   try {
     // Get the pathname of the request
     const { pathname } = request.nextUrl
+
+    // Handle locale routing first for all paths except API and static files
+    if (!pathname.startsWith('/api/') && 
+        !pathname.startsWith('/_next/') && 
+        !pathname.startsWith('/_vercel/') &&
+        !pathname.match(/\.\w+$/)) {
+      
+      // Apply intl middleware
+      const intlResponse = intlMiddleware(request)
+      
+      // If intl middleware returns a redirect, use it
+      if (intlResponse.status === 307 || intlResponse.status === 308) {
+        return intlResponse
+      }
+    }
 
     const userCookie = request.cookies.get("selly-user")
     let isAuthenticated = false
@@ -23,6 +48,13 @@ export function proxy(request: NextRequest) {
       }
     }
 
+    // Extract locale from pathname (e.g., /en/dashboard -> en)
+    const localeMatch = pathname.match(/^\/(en|th)(\/|$)/)
+    const currentLocale = localeMatch ? localeMatch[1] : defaultLocale
+    
+    // Remove locale from pathname for route checking.
+    const pathnameWithoutLocale = localeMatch ? pathname.replace(new RegExp(`^\/${localeMatch[1]}`), '') || '/' : pathname
+    
     // Public routes that don't require authentication
     const publicRoutes = ["/", "/login", "/logout", "/access-denied"]
     
@@ -31,43 +63,43 @@ export function proxy(request: NextRequest) {
       return NextResponse.next()
     }
 
-    // Protected routes that require authentication
+    // Protected routes that require authentication (without locale prefix)
     const protectedRoutes = ["/dashboard", "/lookup", "/lists", "/staff", "/admin", "/platform-admin", "/reports", "/imports", "/exports"]
 
     // If accessing a protected route without authentication, redirect to login
-    if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
-      return NextResponse.redirect(new URL("/login", request.url))
+    if (protectedRoutes.some((route) => pathnameWithoutLocale.startsWith(route)) && !isAuthenticated) {
+      return NextResponse.redirect(new URL(`/${currentLocale}/login`, request.url))
     }
 
     // Platform admin route protection
-    if (pathname.startsWith("/platform-admin") && isAuthenticated) {
+    if (pathnameWithoutLocale.startsWith("/platform-admin") && isAuthenticated) {
       if (userRole !== "platform_admin") {
-        return NextResponse.redirect(new URL("/access-denied", request.url))
+        return NextResponse.redirect(new URL(`/${currentLocale}/access-denied`, request.url))
       }
     }
 
     // Customer admin route protection
-    if (pathname.startsWith("/admin") && isAuthenticated) {
+    if (pathnameWithoutLocale.startsWith("/admin") && isAuthenticated) {
       if (userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/access-denied", request.url))
+        return NextResponse.redirect(new URL(`/${currentLocale}/access-denied`, request.url))
       }
     }
 
     // Staff route protection
-    if (pathname.startsWith("/staff") && isAuthenticated) {
+    if (pathnameWithoutLocale.startsWith("/staff") && isAuthenticated) {
       if (userRole !== "staff" && userRole !== "admin" && userRole !== "customer_admin") {
-        return NextResponse.redirect(new URL("/access-denied", request.url))
+        return NextResponse.redirect(new URL(`/${currentLocale}/access-denied`, request.url))
       }
     }
 
     // Redirect unauthenticated users on homepage to login
-    if (pathname === "/" && !isAuthenticated) {
-      return NextResponse.redirect(new URL("/login", request.url))
+    if (pathnameWithoutLocale === "/" && !isAuthenticated) {
+      return NextResponse.redirect(new URL(`/${currentLocale}/login`, request.url))
     }
 
     // Redirect authenticated users on homepage to dashboard
-    if (pathname === "/" && isAuthenticated) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+    if (pathnameWithoutLocale === "/" && isAuthenticated) {
+      return NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, request.url))
     }
 
     return NextResponse.next()
@@ -82,11 +114,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes) - handled separately above
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - api (API routes)
+     * - _next (Next.js internals)
+     * - _vercel (Vercel internals)
+     * - Static files (images, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
 }

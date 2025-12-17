@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, FileText, CheckCircle, AlertTriangle, X } from "lucide-react"
+import { useTranslations } from 'next-intl'
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/lib/auth"
 
@@ -29,6 +30,7 @@ type ImportStep = "upload" | "mapping" | "validation" | "processing" | "complete
 
 export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWizardProps) {
   const { user } = useAuth()
+  const t = useTranslations('import.import_wizard')
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)
@@ -36,14 +38,14 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
   const [detectedColumns, setDetectedColumns] = useState<string[]>([])
 
   const requiredFields = {
-    "company_name_en": "Company Name (English)",
-    "registration_id": "Registration ID (13 digits)",
-    "industry_name": "Industry/Sector",
-    "province": "Province",
-    "contact_name": "Contact Person Name",
-    "phone": "Phone Number",
-    "email": "Email Address",
-    "website": "Website URL"
+    "company_name_en": t('fields.company_name_en'),
+    "registration_id": t('fields.registration_id'),
+    "industry_name": t('fields.industry_name'),
+    "province": t('fields.province'),
+    "contact_name": t('fields.contact_name'),
+    "phone": t('fields.phone'),
+    "email": t('fields.email'),
+    "website": t('fields.website')
   }
 
   const [validationResults, setValidationResults] = useState<any>(null)
@@ -155,10 +157,10 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
               <div className="mt-4">
                 <label htmlFor="file-upload" className="cursor-pointer">
                   <span className="mt-2 block text-sm font-medium text-gray-900">
-                    Choose Excel (.xlsx) or CSV (.csv) file
+                    {t('upload.chooseFile')}
                   </span>
                   <span className="mt-1 block text-sm text-gray-500">
-                    Maximum 50,000 rows
+                    {t('upload.maxRows')}
                   </span>
                 </label>
                 <input
@@ -180,11 +182,11 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5" />
               <span className="font-medium">{uploadedFile?.name}</span>
-              <Badge variant="secondary">{detectedColumns.length} columns detected</Badge>
+              <Badge variant="secondary">{detectedColumns.length} {t('mapping.columnsDetected')}</Badge>
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-medium">Map your columns to system fields:</h4>
+              <h4 className="font-medium">{t('mapping.title')}</h4>
               {Object.entries(requiredFields).map(([systemField, label]) => (
                 <div key={systemField} className="flex items-center justify-between p-3 border rounded">
                   <div className="flex-1">
@@ -196,10 +198,10 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
                     onValueChange={(value) => handleMappingChange(systemField, value)}
                   >
                     <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Select column..." />
+                      <SelectValue placeholder={t('mapping.selectColumn')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Skip this field</SelectItem>
+                      <SelectItem value="">{t('mapping.skipField')}</SelectItem>
                       {detectedColumns.map((col) => (
                         <SelectItem key={col} value={col}>{col}</SelectItem>
                       ))}
@@ -216,7 +218,7 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
           <div className="space-y-4">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2">Validating data...</p>
+              <p className="mt-2">{t('validation.validating')}</p>
             </div>
           </div>
         )
@@ -226,7 +228,7 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Processing records...</span>
+                <span>{t('processing.title')}</span>
                 <span>{Math.round(progress)}%</span>
               </div>
               <Progress value={progress} className="w-full" />
@@ -236,17 +238,17 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
                 <div className="text-2xl font-bold text-green-600">
                   {Math.round((progress / 100) * validationResults.validRows)}
                 </div>
-                <div className="text-sm text-gray-600">Processed</div>
+                <div className="text-sm text-gray-600">{t('processing.processed')}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-blue-600">
                   {validationResults.totalRows - Math.round((progress / 100) * validationResults.validRows)}
                 </div>
-                <div className="text-sm text-gray-600">Remaining</div>
+                <div className="text-sm text-gray-600">{t('processing.remaining')}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-red-600">{validationResults.invalidRows}</div>
-                <div className="text-sm text-gray-600">Errors</div>
+                <div className="text-sm text-gray-600">{t('processing.errors')}</div>
               </div>
             </div>
           </div>
@@ -257,22 +259,22 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
           <div className="space-y-4 text-center">
             <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
             <div>
-              <h3 className="text-lg font-medium">Import Completed!</h3>
-              <p className="text-gray-600">Successfully processed {validationResults.validRows} records</p>
+              <h3 className="text-lg font-medium">{t('complete.title')}</h3>
+              <p className="text-gray-600">{t('complete.success', { count: validationResults.validRows })}</p>
             </div>
             
             <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{validationResults.validRows}</div>
-                <div className="text-sm text-gray-600">Imported</div>
+                <div className="text-sm text-gray-600">{t('complete.imported')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">{validationResults.invalidRows}</div>
-                <div className="text-sm text-gray-600">Errors</div>
+                <div className="text-sm text-gray-600">{t('complete.errors')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{validationResults.totalRows}</div>
-                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-sm text-gray-600">{t('complete.total')}</div>
               </div>
             </div>
 
@@ -280,9 +282,9 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  {validationResults.invalidRows} records had errors. 
+                  {t('complete.hasErrors', { count: validationResults.invalidRows })}
                   <Button variant="link" className="p-0 h-auto ml-1">
-                    Download error report
+                    {t('complete.downloadErrors')}
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -297,12 +299,12 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case "upload": return "Upload File"
-      case "mapping": return "Map Columns"
-      case "validation": return "Validate Data"
-      case "processing": return "Processing Import"
-      case "complete": return "Import Complete"
-      default: return "Import Data"
+      case "upload": return t('stepTitles.upload')
+      case "mapping": return t('stepTitles.mapping')
+      case "validation": return t('stepTitles.validation')
+      case "processing": return t('stepTitles.processing')
+      case "complete": return t('stepTitles.complete')
+      default: return t('stepTitles.default')
     }
   }
 
@@ -320,11 +322,11 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
         <DialogHeader>
           <DialogTitle>{getStepTitle()}</DialogTitle>
           <DialogDescription>
-            {currentStep === "upload" && "Select a file to import company data"}
-            {currentStep === "mapping" && "Map your file columns to system fields"}
-            {currentStep === "validation" && "Checking data quality and format"}
-            {currentStep === "processing" && "Importing data into the system"}
-            {currentStep === "complete" && "Import process finished"}
+            {currentStep === "upload" && t('descriptions.upload')}
+            {currentStep === "mapping" && t('descriptions.mapping')}
+            {currentStep === "validation" && t('descriptions.validation')}
+            {currentStep === "processing" && t('descriptions.processing')}
+            {currentStep === "complete" && t('descriptions.complete')}
           </DialogDescription>
         </DialogHeader>
 
@@ -338,27 +340,27 @@ export function ImportWizard({ open, onOpenChange, onImportComplete }: ImportWiz
               disabled={!canProceed()}
               onClick={() => setCurrentStep("mapping")}
             >
-              Next: Map Columns
+              {t('buttons.next')}
             </Button>
           )}
           
           {currentStep === "mapping" && (
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setCurrentStep("upload")}>
-                Back
+                {t('buttons.back')}
               </Button>
               <Button 
                 disabled={!canProceed()}
                 onClick={proceedToValidation}
               >
-                Validate & Import
+                {t('buttons.validateImport')}
               </Button>
             </div>
           )}
 
           {currentStep === "complete" && (
             <Button onClick={() => onOpenChange(false)}>
-              Close
+              {t('buttons.close')}
             </Button>
           )}
         </DialogFooter>

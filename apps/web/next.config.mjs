@@ -1,3 +1,8 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+// Create next-intl plugin with i18n config path
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -16,4 +21,5 @@ const nextConfig = {
   output: process.env.AWS_AMPLIFY === 'true' ? 'standalone' : undefined,
 }
 
-export default nextConfig
+// Wrap config with next-intl plugin
+export default withNextIntl(nextConfig)

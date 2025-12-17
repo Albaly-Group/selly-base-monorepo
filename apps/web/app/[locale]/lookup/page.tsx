@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, ChangeEvent, useRef } from "react";
 import { Navigation } from "@/components/navigation";
 import { CompanySearch } from "@/components/company-search";
+import { useTranslations } from 'next-intl'
 import { CompanyTable } from "@/components/company-table";
 import { AddToListDialog } from "@/components/add-to-list-dialog";
 import { CompanyDetailDrawer } from "@/components/company-detail-drawer";
@@ -27,6 +28,13 @@ import Papa from "papaparse";
 import { apiClient } from "@/lib/api-client";
 
 function CompanyLookupPage() {
+  const t = useTranslations('companies_lookup');
+  const tSearch = useTranslations('companies_lookup.search');
+  const tFilters = useTranslations('companies_lookup.filters');
+  const tActions = useTranslations('companies_lookup.actions');
+  const tEmpty = useTranslations('companies_lookup.emptyState');
+  const tExport = useTranslations('companies_lookup.export');
+  const tImport = useTranslations('companies_lookup.import');
   const [searchTerm, setSearchTerm] = useState("");
   const [smartFiltering, setSmartFiltering] = useState<SmartFilteringCriteria>(
     {}
@@ -1213,10 +1221,10 @@ function CompanyLookupPage() {
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Company Lookup
+            {t('title')}
           </h1>
           <p className="text-gray-600">
-            Search and discover companies in our database
+            {t('subtitle')}
           </p>
         </div>
 
@@ -1225,7 +1233,7 @@ function CompanyLookupPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <h3 className="font-medium mb-2 mt-2">All Companies</h3>
+          <h3 className="font-medium mb-2 mt-2">{t('allCompanies')}</h3>
 
           <TabsContent value="all" className="space-y-4">
             {/* Search Section */}
@@ -1247,13 +1255,13 @@ function CompanyLookupPage() {
                   <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
                     <Search className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-green-800 font-medium">
-                      Search: &quot;{searchTerm}&quot;
+                      {tSearch('active')} &quot;{searchTerm}&quot;
                     </span>
                     <button
                       onClick={clearFilters}
                       className="text-green-600 hover:text-green-800 text-sm underline ml-2"
                     >
-                      Clear
+                      {tSearch('clear')}
                     </button>
                   </div>
                 )}
@@ -1261,45 +1269,45 @@ function CompanyLookupPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2 flex-wrap">
                     <Filter className="h-4 w-4 text-blue-600" />
                     <span className="text-sm text-blue-800 font-medium">
-                      Smart Filtering:
+                      {tFilters('smartFiltering')}
                     </span>
                     {smartFiltering.keyword && (
                       <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        Keyword
+                        {tFilters('keyword')}
                       </span>
                     )}
                     {smartFiltering.industrial && (
                       <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        Industry
+                        {tFilters('industry')}
                       </span>
                     )}
                     {smartFiltering.province && (
                       <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        Province
+                        {tFilters('province')}
                       </span>
                     )}
                     {smartFiltering.companySize && (
                       <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        Size
+                        {tFilters('size')}
                       </span>
                     )}
                     {smartFiltering.verificationStatus && (
                       <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        Status
+                        {tFilters('status')}
                       </span>
                     )}
                     <button
                       onClick={clearFilters}
                       className="text-blue-600 hover:text-blue-800 text-sm underline ml-2"
                     >
-                      Clear All
+                      {tSearch('clearAll')}
                     </button>
                   </div>
                 )}
                 {hasApiError && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center gap-2">
                     <span className="text-sm text-yellow-800">
-                      Using fallback data (API unavailable)
+                      {tFilters('usingFallback')}
                     </span>
                   </div>
                 )}
@@ -1311,27 +1319,27 @@ function CompanyLookupPage() {
                   className="px-3 py-2 bg-green-600 text-sm text-white rounded-md hover:bg-green-700 flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Create Company
+                  {tActions('createCompany')}
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
                   className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Import
+                  {tActions('import')}
                 </button>
                 <button
                   onClick={() => setShowExportModal(true)}
                   disabled={selectedCompanies.length === 0}
                   className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Export ({selectedCompanies.length})
+                  {tActions('export')} ({selectedCompanies.length})
                 </button>
                 <button
                   onClick={onAddToList}
                   disabled={selectedCompanies.length === 0 || isLoading}
                   className="px-3 py-2 bg-primary text-sm text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
                 >
-                  Add to List ({selectedCompanies.length})
+                  {tActions('addToList')} ({selectedCompanies.length})
                 </button>
               </div>
             </div>
@@ -1343,25 +1351,23 @@ function CompanyLookupPage() {
                     <Search className="h-16 w-16 text-gray-300 mx-auto" />
                     <div className="flex flex-col items-center">
                       <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                        Ready to Find Companies?
+                        {tEmpty('title')}
                       </h3>
                       <p className="text-gray-500 max-w-md">
-                        Enter keywords in the search box and press Enter for
-                        instant results, or use Smart Filtering for advanced
-                        weighted scoring.
+                        {tEmpty('description')}
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Search className="h-4 w-4" />
                         <span>
-                          Quick search: Enter keywords and press Enter
+                          {tEmpty('quickSearch')}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Filter className="h-4 w-4" />
                         <span>
-                          Advanced: Use Smart Filtering for lead scoring
+                          {tEmpty('advancedSearch')}
                         </span>
                       </div>
                     </div>
@@ -1388,7 +1394,7 @@ function CompanyLookupPage() {
                   <div className="text-sm text-gray-600 flex justify-end">
                     {filteredCompanies.length > 0 && (
                       <span className="text-blue-600">
-                        Sorted by: Highest weighted score first
+                        {t('table.sortedBy')}
                       </span>
                     )}
                   </div>
@@ -1444,10 +1450,10 @@ function CompanyLookupPage() {
             />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">
-                Select columns to export
+                {tExport('title')}
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Choose which columns to include in the Excel file. All columns are selected by default.
+                {tExport('description')}
               </p>
               <div className="flex items-center justify-between mb-3">
                 <button
@@ -1464,11 +1470,11 @@ function CompanyLookupPage() {
                   }}
                 >
                   {selectedExportKeys.length === exportFieldDefs.length
-                    ? "Deselect All"
-                    : "Select All"}
+                    ? tExport('deselectAll')
+                    : tExport('selectAll')}
                 </button>
                 <span className="text-sm text-gray-500">
-                  {selectedExportKeys.length} selected
+                  {selectedExportKeys.length} {tExport('selected')}
                 </span>
               </div>
               <div className="max-h-64 overflow-auto grid grid-cols-2 gap-2 mb-4">
@@ -1497,7 +1503,7 @@ function CompanyLookupPage() {
                   className="px-3 py-2 border rounded-md"
                   onClick={() => setShowExportModal(false)}
                 >
-                  Cancel
+                  {tExport('cancel')}
                 </button>
                 <button
                   className="px-3 py-2 bg-primary text-primary-foreground rounded-md"
@@ -1506,7 +1512,7 @@ function CompanyLookupPage() {
                     onExportExcel(selectedExportKeys);
                   }}
                 >
-                  Export
+                  {tExport('export')}
                 </button>
               </div>
             </div>
@@ -1522,16 +1528,16 @@ function CompanyLookupPage() {
             />
             <div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-2xl p-6">
               <h3 className="text-lg font-semibold mb-2">
-                Import from Excel (.xlsx/.csv)
+                {tImport('title')}
               </h3>
               <p className="text-sm text-gray-600 mb-2">
-                Upload an Excel file to import company data. Need a sample template
+                {tImport('description')}
                 <button
                   type="button"
                   onClick={downloadImportTemplate}
                   className="ml-1 text-blue-600 underline"
                 >
-                  Download template
+                  {tImport('downloadTemplate')}
                 </button>
               </p>
 
@@ -1545,9 +1551,9 @@ function CompanyLookupPage() {
                   className="cursor-pointer text-gray-600 hover:text-gray-800 text-center"
                 >
                   <div className="flex flex-col items-center">
-                    <span className="font-medium">Choose File</span>
+                    <span className="font-medium">{tImport('chooseFile')}</span>
                     <span className="text-sm text-gray-400">
-                      .xlsx / .csv
+                      {tImport('fileTypes')}
                     </span>
                   </div>
                 </label>
@@ -1561,7 +1567,7 @@ function CompanyLookupPage() {
                 />
                 {importFile && (
                   <div className="mt-3 text-sm text-gray-700">
-                    Selected: {importFile.name}
+                    {tImport('selected')} {importFile.name}
                   </div>
                 )}
               </div>
@@ -1570,7 +1576,7 @@ function CompanyLookupPage() {
               {parsedImportRows && parsedImportRows.length > 0 && (
                 <div className="mb-4">
                   <h4 className="font-medium mb-2">
-                    Preview mapped rows ({parsedImportRows.length})
+                    {tImport('preview')} ({parsedImportRows.length})
                   </h4>
                   <div className="overflow-auto max-h-56 border rounded">
                     <table className="min-w-full text-sm">
@@ -1647,7 +1653,7 @@ function CompanyLookupPage() {
                   </div>
                   {parsedImportRows.length > 20 && (
                     <div className="text-xs text-gray-500 mt-1">
-                      Showing first 20 rows
+                      {tImport('showingFirst')}
                     </div>
                   )}
                 </div>
@@ -1659,14 +1665,14 @@ function CompanyLookupPage() {
                     className="px-3 py-2 border rounded-md"
                     onClick={closeImportModal}
                   >
-                    Cancel
+                    {tImport('cancel')}
                   </button>
                   <button
                     className="px-3 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50"
                     disabled={!importFile || importUploading}
                     onClick={handleUpload}
                   >
-                    {importUploading ? "Uploading..." : "Upload"}
+                    {importUploading ? tImport('uploading') : tImport('upload')}
                   </button>
                 </div>
               </div>
@@ -1687,7 +1693,7 @@ function CompanyLookupPage() {
           <div className="fixed inset-0 bg-white bg-opacity-20 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Refreshing data...</span>
+              <span>{t('refreshing')}</span>
             </div>
           </div>
         )}
