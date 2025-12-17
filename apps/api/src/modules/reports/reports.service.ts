@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual, LessThan, Between } from 'typeorm';
+import { Repository, MoreThanOrEqual, LessThan, Between, IsNull } from 'typeorm';
 import {
   Companies,
   CompanyLists,
@@ -30,7 +30,19 @@ export class ReportsService {
   async getDashboardAnalytics(organizationId?: string) {
     try {
       // Get counts from database
-      const whereClause = organizationId ? { organizationId } : {};
+      const companiesWhere = organizationId
+        ? [
+            { organizationId },
+            { organizationId: IsNull(), isSharedData: true },
+          ]
+        : {};
+
+      const listsWhere = organizationId
+        ? [{ organizationId }, { isShared: true }]
+        : {};
+
+      const exportsWhere = organizationId ? [{ organizationId }, { organizationId: IsNull() }] : {};
+      const importsWhere = organizationId ? [{ organizationId }, { organizationId: IsNull() }] : {};
 
       const [
         totalCompanies,
@@ -39,24 +51,28 @@ export class ReportsService {
         totalImports,
         activeUsers,
       ] = await Promise.all([
-        this.companiesRepo.count({ where: whereClause }),
-        this.listsRepo.count({ where: whereClause }),
-        this.exportRepo.count({ where: whereClause }),
-        this.importRepo.count({ where: whereClause }),
+        this.companiesRepo.count({ where: companiesWhere }),
+        this.listsRepo.count({ where: listsWhere }),
+        this.exportRepo.count({ where: exportsWhere }),
+        this.importRepo.count({ where: importsWhere }),
         this.usersRepo.count({
-          where: { status: 'active', ...whereClause },
+          where: organizationId ? { status: 'active', organizationId } : { status: 'active' },
         }),
       ]);
 
       // Calculate average data quality score
-      const avgQualityResult = await this.companiesRepo
+      const avgQualityQuery = this.companiesRepo
         .createQueryBuilder('company')
-        .select('AVG(company.dataQualityScore)', 'avgScore')
-        .where(
-          organizationId ? 'company.organizationId = :organizationId' : '1=1',
+        .select('AVG(company.dataQualityScore)', 'avgScore');
+
+      if (organizationId) {
+        avgQualityQuery.where(
+          '(company.organizationId = :organizationId) OR (company.organizationId IS NULL AND company.isSharedData = true)',
           { organizationId },
-        )
-        .getRawOne();
+        );
+      }
+
+      const avgQualityResult = await avgQualityQuery.getRawOne();
 
       const dataQualityScore = avgQualityResult?.avgScore
         ? parseFloat(avgQualityResult.avgScore)
@@ -89,40 +105,46 @@ export class ReportsService {
         previousUsers,
       ] = await Promise.all([
         this.companiesRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: MoreThanOrEqual(thirtyDaysAgo),
-          },
+          where: organizationId
+            ? [
+                { organizationId, createdAt: MoreThanOrEqual(thirtyDaysAgo) },
+                { organizationId: IsNull(), isSharedData: true, createdAt: MoreThanOrEqual(thirtyDaysAgo) },
+              ]
+            : { createdAt: MoreThanOrEqual(thirtyDaysAgo) },
         }),
         this.companiesRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
-          },
+          where: organizationId
+            ? [
+                { organizationId, createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
+                { organizationId: IsNull(), isSharedData: true, createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
+              ]
+            : { createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
         }),
         this.exportRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: MoreThanOrEqual(thirtyDaysAgo),
-          },
+          where: organizationId
+            ? [
+                { organizationId, createdAt: MoreThanOrEqual(thirtyDaysAgo) },
+                { organizationId: IsNull(), createdAt: MoreThanOrEqual(thirtyDaysAgo) },
+              ]
+            : { createdAt: MoreThanOrEqual(thirtyDaysAgo) },
         }),
         this.exportRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
-          },
+          where: organizationId
+            ? [
+                { organizationId, createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
+                { organizationId: IsNull(), createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
+              ]
+            : { createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
         }),
         this.usersRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: MoreThanOrEqual(thirtyDaysAgo),
-          },
+          where: organizationId
+            ? { organizationId, createdAt: MoreThanOrEqual(thirtyDaysAgo) }
+            : { createdAt: MoreThanOrEqual(thirtyDaysAgo) },
         }),
         this.usersRepo.count({
-          where: {
-            ...whereClause,
-            createdAt: Between(sixtyDaysAgo, thirtyDaysAgo),
-          },
+          where: organizationId
+            ? { organizationId, createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) }
+            : { createdAt: Between(sixtyDaysAgo, thirtyDaysAgo) },
         }),
       ]);
 
@@ -174,17 +196,19 @@ export class ReportsService {
 
   async getDataQualityMetrics(organizationId?: string) {
     try {
-      const whereClause = organizationId ? { organizationId } : {};
-
-      // Get overall quality score
-      const avgQualityResult = await this.companiesRepo
+      // Get overall quality score (include shared companies when organizationId provided)
+      const avgQualityQuery = this.companiesRepo
         .createQueryBuilder('company')
-        .select('AVG(company.dataQualityScore)', 'avgScore')
-        .where(
-          organizationId ? 'company.organizationId = :organizationId' : '1=1',
+        .select('AVG(company.dataQualityScore)', 'avgScore');
+
+      if (organizationId) {
+        avgQualityQuery.where(
+          '(company.organizationId = :organizationId) OR (company.organizationId IS NULL AND company.isSharedData = true)',
           { organizationId },
-        )
-        .getRawOne();
+        );
+      }
+
+      const avgQualityResult = await avgQualityQuery.getRawOne();
 
       const overallScore = avgQualityResult?.avgScore
         ? parseFloat(avgQualityResult.avgScore)
