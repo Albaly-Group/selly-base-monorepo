@@ -484,10 +484,10 @@ function ListManagementPage() {
                       onClick={handleRemoveFromList}
                       disabled={selectedCompanies.length === 0}
                     >
-                      Remove from List ({selectedCompanies.length})
+                      {t('remove')} ({selectedCompanies.length})
                     </Button>
                     <Button variant="outline" onClick={onExportExcelList} disabled={selectedCompanies.length === 0}>
-                      Export ({selectedCompanies.length})
+                      {t('export')} ({selectedCompanies.length})
                     </Button>
                   </div>
 

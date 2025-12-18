@@ -27,7 +27,9 @@
       "title": "Smart Filtering & Lead Scoring",
       "description": "Apply intelligent filtering with weighted lead scoring to rank companies in your list.",
       "configuration": "Configuration"
-    }
+    },
+    "remove": "Remove from List",
+    "export": "Export"
   },
   "dashboard": {
     "title": "Dashboard",
