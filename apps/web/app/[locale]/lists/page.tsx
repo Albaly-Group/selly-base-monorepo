@@ -11,7 +11,7 @@ import { requireAuth } from "@/lib/auth"
 import { apiClient } from "@/lib/api-client"
 import type { Company } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { useTranslations } from 'next-intl'
+import { useTranslations,  } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Filter, Target, Loader2, CheckCircle, X } from "lucide-react"
@@ -442,7 +442,7 @@ function ListManagementPage() {
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Target className="h-5 w-5" />
-                        Smart Filtering & Lead Scoring
+                        {t('smart_filtering_panel.title')}
                         {showSmartFiltering && (
                           <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                             Active
@@ -456,7 +456,7 @@ function ListManagementPage() {
                           onClick={() => setShowSmartFilteringDialog(true)}
                         >
                           <Filter className="h-4 w-4 mr-1" />
-                          Configure
+                          {t('smart_filtering_panel.configuration')}
                         </Button>
                         {showSmartFiltering && (
                           <Button
@@ -470,7 +470,7 @@ function ListManagementPage() {
                       </div>
                     </CardTitle>
                     <CardDescription>
-                      Apply intelligent filtering with weighted lead scoring to rank companies in your list.
+                      {t('smart_filtering_panel.description')}
                       {showSmartFiltering && ` Showing ${displayCompanies.length} companies sorted by weighted score.`}
                     </CardDescription>
                   </CardHeader>

@@ -22,7 +22,12 @@
     "confirmDeleteTitle": "Delete List",
     "confirmDeleteMessage": "Are you sure you want to delete this list? This action cannot be undone.",
     "items": "items",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "smart_filtering_panel": {
+      "title": "Smart Filtering & Lead Scoring",
+      "description": "Apply intelligent filtering with weighted lead scoring to rank companies in your list.",
+      "configuration": "Configuration"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

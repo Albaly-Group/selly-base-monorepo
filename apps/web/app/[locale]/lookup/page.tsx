@@ -15,12 +15,11 @@ import {
 import { requireAuth } from "@/lib/auth";
 import { useCompaniesSearch } from "@/lib/hooks/api-hooks";
 import {
-  searchAndScoreCompanies,
   type WeightedLeadScore,
   calculateWeightedLeadScore,
 } from "@/lib/types";
 import type { Company } from "@/lib/types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Loader2, Plus } from "lucide-react";
 import ExcelJS from "exceljs";
