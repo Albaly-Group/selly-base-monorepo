@@ -787,6 +787,83 @@
       "status": { "completed": "Completed", "expired": "Expired", "failed": "Failed", "processing": "Processing" }
     }
   },
+  "organization_administration": {
+    "user_role": {
+      "title": "Organization Administration",
+      "badge": "Customer Admin",
+      "subtitle": "Manage your organization's users, policies, and tenant-specific settings",
+      "noteTitle": "Note:",
+      "noteBody": "This admin panel manages settings for your organization only. You can see shared Albaly data but can only manage your organization's users and data.",
+      "tabs": {
+        "users": "Users & Roles",
+        "policies": "Policies",
+        "retention": "Data Retention",
+        "integrations": "Integrations",
+        "audit": "Audit Log"
+      },
+      "audit": {
+        "title": "Audit Log",
+        "description": "System activity and security events (Feature coming soon)",
+        "comingSoonTitle": "Audit log functionality will be available in a future release.",
+        "comingSoonBody": "This will include user actions, data changes, and security events."
+      }
+      ,
+      "user_management": {
+        "accessDenied": {
+          "title": "Access Denied",
+          "message": "You don't have permission to manage organization users.",
+          "note": "This feature requires customer admin privileges within your organization."
+        },
+        "error": {
+          "failedToLoadTitle": "Failed to Load Users",
+          "failedToLoadUsers": "Failed to load organization users. Please ensure the backend is running.",
+          "failedToCreate": "Failed to create user. Please try again.",
+          "retry": "Retry"
+        },
+        "loading": { "title": "Loading Users...", "message": "Fetching organization users" },
+        "summary": { "totalUsers": "Total Users", "activeUsers": "Active Users", "admins": "Admins", "staff": "Staff" },
+        "table": {
+          "title": "User Management",
+          "description": "Manage user accounts and permissions",
+          "headers": { "name": "Name", "email": "Email", "role": "Role", "status": "Status", "lastLogin": "Last Login", "created": "Created", "actions": "Actions" },
+          "noUsers": { "title": "No users found", "description": "There are no users in your organization yet.", "addFirst": "Add your first user" }
+        },
+        "dialog": {
+          "addButton": "Add User",
+          "addTitle": "Add New User",
+          "editTitle": "Edit User",
+          "addDescription": "Create a new user account and assign permissions",
+          "editDescription": "Update user details. Password cannot be changed here.",
+          "cancel": "Cancel",
+          "save": { "creating": "Creating...", "create": "Add User", "updating": "Updating...", "saveChanges": "Save Changes" }
+        },
+        "form": {
+          "fullName": "Full Name",
+          "fullNamePlaceholder": "Enter full name",
+          "email": "Email",
+          "emailPlaceholder": "Enter email address",
+          "password": "Password",
+          "passwordPlaceholder": "Enter password (min 6 characters)",
+          "passwordDisabled": "Disabled when editing",
+          "passwordNotAllowed": "Password changes are not allowed from this form.",
+          "role": "Role",
+          "rolePlaceholder": "Select role",
+          "roles": { "customer_user": "User", "customer_staff": "Staff", "customer_admin": "Admin" }
+        },
+        "validation": {
+          "nameRequired": "Name is required",
+          "emailRequired": "Email is required",
+          "roleRequired": "Role is required",
+          "passwordRequired": "Password is required",
+          "passwordMin": "Password must be at least 6 characters",
+          "invalidEmail": "Please enter a valid email address"
+        },
+        "actions": { "suspend": "Suspend", "activate": "Activate" }
+        ,
+        "status": { "active": "Active", "suspended": "Suspended" }
+      }
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

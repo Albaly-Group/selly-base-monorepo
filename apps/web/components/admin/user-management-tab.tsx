@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { UserPlus, Edit2, Trash2, Mail, AlertTriangle } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 interface User {
   id: string
@@ -25,6 +26,7 @@ interface User {
 
 export function UserManagementTab() {
   const { user: currentUser } = useAuth()
+  const t = useTranslations('organization_administration.user_role.user_management')
   
   // Initialize all hooks first (must be called unconditionally)
   const [users, setUsers] = useState<User[]>([])
@@ -64,7 +66,7 @@ export function UserManagementTab() {
         }
       } catch (error) {
         console.error('Failed to fetch organization users:', error)
-        setError('Failed to load organization users. Please ensure the backend is running.')
+        setError(t('error.failedToLoadUsers'))
         setUsers([])
       } finally {
         setIsLoading(false)
@@ -111,16 +113,16 @@ export function UserManagementTab() {
       
       // Basic validation
       const errors: {[key: string]: string} = {}
-      if (!userData.name.trim()) errors.name = 'Name is required'
-      if (!userData.email.trim()) errors.email = 'Email is required'
-      if (!userData.role) errors.role = 'Role is required'
-      if (!userData.password.trim()) errors.password = 'Password is required'
-      if (userData.password.length < 6) errors.password = 'Password must be at least 6 characters'
+      if (!userData.name.trim()) errors.name = t('validation.nameRequired')
+      if (!userData.email.trim()) errors.email = t('validation.emailRequired')
+      if (!userData.role) errors.role = t('validation.roleRequired')
+      if (!userData.password.trim()) errors.password = t('validation.passwordRequired')
+      if (userData.password.length < 6) errors.password = t('validation.passwordMin')
       
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (userData.email && !emailRegex.test(userData.email)) {
-        errors.email = 'Please enter a valid email address'
+        errors.email = t('validation.invalidEmail')
       }
       
       if (Object.keys(errors).length > 0) {
@@ -134,7 +136,7 @@ export function UserManagementTab() {
       setNewUserForm({ name: '', email: '', role: '', password: '' })
     } catch (error) {
       console.error('Failed to create user:', error)
-      setFormErrors({ general: 'Failed to create user. Please try again.' })
+        setFormErrors({ general: t('error.failedToCreate') })
     } finally {
       setIsCreating(false)
     }
@@ -211,9 +213,9 @@ export function UserManagementTab() {
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-            <p>You don&apos;t have permission to manage organization users.</p>
-            <p className="text-sm mt-2">This feature requires customer admin privileges within your organization.</p>
+              <h3 className="text-lg font-semibold mb-2">{t('accessDenied.title')}</h3>
+              <p>{t('accessDenied.message')}</p>
+              <p className="text-sm mt-2">{t('accessDenied.note')}</p>
           </div>
         </CardContent>
       </Card>
@@ -227,10 +229,10 @@ export function UserManagementTab() {
         <CardContent className="p-6">
           <div className="text-center">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-600" />
-            <h3 className="text-lg font-semibold mb-2 text-red-800">Failed to Load Users</h3>
+            <h3 className="text-lg font-semibold mb-2 text-red-800">{t('error.failedToLoadTitle')}</h3>
             <p className="text-gray-600 mb-4">{error}</p>
             <Button onClick={() => window.location.reload()} variant="outline">
-              Retry
+              {t('error.retry')}
             </Button>
           </div>
         </CardContent>
@@ -245,8 +247,8 @@ export function UserManagementTab() {
         <CardContent className="p-6">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-lg font-semibold mb-2">Loading Users...</h3>
-            <p className="text-gray-600">Fetching organization users</p>
+            <h3 className="text-lg font-semibold mb-2">{t('loading.title')}</h3>
+            <p className="text-gray-600">{t('loading.message')}</p>
           </div>
         </CardContent>
       </Card>
@@ -259,7 +261,7 @@ export function UserManagementTab() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('summary.totalUsers')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
@@ -268,7 +270,7 @@ export function UserManagementTab() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Active Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('summary.activeUsers')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.filter(u => u.status === "active").length}</div>
@@ -277,7 +279,7 @@ export function UserManagementTab() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Admins</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('summary.admins')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.filter(u => u.role === "customer_admin").length}</div>
@@ -286,7 +288,7 @@ export function UserManagementTab() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Staff</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">{t('summary.staff')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.filter(u => u.role === "staff").length}</div>
@@ -298,9 +300,9 @@ export function UserManagementTab() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage user accounts and permissions</CardDescription>
+              <div>
+              <CardTitle>{t('table.title')}</CardTitle>
+              <CardDescription>{t('table.description')}</CardDescription>
             </div>
             <Dialog open={showAddUser} onOpenChange={(open) => {
               // Keep the show state in sync and ensure edit state is cleared when opening/closing
@@ -317,17 +319,17 @@ export function UserManagementTab() {
                 setUpdateUser(false)
               }
             }}>
-              <DialogTrigger asChild>
+                <DialogTrigger asChild>
                 <Button className="gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Add User
+                  {t('dialog.addButton')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
+                  <DialogTitle>{editingUser ? t('dialog.editTitle') : t('dialog.addTitle')}</DialogTitle>
                   <DialogDescription>
-                    {editingUser ? 'Update user details. Password cannot be changed here.' : 'Create a new user account and assign permissions'}
+                    {editingUser ? t('dialog.editDescription') : t('dialog.addDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 {formErrors.general && (
@@ -337,10 +339,10 @@ export function UserManagementTab() {
                 )}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">{t('form.fullName')}</Label>
                     <Input 
                       id="name" 
-                      placeholder="Enter full name" 
+                      placeholder={t('form.fullNamePlaceholder')} 
                       value={newUserForm.name}
                       onChange={(e) => setNewUserForm(prev => ({ ...prev, name: e.target.value }))}
                       className={formErrors.name ? 'border-red-500' : ''}
@@ -348,11 +350,11 @@ export function UserManagementTab() {
                     {formErrors.name && <p className="text-red-500 text-sm">{formErrors.name}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('form.email')}</Label>
                     <Input 
                       id="email" 
                       type="email" 
-                      placeholder="Enter email address" 
+                      placeholder={t('form.emailPlaceholder')} 
                       value={newUserForm.email}
                       onChange={(e) => setNewUserForm(prev => ({ ...prev, email: e.target.value }))}
                       className={formErrors.email ? 'border-red-500' : ''}
@@ -360,29 +362,29 @@ export function UserManagementTab() {
                     {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('form.password')}</Label>
                     <Input 
                       id="password" 
                       type="password" 
-                      placeholder={editingUser ? "Disabled when editing" : "Enter password (min 6 characters)"} 
+                      placeholder={editingUser ? t('form.passwordDisabled') : t('form.passwordPlaceholder')} 
                       value={newUserForm.password}
                       onChange={(e) => setNewUserForm(prev => ({ ...prev, password: e.target.value }))}
                       className={formErrors.password ? 'border-red-500' : ''}
                       disabled={Boolean(editingUser)}
                     />
                     {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
-                    {editingUser && <p className="text-xs text-gray-500 mt-1">Password changes are not allowed from this form.</p>}
+                    {editingUser && <p className="text-xs text-gray-500 mt-1">{t('form.passwordNotAllowed')}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
+                    <Label htmlFor="role">{t('form.role')}</Label>
                     <Select value={newUserForm.role} onValueChange={(value) => setNewUserForm(prev => ({ ...prev, role: value }))}>
                       <SelectTrigger className={formErrors.role ? 'border-red-500' : ''}>
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue placeholder={t('form.rolePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="customer_user">User</SelectItem>
-                        <SelectItem value="customer_staff">Staff</SelectItem>
-                        <SelectItem value="customer_admin">Admin</SelectItem>
+                        <SelectItem value="customer_user">{t('form.roles.customer_user')}</SelectItem>
+                        <SelectItem value="customer_staff">{t('form.roles.customer_staff')}</SelectItem>
+                        <SelectItem value="customer_admin">{t('form.roles.customer_admin')}</SelectItem>
                       </SelectContent>
                     </Select>
                     {formErrors.role && <p className="text-red-500 text-sm">{formErrors.role}</p>}
@@ -390,7 +392,7 @@ export function UserManagementTab() {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setShowAddUser(false); setEditingUser(null); setUpdateUser(false); }}>
-                    Cancel
+                    {t('dialog.cancel')}
                   </Button>
                   <Button 
                     onClick={() => {
@@ -402,7 +404,7 @@ export function UserManagementTab() {
                     }}
                     disabled={isCreating}
                   >
-                    {editingUser ? (isCreating ? 'Updating...' : 'Save Changes') : (isCreating ? 'Creating...' : 'Add User')}
+                    {editingUser ? (isCreating ? t('dialog.save.updating') : t('dialog.save.saveChanges')) : (isCreating ? t('dialog.save.creating') : t('dialog.save.create'))}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -412,37 +414,37 @@ export function UserManagementTab() {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableRow>
+                <TableHead>{t('table.headers.name')}</TableHead>
+                <TableHead>{t('table.headers.email')}</TableHead>
+                <TableHead>{t('table.headers.role')}</TableHead>
+                <TableHead>{t('table.headers.status')}</TableHead>
+                <TableHead>{t('table.headers.lastLogin')}</TableHead>
+                <TableHead>{t('table.headers.created')}</TableHead>
+                <TableHead>{t('table.headers.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    <div className="text-gray-500">
-                      <UserPlus className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-medium mb-2">No users found</h3>
-                      <p className="text-sm">There are no users in your organization yet.</p>
-                      <Button 
-                        className="mt-4" 
-                        onClick={() => {
-                          setEditingUser(null)
-                          setUpdateUser(false)
-                          resetForm()
-                          setShowAddUser(true)
-                        }}
-                        variant="outline"
-                      >
-                        Add your first user
-                      </Button>
-                    </div>
+                      <div className="text-gray-500">
+                        <UserPlus className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-medium mb-2">{t('table.noUsers.title')}</h3>
+                        <p className="text-sm">{t('table.noUsers.description')}</p>
+                        <Button 
+                          className="mt-4" 
+                          onClick={() => {
+                            setEditingUser(null)
+                            setUpdateUser(false)
+                            resetForm()
+                            setShowAddUser(true)
+                          }}
+                          variant="outline"
+                        >
+                          {t('table.noUsers.addFirst')}
+                        </Button>
+                      </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -452,12 +454,12 @@ export function UserManagementTab() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={getRoleColor(user.role)}>
-                        {user.role}
+                        {t(`form.roles.${user.role}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={getStatusColor(user.status)}>
-                        {user.status}
+                        {t(`status.${user.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{formatDate(user.lastLogin)}</TableCell>
@@ -476,7 +478,7 @@ export function UserManagementTab() {
                           size="sm"
                           onClick={() => handleToggleStatus(user.id)}
                         >
-                          {user.status === "active" ? "Suspend" : "Activate"}
+                          {user.status === "active" ? t('actions.suspend') : t('actions.activate')}
                         </Button>
                         <Button
                           variant="outline"

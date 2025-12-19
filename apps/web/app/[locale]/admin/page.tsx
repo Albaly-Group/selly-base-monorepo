@@ -11,10 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Users, Shield, Database, Plug, Settings, Building } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 function AdminPage() {
   const { user } = useAuth()
 
+  const t = useTranslations('organization_administration.user_role')
   const isPlatformAdminOrStaff =
     !!user && (
       ['platform_admin', 'platform_staff'].includes(user.role as string) ||
@@ -28,16 +30,15 @@ function AdminPage() {
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">Organization Administration</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
               <Building className="h-3 w-3 mr-1" />
-              Customer Admin
+              {t('badge')}
             </Badge>
           </div>
-          <p className="text-gray-600">Manage your organization&apos;s users, policies, and tenant-specific settings</p>
+          <p className="text-gray-600">{t('subtitle')}</p>
           <p className="text-sm text-orange-600 mt-1">
-            <strong>Note:</strong> This admin panel manages settings for your organization only. 
-            You can see shared Albaly data but can only manage your organization&apos;s users and data.
+            <strong>{t('noteTitle')}</strong> {t('noteBody')}
           </p>
         </div>
 
@@ -45,25 +46,25 @@ function AdminPage() {
           <TabsList className={`grid w-full ${isPlatformAdminOrStaff ? 'grid-cols-5' : 'grid-cols-5'}`}>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Users & Roles
+              {t('tabs.users')}
             </TabsTrigger>
             {isPlatformAdminOrStaff && (
               <>
                 <TabsTrigger value="policies" className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
-                  Policies
+                  {t('tabs.policies')}
                 </TabsTrigger>
                 <TabsTrigger value="retention" className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
-                  Data Retention
+                  {t('tabs.retention')}
                 </TabsTrigger>
                 <TabsTrigger value="integrations" className="flex items-center gap-2">
                   <Plug className="h-4 w-4" />
-                  Integrations
+                  {t('tabs.integrations')}
                 </TabsTrigger>
                 <TabsTrigger value="audit" className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
-                  Audit Log
+                  {t('tabs.audit')}
                 </TabsTrigger>
               </>
             )}
@@ -90,16 +91,14 @@ function AdminPage() {
               <TabsContent value="audit" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Audit Log</CardTitle>
-                    <CardDescription>
-                      System activity and security events (Feature coming soon)
-                    </CardDescription>
+                    <CardTitle>{t('audit.title')}</CardTitle>
+                    <CardDescription>{t('audit.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-12 text-gray-500">
                       <Settings className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p>Audit log functionality will be available in a future release.</p>
-                      <p className="text-sm mt-2">This will include user actions, data changes, and security events.</p>
+                      <p>{t('audit.comingSoonTitle')}</p>
+                      <p className="text-sm mt-2">{t('audit.comingSoonBody')}</p>
                     </div>
                   </CardContent>
                 </Card>
