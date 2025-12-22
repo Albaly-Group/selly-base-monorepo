@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Filter, Search, Target, Save, Plus, Trash2 } from "lucide-react"
 import { useTranslations } from 'next-intl'
 import { Separator } from "@/components/ui/separator"
 import { apiClient } from "@/lib/api-client"
+import { ProvincePickerTrigger, ProvincePickerModal, type ProvinceOption } from "@/components/ui/province-picker-modal"
+import { IndustryPickerModal, IndustryPickerTrigger, type IndustryOption } from "@/components/ui/industry-picker-modal"
 
 export interface SmartFilteringCriteria {
   keyword?: string
@@ -40,18 +41,6 @@ interface SmartFilteringPanelProps {
   initialKeyword?: string
 }
 
-// Fallback options in case API fails
-const fallbackIndustrialOptions = [
-  "Manufacturing",
-  "Logistics",
-  "Automotive",
-  "Tourism",
-  "Agriculture",
-  "Technology",
-  "Healthcare",
-]
-
-const fallbackProvinceOptions = ["Bangkok", "Chiang Mai", "Phuket", "Khon Kaen", "Chonburi", "Rayong", "Samut Prakan"]
 
 const fallbackCompanySizeOptions = [
   { value: "small", label: "Small (S)" },
@@ -86,10 +75,17 @@ export function SmartFilteringPanel({
     minimumScore: criteria.minimumScore || 0,
   })
 
-  const [industrialOptions, setIndustrialOptions] = useState<{value: string; label: string}[]>([])
-  const [provinceOptions, setProvinceOptions] = useState<string[]>(fallbackProvinceOptions)
+  // State for Picker components - store full objects
+  const [industryPickerOptions, setIndustryPickerOptions] = useState<IndustryOption[]>([])
+  const [provincePickerOptions, setProvincePickerOptions] = useState<ProvinceOption[]>([])
   const [companySizeOptions, setCompanySizeOptions] = useState<any[]>(fallbackCompanySizeOptions)
   const [contactStatusOptions, setContactStatusOptions] = useState<{value: string, label: string}[]>(fallbackContactStatusOptions)
+
+  // Modal state
+  const [isIndustryModalOpen, setIsIndustryModalOpen] = useState(false)
+  const [isProvinceModalOpen, setIsProvinceModalOpen] = useState(false)
+  const [isLoadingIndustries, setIsLoadingIndustries] = useState(false)
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false)
 
   useEffect(() => {
     const fetchReferenceData = async () => {
@@ -113,21 +109,27 @@ export function SmartFilteringPanel({
       // }
       try {
         // Fetch Used Industries
+        setIsLoadingIndustries(true)
         const industriesResponse = await apiClient.getUsedIndustries()
         const list = industriesResponse.data || []
 
         if (industriesResponse.data && industriesResponse.data.length > 0) {
-          const options = list
-            .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
-            .map(it => ({
-              value: String(it.id), 
-              label: it.nameEn!.trim(), 
+          const options: IndustryOption[] = list
+            .filter((it: any) => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
+            .map((it: any) => ({
+              id: String(it.id),
+              code: it.code || '',
+              titleEn: it.nameEn!.trim(),
+              titleTh: it.nameTh || null,
+              description: it.description || null,
             }));
 
-          setIndustrialOptions(options);
+          setIndustryPickerOptions(options);
         }
       } catch (error) {
         console.error('Failed to fetch industries, using fallback:', error)
+      } finally {
+        setIsLoadingIndustries(false)
       }
 
       // try {
@@ -141,12 +143,22 @@ export function SmartFilteringPanel({
       // }
       try {
         // Fetch Used provinces
+        setIsLoadingProvinces(true)
         const provincesResponse = await apiClient.getUsedProvinces()
         if (provincesResponse.data && provincesResponse.data.length > 0) {
-          setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
+          const options: ProvinceOption[] = provincesResponse.data.map((item: any) => ({
+            id: String(item.id),
+            code: item.code || '',
+            nameEn: item.nameEn || item.name || '',
+            nameTh: item.nameTh || null,
+            regionType: item.regionType || undefined,
+          }));
+          setProvincePickerOptions(options);
         }
       } catch (error) {
         console.error('Failed to fetch provinces, using fallback:', error)
+      } finally {
+        setIsLoadingProvinces(false)
       }
 
       try {
@@ -192,6 +204,43 @@ export function SmartFilteringPanel({
       [key]: normalizedValue,
     }))
   }
+
+  // Adapter: Convert ID to name for Industry (maintains existing payload)
+  const handleIndustryChange = (industryId: string | null) => {
+    if (!industryId) {
+      updateCriteria("industrial", undefined)
+      return
+    }
+    const industry = industryPickerOptions.find(opt => opt.id === industryId)
+    if (industry) {
+      updateCriteria("industrial", industry.titleEn)
+    }
+  }
+
+  // Adapter: Convert ID to name for Province (maintains existing payload)
+  const handleProvinceChange = (provinceId: string | null) => {
+    if (!provinceId) {
+      updateCriteria("province", undefined)
+      return
+    }
+    const province = provincePickerOptions.find(opt => opt.id === provinceId)
+    if (province) {
+      updateCriteria("province", province.nameEn)
+    }
+  }
+
+  // Compute selected IDs from stored names
+  const selectedIndustryId = useMemo(() => {
+    if (!tempCriteria.industrial) return null
+    const industry = industryPickerOptions.find(opt => opt.titleEn === tempCriteria.industrial)
+    return industry?.id || null
+  }, [tempCriteria.industrial, industryPickerOptions])
+
+  const selectedProvinceId = useMemo(() => {
+    if (!tempCriteria.province) return null
+    const province = provincePickerOptions.find(opt => opt.nameEn === tempCriteria.province)
+    return province?.id || null
+  }, [tempCriteria.province, provincePickerOptions])
 
   const handleApply = () => {
     onApplyFiltering(tempCriteria)
@@ -293,22 +342,20 @@ export function SmartFilteringPanel({
                 {/* Industry */}
                 <div className="space-y-3">
                   <Label>{t('filters.industry')}</Label>
-                    <Combobox
-                      options={[{ value: "", label: t('filters.anyIndustry') || "Any Industry" }, ...industrialOptions]}
-                      value={
-                        useMemo(() => {
-                          const opt = industrialOptions.find(o => o.label === (tempCriteria.industrial || ""));
-                          return opt?.value ?? "";
-                        }, [industrialOptions, tempCriteria.industrial])
-                      }
-                      onValueChange={(val) => {
-                        const opt = industrialOptions.find(o => o.value === val);
-                        updateCriteria("industrial", opt?.label ?? undefined);
-                      }}
-                      placeholder={t('filters.industryPlaceholder') || "Search industries..."}
-                      searchPlaceholder={t('filters.industryPlaceholder') || "Search industries..."}
-                      emptyText={t('filters.noIndustry') || "No industry found."}
-                    />
+                  <IndustryPickerTrigger
+                    value={selectedIndustryId}
+                    options={industryPickerOptions}
+                    onClick={() => setIsIndustryModalOpen(true)}
+                    placeholder={t('filters.industryPlaceholder') || "Select industry..."}
+                  />
+                  <IndustryPickerModal
+                    open={isIndustryModalOpen}
+                    onOpenChange={setIsIndustryModalOpen}
+                    value={selectedIndustryId}
+                    onValueChange={handleIndustryChange}
+                    options={industryPickerOptions}
+                    isLoading={isLoadingIndustries}
+                  />
 
                   <div>
                     <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.industrialWeight}%</Label>
@@ -325,19 +372,19 @@ export function SmartFilteringPanel({
                 {/* Province */}
                 <div className="space-y-3">
                   <Label>{t('filters.province')}</Label>
-                  <Combobox
-                    options={[
-                      { value: "", label: t('filters.anyProvince') || "Any Province" },
-                      ...provinceOptions.map((option) => ({
-                        value: option,
-                        label: option,
-                      })),
-                    ]}
-                    value={tempCriteria.province || ""}
-                    onValueChange={(value) => updateCriteria("province", value)}
-                    placeholder={t('filters.provincePlaceholder') || "Search provinces..."}
-                    searchPlaceholder={t('filters.provincePlaceholder') || "Search provinces..."}
-                    emptyText={t('filters.noProvince') || "No province found."}
+                  <ProvincePickerTrigger
+                    value={selectedProvinceId}
+                    options={provincePickerOptions}
+                    onClick={() => setIsProvinceModalOpen(true)}
+                    placeholder={t('filters.provincePlaceholder') || "Select province..."}
+                  />
+                  <ProvincePickerModal
+                    open={isProvinceModalOpen}
+                    onOpenChange={setIsProvinceModalOpen}
+                    value={selectedProvinceId}
+                    onValueChange={handleProvinceChange}
+                    options={provincePickerOptions}
+                    isLoading={isLoadingProvinces}
                   />
                   <div>
                     <Label className="text-sm">{t('smartFiltering.weightLabel') || 'Weight:'} {tempCriteria.provinceWeight}%</Label>
