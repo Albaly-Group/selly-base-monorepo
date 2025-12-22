@@ -89,24 +89,6 @@ export function SmartFilteringPanel({
 
   useEffect(() => {
     const fetchReferenceData = async () => {
-      // try {
-      //   // Fetch industries
-      //   const industriesResponse = await apiClient.getIndustries()
-      //   const list = industriesResponse.data || []
-
-      //   if (industriesResponse.data && industriesResponse.data.length > 0) {
-      //     const options = list
-      //       .filter(it => typeof it.nameEn === 'string' && it.nameEn.trim() !== '')
-      //       .map(it => ({
-      //         value: String(it.id), 
-      //         label: it.nameEn!.trim(), 
-      //       }));
-
-      //     setIndustrialOptions(options);
-      //   }
-      // } catch (error) {
-      //   console.error('Failed to fetch industries, using fallback:', error)
-      // }
       try {
         // Fetch Used Industries
         setIsLoadingIndustries(true)
@@ -132,15 +114,6 @@ export function SmartFilteringPanel({
         setIsLoadingIndustries(false)
       }
 
-      // try {
-      //   // Fetch provinces
-      //   const provincesResponse = await apiClient.getProvinces()
-      //   if (provincesResponse.data && provincesResponse.data.length > 0) {
-      //     setProvinceOptions(provincesResponse.data.map((item: any) => item.name || item.nameEn))
-      //   }
-      // } catch (error) {
-      //   console.error('Failed to fetch provinces, using fallback:', error)
-      // }
       try {
         // Fetch Used provinces
         setIsLoadingProvinces(true)
