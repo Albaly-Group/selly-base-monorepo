@@ -405,7 +405,7 @@ export function SmartFilteringPanel({
                     value={tempCriteria.companySize || ""}
                     onValueChange={(value) => updateCriteria("companySize", value === "any" ? "" : value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={t('filters.anySize') || 'Any Size'} />
                     </SelectTrigger>
                     <SelectContent>
@@ -436,7 +436,7 @@ export function SmartFilteringPanel({
                     value={tempCriteria.verificationStatus || ""}
                     onValueChange={(value) => updateCriteria("verificationStatus", value === "any" ? "" : value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={t('filters.anyStatus') || 'Any Status'} />
                     </SelectTrigger>
                     <SelectContent>
