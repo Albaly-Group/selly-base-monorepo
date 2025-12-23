@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { MapPin } from "lucide-react"
 import { GenericPickerModal, GenericPickerTrigger, PickerOption } from "./generic-picker-modal"
 
@@ -30,6 +31,8 @@ export function ProvincePickerModal({
     options,
     isLoading = false,
 }: ProvincePickerModalProps) {
+    const t = useTranslations("companies_lookup.smartFiltering")
+
     const pickerOptions: PickerOption[] = useMemo(() => {
         return options.map((province) => ({
             id: province.id,
@@ -48,10 +51,10 @@ export function ProvincePickerModal({
             onValueChange={onValueChange}
             options={pickerOptions}
             isLoading={isLoading}
-            title="Select Province"
-            description="Search and select a province from the list"
-            placeholder="Search provinces..."
-            emptyText="No provinces found"
+            title={t("selectProvinceTitle")}
+            description={t("selectProvinceDescription")}
+            placeholder={t("provincePlaceholder")}
+            emptyText={t("noProvincesFound")}
             emptyIcon={<MapPin className="h-8 w-8 mb-2" />}
         />
     )
@@ -69,9 +72,10 @@ export function ProvincePickerTrigger({
     value,
     options,
     onClick,
-    placeholder = "Select province...",
+    placeholder,
     className,
 }: ProvincePickerTriggerProps) {
+    const t = useTranslations("companies_lookup.smartFiltering")
     const pickerOptions: PickerOption[] = useMemo(() => {
         return options.map((province) => ({
             id: province.id,
@@ -80,12 +84,14 @@ export function ProvincePickerTrigger({
         }))
     }, [options])
 
+    const effectivePlaceholder = placeholder ?? t("provincePlaceholder")
+
     return (
         <GenericPickerTrigger
             value={value}
             options={pickerOptions}
             onClick={onClick}
-            placeholder={placeholder}
+            placeholder={effectivePlaceholder}
             className={className}
             icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
         />

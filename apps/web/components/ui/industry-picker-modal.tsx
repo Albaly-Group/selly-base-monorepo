@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { Building2 } from "lucide-react"
 import { GenericPickerModal, GenericPickerTrigger, PickerOption } from "./generic-picker-modal"
 
@@ -30,6 +31,8 @@ export function IndustryPickerModal({
     options,
     isLoading = false,
 }: IndustryPickerModalSingleProps) {
+    const t = useTranslations("companies_lookup.smartFiltering")
+
     const pickerOptions: PickerOption[] = useMemo(() => {
         return options.map((industry) => ({
             id: industry.id,
@@ -48,10 +51,10 @@ export function IndustryPickerModal({
             onValueChange={onValueChange}
             options={pickerOptions}
             isLoading={isLoading}
-            title="Select Industry"
-            description="Search and select an industry from the list"
-            placeholder="Search industry codes..."
-            emptyText="No industries found"
+            title={t("selectIndustryTitle")}
+            description={t("selectIndustryDescription")}
+            placeholder={t("industryPlaceholder")}
+            emptyText={t("noIndustriesFound")}
             emptyIcon={<Building2 className="h-8 w-8 mb-2" />}
         />
     )
@@ -69,9 +72,10 @@ export function IndustryPickerTrigger({
     value,
     options,
     onClick,
-    placeholder = "Select industry...",
+    placeholder,
     className,
 }: IndustryPickerTriggerSingleProps) {
+    const t = useTranslations("companies_lookup.smartFiltering")
     const pickerOptions: PickerOption[] = useMemo(() => {
         return options.map((industry) => ({
             id: industry.id,
@@ -80,12 +84,14 @@ export function IndustryPickerTrigger({
         }))
     }, [options])
 
+    const effectivePlaceholder = placeholder ?? t("industryPlaceholder")
+
     return (
         <GenericPickerTrigger
             value={value}
             options={pickerOptions}
             onClick={onClick}
-            placeholder={placeholder}
+            placeholder={effectivePlaceholder}
             className={className}
             icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
         />
