@@ -241,8 +241,7 @@
       "success": "Successfully added {count} companies to the list.",
       "error": "Cannot add. This item is already in the list.",
       "errorName": "Please enter a list name.",
-      "errorSelect": "Please select a list.",
-      "description": "Create a new list to organize and track companies."
+      "errorSelect": "Please select a list."
     },
     "createCompany": {
       "title": "Create New Company",
@@ -364,8 +363,8 @@
       "province": "Province"
     },
     "contacts": {
-      "title": "Title",
-      "addContact": "Add Contact",
+      "title": "Contacts",
+      "addContact": "Add Contact Person",
       "add": "Add",
       "editContact": "Edit contact",
       "deleteContact": "Delete contact",
@@ -414,6 +413,8 @@
         "follow-up": "Follow up",
         "qualified": "Qualified"
       },
+      "outcome": "Outcome",
+      "outcomePlaceholder": "Select outcome",
       "title": "Activity Timeline",
       "logActivity": "Log Activity",
       "log": "Log",
@@ -425,6 +426,8 @@
       "activityTitlePlaceholder": "e.g., Follow-up call",
       "activityType": "Activity Type",
       "activityTypePlaceholder": "Select type",
+      "activityNotes": "Notes",
+      "activityNotesPlaceholder": "Enter activity details...",
       "types": {
         "call": "Call",
         "email": "Email",
