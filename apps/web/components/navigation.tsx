@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useAuth, hasPermission, canManageTenants, canManageOrganizationUsers, canManageDatabase } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LanguageSwitcher } from "@/src/components/language-switcher"
+import { Menu, X } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -38,8 +40,10 @@ export function Navigation() {
   // Helper function to create locale-aware links
   const localePath = (path: string) => `/${locale}${path}`
 
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <header className="border-b bg-white">
+    <header className="border-b bg-white relative">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
@@ -47,7 +51,8 @@ export function Navigation() {
               <a href={localePath('/dashboard')}>{tLogin('title')}</a>
             </button>
 
-            <NavigationMenu>
+            <div className="hidden md:block">
+              <NavigationMenu>
               <NavigationMenuList>
                 {/* Dashboard - available to all authenticated users */}
                 <NavigationMenuItem>
@@ -140,7 +145,19 @@ export function Navigation() {
                   </NavigationMenuItem>
                 )}
               </NavigationMenuList>
-            </NavigationMenu>
+              </NavigationMenu>
+            </div>
+
+            {/* Mobile: hamburger opens a full-width panel */}
+            <div className="md:hidden">
+              <button
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                className="inline-flex items-center justify-center rounded-md p-2 hover:bg-gray-100"
+                onClick={() => setMobileOpen((s) => !s)}
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -175,6 +192,64 @@ export function Navigation() {
           </div>
         </div>
       </div>
+
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <div className="md:hidden">
+          <div className="absolute left-0 right-0 top-full z-40 border-t bg-white shadow-md">
+            <div className="p-4 space-y-2">
+              <Link href={localePath('/dashboard')}>
+                <div className="px-3 py-2 rounded hover:bg-gray-50">{t('dashboard')}</div>
+              </Link>
+
+              {(hasPermission(user, 'companies:read') || hasPermission(user, '*')) && (
+                <>
+                  <Link href={localePath('/lookup')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('company_lookup')}</div>
+                  </Link>
+                  <Link href={localePath('/lists')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('my_lists')}</div>
+                  </Link>
+                </>
+              )}
+
+              {canManageDatabase(user) && !canManageTenants(user) && (
+                <>
+                  <Link href={localePath('/staff')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('database_management')}</div>
+                  </Link>
+                  <Link href={localePath('/reports')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('reports')}</div>
+                  </Link>
+                </>
+              )}
+
+              {(hasPermission(user, 'data:import') || hasPermission(user, 'data:export') || hasPermission(user, '*')) && !canManageTenants(user) && (
+                <>
+                  <Link href={localePath('/imports')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('import')}</div>
+                  </Link>
+                  <Link href={localePath('/exports')}>
+                    <div className="px-3 py-2 rounded hover:bg-gray-50">{t('export')}</div>
+                  </Link>
+                </>
+              )}
+
+              {canManageOrganizationUsers(user) && (
+                <Link href={localePath('/admin')}>
+                  <div className="px-3 py-2 rounded hover:bg-gray-50">{t('organization_admin')}</div>
+                </Link>
+              )}
+
+              {canManageTenants(user) && (
+                <Link href={localePath('/platform-admin')}>
+                  <div className="px-3 py-2 rounded hover:bg-gray-50">{t('platform_admin')}</div>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

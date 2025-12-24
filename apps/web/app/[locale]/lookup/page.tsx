@@ -1247,92 +1247,63 @@ function CompanyLookupPage() {
               onOpenSmartFiltering={() => setShowSmartFilteringDialog(true)}
             />
 
-            {/* Actions bar - keep Create / Import visible even when no results */}
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              <div className="flex items-center gap-4">
-                {isSimpleSearch && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
-                    <Search className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-green-800 font-medium">
-                      {tSearch('active')} &quot;{searchTerm}&quot;
-                    </span>
-                    <button
-                      onClick={clearFilters}
-                      className="text-green-600 hover:text-green-800 text-sm underline ml-2"
-                    >
-                      {tSearch('clear')}
-                    </button>
-                  </div>
-                )}
-                {hasAppliedFiltering && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2 flex-wrap">
-                    <Filter className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-blue-800 font-medium">
-                      {tFilters('smartFiltering')}
-                    </span>
-                    {smartFiltering.keyword && (
-                      <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        {tFilters('keyword')}
-                      </span>
-                    )}
-                    {smartFiltering.industrial && (
-                      <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        {tFilters('industry')}
-                      </span>
-                    )}
-                    {smartFiltering.province && (
-                      <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        {tFilters('province')}
-                      </span>
-                    )}
-                    {smartFiltering.companySize && (
-                      <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        {tFilters('size')}
-                      </span>
-                    )}
-                    {smartFiltering.verificationStatus && (
-                      <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                        {tFilters('status')}
-                      </span>
-                    )}
-                    <button
-                      onClick={clearFilters}
-                      className="text-blue-600 hover:text-blue-800 text-sm underline ml-2"
-                    >
-                      {tSearch('clearAll')}
-                    </button>
-                  </div>
-                )}
-                {hasApiError && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center gap-2">
-                    <span className="text-sm text-yellow-800">
-                      {tFilters('usingFallback')}
-                    </span>
-                  </div>
-                )}
-              </div>
+          {/* Actions bar - keep Create / Import visible even when no results */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:gap-4 lg:items-center lg:justify-between">
+            {/* left badges */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              {isSimpleSearch && (
+                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2 w-full sm:w-auto">
+                  <Search className="h-4 w-4 text-green-600 shrink-0" />
+                  <span className="text-sm text-green-800 font-medium truncate">
+                    {tSearch('active')} &quot;{searchTerm}&quot;
+                  </span>
+                  <button
+                    onClick={clearFilters}
+                    className="text-green-600 hover:text-green-800 text-sm underline ml-2 shrink-0"
+                  >
+                    {tSearch('clear')}
+                  </button>
+                </div>
+              )}
 
-              <div className="flex gap-2">
+              {hasAppliedFiltering && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                  <Filter className="h-4 w-4 text-blue-600 shrink-0" />
+                  <span className="text-sm text-blue-800 font-medium">
+                    {tFilters('smartFiltering')}
+                  </span>
+                  {/* chips ... */}
+                  <button
+                    onClick={clearFilters}
+                    className="text-blue-600 hover:text-blue-800 text-sm underline ml-2"
+                  >
+                    {tSearch('clearAll')}
+                  </button>
+                </div>
+              )}
+
+              {hasApiError && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-sm text-yellow-800">
+                    {tFilters('usingFallback')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* buttons */}
+            <div className="w-full lg:w-auto">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+                {/* Create: full width on mobile */}
                 <button
                   onClick={() => setShowCreateDialog(true)}
-                  className="px-3 py-2 bg-green-600 text-sm text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                  className="px-3 py-2 bg-green-600 text-sm text-white rounded-md hover:bg-green-700 flex items-center justify-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
                   {tActions('createCompany')}
                 </button>
-                <button
-                  onClick={() => setShowImportModal(true)}
-                  className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {tActions('import')}
-                </button>
-                <button
-                  onClick={() => setShowExportModal(true)}
-                  disabled={selectedCompanies.length === 0}
-                  className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {tActions('export')} ({selectedCompanies.length})
-                </button>
+
+                {/* Add to list: full width on mobile */}
                 <button
                   onClick={onAddToList}
                   disabled={selectedCompanies.length === 0 || isLoading}
@@ -1340,8 +1311,26 @@ function CompanyLookupPage() {
                 >
                   {tActions('addToList')} ({selectedCompanies.length})
                 </button>
+
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {tActions('import')}
+                </button>
+
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  disabled={selectedCompanies.length === 0}
+                  className="px-3 py-2 border text-sm border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {tActions('export')} ({selectedCompanies.length})
+                </button>
+
               </div>
             </div>
+          </div>
+
 
             {!hasResults ? (
               <Card>

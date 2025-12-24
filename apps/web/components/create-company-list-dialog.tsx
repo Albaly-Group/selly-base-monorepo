@@ -73,7 +73,7 @@ export function CreateCompanyListDialog({ open, onOpenChange, onSuccess }: Creat
         <DialogHeader>
           <DialogTitle>{t('addToList.createAndAdd') || (tCommon('create') + ' New Company List')}</DialogTitle>
           <DialogDescription>
-            {t('addToList.description') || 'Create a new list to organize and track companies.'}
+            {'Create a new list to organize and track companies.'}
           </DialogDescription>
         </DialogHeader>
 
